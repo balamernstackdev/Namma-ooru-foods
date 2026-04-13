@@ -1,0 +1,105 @@
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+
+interface HeroCarouselProps {
+  images: string[];
+  title: React.ReactNode;
+  subtitle?: React.ReactNode;
+  badges?: React.ReactNode;
+  height?: string;
+  overlayColor?: string;
+}
+
+const HeroCarousel = ({ 
+  images, 
+  title, 
+  subtitle, 
+  badges, 
+  height = 'h-[400px] md:h-[620px]',
+  overlayColor = 'rgba(5, 44, 30, 0.7)' // Default Emerald Black overlay
+}: HeroCarouselProps) => {
+  const [currentSlide, setCurrentSlide] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % images.length);
+    }, 5000); // 5 seconds auto-slide
+    return () => clearInterval(timer);
+  }, [images.length]);
+
+  const nextSlide = () => setCurrentSlide((prev) => (prev + 1) % images.length);
+  const prevSlide = () => setCurrentSlide((prev) => (prev - 1 + images.length) % images.length);
+
+  return (
+    <section className={`relative w-full overflow-hidden flex items-center justify-center ${height}`}>
+      {/* Background Slides */}
+      {images.map((img, index) => (
+        <div 
+          key={img} 
+          className={`absolute inset-0 transition-all duration-[2400ms] cubic-bezier(0.4, 0, 0.2, 1) ${index === currentSlide ? 'opacity-100 scale-100 blur-0' : 'opacity-0 scale-110 blur-xl'}`}
+        >
+          <Image 
+            src={img.startsWith('http') ? img : `/${img}`} 
+            alt=""
+            fill
+            className="object-cover"
+            priority={index === 0}
+          />
+          {/* Multi-layered gradient for depth */}
+          <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/40 z-10" />
+          <div className="absolute inset-0 bg-emerald-950/10 mix-blend-multiply z-10" />
+        </div>
+      ))}
+ 
+      {/* Content Overlay */}
+      <div className="relative z-20 w-full flex flex-col items-center justify-center text-center pt-24">
+        <div className="standard-container max-w-6xl">
+          <div className="flex flex-col items-center">
+            {badges && <div className="mb-12 animate-in fade-in slide-in-from-bottom-5 duration-1000">{badges}</div>}
+            <div className="overflow-hidden mb-8">
+              <h1 className="text-white tracking-tighter text-5xl md:text-8xl lg:text-9xl font-black leading-[0.9] animate-in slide-in-from-bottom-full duration-1000">
+                {title}
+              </h1>
+            </div>
+            
+            {subtitle && (
+              <p className="text-lg md:text-2xl text-white/80 max-w-3xl font-medium leading-relaxed mb-16 animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-300">
+                {subtitle}
+              </p>
+            )}
+            
+            {/* Pagination / Dots */}
+            <div className="flex gap-4 animate-in fade-in duration-1000 delay-500">
+              {images.map((_, i) => (
+                <button 
+                  key={i} 
+                  onClick={() => setCurrentSlide(i)}
+                  className={`h-1.5 rounded-full transition-all duration-1000 ${i === currentSlide ? 'w-24 bg-amber-400' : 'w-4 bg-white/30 hover:bg-white/50'}`}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+ 
+      {/* Sleek Minimalist Arrows */}
+      <button 
+        onClick={prevSlide}
+        className="absolute left-8 top-1/2 -translate-y-1/2 h-20 w-20 flex items-center justify-center text-white/20 hover:text-white transition-all z-30 group hidden xl:flex"
+      >
+        <ChevronLeft className="h-10 w-10 group-hover:-translate-x-3 transition-transform" strokeWidth={1} />
+      </button>
+      <button 
+        onClick={nextSlide}
+        className="absolute right-8 top-1/2 -translate-y-1/2 h-20 w-20 flex items-center justify-center text-white/20 hover:text-white transition-all z-30 group hidden xl:flex"
+      >
+        <ChevronRight className="h-10 w-10 group-hover:translate-x-3 transition-transform" strokeWidth={1} />
+      </button>
+    </section>
+  );
+};
+
+export default HeroCarousel;
