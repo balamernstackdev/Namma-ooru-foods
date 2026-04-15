@@ -36,7 +36,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setIsLoading(true);
     // Mock API call
     setTimeout(() => {
-      const mockUser = { id: '1', name: 'John Doe', email, avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=200&auto=format&fit=crop' };
+      const mockUser = { id: '1', name: 'John Doe', email, avatar: '/ai_images/organic_grains_1776231059575.png' };
       setUser(mockUser);
       localStorage.setItem('namma_orru_user', JSON.stringify(mockUser));
       setIsLoading(false);

@@ -99,12 +99,12 @@ export default function Home() {
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
               <div className="max-w-2xl text-center md:text-left">
                 <span className="text-[11px] font-black uppercase tracking-[0.4em] text-emerald-800/60 mb-6 inline-block">Weekly Favorites</span>
-                <h2 className="text-emerald-950 font-black tracking-tight text-3xl md:text-5xl lg:text-6xl">
+                <h2 className="text-emerald-950 font-black tracking-tight text-2xl md:text-5xl lg:text-6xl">
                   Best Sellers <br />
                   <span className="text-amber-500 italic">This Season</span>
                 </h2>
               </div>
-              <Link href="/products" className="group h-14 md:h-16 px-10 rounded-full bg-emerald-950 text-white text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-4 hover:scale-105 transition-all shadow-xl mx-auto md:mx-0 shrink-0">
+              <Link href="/products" className="group h-14 md:h-16 px-10 rounded-full bg-emerald-950 !text-white text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-4 hover:scale-105 transition-all shadow-xl mx-auto md:mx-0 shrink-0">
                 Full Inventory <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-2" />
               </Link>
             </div>
@@ -137,22 +137,22 @@ export default function Home() {
       {/* 09. Brand Mission Section (Cinematic) */}
       <section className="relative overflow-hidden section-spacing bg-emerald-950 flex justify-center min-h-[70vh]">
         {/* Cinematic Backdrop */}
-        <div className="absolute inset-0 z-0 opacity-20 bg-cover bg-center grayscale mix-blend-overlay scale-110"
-          style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1500651230702-0e2d8a49d4ad?q=80&w=2000&auto=format&fit=crop")' }} />
+        <div className="absolute inset-0 z-0 opacity-10 bg-cover bg-center grayscale mix-blend-overlay scale-110 object-cover"
+          style={{ backgroundImage: 'url("/ai_images/cinematic_farm_1776230966841.png")' }} />
 
         <div className="standard-container relative z-10 flex flex-col items-start justify-center text-left">
           <div className="max-w-4xl space-y-12">
             <span className="text-[11px] font-black uppercase tracking-[0.4em] text-amber-400 mb-8 inline-block">The Namma Orru Mission</span>
-            <h2 className="text-white font-black tracking-tight text-4xl md:text-6xl lg:text-8xl">Honest Food, <br /><span className="text-amber-400">Directly</span> <br />To Your Table.</h2>
-            <p className="text-lg md:text-2xl text-emerald-50/70 font-medium leading-relaxed max-w-3xl">
+            <h2 className="text-white font-black tracking-tight text-4xl md:text-6xl">Honest Food, <br /><span className="text-amber-400">Directly</span> <br />To Your Table.</h2>
+            <p className="text-lg md:text-xl text-emerald-50/70 font-medium leading-relaxed max-w-3xl mx-auto">
               We've cut out the middlemen to bring you the purest harvest.
               By shopping here, you're directly supporting over 100+ local farm families.
             </p>
-            <div className="flex flex-col sm:flex-row items-center justify-start gap-6 pt-12">
-              <Link href="/brands" className="h-16 px-14 rounded-full bg-amber-500 text-xs font-black text-emerald-950 shadow-2xl transition-all hover:bg-amber-400 hover:scale-105 flex items-center gap-3">
+            <div className="flex flex-col sm:flex-row items-center justify-start gap-4 md:gap-6 pt-12 md:pt-20 w-full md:w-auto">
+              <Link href="/brands" className="w-full md:w-auto h-14 md:h-16 px-10 md:px-12 rounded-full bg-amber-500 !text-emerald-950 text-[10px] md:text-sm font-black shadow-2xl transition-all hover:bg-amber-400 hover:scale-105 flex items-center justify-center gap-3 shrink-0 whitespace-nowrap">
                 Meet the Farmers <ArrowRight className="h-4 w-4" />
               </Link>
-              <Link href="/about" className="h-16 px-14 rounded-full bg-white/10 text-xs font-black text-white border border-white/20 backdrop-blur-md transition-all hover:bg-white/20 hover:scale-105 flex items-center">
+              <Link href="/about" className="w-full md:w-auto h-14 md:h-16 px-10 md:px-12 rounded-full bg-white/10 !text-white text-[10px] md:text-sm font-black border border-white/20 backdrop-blur-xl transition-all hover:bg-white/20 hover:scale-105 flex items-center justify-center shrink-0 whitespace-nowrap">
                 Our Heritage
               </Link>
             </div>

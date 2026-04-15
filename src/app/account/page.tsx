@@ -29,7 +29,7 @@ export default function AccountPage() {
       <div className="min-h-screen bg-slate-50 pt-[160px] pb-20 flex items-center justify-center p-6 text-center">
         <div className="w-full max-w-lg bg-white rounded-[3rem] p-12 md:p-16 border border-slate-100 shadow-premium relative overflow-hidden">
            <div className="h-28 w-28 rounded-full overflow-hidden mx-auto border-4 border-white shadow-2xl mb-10">
-              <img src={user.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200'} alt={user.name} className="h-full w-full object-cover" />
+              <img src={user.avatar || '/ai_images/indian_spices_1776231045209.png'} alt={user.name} className="h-full w-full object-cover" />
            </div>
            <h2 className="text-4xl font-black text-[#022c22] tracking-tighter mb-4 leading-none">Welcome, {user.name.split(' ')[0]}!</h2>
            <p className="text-[11px] font-black uppercase tracking-[0.4em] text-slate-300 mb-14">{user.email}</p>
@@ -45,7 +45,7 @@ export default function AccountPage() {
       {/* LEFT: CINEMATIC STORYTELLING (50%) */}
       <div className="hidden lg:block lg:w-1/2 relative bg-[#022c22] h-[calc(100vh-140px)]">
         <img 
-          src="https://images.unsplash.com/photo-1500651230702-0e2d8a49d4ad?q=80&w=2000&auto=format&fit=crop" 
+          src="/ai_images/honey_gold_1776231080758.png" 
           className="absolute inset-0 h-full w-full object-cover opacity-60 contrast-125"
           alt="Organic Farm"
         />

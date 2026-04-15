@@ -15,13 +15,13 @@ const PromoBanner = () => {
             }} 
           />
           
-          <div className="relative z-10 grid gap-6 lg:gap-8 lg:grid-cols-2 items-center p-6 md:p-8 lg:p-16">
+          <div className="relative z-10 grid gap-6 lg:gap-8 lg:grid-cols-2 items-center p-5 md:p-8 lg:p-16">
             <div className="flex flex-col items-start">
               <div className="flex items-center gap-2 rounded-full bg-white/20 px-3 py-1.5 border border-white/30 mb-4 md:mb-6 font-bold">
                 <Tag className="h-3.5 w-3.5 text-white" />
                 <span className="text-[9px] tracking-[0.2em] text-white uppercase">Limited Time Offer</span>
               </div>
-              <h2 className="text-2xl md:text-3xl lg:text-4xl font-black text-white leading-[1.1]">
+              <h2 className="text-2xl md:text-3xl lg:text-4xl font-black text-white leading-tight">
                 Weekend <br />
                 <span className="text-emerald-950">Grand Harvest</span> <br />
                 Flash Sale
@@ -45,7 +45,7 @@ const PromoBanner = () => {
               <div className="absolute -inset-10 bg-white/20 rounded-full blur-3xl animate-pulse" />
               <div className="relative z-10 w-full h-[450px] p-4 bg-white/10 backdrop-blur-md border border-white/20 rounded-[2rem] shadow-2xl rotate-3 hover:rotate-0 transition-transform duration-700 overflow-hidden">
                 <Image 
-                  src="https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=800&auto=format&fit=crop" 
+                  src="/ai_images/organic_grains_1776231059575.png" 
                   alt="Flash Sale" 
                   fill
                   className="object-cover rounded-2xl p-4"

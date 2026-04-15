@@ -47,6 +47,7 @@ const HeroCarousel = ({
             fill
             className="object-cover"
             priority={index === 0}
+            sizes="100vw"
           />
           {/* Multi-layered gradient for depth */}
           <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/40 z-10" />

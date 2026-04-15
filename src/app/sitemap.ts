@@ -1,6 +1,8 @@
 import { MetadataRoute } from 'next';
 import { PRODUCTS, CATEGORIES } from '@/lib/staticData';
 
+export const dynamic = 'force-static';
+
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = 'https://nammaorrufoods.com'; // Replace with actual domain
 

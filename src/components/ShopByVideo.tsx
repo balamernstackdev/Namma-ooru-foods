@@ -4,8 +4,8 @@ import Link from 'next/link';
 
 const videos = [
   { id: 1, title: 'Pure Desi Ghee', thumbnail: '/product_ghee.png', price: 549 },
-  { id: 2, title: 'Wild Forest Honey', thumbnail: 'https://images.unsplash.com/photo-1558642452-9d2a7deb7f62?q=80&w=400&auto=format&fit=crop', price: 399 },
-  { id: 3, title: 'Traditional Rice', thumbnail: 'https://images.unsplash.com/photo-1586201375761-83865001e31c?q=80&w=400&auto=format&fit=crop', price: 299 },
+  { id: 2, title: 'Wild Forest Honey', thumbnail: '/ai_images/cinematic_farm_1776230966841.png', price: 399 },
+  { id: 3, title: 'Traditional Rice', thumbnail: '/ai_images/discount_offer_1776230743911.png', price: 299 },
   { id: 4, title: 'Cold Pressed Oils', thumbnail: '/category_oils.png', price: 649 },
 ];
 

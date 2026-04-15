@@ -45,6 +45,7 @@ const Hero = () => {
             fill
             className="object-cover"
             priority={idx === 0}
+            sizes="100vw"
           />
           <div className="absolute inset-0 bg-gradient-to-r from-emerald-950/95 via-emerald-950/50 to-transparent z-10" />
           <div className="absolute bottom-0 left-0 right-0 h-48 bg-gradient-to-t from-[#030712]/40 to-transparent z-10" />
@@ -52,7 +53,7 @@ const Hero = () => {
       ))}
  
       {/* Content Overlay */}
-      <div className="relative z-20 w-full flex flex-col justify-center py-20 md:py-32 standard-container mx-auto">
+      <div className="relative z-20 w-full flex flex-col justify-center py-24 md:py-48 standard-container mx-auto">
         <div className="max-w-4xl text-left md:text-left" key={currentSlide}>
           <div className="inline-flex items-center gap-4 rounded-full bg-amber-400/10 backdrop-blur-xl border border-amber-400/20 px-6 py-2.5 md:px-8 md:py-3 mb-8 md:mb-12 animate-fade-in group cursor-default">
             <Sparkles className="h-3.5 w-3.5 md:h-4 md:w-4 text-amber-400 group-hover:rotate-12 transition-transform" />
@@ -65,11 +66,11 @@ const Hero = () => {
             {slide.subtitle}
           </p>
           
-          <div className="flex flex-col sm:flex-row items-center gap-6 animate-slide-up delay-200">
-            <Link href="/products" className="h-16 px-14 rounded-full bg-amber-500 text-white font-black uppercase tracking-widest text-xs hover:bg-white hover:text-emerald-950 transition-all flex items-center justify-center shadow-premium group">
-              Curated Harvest <ArrowRight className="ml-4 h-4 w-4 group-hover:translate-x-3 transition-transform" />
+          <div className="flex flex-col sm:flex-row items-center justify-start gap-4 md:gap-8 animate-slide-up delay-200">
+            <Link href="/products" className="w-full sm:w-auto min-w-[220px] h-14 md:h-20 px-10 md:px-20 rounded-full bg-amber-500 !text-white font-black uppercase tracking-[0.2em] text-[10px] md:text-sm hover:bg-white hover:!text-emerald-950 transition-all flex items-center justify-center shadow-2xl group whitespace-nowrap">
+              Curated Harvest <ArrowRight className="ml-4 h-5 w-5 group-hover:translate-x-3 transition-all" />
             </Link>
-            <Link href="/about" className="h-16 px-14 rounded-full bg-transparent border border-white/30 text-white font-black uppercase tracking-widest text-xs hover:bg-white/10 transition-all flex items-center justify-center backdrop-blur-md">
+            <Link href="/about" className="w-full sm:w-auto min-w-[220px] h-14 md:h-20 px-10 md:px-20 rounded-full bg-white/10 border-2 border-white/30 backdrop-blur-xl !text-white font-black uppercase tracking-[0.2em] text-[10px] md:text-sm hover:bg-white/20 transition-all flex items-center justify-center whitespace-nowrap">
               Our Heritage
             </Link>
           </div>

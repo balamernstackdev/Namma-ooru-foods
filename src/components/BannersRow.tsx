@@ -37,6 +37,7 @@ const BannersRow = () => {
                 alt={banner.title}
                 fill
                 className="object-cover transition-transform duration-[2500ms] group-hover:scale-110"
+                sizes="(max-width: 768px) 100vw, 50vw"
               />
               <div className="absolute inset-0 bg-gradient-to-r from-emerald-950/95 via-emerald-950/30 to-transparent z-10" />
               

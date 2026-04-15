@@ -49,16 +49,16 @@ const CategoriesPage = () => {
                   </div>
                 </div>
  
-                <div className="flex flex-col flex-1 p-8 md:p-12">
-                  <h3 className="text-emerald-950 tracking-tight group-hover:text-amber-600 transition-colors mb-4 uppercase">{cat.name}</h3>
-                  <p className="text-slate-500 text-[11px] md:text-sm font-medium leading-relaxed mb-10 line-clamp-2">{cat.description}</p>
+                <div className="flex flex-col flex-1 p-5 md:p-12">
+                  <h3 className="text-emerald-950 tracking-tight group-hover:text-amber-600 transition-colors mb-3 uppercase text-sm md:text-base">{cat.name}</h3>
+                  <p className="text-slate-500 text-[10px] md:text-sm font-medium leading-relaxed mb-6 md:mb-10 line-clamp-2">{cat.description}</p>
                   
-                  <div className="mt-auto pt-8 flex items-center justify-between border-t border-slate-100">
-                    <span className="text-[10px] font-black uppercase tracking-widest text-emerald-950/60 group-hover:text-amber-600 transition-colors">
+                  <div className="mt-auto pt-6 md:pt-8 flex items-center justify-between border-t border-slate-100">
+                    <span className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-emerald-950/60 group-hover:text-amber-600 transition-colors">
                       Enter Vault
                     </span>
-                    <div className="h-10 w-10 md:h-12 md:w-12 rounded-full bg-white border border-slate-100 flex items-center justify-center text-emerald-950 group-hover:bg-emerald-950 group-hover:text-white transition-all shadow-premium">
-                      <ArrowRight className="h-5 w-5" />
+                    <div className="h-9 w-9 md:h-12 md:w-12 rounded-full bg-white border border-slate-100 flex items-center justify-center text-emerald-950 group-hover:bg-emerald-950 group-hover:text-white transition-all shadow-premium">
+                      <ArrowRight className="h-4 w-4 md:h-5 md:w-5" />
                     </div>
                   </div>
                 </div>

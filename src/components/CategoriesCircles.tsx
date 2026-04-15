@@ -5,12 +5,12 @@ import Link from 'next/link';
 import Image from 'next/image';
 
 const categories = [
-  { name: 'Rice', image: 'https://images.unsplash.com/photo-1586201375761-83865001e31c?q=80&w=400&auto=format&fit=crop', href: '/categories/rice' },
+  { name: 'Rice', image: '/ai_images/indian_spices_1776231045209.png', href: '/categories/rice' },
   { name: 'Millets', image: '/category_millets.png', href: '/categories/millets' },
-  { name: 'Honey', image: 'https://images.unsplash.com/photo-1558642452-9d2a7deb7f62?q=80&w=400&auto=format&fit=crop', href: '/categories/honey' },
+  { name: 'Honey', image: '/ai_images/honey_gold_1776231080758.png', href: '/categories/honey' },
   { name: 'Oils', image: '/category_oils.png', href: '/categories/oils' },
-  { name: 'Natural', image: 'https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=400&auto=format&fit=crop', href: '/categories/natural' },
-  { name: 'Grains', image: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?q=80&w=400&auto=format&fit=crop', href: '/categories/grains' },
+  { name: 'Natural', image: '/ai_images/cinematic_farm_1776230966841.png', href: '/categories/natural' },
+  { name: 'Grains', image: '/ai_images/discount_offer_1776230743911.png', href: '/categories/grains' },
 ];
 
 const CategoriesCircles = () => {
@@ -33,7 +33,7 @@ const CategoriesCircles = () => {
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6" /></svg>
           </button>
 
-          <div id="categories-slider" className="flex overflow-x-auto gap-10 md:gap-20 justify-start lg:justify-center items-start pt-10 pb-16 snap-x relative no-scrollbar">
+          <div id="categories-slider" className="flex overflow-x-auto gap-6 md:gap-20 justify-start lg:justify-center items-start pt-10 pb-16 snap-x relative no-scrollbar px-4 md:px-0">
             {categories.map((category) => (
               <Link key={category.name} href={category.href} className="group flex flex-col items-center justify-start transition-all hover:-translate-y-4 snap-start shrink-0">
                 <div className="relative w-28 h-28 md:w-56 md:h-56 flex-shrink-0 overflow-hidden rounded-full border-4 border-slate-50 bg-white transition-all group-hover:border-amber-400 group-hover:shadow-premium shadow-md">

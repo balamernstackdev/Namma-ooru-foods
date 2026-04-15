@@ -61,8 +61,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={`${inter.variable} ${jost.variable} antialiased`}>
+    <html lang="en" className={`${inter.variable} ${jost.variable}`}>
+      <body className={`antialiased font-sans`}>
         <AuthProvider>
           <SmoothScroll>
             <Navbar />

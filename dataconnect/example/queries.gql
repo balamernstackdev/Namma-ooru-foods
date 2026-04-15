@@ -1,0 +1,39 @@
+mutation CreateUser($username: String!, $email: String!) @auth(level: PUBLIC, insecureReason: "This operation is safe to expose to the public") {
+  user_insert(data: {username: $username, email: $email, createdAt_expr: "request.time"}) {
+    id
+  }
+}
+
+query GetMyTests @auth(level: USER, insecureReason: "This operation is safe to expose to all logged in users.") {
+  tests(where: {userId: {eq_expr: "auth.uid"}}) {
+    id
+    name
+    description
+    createdAt
+    lastRunAt
+  }
+}
+
+mutation CreateTestRun($testId: UUID!, $status: String!, $outputLogs: String, $duration: Float) @auth(level: USER) {
+  testRun_insert(data: {testId: $testId, userId_expr: "auth.uid", runAt_expr: "request.time", status: $status, outputLogs: $outputLogs, duration: $duration}) {
+    id
+  }
+}
+
+query GetTestDetails($testId: UUID!) @auth(level: USER) {
+  test(id: $testId, where: {userId: {eq_expr: "auth.uid"}}) {
+    id
+    name
+    description
+    testScript
+    createdAt
+    lastRunAt
+    testRuns_on_test(orderBy: [{runAt: DESC}]) {
+      id
+      runAt
+      status
+      duration
+      outputLogs
+    }
+  }
+}

@@ -61,7 +61,7 @@ export default function BestSellingPage() {
             fixed inset-0 z-[60] lg:relative lg:inset-auto lg:z-0
             ${showFilters ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
             transition-transform duration-500 ease-in-out
-            w-full lg:w-[300px] xl:w-[360px] border-r border-slate-100 shrink-0 bg-white
+            w-full lg:w-[300px] xl:w-[320px] border-r border-slate-100 shrink-0 bg-white
           `}>
              {/* Mobile Header for Sidebar */}
              <div className="lg:hidden flex items-center justify-between p-8 border-b border-slate-50">
@@ -71,10 +71,10 @@ export default function BestSellingPage() {
                 </button>
              </div>
 
-            <div className="p-8 xl:p-12 overflow-y-auto max-h-screen lg:max-h-none lg:sticky lg:top-[160px] flex flex-col gap-12">
+            <div className="p-8 xl:p-10 lg:pt-14 overflow-y-auto max-h-screen lg:max-h-none lg:sticky lg:top-[120px] flex flex-col gap-10">
                {/* Department Section */}
                <div className="flex flex-col">
-                  <h3 className="text-[10px] md:text-[12px] font-black uppercase tracking-[0.3em] text-[#022c22]/30 mb-8 px-2">
+                  <h3 className="text-[10px] md:text-[12px] font-black uppercase tracking-widest text-[#022c22]/30 mb-6 pl-3 pr-2">
                      Vault Departments
                   </h3>
                   <div className="flex flex-col gap-1">
@@ -102,7 +102,7 @@ export default function BestSellingPage() {
                </div>
 
                {/* Hall of Fame Card */}
-               <div className="mt-8 p-10 rounded-[2.5rem] bg-[#022c22] text-white relative overflow-hidden group shadow-2xl">
+               <div className="mt-4 p-8 rounded-[2rem] bg-[#022c22] text-white relative overflow-hidden group shadow-xl">
                   <div className="absolute top-0 right-0 h-40 w-40 bg-emerald-800 rounded-full blur-3xl opacity-40 -mr-20 -mt-20 group-hover:scale-150 transition-transform duration-1000" />
                   <Star className="h-8 w-8 text-amber-400 mb-6" fill="currentColor" />
                   <p className="text-[14px] font-black leading-tight mb-2">Verified Harvests</p>
@@ -112,15 +112,15 @@ export default function BestSellingPage() {
           </aside>
   
           {/* CONTENT: CATALOG GRID */}
-          <main className="flex-1 bg-slate-50/10 px-8 md:px-12 xl:p-24 pb-48">
+          <main className="flex-1 bg-slate-50/10 px-6 md:px-10 lg:px-16 pt-12 lg:pt-14 pb-48">
             {/* Header Module */}
-            <div className="flex flex-col items-center lg:items-start lg:flex-row lg:justify-between mb-16 gap-10">
+            <div className="flex flex-col items-center lg:items-start lg:flex-row lg:justify-between mb-12 gap-8">
                <div className="flex flex-col items-center lg:items-start text-center lg:text-left">
-                  <div className="flex items-center gap-3 mb-6">
+                  <div className="flex items-center gap-3 mb-4">
                      <div className="h-[2px] w-12 bg-amber-500 rounded-full" />
                      <span className="text-[10px] font-black text-amber-500 uppercase tracking-[0.5em]">Active Treasures</span>
                   </div>
-                  <h1 className="text-[#022c22] font-black tracking-tighter text-4xl md:text-6xl xl:text-8xl leading-none">
+                  <h1 className="text-[#022c22] font-black tracking-tighter text-4xl md:text-5xl lg:text-6xl xl:text-7xl leading-none">
                     {activeCategory === 'All' ? 'Our Bestsellers' : activeCategory}
                   </h1>
                </div>
