@@ -18,7 +18,7 @@ const HeroCarousel = ({
   title, 
   subtitle, 
   badges, 
-  height = 'h-[400px] md:h-[620px]',
+  height = 'h-[280px] md:h-[400px]',
   overlayColor = 'rgba(5, 44, 30, 0.7)' // Default Emerald Black overlay
 }: HeroCarouselProps) => {
   const [currentSlide, setCurrentSlide] = useState(0);

@@ -5,6 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Star, ShoppingCart, ArrowUpRight } from 'lucide-react';
 import { useCartStore } from '@/store/useCartStore';
+import { useToast } from '@/context/ToastContext';
 
 interface ProductCardProps {
   product: {
@@ -22,6 +23,7 @@ interface ProductCardProps {
 
 const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const { addToCart } = useCartStore();
+  const { addToast } = useToast();
  
   return (
     <div className="group relative w-full h-[100%] flex flex-col bg-white rounded-[24px] border border-slate-200 transition-all duration-500 hover:shadow-[0_20px_40px_-15px_rgba(2,44,34,0.15)] hover:-translate-y-1 overflow-hidden card">
@@ -59,8 +61,9 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                 image: product.image,
                 variant: 'Standard'
               });
+              addToast('Successfully added to basket', product.name);
             }}
-            className="w-full h-12 md:h-14 rounded-xl bg-emerald-950 text-white text-[11px] font-black uppercase tracking-widest hover:bg-amber-500 hover:text-emerald-950 transition-all shadow-xl flex items-center justify-center gap-2 active:scale-95"
+            className="w-full h-10 md:h-12 rounded-xl bg-emerald-950 text-white text-[10px] md:text-[11px] font-black uppercase tracking-widest hover:bg-amber-500 hover:text-emerald-950 transition-all shadow-xl flex items-center justify-center gap-2 active:scale-95"
           >
             <ShoppingCart className="h-4 w-4" /> Add To Cart
           </button>
@@ -68,9 +71,11 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       </div>
   
       {/* Content Section */}
-      <div className="flex flex-col flex-1 p-5 md:p-8 pb-6 md:pb-8 bg-white z-10 relative">
+      <div className="flex flex-col flex-1 p-4 md:p-6 pb-5 md:pb-6 bg-white z-10 relative">
+
         <div className="flex-1">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between mb-2">
+
             <span className="text-[11px] md:text-[12px] font-bold text-emerald-800 uppercase tracking-wider">{product.category}</span>
             <div className="flex items-center gap-1.5 bg-slate-50 px-3 py-1.5 rounded-full border border-slate-200">
               <Star className="h-3 w-3 fill-amber-500 text-amber-500" />
@@ -79,13 +84,15 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           </div>
    
           <Link href={`/products/${product.id}`} className="block">
-            <h3 className="text-[18px] md:text-[20px] font-black text-emerald-950 mb-6 group-hover:text-emerald-700 transition-colors leading-tight line-clamp-2">
+            <h3 className="text-[18px] md:text-[20px] font-black text-emerald-950 mb-3 group-hover:text-emerald-700 transition-colors leading-tight line-clamp-2">
+
               {product.name}
             </h3>
           </Link>
         </div>
   
-        <div className="flex items-center justify-between gap-4 pt-6 border-t border-slate-200 mt-auto">
+        <div className="flex items-center justify-between gap-4 pt-4 border-t border-slate-200 mt-auto">
+
           <div className="flex flex-col">
             <span className="text-[11px] font-black text-slate-500 uppercase tracking-widest mb-1">Our Price</span>
             <div className="flex items-baseline gap-2">
@@ -100,9 +107,9 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
               )}
             </div>
           </div>
-  
-          <Link href={`/products/${product.id}`} className="h-14 w-14 rounded-full bg-emerald-50 text-emerald-950 flex flex-shrink-0 items-center justify-center transition-all hover:bg-emerald-950 hover:text-white shadow-sm group/btn">
-            <ArrowUpRight className="h-6 w-6 group-hover:rotate-45 transition-transform" strokeWidth={2.5} />
+   
+          <Link href={`/products/${product.id}`} className="h-11 w-11 md:h-12 md:w-12 rounded-full bg-emerald-50 text-emerald-950 flex flex-shrink-0 items-center justify-center transition-all hover:bg-emerald-950 hover:text-white shadow-sm group/btn">
+            <ArrowUpRight className="h-5 w-5 group-hover:rotate-45 transition-transform" strokeWidth={2.5} />
           </Link>
         </div>
       </div>

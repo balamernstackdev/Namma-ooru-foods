@@ -1,55 +1,56 @@
 export const CATEGORIES = [
-  { id: 1, name: 'Grains & Pulses', count: 24, description: 'Direct from the finest farms', image: '/ai_images/organic_grains_1776231059575.png' },
-  { id: 2, name: 'Organic Oils', count: 12, description: 'Traditional cold-pressed purity', image: '/ai_images/indian_spices_1776231045209.png' },
-  { id: 3, name: 'Authentic Spices', count: 45, description: 'Stone-ground flavors', image: '/ai_images/organic_grains_1776231059575.png' },
-  { id: 4, name: 'Local Sweets', count: 18, description: 'Traditional handmade delicacies', image: '/ai_images/cinematic_farm_1776230966841.png' },
-  { id: 5, name: 'Dairy Products', count: 15, description: 'Fresh from the local cow shelters', image: '/ai_images/honey_gold_1776231080758.png' },
-  { id: 6, name: 'Traditional Snacks', count: 32, description: 'Crunchy and delicious local treats', image: '/ai_images/organic_grains_1776231059575.png' },
+  { id: 1, name: 'Grains & Pulses', count: 26, description: 'Direct from the finest farms', image: '/ai_images/organic_grains_1776231059575.png' },
+  { id: 2, name: 'Organic Oils', count: 14, description: 'Traditional cold-pressed purity', image: '/ai_images/indian_spices_1776231045209.png' },
+  { id: 3, name: 'Authentic Spices', count: 48, description: 'Stone-ground flavors', image: '/ai_images/organic_grains_1776231059575.png' },
+  { id: 4, name: 'Local Sweets', count: 20, description: 'Traditional handmade delicacies', image: '/ai_images/mysore_pak_brass.png' },
+  { id: 5, name: 'Dairy Products', count: 16, description: 'Fresh from the local cow shelters', image: '/ai_images/honey_gold_1776231080758.png' },
+  { id: 6, name: 'Traditional Snacks', count: 35, description: 'Crunchy and delicious local treats', image: '/ai_images/murukku_premium.png' },
+  { id: 7, name: 'Pickles & Pastes', count: 12, description: 'Traditional grandmother recipes', image: '/ai_images/mango_pickle_jar.png' },
 ];
 
 export const BRANDS = [
-  { 
-    id: 1, 
-    name: 'Namma Nature', 
-    tagline: 'Purely natural, purely yours', 
-    description: 'Founded in 2015, Namma Nature sources directly from certified organic farms across Tamil Nadu and Karnataka. Every product is lab-tested, preservative-free and packed with traditional goodness.', 
-    logo: '/ai_images/indian_spices_1776231045209.png', 
+  {
+    id: 1,
+    name: 'Namma Nature',
+    tagline: 'Purely natural, purely yours',
+    description: 'Founded in 2015, Namma Nature sources directly from certified organic farms across Tamil Nadu and Karnataka. Every product is lab-tested, preservative-free and packed with traditional goodness.',
+    logo: '/ai_images/indian_spices_1776231045209.png',
     productCount: 34,
     category: 'Grains, Spices & Snacks',
     badge: 'Certified Organic',
     color: '#065f46'
   },
-  { 
-    id: 2, 
-    name: 'Grama Fresh', 
-    tagline: 'Straight from the heart of the village', 
-    description: 'Grama Fresh partners with over 200 small-scale farmers across rural India to bring you cold-pressed oils, fresh dairy, and artisan sweets — made in time-honoured ways with zero additives.', 
-    logo: '/ai_images/organic_grains_1776231059575.png', 
+  {
+    id: 2,
+    name: 'Grama Fresh',
+    tagline: 'Straight from the heart of the village',
+    description: 'Grama Fresh partners with over 200 small-scale farmers across rural India to bring you cold-pressed oils, fresh dairy, and artisan sweets — made in time-honoured ways with zero additives.',
+    logo: '/ai_images/organic_grains_1776231059575.png',
     productCount: 22,
     category: 'Oils, Dairy & Sweets',
     badge: 'Village Sourced',
     color: '#d97706'
   },
-  { 
-    id: 3, 
-    name: 'Kovil Kalai', 
-    tagline: 'Sacred recipes, heritage flavours', 
-    description: 'Kovil Kalai specialises in temple-style ritual ingredients, traditional sweet meats, and festival spice blends — all hand-processed by artisan communities.', 
-    logo: '/ai_images/cinematic_farm_1776230966841.png', 
+  {
+    id: 3,
+    name: 'Kovil Kalai',
+    tagline: 'Sacred recipes, Story flavours',
+    description: 'Kovil Kalai specialises in temple-style ritual ingredients, traditional sweet meats, and festival spice blends — all hand-processed by artisan communities.',
+    logo: '/ai_images/cinematic_farm_1776230966841.png',
     productCount: 18,
     category: 'Spices & Sweets',
-    badge: 'Heritage Brand',
+    badge: 'Story Brand',
     color: '#7c3aed'
   },
 ];
 
 export const PRODUCTS = [
-  { 
-    id: 1, 
-    name: 'Premium Toor Dal', 
-    category: 'Grains & Pulses', 
+  {
+    id: 1,
+    name: 'Premium Toor Dal',
+    category: 'Grains & Pulses',
     brand: 'Namma Nature',
-    price: 180, 
+    price: 180,
     originalPrice: 220,
     image: '/product_toor_dal.png',
     rating: 4.8,
@@ -63,12 +64,12 @@ export const PRODUCTS = [
     ],
     highlights: ['100% Organic', 'High Protein (22g/100g)', 'No Preservatives', 'Direct Farm Sourcing']
   },
-  { 
-    id: 2, 
-    name: 'Cold Pressed Peanut Oil', 
-    category: 'Organic Oils', 
+  {
+    id: 2,
+    name: 'Cold Pressed Peanut Oil',
+    category: 'Organic Oils',
     brand: 'Grama Fresh',
-    price: 320, 
+    price: 320,
     originalPrice: 399,
     image: '/product_peanut_oil.png',
     rating: 4.9,
@@ -81,12 +82,12 @@ export const PRODUCTS = [
     ],
     highlights: ['Wood Pressed', 'Rich Natural Aroma', 'Cholesterol Free', 'No Hexane or Refining']
   },
-  { 
-    id: 3, 
-    name: 'Aromatic Red Chilli Powder', 
-    category: 'Authentic Spices', 
-    brand: 'Namma Nature', 
-    price: 120, 
+  {
+    id: 3,
+    name: 'Aromatic Red Chilli Powder',
+    category: 'Authentic Spices',
+    brand: 'Namma Nature',
+    price: 120,
     originalPrice: 150,
     image: '/product_chilli_powder.png',
     rating: 4.7,
@@ -100,12 +101,12 @@ export const PRODUCTS = [
     ],
     highlights: ['Stone Ground', 'No Artificial Colour', 'Guntur & Byadagi Blend', 'Intense Flavour']
   },
-  { 
-    id: 4, 
-    name: 'Traditional A2 Ghee', 
-    category: 'Dairy Products', 
-    brand: 'Grama Fresh', 
-    price: 650, 
+  {
+    id: 4,
+    name: 'Traditional A2 Ghee',
+    category: 'Dairy Products',
+    brand: 'Grama Fresh',
+    price: 650,
     originalPrice: 799,
     image: '/product_ghee.png',
     rating: 4.9,
@@ -119,12 +120,12 @@ export const PRODUCTS = [
     ],
     highlights: ['A2 Cow Milk', 'Bilona Method', 'Rich in Butyric Acid', 'Lactose Free']
   },
-  { 
-    id: 5, 
-    name: 'Handmade Murukku', 
-    category: 'Traditional Snacks', 
-    brand: 'Namma Nature', 
-    price: 85, 
+  {
+    id: 5,
+    name: 'Handmade Murukku',
+    category: 'Traditional Snacks',
+    brand: 'Namma Nature',
+    price: 85,
     originalPrice: 110,
     image: '/product_murukku.png',
     rating: 4.6,
@@ -137,12 +138,12 @@ export const PRODUCTS = [
     ],
     highlights: ['Handmade', 'No Maida', 'Fried in Cold-Pressed Oil', 'Traditional Recipe']
   },
-  { 
-    id: 6, 
-    name: 'Fresh Jaggery Blocks', 
-    category: 'Local Sweets', 
-    brand: 'Grama Fresh', 
-    price: 110, 
+  {
+    id: 6,
+    name: 'Fresh Jaggery Blocks',
+    category: 'Local Sweets',
+    brand: 'Grama Fresh',
+    price: 110,
     originalPrice: 140,
     image: '/product_jaggery.png',
     rating: 4.8,
@@ -156,12 +157,12 @@ export const PRODUCTS = [
     ],
     highlights: ['Zero Sulphur', 'Rich in Iron & Minerals', 'No Artificial Sweeteners', 'Kolhapur Sourced']
   },
-  { 
-    id: 7, 
-    name: 'Wild Forest Honey', 
-    category: 'Dairy Products', 
-    brand: 'Namma Nature', 
-    price: 399, 
+  {
+    id: 7,
+    name: 'Wild Forest Honey',
+    category: 'Dairy Products',
+    brand: 'Namma Nature',
+    price: 399,
     originalPrice: 499,
     image: '/ai_images/honey_gold_1776231080758.png',
     rating: 4.9,
@@ -175,12 +176,12 @@ export const PRODUCTS = [
     ],
     highlights: ['Raw & Unprocessed', 'Western Ghats Origin', 'Rich in Enzymes', 'No Added Sugar']
   },
-  { 
-    id: 8, 
-    name: 'Organic Basmati Rice', 
-    category: 'Grains & Pulses', 
-    brand: 'Grama Fresh', 
-    price: 299, 
+  {
+    id: 8,
+    name: 'Organic Basmati Rice',
+    category: 'Grains & Pulses',
+    brand: 'Grama Fresh',
+    price: 299,
     originalPrice: 380,
     image: '/ai_images/organic_grains_1776231059575.png',
     rating: 4.7,
@@ -194,12 +195,12 @@ export const PRODUCTS = [
     ],
     highlights: ['12-Month Aged', 'Extra Long Grain', 'Himalayan Origin', 'Pesticide Free']
   },
-  { 
-    id: 9, 
-    name: 'Organic Turmeric Powder', 
-    category: 'Authentic Spices', 
-    brand: 'Kovil Kalai', 
-    price: 95, 
+  {
+    id: 9,
+    name: 'Organic Turmeric Powder',
+    category: 'Authentic Spices',
+    brand: 'Kovil Kalai',
+    price: 95,
     originalPrice: 130,
     image: '/ai_images/indian_spices_1776231045209.png',
     rating: 4.8,
@@ -213,12 +214,12 @@ export const PRODUCTS = [
     ],
     highlights: ['7%+ Curcumin', 'Erode Origin', 'Stone Ground', 'Anti-inflammatory']
   },
-  { 
-    id: 10, 
-    name: 'Cold Pressed Coconut Oil', 
-    category: 'Organic Oils', 
-    brand: 'Grama Fresh', 
-    price: 280, 
+  {
+    id: 10,
+    name: 'Cold Pressed Coconut Oil',
+    category: 'Organic Oils',
+    brand: 'Grama Fresh',
+    price: 280,
     originalPrice: 350,
     image: '/ai_images/organic_grains_1776231059575.png',
     rating: 4.9,
@@ -232,12 +233,12 @@ export const PRODUCTS = [
     ],
     highlights: ['Virgin & Unrefined', 'Chekku Pressed', 'Rich in Lauric Acid', 'Multi-purpose']
   },
-  { 
-    id: 11, 
-    name: 'Ragi Malt Powder', 
-    category: 'Grains & Pulses', 
-    brand: 'Namma Nature', 
-    price: 145, 
+  {
+    id: 11,
+    name: 'Ragi Malt Powder',
+    category: 'Grains & Pulses',
+    brand: 'Namma Nature',
+    price: 145,
     originalPrice: 180,
     image: '/ai_images/cinematic_farm_1776230966841.png',
     rating: 4.6,
@@ -251,12 +252,12 @@ export const PRODUCTS = [
     ],
     highlights: ['Sprouted Ragi', 'Rich in Calcium', 'No Preservatives', 'Breakfast Ready']
   },
-  { 
-    id: 12, 
-    name: 'Organic Black Pepper', 
-    category: 'Authentic Spices', 
-    brand: 'Kovil Kalai', 
-    price: 185, 
+  {
+    id: 12,
+    name: 'Organic Black Pepper',
+    category: 'Authentic Spices',
+    brand: 'Kovil Kalai',
+    price: 185,
     originalPrice: 240,
     image: '/ai_images/honey_gold_1776231080758.png',
     rating: 4.8,
@@ -270,12 +271,12 @@ export const PRODUCTS = [
     ],
     highlights: ['Wayanad Origin', 'High Piperine', 'Sun Dried', 'Hand Picked']
   },
-  { 
-    id: 13, 
-    name: 'Palm Jaggery', 
-    category: 'Local Sweets', 
-    brand: 'Grama Fresh', 
-    price: 160, 
+  {
+    id: 13,
+    name: 'Palm Jaggery',
+    category: 'Local Sweets',
+    brand: 'Grama Fresh',
+    price: 160,
     originalPrice: 210,
     image: '/ai_images/organic_grains_1776231059575.png',
     rating: 4.7,
@@ -289,12 +290,12 @@ export const PRODUCTS = [
     ],
     highlights: ['Palmyra Palm', 'Low GI', 'Handmade', 'Iron Kadai Cooked']
   },
-  { 
-    id: 14, 
-    name: 'Sesame Oil (Nallennai)', 
-    category: 'Organic Oils', 
-    brand: 'Namma Nature', 
-    price: 350, 
+  {
+    id: 14,
+    name: 'Sesame Oil (Nallennai)',
+    category: 'Organic Oils',
+    brand: 'Namma Nature',
+    price: 350,
     originalPrice: 430,
     image: '/ai_images/indian_spices_1776231045209.png',
     rating: 4.8,
@@ -308,12 +309,12 @@ export const PRODUCTS = [
     ],
     highlights: ['Marachekku Method', 'Black Sesame', 'Ayurvedic Grade', 'Traditional Recipe']
   },
-  { 
-    id: 15, 
-    name: 'Barnyard Millet', 
-    category: 'Grains & Pulses', 
-    brand: 'Namma Nature', 
-    price: 120, 
+  {
+    id: 15,
+    name: 'Barnyard Millet',
+    category: 'Grains & Pulses',
+    brand: 'Namma Nature',
+    price: 120,
     originalPrice: 160,
     image: '/ai_images/organic_grains_1776231059575.png',
     rating: 4.5,
@@ -326,12 +327,12 @@ export const PRODUCTS = [
     ],
     highlights: ['Gluten Free', 'Low Carb', 'Ancient Grain', 'Diabetic Friendly']
   },
-  { 
-    id: 16, 
-    name: 'Organic Coriander Powder', 
-    category: 'Authentic Spices', 
-    brand: 'Kovil Kalai', 
-    price: 70, 
+  {
+    id: 16,
+    name: 'Organic Coriander Powder',
+    category: 'Authentic Spices',
+    brand: 'Kovil Kalai',
+    price: 70,
     originalPrice: 95,
     image: '/product_coriander_powder.png',
     rating: 4.6,
@@ -345,6 +346,60 @@ export const PRODUCTS = [
     ],
     highlights: ['Stone Ground', 'Rajasthani Origin', 'No Additives', 'Aromatic & Fresh']
   },
+  {
+    id: 17,
+    name: 'Traditional Kai Murukku',
+    category: 'Traditional Snacks',
+    brand: 'Namma Nature',
+    price: 145,
+    originalPrice: 180,
+    image: '/ai_images/murukku_premium.png',
+    rating: 4.9,
+    reviews: 58,
+    tags: ['best-selling', 'organic-special'],
+    description: 'Authentic handmade Kai Murukku from Chettinad, crafted with precise hand-rotation. Made using premium rice flour and pure butter, fried in cold-pressed groundnut oil for that perfect traditional crunch.',
+    variants: [
+      { id: 46, name: '250g', price: 145 },
+      { id: 47, name: '500g', price: 280 },
+    ],
+    highlights: ['Hand-Twisted', 'Butter-Infused', 'Zero Preservatives', 'Chettinad Special']
+  },
+  {
+    id: 18,
+    name: 'Spicy Vadu Mango Pickle',
+    category: 'Pickles & Pastes',
+    brand: 'Grama Fresh',
+    price: 195,
+    originalPrice: 240,
+    image: '/ai_images/mango_pickle_jar.png',
+    rating: 4.9,
+    reviews: 124,
+    tags: ['best-selling'],
+    description: 'Baby mangoes (Vadu) curated with traditional spices and cold-pressed sesame oil. This pickle follows a secret 50-year-old family recipe, ensuring the tiny mangoes stay crunchy and absorb the intense spices.',
+    variants: [
+      { id: 48, name: '250g', price: 195 },
+      { id: 49, name: '500g', price: 370 },
+    ],
+    highlights: ['Small-Batch', 'Cold-Pressed Sesame Oil', 'Authentic Vadu', 'No Vinegar']
+  },
+  {
+    id: 19,
+    name: 'Grandma\'s Mysore Pak',
+    category: 'Local Sweets',
+    brand: 'Kovil Kalai',
+    price: 240,
+    originalPrice: 300,
+    image: '/ai_images/mysore_pak_brass.png',
+    rating: 5.0,
+    reviews: 89,
+    tags: ['best-selling', 'organic-special'],
+    description: 'The royal texture of Mysore Pak, made with pure desi cow ghee, fine gram flour, and organic cane sugar. It melts instantly in your mouth, carrying the nostalgia of traditional festive celebrations.',
+    variants: [
+      { id: 50, name: '250g', price: 240 },
+      { id: 51, name: '500g', price: 460 },
+    ],
+    highlights: ['Pure Desi Ghee', 'Cane Sugar', 'Silk-Soft Texture', 'Handmade']
+  },
 ];
 
 export const ORDERS = [
@@ -355,49 +410,49 @@ export const ORDERS = [
 ];
 
 export const PROMOTIONS = [
-  { 
+  {
     id: 1,
-    title: 'Summer Harvest Sale', 
-    discount: '20% OFF', 
-    category: 'All Grains & Pulses', 
-    end: 'Ends in 3 days', 
-    active: true, 
+    title: 'Summer Harvest Sale',
+    discount: '20% OFF',
+    category: 'All Grains & Pulses',
+    end: 'Ends in 3 days',
+    active: true,
     code: 'HARVEST20',
     description: 'Get 20% off on all grains and pulses. Stock up now before the season ends.',
     image: '/ai_images/cinematic_farm_1776230966841.png',
     color: '#d97706'
   },
-  { 
+  {
     id: 2,
-    title: 'New User Discount', 
-    discount: 'Flat ₹100 OFF', 
-    category: 'First Order', 
-    end: 'Perpetual', 
-    active: true, 
+    title: 'New User Discount',
+    discount: 'Flat ₹100 OFF',
+    category: 'First Order',
+    end: 'Perpetual',
+    active: true,
     code: 'WELCOME100',
     description: 'First time shopping with us? Enjoy ₹100 off on your very first order.',
     image: '/ai_images/honey_gold_1776231080758.png',
     color: '#065f46'
   },
-  { 
+  {
     id: 3,
-    title: 'Festival Bonanza', 
-    discount: 'Buy 1 Get 1', 
-    category: 'Sweets & Snacks', 
-    end: 'Starts Apr 10', 
-    active: false, 
+    title: 'Festival Bonanza',
+    discount: 'Buy 1 Get 1',
+    category: 'Sweets & Snacks',
+    end: 'Starts Apr 10',
+    active: false,
     code: 'BOGO2026',
     description: 'Double the joy this festival season! Buy one get one free on all sweets and snacks.',
     image: '/ai_images/organic_grains_1776231059575.png',
     color: '#7c3aed'
   },
-  { 
+  {
     id: 4,
-    title: 'Fresh Oil Friday', 
-    discount: '15% OFF', 
-    category: 'Organic Oils', 
-    end: 'Every Friday', 
-    active: true, 
+    title: 'Fresh Oil Friday',
+    discount: '15% OFF',
+    category: 'Organic Oils',
+    end: 'Every Friday',
+    active: true,
     code: 'OILFRIDAY',
     description: 'Every Friday is Oil Friday! Score 15% off all cold-pressed and wood-pressed oils.',
     image: '/ai_images/indian_spices_1776231045209.png',

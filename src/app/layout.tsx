@@ -4,8 +4,10 @@ import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import CartDrawer from "@/components/CartDrawer";
+import StickyAssistant from "@/components/StickyAssistant";
 
 import { AuthProvider } from "@/context/AuthContext";
+import { ToastProvider } from "@/context/ToastContext";
 
 const inter = Inter({ 
   subsets: ["latin"],
@@ -64,15 +66,20 @@ export default function RootLayout({
     <html lang="en" className={`${inter.variable} ${jost.variable}`}>
       <body className={`antialiased font-sans`}>
         <AuthProvider>
-          <SmoothScroll>
-            <Navbar />
-            <main className="min-h-screen">
-              {children}
-            </main>
-            <Footer />
-            <CartDrawer />
-          </SmoothScroll>
+          <ToastProvider>
+            <SmoothScroll>
+              <Navbar />
+              <main className="min-h-screen">
+                {children}
+              </main>
+              <Footer />
+              <CartDrawer />
+              <StickyAssistant />
+            </SmoothScroll>
+          </ToastProvider>
         </AuthProvider>
+
+
       </body>
     </html>
   );

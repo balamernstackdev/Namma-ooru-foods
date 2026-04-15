@@ -16,10 +16,11 @@ const ShopByConcern = () => {
   return (
     <div className="w-full bg-white relative z-10 section-spacing">
       <div className="standard-container">
-        <div className="text-left mb-12 md:mb-20">
-          <span className="text-[11px] font-black uppercase tracking-[0.4em] text-emerald-800/60 mb-4 inline-block tracking-widest">Targeted Wellness</span>
-          <h2 className="text-emerald-950 font-black tracking-tight">Shop By <span className="italic text-amber-500">Health Concern</span></h2>
+        <div className="text-left mb-6 md:mb-10">
+          <span className="text-[11px] font-black uppercase tracking-[0.4em] text-emerald-800/60 mb-3 inline-block tracking-widest">Targeted Wellness</span>
+          <h2 className="text-emerald-950 font-black tracking-tight text-2xl md:text-3xl lg:text-4xl">Shop By <span className="italic text-amber-500">Health Concern</span></h2>
         </div>
+
 
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-8">
           {concerns.map((concern) => (

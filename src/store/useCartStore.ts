@@ -47,8 +47,8 @@ export const useCartStore = create<CartState>()(
             cart: [...cart, { ...item, id: Date.now() }],
           });
         }
-        set({ isOpen: true });
       },
+
       removeFromCart: (id) => {
         set({
           cart: get().cart.filter((i) => i.id !== id),

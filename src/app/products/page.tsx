@@ -24,7 +24,10 @@ const ProductsContent = () => {
   const categoryParam = searchParams.get('category');
   const [activeCategory, setActiveCategory] = useState('All');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 9;
+
+
   useEffect(() => {
     if (categoryParam && categories.includes(categoryParam)) {
       setActiveCategory(categoryParam);
@@ -33,16 +36,27 @@ const ProductsContent = () => {
     }
   }, [categoryParam]);
 
-  const filteredProducts = activeCategory === 'All' 
-    ? PRODUCTS 
+  const filteredProducts = activeCategory === 'All'
+    ? PRODUCTS
     : PRODUCTS.filter(p => p.category === activeCategory);
+
+  useEffect(() => {
+    setCurrentPage(1); // Reset to first page on category change
+  }, [activeCategory]);
+
+  const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
+  const paginatedProducts = filteredProducts.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
 
   return (
     <div className="flex flex-col bg-white w-full min-h-screen">
-      <HeroCarousel 
+      <HeroCarousel
         images={['banners/products_1.png', 'banners/products_2.png']}
         title={<>Pure <br /><span className="text-amber-400 italic">Harvest</span> Vault</>}
-        subtitle="Experience the complete collection of Namma Orru's artisanal treasures. Authentic, organic, and direct from the soil."
+        subtitle="Experience the complete collection of Namma Orru's artisanal Items. Authentic, organic, and direct from the soil."
         badges={
           <div className="flex items-center gap-3">
             <div className="h-10 w-10 rounded-full bg-emerald-400/20 backdrop-blur-md flex items-center justify-center border border-emerald-400/30">
@@ -52,14 +66,15 @@ const ProductsContent = () => {
           </div>
         }
       />
- 
+
       <div className="w-full bg-slate-50 flex justify-center border-t border-slate-100 relative">
-        <div className="standard-container flex flex-col lg:flex-row gap-12 lg:gap-16 py-12 md:py-16 lg:py-24">
-          
+        <div className="standard-container flex flex-col lg:flex-row gap-12 lg:gap-16 pt-12 md:pt-16 lg:pt-24 pb-12">
+
+
           {/* MOBILE TOGGLE BAR */}
           <div className="lg:hidden flex items-center justify-between p-4 bg-slate-50 rounded-2xl mb-8">
             <span className="text-[10px] font-black uppercase tracking-widest text-emerald-950">Refine Catalog</span>
-            <button 
+            <button
               onClick={() => setIsSidebarOpen(true)}
               className="flex items-center gap-2 h-10 px-5 rounded-xl bg-emerald-950 text-white text-[10px] font-black uppercase tracking-widest shadow-lg"
             >
@@ -69,7 +84,7 @@ const ProductsContent = () => {
 
           {/* SIDEBAR - HIGH VISIBILITY REDESIGN */}
           <div className={`fixed inset-0 z-[100] bg-emerald-950/40 backdrop-blur-md lg:hidden transition-opacity duration-300 ${isSidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} onClick={() => setIsSidebarOpen(false)} />
-          
+
           <aside className={`fixed lg:sticky top-0 lg:top-[140px] left-0 h-full lg:h-fit w-72 bg-white lg:bg-transparent z-[101] lg:z-10 p-8 lg:p-0 transition-transform duration-300 lg:translate-x-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'} shrink-0 overflow-y-auto lg:overflow-visible`}>
             <div className="flex flex-col h-full">
               <div className="flex items-center justify-between mb-10 lg:hidden">
@@ -95,11 +110,10 @@ const ProductsContent = () => {
                             setActiveCategory(cat);
                             setIsSidebarOpen(false);
                           }}
-                          className={`group flex items-center justify-between px-5 py-4 rounded-xl transition-all duration-300 border ${
-                            activeCategory === cat 
-                              ? 'bg-emerald-950 border-emerald-950 text-white shadow-xl shadow-emerald-950/20 translate-x-2' 
+                          className={`group flex items-center justify-between px-5 py-4 rounded-xl transition-all duration-300 border ${activeCategory === cat
+                              ? 'bg-emerald-950 border-emerald-950 text-white shadow-xl shadow-emerald-950/20 translate-x-2'
                               : 'bg-white border-slate-100 text-slate-500 hover:border-emerald-950/20 hover:bg-emerald-50/30 hover:text-emerald-950'
-                          }`}
+                            }`}
                         >
                           <div className="flex items-center gap-4">
                             <Icon className={`h-4 w-4 ${activeCategory === cat ? 'text-amber-400' : 'text-slate-300 group-hover:text-emerald-950'}`} />
@@ -128,50 +142,92 @@ const ProductsContent = () => {
               </div>
             </div>
           </aside>
-  
+
           {/* MAIN GRID AREA */}
           <main className="flex-1">
             <div className="flex flex-col md:flex-row items-end justify-between mb-12 md:mb-16 gap-6">
-               <div className="flex flex-col gap-4 text-left w-full md:w-auto">
-                  <div className="flex items-center gap-3">
-                    <span className="h-[2px] w-8 bg-amber-500" />
-                    <span className="text-[10px] font-black text-amber-500 uppercase tracking-[0.4rem]">Inventory catalog</span>
-                  </div>
-                  <h1 className="text-emerald-950 font-black tracking-tighter text-3xl md:text-5xl lg:text-6xl leading-[1.1]">
-                    {activeCategory === 'All' ? 'Our Collection' : activeCategory}
-                  </h1>
-               </div>
-               
-               <div className="flex items-center justify-between md:justify-end w-full md:w-auto gap-10 border-b border-slate-100 pb-4">
-                  <div className="flex flex-col items-end">
-                    <span className="text-[9px] font-black uppercase tracking-widest text-slate-300">Total Finds</span>
-                    <span className="text-[11px] font-black text-emerald-950 tracking-tighter">{filteredProducts.length} Treasures Found</span>
-                  </div>
-                  <button className="flex items-center gap-3 h-11 px-6 rounded-full bg-emerald-50 text-[10px] font-black uppercase tracking-widest text-emerald-950 hover:bg-emerald-950 hover:text-white transition-all shadow-sm">
-                    Refine <SlidersHorizontal className="h-3.5 w-3.5" />
-                  </button>
-               </div>
-            </div>
-  
-            {filteredProducts.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-8 md:gap-10">
-                {filteredProducts.map((product) => (
-                  <ProductCard key={product.id} product={product} />
-                ))}
+              <div className="flex flex-col gap-4 text-left w-full md:w-auto">
+                <div className="flex items-center gap-3">
+                  <span className="h-[2px] w-8 bg-amber-500" />
+                  <span className="text-[10px] font-black text-amber-500 uppercase tracking-[0.4rem]">Inventory catalog</span>
+                </div>
+                <h1 className="text-emerald-950 font-black tracking-tighter text-3xl md:text-5xl lg:text-6xl leading-[1.1]">
+                  {activeCategory === 'All' ? 'Our Collection' : activeCategory}
+                </h1>
               </div>
+
+              <div className="flex items-center justify-between md:justify-end w-full md:w-auto gap-10 border-b border-slate-100 pb-4">
+                <div className="flex flex-col items-end">
+                  <span className="text-[9px] font-black uppercase tracking-widest text-slate-300">Total Finds</span>
+                  <span className="text-[11px] font-black text-emerald-950 tracking-tighter">{filteredProducts.length} Items Found</span>
+                </div>
+                <button className="flex items-center gap-3 h-11 px-6 rounded-full bg-emerald-50 text-[10px] font-black uppercase tracking-widest text-emerald-950 hover:bg-emerald-950 hover:text-white transition-all shadow-sm">
+                  Refine <SlidersHorizontal className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            </div>
+
+            {paginatedProducts.length > 0 ? (
+              <>
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-8 md:gap-10">
+                  {paginatedProducts.map((product) => (
+                    <ProductCard key={product.id} product={product} />
+                  ))}
+                </div>
+
+                {/* Pagination Component */}
+                {totalPages > 1 && (
+                  <div className="flex items-center justify-center gap-2 mt-8 md:mt-12">
+
+                    <button
+                      disabled={currentPage === 1}
+                      onClick={() => {
+                        setCurrentPage(prev => Math.max(1, prev - 1));
+                        window.scrollTo({ top: 400, behavior: 'smooth' });
+                      }}
+                      className="h-12 w-12 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-emerald-950 disabled:opacity-30 transition-all hover:bg-emerald-50 active:scale-90"
+                    >
+                      <ArrowRight className="rotate-180" size={18} />
+                    </button>
+
+                    {[...Array(totalPages)].map((_, i) => (
+                      <button
+                        key={i + 1}
+                        onClick={() => {
+                          setCurrentPage(i + 1);
+                          window.scrollTo({ top: 400, behavior: 'smooth' });
+                        }}
+                        className={`h-12 w-12 rounded-xl text-[11px] font-black transition-all ${currentPage === i + 1
+                            ? 'bg-emerald-950 text-white shadow-lg'
+                            : 'bg-white border border-slate-200 text-slate-400 hover:bg-slate-50'
+                          }`}
+                      >
+                        {String(i + 1).padStart(2, '0')}
+                      </button>
+                    ))}
+
+                    <button
+                      disabled={currentPage === totalPages}
+                      onClick={() => {
+                        setCurrentPage(prev => Math.min(totalPages, prev + 1));
+                        window.scrollTo({ top: 400, behavior: 'smooth' });
+                      }}
+                      className="h-12 w-12 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-emerald-950 disabled:opacity-30 transition-all hover:bg-emerald-50 active:scale-90"
+                    >
+                      <ArrowRight size={18} />
+                    </button>
+                  </div>
+                )}
+              </>
             ) : (
               <div className="h-[40vh] w-full rounded-[2rem] bg-slate-50 flex flex-col items-center justify-center text-center p-12 border border-slate-100">
                 <ShoppingBag className="h-10 w-10 text-slate-200 mb-6" />
                 <h3 className="text-emerald-950 font-bold tracking-tight">Vault Entry Empty</h3>
-                <p className="text-slate-400 text-xs max-w-xs mt-3 uppercase tracking-widest leading-loose">We haven't found any treasures in this sector yet.</p>
+                <p className="text-slate-400 text-xs max-w-xs mt-3 uppercase tracking-widest leading-loose">We haven't found any Items in this sector yet.</p>
               </div>
             )}
-  
-            <div className="text-center pt-24 md:pt-32">
-               <button className="h-14 px-16 rounded-full bg-emerald-950 text-white text-[10px] font-black uppercase tracking-[0.3em] hover:bg-amber-500 hover:text-emerald-950 transition-all shadow-premium group">
-                 Expand Selection <ArrowRight className="h-4 w-4 group-hover:translate-x-2 transition-transform ml-4" />
-               </button>
-            </div>
+
+
           </main>
         </div>
       </div>

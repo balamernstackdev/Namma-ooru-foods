@@ -13,21 +13,23 @@ const ShopByVideo = () => {
   return (
     <div className="w-full relative z-10 bg-[#fffefc] overflow-hidden section-spacing">
       <div className="standard-container">
-        <div className="flex flex-col md:flex-row md:items-end md:justify-between mb-10 md:mb-12 gap-8 text-center md:text-left">
+        <div className="flex flex-col md:flex-row md:items-end md:justify-between mb-6 md:mb-10 gap-6 text-center md:text-left">
           <div className="flex flex-col">
-            <span className="text-[10px] font-black uppercase tracking-[0.5em] text-[var(--primary)] mb-4 inline-block">Visual Shopping</span>
-            <h2 className="text-4xl md:text-6xl font-black text-[#1a1a1a] tracking-tight">
+            <span className="text-[10px] font-black uppercase tracking-[0.5em] text-[var(--primary)] mb-3 inline-block">Visual Shopping</span>
+            <h2 className="text-3xl md:text-5xl font-black text-[#1a1a1a] tracking-tight">
               Shop by <span className="italic text-[var(--primary)] text-stroke">Video</span>
             </h2>
           </div>
-          <Link href="/videos" className="group flex items-center gap-2 text-xs font-black uppercase tracking-widest text-gray-400 hover:text-[var(--primary)] transition-colors">
+          <Link href="/videos" className="group flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-[var(--primary)] transition-colors">
             View all stories <div className="h-0.5 w-6 bg-gray-200 group-hover:bg-[var(--primary)] group-hover:w-10 transition-all duration-300" />
           </Link>
         </div>
 
-        <div className="flex gap-6 md:gap-8 overflow-x-auto pb-8 snap-x no-scrollbar">
+
+        <div className="flex gap-6 md:gap-8 overflow-x-auto pb-6 snap-x no-scrollbar">
           {videos.map((video) => (
-            <div key={video.id} className="relative flex-shrink-0 w-64 md:w-80 h-[380px] md:h-[540px] rounded-[2rem] md:rounded-[2.5rem] overflow-hidden snap-start shadow-2xl group cursor-pointer border-[3px] md:border-4 border-white">
+            <div key={video.id} className="relative flex-shrink-0 w-60 md:w-72 h-[320px] md:h-[480px] rounded-[1.5rem] md:rounded-[2rem] overflow-hidden snap-start shadow-2xl group cursor-pointer border-[3px] md:border-4 border-white">
+
               <Image 
                 src={video.thumbnail} 
                 alt={video.title} 

@@ -2,7 +2,7 @@
 import React from 'react';
 import Image from 'next/image';
 import { ArrowRight } from 'lucide-react';
- 
+
 const BANNERS = [
   {
     id: 1,
@@ -15,24 +15,24 @@ const BANNERS = [
   {
     id: 2,
     title: "Ancient Grains Revived",
-    subtitle: "Our millets are sourced from tribal farmers using heritage seeds. Taste the history of nutrition.",
+    subtitle: "Our millets are sourced from tribal farmers using Story seeds. Taste the history of nutrition.",
     badge: "Direct Farm",
     image: "/banners/banner_2.png",
     color: "bg-emerald-50"
   }
 ];
- 
+
 const BannersRow = () => {
   return (
     <section className="w-full section-spacing flex justify-center bg-white">
       <div className="standard-container">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-10">
           {BANNERS.map((banner) => (
-            <div 
+            <div
               key={banner.id}
               className="group relative aspect-[16/9] md:aspect-[16/8] rounded-[30px] overflow-hidden bg-slate-50 shadow-premium hover:shadow-hover transition-all duration-700 hover:-translate-y-3"
             >
-              <Image 
+              <Image
                 src={banner.image}
                 alt={banner.title}
                 fill
@@ -40,7 +40,7 @@ const BannersRow = () => {
                 sizes="(max-width: 768px) 100vw, 50vw"
               />
               <div className="absolute inset-0 bg-gradient-to-r from-emerald-950/95 via-emerald-950/30 to-transparent z-10" />
-              
+
               <div className="relative z-20 h-full flex flex-col justify-center p-10 md:p-14 max-w-[90%]">
                 <span className="text-[11px] font-black uppercase tracking-[0.4em] text-amber-400 mb-6 block animate-pulse">
                   {banner.badge}
@@ -64,5 +64,5 @@ const BannersRow = () => {
     </section>
   );
 };
- 
+
 export default BannersRow;

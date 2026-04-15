@@ -74,7 +74,7 @@ export default function Home() {
       <MarketingPopup />
 
       {/* 01. Trust Bar / Features - Anchored Elevation */}
-      <section className="relative z-30 -mt-14 md:-mt-32 flex justify-center">
+      <section className="relative z-30 -mt-6 md:-mt-12 flex justify-center">
         <div className="standard-container">
           <div className="bg-white rounded-[1.5rem] md:rounded-[4rem] shadow-premium border border-slate-100 p-8 sm:p-10 md:p-14 lg:p-20">
             <StaggerContainer>
@@ -104,7 +104,7 @@ export default function Home() {
                   <span className="text-amber-500 italic">This Season</span>
                 </h2>
               </div>
-              <Link href="/products" className="group h-14 md:h-16 px-10 rounded-full bg-emerald-950 !text-white text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-4 hover:scale-105 transition-all shadow-xl mx-auto md:mx-0 shrink-0">
+              <Link href="/products" className="group h-11 md:h-13 px-8 md:px-10 rounded-full bg-emerald-950 !text-white text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-4 hover:scale-105 transition-all shadow-xl mx-auto md:mx-0 shrink-0">
                 Full Inventory <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-2" />
               </Link>
             </div>
@@ -135,25 +135,28 @@ export default function Home() {
       <TrustMarquee />
 
       {/* 09. Brand Mission Section (Cinematic) */}
-      <section className="relative overflow-hidden section-spacing bg-emerald-950 flex justify-center min-h-[70vh]">
+      <section className="relative overflow-hidden section-spacing bg-emerald-950 flex justify-center min-h-[45vh] md:min-h-[50vh]">
+
         {/* Cinematic Backdrop */}
         <div className="absolute inset-0 z-0 opacity-10 bg-cover bg-center grayscale mix-blend-overlay scale-110 object-cover"
           style={{ backgroundImage: 'url("/ai_images/cinematic_farm_1776230966841.png")' }} />
 
         <div className="standard-container relative z-10 flex flex-col items-start justify-center text-left">
-          <div className="max-w-4xl space-y-12">
-            <span className="text-[11px] font-black uppercase tracking-[0.4em] text-amber-400 mb-8 inline-block">The Namma Orru Mission</span>
-            <h2 className="text-white font-black tracking-tight text-4xl md:text-6xl">Honest Food, <br /><span className="text-amber-400">Directly</span> <br />To Your Table.</h2>
+          <div className="max-w-4xl space-y-8 md:space-y-10">
+            <span className="text-[11px] font-black uppercase tracking-[0.4em] text-amber-400 mb-4 md:mb-6 inline-block">The Namma Orru Mission</span>
+            <h2 className="text-white font-black tracking-tight text-4xl md:text-6xl leading-[1.1]">Honest Food, <br /><span className="text-amber-400">Directly</span> <br />To Your Table.</h2>
+
             <p className="text-lg md:text-xl text-emerald-50/70 font-medium leading-relaxed max-w-3xl mx-auto">
               We've cut out the middlemen to bring you the purest harvest.
               By shopping here, you're directly supporting over 100+ local farm families.
             </p>
-            <div className="flex flex-col sm:flex-row items-center justify-start gap-4 md:gap-6 pt-12 md:pt-20 w-full md:w-auto">
+            <div className="flex flex-col sm:flex-row items-center justify-start gap-4 md:gap-6 pt-8 md:pt-14 w-full md:w-auto">
+
               <Link href="/brands" className="w-full md:w-auto h-14 md:h-16 px-10 md:px-12 rounded-full bg-amber-500 !text-emerald-950 text-[10px] md:text-sm font-black shadow-2xl transition-all hover:bg-amber-400 hover:scale-105 flex items-center justify-center gap-3 shrink-0 whitespace-nowrap">
                 Meet the Farmers <ArrowRight className="h-4 w-4" />
               </Link>
               <Link href="/about" className="w-full md:w-auto h-14 md:h-16 px-10 md:px-12 rounded-full bg-white/10 !text-white text-[10px] md:text-sm font-black border border-white/20 backdrop-blur-xl transition-all hover:bg-white/20 hover:scale-105 flex items-center justify-center shrink-0 whitespace-nowrap">
-                Our Heritage
+                Our Story
               </Link>
             </div>
           </div>

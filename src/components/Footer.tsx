@@ -43,52 +43,50 @@ const Footer = () => {
   ];
 
   return (
-    <footer className="w-full bg-[#fdfbf7] text-emerald-950 pt-24 pb-20 border-t border-emerald-900/5 relative z-10 mt-auto flex flex-col justify-center font-sans">
+    <footer className="w-full bg-[#fdfbf7] text-emerald-950 pt-16 pb-12 border-t border-emerald-900/5 relative z-10 mt-auto flex flex-col justify-center font-sans">
+
       <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.03] pointer-events-none mix-blend-multiply" />
       <div className="standard-container mx-auto relative z-10">
 
-        {/* TOP SECTION: 4 Columns */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-16 w-full mb-24">
+        {/* MAIN GRID: col-span-2 brand on mobile, 4 cols on desktop */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-12 w-full mb-10 md:mb-14">
 
-          {/* COLUMN 1: BRAND IDENTITY */}
-          <div className="flex flex-col items-center sm:items-start text-center sm:text-left space-y-8">
-            <div className="mb-2">
-              <Link href="/" className="inline-block transition-transform hover:scale-105 duration-300">
-                <Image
-                  src="/logo.webp"
-                  alt="Namma Orru Foods"
-                  width={180}
-                  height={54}
-                  className="h-12 w-auto object-contain"
-                />
+
+          {/* COL 1: BRAND — full width on mobile */}
+          <div className="col-span-2 lg:col-span-1 flex flex-col items-center lg:items-start text-center lg:text-left space-y-6 pb-8 lg:pb-0 border-b lg:border-b-0 border-emerald-900/10">
+            <Link href="/" className="inline-block transition-transform hover:scale-105 duration-300">
+              <Image
+                src="/logo.webp"
+                alt="Namma Orru Foods"
+                width={160}
+                height={48}
+                style={{ height: '44px', width: 'auto', objectFit: 'contain' }}
+              />
+            </Link>
+            <p className="text-[13px] leading-7 text-emerald-900 font-medium">
+              9, First Floor, Opp. Jayam Hospital,<br />
+              Chokkikulam, Madurai,<br />
+              Tamil Nadu - 625002
+            </p>
+            <div className="pt-2 border-t border-emerald-900/10 w-full">
+              <p className="text-[10px] font-black text-emerald-800 uppercase tracking-widest mb-2">Direct Support</p>
+              <Link href="tel:+919876543210" className="text-lg font-black text-emerald-950 tracking-tight hover:text-amber-600 transition-colors">
+                +91 98765 43210
               </Link>
-            </div>
-            <div className="space-y-6">
-              <p className="text-[15px] leading-8 text-emerald-900 font-medium max-w-[280px]">
-                Namma Orru Foods HQ,<br />
-                Sustainable Harvest Square,<br />
-                Tamil Nadu, 600001
-              </p>
-              <div className="pt-6 border-t border-emerald-900/10">
-                <p className="text-[11px] font-black text-emerald-800 uppercase tracking-widest mb-3">Direct Support</p>
-                <Link href="tel:+919876543210" className="text-2xl font-black text-emerald-950 tracking-tight hover:text-amber-600 transition-colors">
-                  +91 98765 43210
-                </Link>
-              </div>
             </div>
           </div>
 
-          {/* COLUMN 2: COLLECTIONS */}
-          <div className="flex flex-col items-center sm:items-start text-center sm:text-left space-y-8">
-            <h4 className="text-emerald-950 font-black text-[14px] uppercase tracking-widest">
+          {/* COL 2: COLLECTIONS */}
+          <div className="flex flex-col items-start space-y-5">
+            <h4 className="text-emerald-950 font-black text-[12px] uppercase tracking-widest border-l-2 border-amber-400 pl-3">
               Collections
             </h4>
-            <nav className="flex flex-col items-center sm:items-start space-y-5">
+            <nav className="flex flex-col items-start space-y-3">
               {['Grains & Pulses', 'Organic Oils', 'Authentic Spices', 'Dairy Products', 'Traditional Snacks', 'Local Sweets'].map((item) => (
                 <Link
                   key={item}
                   href={`/products?category=${encodeURIComponent(item)}`}
-                  className="text-[15px] text-emerald-900 hover:text-amber-600 hover:translate-x-1 transition-all font-medium"
+                  className="text-[13px] text-emerald-900 hover:text-amber-600 transition-all font-medium"
                 >
                   {item}
                 </Link>
@@ -96,23 +94,22 @@ const Footer = () => {
             </nav>
           </div>
 
-          {/* COLUMN 3: EXPLORE */}
-          <div className="flex flex-col items-center sm:items-start text-center sm:text-left space-y-8">
-            <h4 className="text-emerald-950 font-black text-[14px] uppercase tracking-widest">
+          {/* COL 3: EXPLORE */}
+          <div className="flex flex-col items-start space-y-5">
+            <h4 className="text-emerald-950 font-black text-[12px] uppercase tracking-widest border-l-2 border-amber-400 pl-3">
               Explore
             </h4>
-            <nav className="flex flex-col items-center sm:items-start space-y-5">
+            <nav className="flex flex-col items-start space-y-3">
               {[
-                { label: 'Our Heritage', href: '/about' },
-                { label: 'Traceability', href: '#' },
-                { label: 'Supply Chain', href: '#' },
-                { label: 'Security & Privacy', href: '#' },
-                { label: 'Terms of Service', href: '#' }
+                { label: 'Our Story', href: '/about' },
+                { label: 'Store Terms', href: '/terms' },
+                { label: 'Privacy Policy', href: '/privacy' },
+                { label: 'Refund Policy', href: '/refund' }
               ].map((item) => (
                 <Link
                   key={item.label}
                   href={item.href}
-                  className="text-[15px] text-emerald-900 hover:text-emerald-950 transition-colors font-medium hover:translate-x-1"
+                  className="text-[13px] text-emerald-900 hover:text-emerald-950 transition-colors font-medium"
                 >
                   {item.label}
                 </Link>
@@ -120,24 +117,22 @@ const Footer = () => {
             </nav>
           </div>
 
-          {/* COLUMN 4: NEWSLETTER */}
-          <div className="flex flex-col items-center sm:items-start text-center sm:text-left space-y-8">
-            <h4 className="text-emerald-950 font-black text-[14px] uppercase tracking-widest">
+          {/* COL 4: NEWSLETTER — full width on mobile */}
+          <div className="col-span-2 lg:col-span-1 flex flex-col space-y-5">
+            <h4 className="text-emerald-950 font-black text-[12px] uppercase tracking-widest border-l-2 border-amber-400 pl-3">
               Newsletter
             </h4>
-            <p className="text-emerald-900 text-[15px] leading-7 max-w-[320px] font-medium">
-              Join over 8,000+ families receiving exclusive harvest alerts and farm stories.
+            <p className="text-emerald-900 text-[13px] leading-6 font-medium">
+              Join 8,000+ families receiving exclusive harvest alerts.
             </p>
-
-            <div className="relative group w-full max-w-[340px]">
+            <div className="relative group w-full">
               <input
                 type="email"
                 placeholder="Your email address"
-                className="w-full h-16 rounded-2xl bg-white border-2 border-emerald-900/10 text-emerald-950 placeholder:text-emerald-900/50 text-[15px] font-bold outline-none px-6 pr-32 focus:border-amber-500 shadow-sm transition-all text-center sm:text-left"
+                className="w-full h-14 rounded-2xl bg-white border-2 border-emerald-900/10 text-emerald-950 placeholder:text-emerald-900/40 text-[13px] font-bold outline-none px-5 pr-24 focus:border-amber-500 shadow-sm transition-all"
               />
               <button
-                className="absolute right-2 top-2 bottom-2 px-8 rounded-xl bg-emerald-950 text-white text-[12px] font-black uppercase tracking-widest transition-colors shadow-md hover:bg-amber-600 hover:text-white"
-                style={{ backgroundColor: '#022c22', color: 'white' }}
+                className="absolute right-2 top-2 bottom-2 px-6 rounded-xl bg-emerald-950 text-white text-[11px] font-black uppercase tracking-widest shadow-md hover:bg-amber-600 transition-colors"
               >
                 Join
               </button>
@@ -145,8 +140,10 @@ const Footer = () => {
           </div>
         </div>
 
+
         {/* BOTTOM BAR: Legal & Social Icons */}
-        <div className="pt-12 border-t border-emerald-900/10 flex flex-col lg:flex-row justify-between items-center gap-10">
+        <div className="pt-8 border-t border-emerald-900/10 flex flex-col lg:flex-row justify-between items-center gap-10">
+
           <div className="flex flex-col items-center lg:items-start gap-2">
             <p className="text-[11px] font-black tracking-widest text-emerald-900/50 uppercase">
               © 2026 Namma Orru Foods Ltd.

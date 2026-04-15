@@ -3,7 +3,9 @@
 import React, { useState } from 'react';
 import { ShoppingCart, Heart, ShieldCheck, Truck, RefreshCw, Star } from 'lucide-react';
 import { useCartStore } from '@/store/useCartStore';
+import { useToast } from '@/context/ToastContext';
 import ProductCard from '@/components/ProductCard';
+
 
 interface ProductDetailClientProps {
   product: any;
@@ -14,6 +16,8 @@ const ProductDetailClient = ({ product, allProducts }: ProductDetailClientProps)
   const [selectedVariant, setSelectedVariant] = useState(product.variants ? product.variants[1] : { name: 'Standard', price: product.price });
   const [quantity, setQuantity] = useState(1);
   const { addToCart } = useCartStore();
+  const { addToast } = useToast();
+
 
   return (
     <div className="w-full min-h-screen bg-slate-50 pt-10 pb-32">
@@ -89,8 +93,8 @@ const ProductDetailClient = ({ product, allProducts }: ProductDetailClientProps)
                       onClick={() => setSelectedVariant(variant)}
                       style={selectedVariant.name === variant.name ? { backgroundColor: '#022c22', color: '#ffffff' } : { backgroundColor: '#ffffff', color: '#94a3b8' }}
                       className={`flex items-center justify-center rounded-xl md:rounded-2xl border-2 px-6 md:px-8 py-3 md:py-5 text-[10px] md:text-[11px] font-black uppercase tracking-widest transition-all duration-500 cursor-pointer ${selectedVariant.name === variant.name
-                          ? 'border-[#022c22] shadow-2xl scale-105'
-                          : 'border-slate-100 hover:border-[#022c22]/20'
+                        ? 'border-[#022c22] shadow-2xl scale-105'
+                        : 'border-slate-100 hover:border-[#022c22]/20'
                         }`}
                     >
                       {variant.name}
@@ -113,20 +117,25 @@ const ProductDetailClient = ({ product, allProducts }: ProductDetailClientProps)
               </div>
 
               <button
-                onClick={() => addToCart({
-                  productId: product.id,
-                  name: product.name,
-                  price: selectedVariant.price || product.price,
-                  quantity: quantity,
-                  image: product.image,
-                  variant: selectedVariant.name
-                })}
+                onClick={() => {
+                  addToCart({
+                    productId: product.id,
+                    name: product.name,
+                    price: selectedVariant.price || product.price,
+                    quantity: quantity,
+                    image: product.image,
+                    variant: selectedVariant.name
+                  });
+                  addToast('Successfully added to basket', product.name);
+                }}
                 style={{ backgroundColor: '#022c22', color: '#ffffff' }}
                 className="flex flex-1 items-center justify-center gap-3 md:gap-5 rounded-2xl px-6 md:px-12 h-16 md:h-20 text-[10px] md:text-[11px] font-black uppercase tracking-[0.2em] md:tracking-[0.4em] transition-all hover:bg-[#064e3b] shadow-xl shadow-[#022c22]/10 group"
               >
                 <ShoppingCart className="h-5 w-5 md:h-6 md:w-6" />
-                Add To Harvest
+                Add To Cart
               </button>
+
+
 
               <button className="hidden sm:flex h-20 w-20 items-center justify-center rounded-2xl border border-slate-100 bg-white text-slate-300 hover:text-red-500 hover:bg-red-50 transition-all shadow-sm shrink-0">
                 <Heart className="h-7 w-7" />
@@ -181,7 +190,7 @@ const ProductDetailClient = ({ product, allProducts }: ProductDetailClientProps)
         </div>
       </div>
 
-      {/* Suggested Treasures Display */}
+      {/* Suggested Items Display */}
       <div className="standard-container mt-32">
         <div className="flex items-center justify-between mb-16 px-4">
           <div className="flex flex-col gap-2">
@@ -212,15 +221,15 @@ const ProductDetailClient = ({ product, allProducts }: ProductDetailClientProps)
 
           <div className="flex items-center gap-3 md:gap-6 w-full md:w-auto justify-between md:justify-end">
             <div className="flex items-center rounded-xl bg-slate-50 border border-slate-100 p-1 h-12 md:h-16">
-              <button 
-                onClick={() => setQuantity(Math.max(1, quantity - 1))} 
+              <button
+                onClick={() => setQuantity(Math.max(1, quantity - 1))}
                 className="h-9 w-9 md:h-13 md:w-13 flex items-center justify-center font-bold bg-white rounded-lg shadow-sm hover:text-amber-500 transition-all text-sm md:text-base font-black"
               >
                 -
               </button>
               <span className="w-10 md:w-14 text-center font-black text-[#022c22] text-sm md:text-lg">{quantity}</span>
-              <button 
-                onClick={() => setQuantity(quantity + 1)} 
+              <button
+                onClick={() => setQuantity(quantity + 1)}
                 className="h-9 w-9 md:h-13 md:w-13 flex items-center justify-center font-bold bg-white rounded-lg shadow-sm hover:text-amber-500 transition-all text-sm md:text-base font-black"
               >
                 +
@@ -228,19 +237,24 @@ const ProductDetailClient = ({ product, allProducts }: ProductDetailClientProps)
             </div>
 
             <button
-              onClick={() => addToCart({
-                productId: product.id,
-                name: product.name,
-                price: selectedVariant.price || product.price,
-                quantity: quantity,
-                image: product.image,
-                variant: selectedVariant.name
-              })}
-              style={{ backgroundColor: '#022c22', color: '#ffffff' }}
-              className="flex-1 md:flex-none flex items-center justify-center gap-3 md:gap-5 rounded-xl md:rounded-2xl px-6 md:px-14 h-12 md:h-16 text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] md:tracking-[0.4em] shadow-2xl shadow-[#022c22]/10 active:scale-95 whitespace-nowrap"
-            >
-              <ShoppingCart className="h-3.5 w-3.5 md:h-4 md:w-4" /> Finalize
-            </button>
+               onClick={() => {
+                 addToCart({
+                   productId: product.id,
+                   name: product.name,
+                   price: selectedVariant.price || product.price,
+                   quantity: quantity,
+                   image: product.image,
+                   variant: selectedVariant.name
+                 });
+                 addToast('Successfully added to basket', product.name);
+               }}
+               style={{ backgroundColor: '#022c22', color: '#ffffff' }}
+               className="flex-1 md:flex-none flex items-center justify-center gap-3 md:gap-5 rounded-xl md:rounded-2xl px-6 md:px-14 h-12 md:h-16 text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] md:tracking-[0.4em] shadow-2xl shadow-[#022c22]/10 active:scale-95 whitespace-nowrap"
+             >
+               <ShoppingCart className="h-3.5 w-3.5 md:h-4 md:w-4" /> Add To Cart
+             </button>
+
+
           </div>
         </div>
       </div>
