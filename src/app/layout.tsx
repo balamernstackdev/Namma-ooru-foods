@@ -5,6 +5,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import CartDrawer from "@/components/CartDrawer";
 import StickyAssistant from "@/components/StickyAssistant";
+import BackToTop from "@/components/BackToTop";
 
 import { AuthProvider } from "@/context/AuthContext";
 import { ToastProvider } from "@/context/ToastContext";
@@ -75,6 +76,7 @@ export default function RootLayout({
               <Footer />
               <CartDrawer />
               <StickyAssistant />
+              <BackToTop />
             </SmoothScroll>
           </ToastProvider>
         </AuthProvider>

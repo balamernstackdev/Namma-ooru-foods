@@ -62,13 +62,13 @@ const ProductsContent = () => {
             <div className="h-10 w-10 rounded-full bg-emerald-400/20 backdrop-blur-md flex items-center justify-center border border-emerald-400/30">
               <ShoppingBag className="h-5 w-5 text-emerald-300" />
             </div>
-            <span className="text-[10px] font-black uppercase tracking-[0.4em] text-emerald-300">Login</span>
+            <span className="text-[10px] font-black uppercase tracking-[0.4em] text-emerald-300">Explore Products</span>
           </div>
         }
       />
 
-      <div className="w-full section-spacing section-no-bottom flex justify-center border-t border-slate-100 relative">
-        <div className="standard-container flex flex-col lg:flex-row gap-8 lg:gap-14 pt-4 md:pt-8 lg:pt-12 pb-6">
+      <div className="w-full flex justify-center border-t border-slate-100 relative">
+        <div className="standard-container flex flex-col lg:flex-row gap-8 lg:gap-14 pt-2 md:pt-6 pb-6">
 
 
           {/* MOBILE TOGGLE BAR */}
@@ -127,20 +127,14 @@ const ProductsContent = () => {
                   </div>
                 </div>
 
-                {/* PREMIUM TRUST CARD - SMALL DARK BADGE STYLE */}
-                <div className="mt-8 h-20 w-20 rounded-[1.5rem] bg-[#06241c] text-white relative overflow-hidden group shadow-xl flex items-center justify-center">
-                  <div className="absolute top-0 right-0 h-16 w-16 bg-emerald-800 rounded-full blur-2xl opacity-40 -mr-8 -mt-8" />
-                  <div className="relative z-10">
-                    <Star className="h-6 w-6 text-amber-400" fill="currentColor" />
-                  </div>
-                </div>
+
               </div>
             </div>
           </aside>
 
           {/* MAIN GRID AREA */}
-          <main className="flex-1 bg-slate-50/10 px-0 md:px-6 lg:px-10 pt-8 lg:pt-10 pb-6">
-            <div className="flex flex-col md:flex-row items-end justify-between mb-8 md:mb-12 gap-8 px-4 md:px-0">
+          <main className="flex-1 bg-slate-50/10 px-0 md:px-4 lg:px-6 pt-4 lg:pt-6 pb-6">
+            <div className="flex flex-col md:flex-row items-end justify-between mb-4 md:mb-8 gap-6 px-4 md:px-0">
               <div className="flex flex-col gap-5 text-left w-full md:w-auto">
                 <div className="flex items-center gap-4">
                   <div className="h-[2px] w-10 bg-amber-500" />

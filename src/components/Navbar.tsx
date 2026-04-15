@@ -32,7 +32,7 @@ const Navbar = () => {
   ];
 
   return (
-    <nav className="sticky top-0 left-0 right-0 z-[150] w-full flex flex-col bg-white/95 backdrop-blur-md border-b border-slate-100 shadow-sm mb-0">
+    <nav className="sticky top-0 left-0 right-0 z-[500] w-full flex flex-col bg-white/95 backdrop-blur-md border-b border-slate-100 shadow-sm mb-0">
 
       {/* PRIMARY TIER */}
       <div className="w-full">

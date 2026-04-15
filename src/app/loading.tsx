@@ -11,7 +11,7 @@ export default function Loading() {
             <span className="text-[10px] font-black text-white">NOF</span>
           </div>
         </div>
-        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-emerald-950/40">Gathering Harvest...</p>
+        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-emerald-950/40">Loading...</p>
       </div>
     </div>
   );
