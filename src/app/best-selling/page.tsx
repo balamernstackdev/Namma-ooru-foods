@@ -111,13 +111,7 @@ export default function BestSellingPage() {
                         </div>
                      </div>
 
-                     {/* Hall of Fame Card */}
-                     <div className="mt-4 p-8 rounded-[2rem] bg-[#022c22] text-white relative overflow-hidden group shadow-xl">
-                        <div className="absolute top-0 right-0 h-40 w-40 bg-emerald-800 rounded-full blur-3xl opacity-40 -mr-20 -mt-20 group-hover:scale-150 transition-transform duration-1000" />
-                        <Star className="h-8 w-8 text-amber-400 mb-6" fill="currentColor" />
-                        <p className="text-[14px] font-black leading-tight mb-2">Verified Harvests</p>
-                        <p className="text-[11px] opacity-50 uppercase tracking-widest">Selected by community</p>
-                     </div>
+
                   </div>
                </aside>
 
