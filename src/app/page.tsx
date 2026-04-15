@@ -93,9 +93,9 @@ export default function Home() {
       <CategoriesCircles />
 
       {/* 03. Weekly Favorites (Featured Products) */}
-      <section className="section-spacing bg-white border-y border-slate-50 flex justify-center">
+      <section className="py-10 md:py-16 bg-white border-y border-slate-50 flex justify-center">
         <div className="standard-container">
-          <div className="flex flex-col gap-12 md:gap-20">
+          <div className="flex flex-col gap-8 md:gap-12">
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
               <div className="max-w-2xl text-center md:text-left">
                 <span className="text-[11px] font-black uppercase tracking-[0.4em] text-emerald-800/60 mb-6 inline-block">Weekly Favorites</span>
@@ -110,7 +110,7 @@ export default function Home() {
             </div>
 
             <StaggerContainer>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8">
                 {featuredProducts.map((product) => (
                   <StaggerItem key={product.id}>
                     <ProductCard product={product} />

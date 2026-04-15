@@ -82,7 +82,7 @@ const Footer = () => {
               Collections
             </h4>
             <nav className="flex flex-col items-start space-y-3">
-              {['Grains & Pulses', 'Organic Oils', 'Authentic Spices', 'Dairy Products', 'Traditional Snacks', 'Local Sweets'].map((item) => (
+              {['Grains & Pulses', 'Organic Oils', 'Authentic Spices', 'Dairy Products', 'Indian Snacks', 'Local Sweets'].map((item) => (
                 <Link
                   key={item}
                   href={`/products?category=${encodeURIComponent(item)}`}

@@ -4,7 +4,7 @@ export const CATEGORIES = [
   { id: 3, name: 'Authentic Spices', count: 48, description: 'Stone-ground flavors', image: '/ai_images/organic_grains_1776231059575.png' },
   { id: 4, name: 'Local Sweets', count: 20, description: 'Traditional handmade delicacies', image: '/ai_images/mysore_pak_brass.png' },
   { id: 5, name: 'Dairy Products', count: 16, description: 'Fresh from the local cow shelters', image: '/ai_images/honey_gold_1776231080758.png' },
-  { id: 6, name: 'Traditional Snacks', count: 35, description: 'Crunchy and delicious local treats', image: '/ai_images/murukku_premium.png' },
+  { id: 6, name: 'Indian Snacks', count: 35, description: 'Crunchy and delicious local treats', image: '/ai_images/murukku_premium.png' },
   { id: 7, name: 'Pickles & Pastes', count: 12, description: 'Traditional grandmother recipes', image: '/ai_images/mango_pickle_jar.png' },
 ];
 
@@ -123,7 +123,7 @@ export const PRODUCTS = [
   {
     id: 5,
     name: 'Handmade Murukku',
-    category: 'Traditional Snacks',
+    category: 'Indian Snacks',
     brand: 'Namma Nature',
     price: 85,
     originalPrice: 110,
@@ -349,7 +349,7 @@ export const PRODUCTS = [
   {
     id: 17,
     name: 'Traditional Kai Murukku',
-    category: 'Traditional Snacks',
+    category: 'Indian Snacks',
     brand: 'Namma Nature',
     price: 145,
     originalPrice: 180,

@@ -25,7 +25,7 @@ const Navbar = () => {
     { name: 'Organic Oils', sub: ['Groundnut Oil', 'Sesame Oil', 'Coconut Oil', 'Castor Oil'] },
     { name: 'Authentic Spices', sub: ['Turmeric Powder', 'Chilli Powder', 'Whole Spices', 'Homemade Masalas'] },
     { name: 'Dairy Products', sub: ['A2 Milk', 'Paneer', 'Organic Butter', 'Desi Ghee'] },
-    { name: 'Traditional Snacks', sub: ['Murukku', 'Mixture', 'Seedattal', 'Chips'] },
+    { name: 'Indian Snacks', sub: ['Murukku', 'Mixture', 'Seedattal', 'Chips'] },
     { name: 'Local Sweets', sub: ['Mysore Pak', 'Ladoo', 'Halwa', 'Jaggery Sweets'] },
     { name: 'Cold Pressed', sub: ['Almond Oil', 'Mustard Oil', 'Neem Oil'] },
     { name: 'Pickles & Pastes', sub: ['Mango Pickle', 'Garlic Pickle', 'Ginger Paste', 'Tomato Thokku'] }
@@ -110,7 +110,7 @@ const Navbar = () => {
       </div>
 
       {/* SECONDARY TIER: Categories & Hotlinks */}
-      <div className={`hidden md:flex w-full bg-slate-50/50 backdrop-blur-sm border-t border-slate-100 items-center relative transition-all duration-500 overflow-hidden ${scrolled ? 'h-10' : 'h-12'}`}>
+      <div className={`hidden md:flex w-full bg-slate-50/50 backdrop-blur-sm border-t border-slate-100 items-center relative transition-all duration-500 ${scrolled ? 'h-10' : 'h-12'}`}>
 
 
         <div className="standard-container mx-auto flex items-center gap-14 h-full">

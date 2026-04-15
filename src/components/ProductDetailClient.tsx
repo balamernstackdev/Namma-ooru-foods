@@ -20,9 +20,9 @@ const ProductDetailClient = ({ product, allProducts }: ProductDetailClientProps)
 
 
   return (
-    <div className="w-full min-h-screen bg-slate-50 pt-10 pb-32">
+    <div className="w-full min-h-screen bg-slate-50 pt-4 pb-32">
       {/* Main Content Container */}
-      <div className="standard-container mt-6 md:mt-12">
+      <div className="standard-container mt-4 md:mt-8">
         <div className="grid grid-cols-1 gap-8 lg:gap-20 lg:grid-cols-2 bg-white rounded-3xl md:rounded-[2.5rem] p-4 md:p-12 shadow-premium border border-slate-100 overflow-hidden relative">
 
           {/* Left: Image Media Section */}
@@ -38,7 +38,7 @@ const ProductDetailClient = ({ product, allProducts }: ProductDetailClientProps)
                   style={{ backgroundColor: '#fbbf24', color: '#022c22' }}
                   className="text-[10px] font-black px-5 py-2.5 rounded-full shadow-xl uppercase tracking-[0.2em]"
                 >
-                  Genuine Farmer Harvest
+                  100% Organic
                 </div>
               </div>
             </div>
@@ -60,22 +60,22 @@ const ProductDetailClient = ({ product, allProducts }: ProductDetailClientProps)
               </div>
             </div>
 
-            <h1 className="text-2xl md:text-5xl lg:text-7xl font-black text-[#022c22] tracking-tighter leading-tight mb-6 md:mb-10">
+            <h1 className="text-2xl md:text-4xl lg:text-5xl font-black text-[#022c22] tracking-tighter leading-tight mb-4 md:mb-6">
               {product.name}
             </h1>
 
-            <p className="text-[11px] font-black uppercase tracking-[0.5em] text-slate-400 mb-14">
-              Cultivated by <span className="text-emerald-800 underline decoration-amber-400 decoration-2 underline-offset-4 uppercase">{product.brand || 'Vibrant Farm Clusters'}</span>
+            <p className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-400 mb-10">
+              By <span className="text-emerald-800 underline decoration-amber-400 decoration-2 underline-offset-4 uppercase">{product.brand || 'Vibrant Farm Clusters'}</span>
             </p>
 
-            <div className="mb-14 flex flex-col gap-2">
-              <span className="text-[11px] font-black uppercase tracking-[0.4em] text-slate-300 font-bold">Premium Valuation</span>
-              <div className="flex items-baseline gap-6">
-                <span className="text-3xl md:text-5xl lg:text-7xl font-black text-[#022c22] tracking-tighter">
-                  <span className="text-xl opacity-20 mr-1">₹</span>{selectedVariant.price}
+            <div className="mb-10 flex flex-col gap-2">
+              <span className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 font-bold uppercase">Our Price</span>
+              <div className="flex items-baseline gap-4 md:gap-6">
+                <span className="text-3xl md:text-4xl lg:text-5xl font-black text-[#022c22] tracking-tighter">
+                  <span className="text-lg opacity-60 mr-1">₹</span>{selectedVariant.price}
                 </span>
                 {selectedVariant.price && (
-                  <span className="text-xl text-slate-300 line-through font-bold opacity-30 italic">
+                  <span className="text-lg text-slate-400 line-through font-bold italic opacity-60">
                     ₹{(selectedVariant.price || 0) + 40}
                   </span>
                 )}
@@ -84,15 +84,15 @@ const ProductDetailClient = ({ product, allProducts }: ProductDetailClientProps)
 
             {/* Batch Variant Selector */}
             {product.variants && (
-              <div className="mb-14">
-                <h3 className="text-[11px] font-black uppercase tracking-[0.4em] text-[#022c22]/20 mb-8 font-bold">Select Harvest Weight</h3>
+              <div className="mb-10">
+                <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-[#022c22]/40 mb-6 font-bold uppercase">Choose Weight</h3>
                 <div className="flex flex-wrap gap-2 md:gap-4">
                   {product.variants.map((variant: any) => (
                     <button
                       key={variant.id}
                       onClick={() => setSelectedVariant(variant)}
                       style={selectedVariant.name === variant.name ? { backgroundColor: '#022c22', color: '#ffffff' } : { backgroundColor: '#ffffff', color: '#94a3b8' }}
-                      className={`flex items-center justify-center rounded-xl md:rounded-2xl border-2 px-6 md:px-8 py-3 md:py-5 text-[10px] md:text-[11px] font-black uppercase tracking-widest transition-all duration-500 cursor-pointer ${selectedVariant.name === variant.name
+                      className={`flex items-center justify-center rounded-xl md:rounded-2xl border-2 px-6 md:px-8 py-3 md:py-4 text-[10px] md:text-[11px] font-black uppercase tracking-widest transition-all duration-500 cursor-pointer ${selectedVariant.name === variant.name
                         ? 'border-[#022c22] shadow-2xl scale-105'
                         : 'border-slate-100 hover:border-[#022c22]/20'
                         }`}
@@ -105,7 +105,7 @@ const ProductDetailClient = ({ product, allProducts }: ProductDetailClientProps)
             )}
 
             {/* Primary Action Suite */}
-            <div className="flex flex-col sm:flex-row gap-4 md:gap-6 mb-12">
+            <div className="flex flex-col sm:flex-row gap-4 md:gap-6 mb-10">
               <div className="flex items-center rounded-2xl border border-slate-100 bg-slate-50 p-1.5 h-16 md:h-20 shrink-0">
                 <button
                   onClick={() => setQuantity(Math.max(1, quantity - 1))}
@@ -137,8 +137,8 @@ const ProductDetailClient = ({ product, allProducts }: ProductDetailClientProps)
 
 
 
-              <button className="hidden sm:flex h-20 w-20 items-center justify-center rounded-2xl border border-slate-100 bg-white text-slate-300 hover:text-red-500 hover:bg-red-50 transition-all shadow-sm shrink-0">
-                <Heart className="h-7 w-7" />
+              <button className="hidden sm:flex h-16 md:h-20 w-16 md:w-20 items-center justify-center rounded-2xl border border-slate-100 bg-white text-slate-300 hover:text-red-500 hover:bg-red-50 transition-all shadow-sm shrink-0">
+                <Heart className="h-6 w-6 md:h-7 md:w-7" />
               </button>
             </div>
 
@@ -190,71 +190,79 @@ const ProductDetailClient = ({ product, allProducts }: ProductDetailClientProps)
         </div>
       </div>
 
-      {/* Suggested Items Display */}
-      <div className="standard-container mt-32">
-        <div className="flex items-center justify-between mb-16 px-4">
-          <div className="flex flex-col gap-2">
-            <span className="text-[10px] font-black uppercase tracking-[0.5em] text-amber-500">More From Selection</span>
-            <h2 className="text-3xl md:text-5xl font-black text-[#022c22] tracking-tighter">Healthy Alternatives</h2>
+      {/* Suggested Items Display - Horizontal Slider */}
+      <div className="w-full mt-32 mb-20 overflow-hidden">
+        <div className="standard-container">
+          <div className="flex items-center justify-between mb-12 px-2">
+            <div className="flex flex-col gap-3">
+              <span className="text-[10px] font-black uppercase tracking-[0.5em] text-amber-500">More From Selection</span>
+              <h2 className="text-3xl md:text-5xl font-black text-[#022c22] tracking-tighter">Healthy Alternatives</h2>
+            </div>
+            <div className="hidden md:flex items-center gap-4">
+              <span className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-300">Slide to explore</span>
+              <div className="h-[2px] w-12 bg-slate-100 rounded-full overflow-hidden">
+                <div className="h-full bg-[#022c22] w-1/3 animate-[slide_3s_infinite_ease-in-out]" />
+              </div>
+            </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-10">
-          {allProducts.filter(p => p.id !== product.id).slice(0, 4).map((p) => (
-            <ProductCard key={p.id} product={p} />
+        <div className="flex gap-6 overflow-x-auto pb-10 px-[calc((100vw-min(1400px,100vw-3rem))/2)] no-scrollbar snap-x snap-mandatory">
+          {allProducts.filter(p => p.id !== product.id).slice(0, 10).map((p) => (
+            <div key={p.id} className="min-w-[280px] md:min-w-[340px] snap-center first:ml-6 md:first:ml-0 last:mr-6 md:last:mr-0">
+              <ProductCard product={p} />
+            </div>
           ))}
         </div>
       </div>
 
       {/* FIXED CHECKOUT BAR - PREMIUM CALIBRATION */}
-      <div className="fixed bottom-0 left-0 right-0 z-[100] bg-white/95 backdrop-blur-2xl border-t border-slate-100 shadow-[0_-20px_50px_rgba(0,0,0,0.1)]">
-        <div className="standard-container flex items-center justify-between py-3 md:py-6 gap-4 md:gap-10">
-          <div className="hidden md:flex items-center gap-6 flex-1">
-            <div className="h-16 w-16 rounded-[1.2rem] bg-slate-50 border border-slate-100 shrink-0 overflow-hidden shadow-inner">
+      <div className="fixed bottom-0 left-0 right-0 z-[100] bg-white/95 backdrop-blur-2xl border-t border-slate-100 shadow-[0_-20px_50px_rgba(0,0,0,0.08)]">
+        <div className="standard-container flex items-center justify-between py-4 md:py-5 gap-6">
+          <div className="hidden md:flex items-center gap-5 flex-1">
+            <div className="h-14 w-14 rounded-2xl bg-slate-50 border border-slate-100 shrink-0 overflow-hidden shadow-inner">
               <img src={product.image} className="w-full h-full object-cover" alt="" />
             </div>
-            <div className="flex flex-col gap-1">
-              <span className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">Current Harvest</span>
-              <span className="font-black text-xl text-[#022c22] tracking-tighter leading-none">{product.name}</span>
+            <div className="flex flex-col gap-0.5">
+              <span className="text-[9px] font-black uppercase tracking-[0.3em] text-slate-400">Selected Product</span>
+              <span className="font-black text-lg text-[#022c22] tracking-tighter leading-none">{product.name}</span>
             </div>
           </div>
 
-          <div className="flex items-center gap-3 md:gap-6 w-full md:w-auto justify-between md:justify-end">
-            <div className="flex items-center rounded-xl bg-slate-50 border border-slate-100 p-1 h-12 md:h-16">
+          <div className="flex items-center gap-4 md:gap-8 w-full md:w-auto justify-between md:justify-end">
+            <div className="flex items-center rounded-xl bg-slate-50 border border-slate-100 p-1 h-12 md:h-14">
               <button
                 onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                className="h-9 w-9 md:h-13 md:w-13 flex items-center justify-center font-bold bg-white rounded-lg shadow-sm hover:text-amber-500 transition-all text-sm md:text-base font-black"
+                className="h-9 w-9 md:h-11 md:w-11 flex items-center justify-center font-bold bg-white rounded-lg shadow-sm hover:text-amber-500 transition-all text-sm font-black"
               >
                 -
               </button>
-              <span className="w-10 md:w-14 text-center font-black text-[#022c22] text-sm md:text-lg">{quantity}</span>
+              <span className="w-10 md:w-12 text-center font-black text-[#022c22] text-sm md:text-base">{quantity}</span>
               <button
                 onClick={() => setQuantity(quantity + 1)}
-                className="h-9 w-9 md:h-13 md:w-13 flex items-center justify-center font-bold bg-white rounded-lg shadow-sm hover:text-amber-500 transition-all text-sm md:text-base font-black"
+                className="h-9 w-9 md:h-11 md:w-11 flex items-center justify-center font-bold bg-white rounded-lg shadow-sm hover:text-amber-500 transition-all text-sm font-black"
               >
                 +
               </button>
             </div>
 
             <button
-               onClick={() => {
-                 addToCart({
-                   productId: product.id,
-                   name: product.name,
-                   price: selectedVariant.price || product.price,
-                   quantity: quantity,
-                   image: product.image,
-                   variant: selectedVariant.name
-                 });
-                 addToast('Successfully added to basket', product.name);
-               }}
-               style={{ backgroundColor: '#022c22', color: '#ffffff' }}
-               className="flex-1 md:flex-none flex items-center justify-center gap-3 md:gap-5 rounded-xl md:rounded-2xl px-6 md:px-14 h-12 md:h-16 text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] md:tracking-[0.4em] shadow-2xl shadow-[#022c22]/10 active:scale-95 whitespace-nowrap"
-             >
-               <ShoppingCart className="h-3.5 w-3.5 md:h-4 md:w-4" /> Add To Cart
-             </button>
-
-
+              onClick={() => {
+                addToCart({
+                  productId: product.id,
+                  name: product.name,
+                  price: selectedVariant.price || product.price,
+                  quantity: quantity,
+                  image: product.image,
+                  variant: selectedVariant.name
+                });
+                addToast('Successfully added to basket', product.name);
+              }}
+              style={{ backgroundColor: '#022c22', color: '#ffffff' }}
+              className="flex-1 md:flex-none flex items-center justify-center gap-3 md:gap-4 rounded-xl md:rounded-2xl px-6 md:px-10 h-12 md:h-14 text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] md:tracking-[0.3em] shadow-xl shadow-[#022c22]/10 active:scale-95 whitespace-nowrap"
+            >
+              <ShoppingCart className="h-3.5 w-3.5 md:h-4 md:w-4" /> Add To Cart
+            </button>
           </div>
         </div>
       </div>

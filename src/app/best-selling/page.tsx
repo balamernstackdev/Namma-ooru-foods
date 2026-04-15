@@ -7,7 +7,7 @@ import ProductCard from '@/components/ProductCard';
 import { PRODUCTS } from '@/lib/staticData';
 import HeroCarousel from '@/components/HeroCarousel';
 
-const categories = ['All', 'Grains & Pulses', 'Organic Oils', 'Authentic Spices', 'Dairy Products', 'Traditional Snacks', 'Local Sweets'];
+const categories = ['All', 'Grains & Pulses', 'Organic Oils', 'Authentic Spices', 'Dairy Products', 'Indian Snacks', 'Local Sweets'];
 
 export default function BestSellingPage() {
    const bestSellingProducts = PRODUCTS.filter(p => p.tags?.includes('best-selling'));
