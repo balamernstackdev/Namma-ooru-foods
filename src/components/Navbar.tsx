@@ -56,7 +56,7 @@ const Navbar = () => {
             <div className="flex h-12 w-full items-center rounded-2xl border-2 border-slate-100 focus-within:border-emerald-600 focus-within:ring-4 focus-within:ring-emerald-50 transition-all overflow-hidden bg-slate-50/50">
               <div className="relative h-full flex items-center">
                 <select className="appearance-none h-full pl-6 pr-10 bg-white border-r border-slate-100 text-[11px] font-bold text-emerald-950 uppercase tracking-widest cursor-pointer outline-none hover:bg-slate-50 transition-colors">
-                  <option>All Assets</option>
+                  <option>All Categories</option>
                   {categoriesMenu.map(cat => <option key={cat.name}>{cat.name}</option>)}
                 </select>
                 <ChevronRight className="absolute right-4 h-3 w-3 rotate-90 pointer-events-none text-slate-400" strokeWidth={3} />
