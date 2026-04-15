@@ -56,18 +56,18 @@ const HeroCarousel = ({
       ))}
  
       {/* Content Overlay */}
-      <div className="relative z-20 w-full flex flex-col items-center justify-center text-center pt-24">
-        <div className="standard-container max-w-6xl">
+      <div className="relative z-20 w-full flex flex-col items-center justify-center text-center px-4 pt-8 md:pt-20">
+        <div className="w-full max-w-5xl mx-auto">
           <div className="flex flex-col items-center">
-            {badges && <div className="mb-12 animate-in fade-in slide-in-from-bottom-5 duration-1000">{badges}</div>}
-            <div className="overflow-hidden mb-8">
-              <h1 className="text-white tracking-tighter text-5xl md:text-8xl lg:text-9xl font-black leading-[0.9] animate-in slide-in-from-bottom-full duration-1000">
+            {badges && <div className="mb-6 md:mb-12 animate-in fade-in slide-in-from-bottom-5 duration-1000">{badges}</div>}
+            <div className="overflow-hidden mb-4 md:mb-8">
+              <h1 className="text-white tracking-tighter text-3xl sm:text-5xl md:text-8xl lg:text-9xl font-black leading-[0.9] animate-in slide-in-from-bottom-full duration-1000">
                 {title}
               </h1>
             </div>
             
             {subtitle && (
-              <p className="text-lg md:text-2xl text-white/80 max-w-3xl font-medium leading-relaxed mb-16 animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-300">
+              <p className="text-sm md:text-2xl text-white/80 max-w-3xl font-medium leading-relaxed mb-8 md:mb-16 animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-300 px-2">
                 {subtitle}
               </p>
             )}

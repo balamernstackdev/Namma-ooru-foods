@@ -30,7 +30,8 @@ const Navbar = () => {
                 width={140} 
                 height={40}
                 priority 
-                className="h-8 md:h-12 w-auto object-contain" 
+                style={{ height: '28px', width: 'auto', objectFit: 'contain' }}
+                className="md:!h-10 w-auto object-contain" 
              />
           </Link>
 
