@@ -76,15 +76,15 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         <div className="flex-1">
           <div className="flex items-center justify-between mb-4">
 
-            <span className="text-[9px] md:text-[10px] font-black text-[#022c22] uppercase tracking-[0.2em] opacity-60">{product.category}</span>
+            <span className="text-[9px] md:text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">{product.category}</span>
             <div className="flex items-center gap-1.5 bg-slate-50 px-3 py-1.5 rounded-full border border-slate-100">
               <Star className="h-3 w-3 fill-amber-500 text-amber-500" />
-              <span className="text-[10px] md:text-[11px] font-black text-[#022c22]">{product.rating}</span>
+              <span className="text-[10px] md:text-[11px] font-bold text-emerald-900">{product.rating}</span>
             </div>
           </div>
 
           <Link href={`/products/${product.id}`} className="block">
-            <h3 className="text-[22px] md:text-[28px] font-black text-[#022c22] mb-4 group-hover:text-emerald-800 transition-colors leading-[1.1] line-clamp-2 tracking-tighter">
+            <h3 className="text-[20px] md:text-[24px] font-bold text-emerald-950 mb-4 group-hover:text-emerald-700 transition-colors leading-[1.2] line-clamp-2 tracking-tight">
               {product.name}
             </h3>
           </Link>
@@ -93,22 +93,22 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         <div className="flex items-center justify-between gap-4 pt-3 border-t border-slate-50 mt-auto">
 
           <div className="flex flex-col">
-            <span className="text-[8px] md:text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Our Price</span>
+            <span className="text-[8px] md:text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">Our Price</span>
             <div className="flex items-baseline gap-2">
-              <span className="text-2xl md:text-4xl font-black text-[#022c22] tracking-tighter">
-                <span className="text-[12px] md:text-[14px] font-bold text-[#022c22]/40 mr-1">₹</span>
+              <span className="text-2xl md:text-3xl font-bold text-emerald-900 tracking-tight">
+                <span className="text-[12px] md:text-[14px] font-medium text-slate-300 mr-1">₹</span>
                 {product.price}
               </span>
               {product.originalPrice && (
-                <span className="text-[10px] md:text-[12px] text-slate-300 line-through font-bold">
+                <span className="text-[10px] md:text-[12px] text-slate-300 line-through font-medium">
                   ₹{product.originalPrice}
                 </span>
               )}
             </div>
           </div>
 
-          <Link href={`/products/${product.id}`} className="h-10 w-10 md:h-12 md:w-12 rounded-full bg-emerald-50/80 text-[#022c22] hidden lg:flex flex-shrink-0 items-center justify-center transition-all hover:bg-[#022c22] hover:text-white shadow-sm group/btn border border-emerald-100/50">
-            <ArrowUpRight className="h-4 w-4 group-hover:rotate-45 transition-transform" strokeWidth={3} />
+          <Link href={`/products/${product.id}`} className="h-10 w-10 md:h-12 md:w-12 rounded-full bg-emerald-50/80 text-emerald-900 hidden lg:flex flex-shrink-0 items-center justify-center transition-all hover:bg-emerald-900 hover:text-white shadow-sm group/btn border border-emerald-100/50">
+            <ArrowUpRight className="h-4 w-4 group-hover:rotate-45 transition-transform" strokeWidth={2.5} />
           </Link>
         </div>
       </div>

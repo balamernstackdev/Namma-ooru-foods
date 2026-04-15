@@ -116,7 +116,7 @@ export default function Home() {
                 ))}
               </div>
             </StaggerContainer>
-            <Link href="/products" className="group h-11 md:h-13 px-8 md:px-10 rounded-full bg-emerald-950 !text-white text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-4 hover:scale-105 transition-all shadow-xl mx-auto md:mx-0 shrink-0">
+            <Link href="/products" className="group h-11 md:h-13 px-8 md:px-10 rounded-full bg-emerald-950 !text-white text-[10px] font-bold uppercase tracking-widest flex items-center justify-center gap-4 hover:scale-105 transition-all shadow-xl mx-auto md:mx-0 shrink-0">
               View All Products <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-2" />
             </Link>
           </div>

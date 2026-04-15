@@ -55,7 +55,7 @@ const Navbar = () => {
           <div className="hidden lg:flex flex-1 relative group">
             <div className="flex h-12 w-full items-center rounded-2xl border-2 border-slate-100 focus-within:border-emerald-600 focus-within:ring-4 focus-within:ring-emerald-50 transition-all overflow-hidden bg-slate-50/50">
               <div className="relative h-full flex items-center">
-                <select className="appearance-none h-full pl-6 pr-10 bg-white border-r border-slate-100 text-[11px] font-black text-emerald-950 uppercase tracking-widest cursor-pointer outline-none hover:bg-slate-50 transition-colors">
+                <select className="appearance-none h-full pl-6 pr-10 bg-white border-r border-slate-100 text-[11px] font-bold text-emerald-950 uppercase tracking-widest cursor-pointer outline-none hover:bg-slate-50 transition-colors">
                   <option>All Assets</option>
                   {categoriesMenu.map(cat => <option key={cat.name}>{cat.name}</option>)}
                 </select>
@@ -92,8 +92,8 @@ const Navbar = () => {
                 </div>
               </div>
               <div className="hidden lg:flex flex-col">
-                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Basket</span>
-                <span className="text-[11px] font-black text-emerald-950 leading-none">My Cart</span>
+                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1">Basket</span>
+                <span className="text-[11px] font-bold text-emerald-950 leading-none">My Cart</span>
               </div>
             </button>
 
@@ -177,11 +177,11 @@ const Navbar = () => {
               <Link
                 key={item.name}
                 href={item.href}
-                className="relative h-full flex items-center gap-2 text-emerald-950 text-[11px] font-black uppercase tracking-widest hover:text-emerald-950 group"
+                className="relative h-full flex items-center gap-2 text-emerald-950 text-[11px] font-bold uppercase tracking-widest hover:text-emerald-950 group"
               >
                 {item.name}
                 {item.badge && (
-                  <div className={`px-1.5 py-0.5 text-[7px] rounded-sm text-white font-black uppercase leading-none ${item.badge === 'Hot' ? 'bg-amber-400' : 'bg-emerald-600'}`}>
+                  <div className={`px-1.5 py-0.5 text-[7px] rounded-sm text-white font-bold uppercase leading-none ${item.badge === 'Hot' ? 'bg-amber-400' : 'bg-emerald-600'}`}>
                     {item.badge}
                   </div>
                 )}

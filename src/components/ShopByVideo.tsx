@@ -3,15 +3,15 @@ import { Play, ShoppingCart } from 'lucide-react';
 import Link from 'next/link';
 
 const videos = [
-  { id: 1, title: 'Pure Desi Ghee', thumbnail: '/product_ghee.png', price: 549 },
-  { id: 2, title: 'Wild Forest Honey', thumbnail: '/ai_images/cinematic_farm_1776230966841.png', price: 399 },
-  { id: 3, title: 'Traditional Rice', thumbnail: '/ai_images/discount_offer_1776230743911.png', price: 299 },
-  { id: 4, title: 'Cold Pressed Oils', thumbnail: '/category_oils.png', price: 649 },
+  { id: 1, title: 'Pure Desi Ghee', thumbnail: '/cinematic_farm_cinemagraph_1_1776255764943.png', price: 549 },
+  { id: 2, title: 'Wild Forest Honey', thumbnail: '/cinematic_farm_cinemagraph_2_1776255793751.png', price: 399 },
+  { id: 3, title: 'Traditional Rice', thumbnail: '/cinematic_farm_cinemagraph_3_1776255884408.png', price: 299 },
+  { id: 4, title: 'Cold Pressed Oils', thumbnail: '/ai_images/cinematic_farm_1776230966841.png', price: 649 },
 ];
 
 const ShopByVideo = () => {
   return (
-    <div className="w-full relative z-10 bg-[#fffefc] overflow-hidden pt-10 md:pt-16 pb-12 md:pb-20">
+    <div className="w-full relative z-10 bg-white overflow-hidden pt-10 md:pt-16 pb-12 md:pb-20">
       <div className="standard-container">
         <div className="flex flex-col md:flex-row md:items-end md:justify-between mb-6 md:mb-10 gap-6 text-center md:text-left">
           <div className="flex flex-col">
@@ -28,7 +28,7 @@ const ShopByVideo = () => {
 
         <div className="flex gap-6 md:gap-8 overflow-x-auto pb-6 snap-x no-scrollbar">
           {videos.map((video) => (
-            <div key={video.id} className="relative flex-shrink-0 w-60 md:w-72 h-[320px] md:h-[480px] rounded-[1.5rem] md:rounded-[2rem] overflow-hidden snap-start shadow-2xl group cursor-pointer border-[3px] md:border-4 border-white">
+            <div key={video.id} className="relative flex-shrink-0 w-60 md:w-72 h-[320px] md:h-[480px] rounded-[1.5rem] md:rounded-[2rem] overflow-hidden snap-start shadow-xl group cursor-pointer border-[3px] md:border-4 border-white">
 
               <Image 
                 src={video.thumbnail} 
@@ -37,19 +37,19 @@ const ShopByVideo = () => {
                 sizes="(max-width: 768px) 100vw, 320px"
                 className="object-cover transition-transform duration-1000 group-hover:scale-110"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
               
               <div className="absolute inset-0 flex items-center justify-center">
-                <div className="h-20 w-20 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/40 text-white scale-90 group-hover:scale-110 transition-all duration-500 shadow-2xl">
+                <div className="h-20 w-20 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/40 text-white scale-90 group-hover:scale-110 transition-all duration-500 shadow-xl">
                   <Play className="h-10 w-10 fill-white" />
                 </div>
               </div>
 
               <div className="absolute bottom-0 left-0 right-0 p-8 flex flex-col gap-4 translate-y-2 group-hover:translate-y-0 transition-transform duration-500">
-                <h3 className="text-white font-black text-xl md:text-2xl leading-tight">{video.title}</h3>
+                <h3 className="text-white font-black text-xl md:text-2xl leading-tight drop-shadow-md">{video.title}</h3>
                 <div className="flex items-center justify-between">
-                  <span className="text-white font-black text-2xl">₹{video.price}</span>
-                  <button className="h-12 w-12 rounded-full bg-white text-[var(--primary)] flex items-center justify-center shadow-2xl transition-all hover:bg-[var(--primary)] hover:text-white transform group-hover:rotate-[360deg]">
+                  <span className="text-white font-black text-2xl drop-shadow-md">₹{video.price}</span>
+                  <button className="h-12 w-12 rounded-full bg-white text-[var(--primary)] flex items-center justify-center shadow-xl transition-all hover:bg-[var(--primary)] hover:text-white transform group-hover:rotate-[360deg]">
                     <ShoppingCart className="h-6 w-6" />
                   </button>
                 </div>
