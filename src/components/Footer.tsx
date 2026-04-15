@@ -14,11 +14,12 @@ const Footer = () => {
       ),
     },
     {
-      label: 'WhatsApp',
+      label: 'YouTube',
       href: '#',
       svg: (
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
-          <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+          <path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.42a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.42 8.6.42 8.6.42s6.88 0 8.6-.42a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z" />
+          <polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02" />
         </svg>
       ),
     },
@@ -69,8 +70,8 @@ const Footer = () => {
               Tamil Nadu - 625002
             </p>
             <div className="pt-2 border-t border-emerald-900/10 w-full">
-              <p className="text-[10px] font-black text-emerald-800 uppercase tracking-widest mb-2">Direct Support</p>
-              <Link href="tel:+919876543210" className="text-lg font-black text-emerald-950 tracking-tight hover:text-amber-600 transition-colors">
+              <p className="text-[10px] font-bold text-emerald-800 uppercase tracking-widest mb-2">Direct Support</p>
+              <Link href="tel:+919876543210" className="text-lg font-bold text-emerald-950 tracking-tight hover:text-amber-600 transition-colors">
                 +91 98765 43210
               </Link>
             </div>
@@ -78,7 +79,7 @@ const Footer = () => {
 
           {/* COL 2: COLLECTIONS */}
           <div className="flex flex-col items-start space-y-5">
-            <h4 className="text-emerald-950 font-black text-[12px] uppercase tracking-widest border-l-2 border-amber-400 pl-3">
+            <h4 className="text-emerald-950 font-bold text-[12px] uppercase tracking-widest border-l-2 border-amber-400 pl-3">
               Collections
             </h4>
             <nav className="flex flex-col items-start space-y-3">
@@ -119,7 +120,7 @@ const Footer = () => {
 
           {/* COL 4: NEWSLETTER — full width on mobile */}
           <div className="col-span-2 lg:col-span-1 flex flex-col space-y-5">
-            <h4 className="text-emerald-950 font-black text-[12px] uppercase tracking-widest border-l-2 border-amber-400 pl-3">
+            <h4 className="text-emerald-950 font-bold text-[12px] uppercase tracking-widest border-l-2 border-amber-400 pl-3">
               Newsletter
             </h4>
             <p className="text-emerald-900 text-[13px] leading-6 font-medium">
@@ -132,7 +133,7 @@ const Footer = () => {
                 className="w-full h-14 rounded-2xl bg-white border-2 border-emerald-900/10 text-emerald-950 placeholder:text-emerald-900/40 text-[13px] font-bold outline-none px-5 pr-24 focus:border-amber-500 shadow-sm transition-all"
               />
               <button
-                className="absolute right-2 top-2 bottom-2 px-6 rounded-xl bg-emerald-950 text-white text-[11px] font-black uppercase tracking-widest shadow-md hover:bg-amber-600 transition-colors"
+                className="absolute right-2 top-2 bottom-2 px-6 rounded-xl bg-emerald-950 text-white text-[11px] font-bold uppercase tracking-widest shadow-md hover:bg-amber-600 transition-colors"
               >
                 Join
               </button>
@@ -145,10 +146,10 @@ const Footer = () => {
         <div className="pt-8 border-t border-emerald-900/10 flex flex-col lg:flex-row justify-between items-center gap-10">
 
           <div className="flex flex-col items-center lg:items-start gap-2">
-            <p className="text-[11px] font-black tracking-widest text-emerald-900/50 uppercase">
+            <p className="text-[11px] font-bold tracking-widest text-emerald-900/50 uppercase">
               © 2026 Namma Orru Foods Ltd.
             </p>
-            <p className="text-[10px] text-emerald-900/40 font-black tracking-[0.2em] uppercase">
+            <p className="text-[10px] text-emerald-900/40 font-bold tracking-[0.2em] uppercase">
               Directly sourced. Consciously delivered.
             </p>
           </div>

@@ -118,7 +118,7 @@ const ProductsContent = () => {
                         >
                           <div className="flex items-center gap-4">
                             <Icon className={`h-4 w-4 ${isActive ? 'text-amber-400' : 'text-slate-300 group-hover:text-emerald-950'}`} />
-                            <span className="text-[11px] font-black uppercase tracking-widest">{cat}</span>
+                            <span className="text-[11px] font-bold uppercase tracking-widest">{cat}</span>
                           </div>
                           <ArrowRight className={`h-3.5 w-3.5 transition-all duration-500 ${isActive ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-4 ml-2'}`} />
                         </button>
@@ -137,8 +137,7 @@ const ProductsContent = () => {
             <div className="flex flex-col md:flex-row items-end justify-between mb-4 md:mb-8 gap-6 px-4 md:px-0">
               <div className="flex flex-col gap-5 text-left w-full md:w-auto">
                 <div className="flex items-center gap-4">
-                  <div className="h-[2px] w-10 bg-amber-500" />
-                  <span className="text-[11px] font-black text-amber-500 uppercase tracking-[0.4rem]">Inventory catalog</span>
+                  <span className="text-[11px] font-black text-amber-500 uppercase tracking-[0.4rem]">Our Products</span>
                 </div>
                 <h1 className="text-[#022c22] font-black tracking-tighter text-5xl md:text-6xl lg:text-[5.5rem] leading-[0.9]">
                   {activeCategory === 'All' ? 'Our Collection' : activeCategory}
@@ -150,7 +149,7 @@ const ProductsContent = () => {
                   <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">Total Finds</span>
                   <span className="text-[12px] font-black text-[#022c22] tracking-tighter">{filteredProducts.length} Items Found</span>
                 </div>
-                <button className="flex items-center gap-3 h-14 px-8 rounded-full bg-emerald-50 border border-emerald-100/50 text-[11px] font-black uppercase tracking-widest text-[#022c22] hover:bg-[#022c22] hover:text-white transition-all shadow-sm">
+                <button className="flex items-center gap-3 h-14 px-8 rounded-full bg-emerald-50 border border-emerald-100/50 text-[11px] font-bold uppercase tracking-widest text-[#022c22] hover:bg-[#022c22] hover:text-white transition-all shadow-sm">
                   Refine <SlidersHorizontal className="h-4 w-4" />
                 </button>
               </div>
@@ -188,7 +187,7 @@ const ProductsContent = () => {
                           setCurrentPage(i + 1);
                           window.scrollTo({ top: 400, behavior: 'smooth' });
                         }}
-                        className={`h-12 w-12 rounded-xl text-[11px] font-black transition-all ${currentPage === i + 1
+                        className={`h-12 w-12 rounded-xl text-[11px] font-bold transition-all ${currentPage === i + 1
                           ? 'bg-emerald-950 text-white shadow-lg'
                           : 'bg-white border border-slate-200 text-slate-400 hover:bg-slate-50'
                           }`}
