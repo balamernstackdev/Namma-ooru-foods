@@ -39,7 +39,7 @@ export default function BestSellingPage() {
          {/* Cinematic Banner - Responsive Height */}
          <HeroCarousel
             images={['banners/best_1.png', 'banners/best_2.png']}
-            title={<>Best <span className="text-amber-400 italic font-medium text-4xl md:text-6xl xl:text-8xl">Selling</span> Products</>}
+            title={<>Best <span className="text-amber-400 italic font-bold">Selling</span> Products</>}
             subtitle="Experience the gold standard of organic South Indian harvests. Verified for purity and tradition."
             badges={
                <div className="flex items-center gap-3">
@@ -122,24 +122,23 @@ export default function BestSellingPage() {
                </aside>
 
                {/* CONTENT: CATALOG GRID */}
-               <main className="flex-1 bg-slate-50/10 px-6 md:px-10 lg:px-16 pt-12 lg:pt-14 pb-6">
+               <main className="flex-1 bg-slate-50/10 px-6 md:px-10 lg:px-16 pt-4 md:pt-8 pb-6">
 
                   {/* Unified Header & Filter Module */}
                   <div className="flex flex-col lg:flex-row lg:items-end justify-between mb-10 pb-6 border-b border-slate-200 gap-6">
                      <div className="flex flex-col text-left">
-                        <div className="flex items-center gap-3 mb-3">
-                           <div className="h-[2px] w-12 bg-amber-500 rounded-full" />
-                           <span className="text-[10px] font-black text-amber-500 uppercase tracking-[0.5em]">Active Items</span>
+                        <div className="flex items-center gap-3 mb-2">
+                           <span className="text-[10px] font-bold text-amber-500 uppercase tracking-[0.5em]">Active Items</span>
                         </div>
                         <h1 className="text-[#022c22] font-black tracking-tighter text-4xl md:text-5xl lg:text-6xl leading-none mb-3">
                            {activeCategory === 'All' ? 'Our Bestsellers' : activeCategory}
                         </h1>
-                        <span className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">{filteredProducts.length} Items discovered in our vault</span>
+                        <span className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em]">{filteredProducts.length} Items discovered in our collection</span>
                      </div>
 
                      <div className="flex items-center gap-4">
                         <span className="hidden md:inline-block text-[10px] font-black uppercase tracking-[0.2em] text-slate-300">Sort Selection</span>
-                        <button className="text-[10px] sm:text-[11px] font-black text-[#022c22] uppercase tracking-[0.1em] flex items-center gap-3 bg-white px-6 md:px-8 py-3 md:py-4 rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-slate-100 hover:border-amber-400 transition-all active:scale-95">
+                        <button className="text-[10px] sm:text-[11px] font-bold text-[#022c22] uppercase tracking-[0.1em] flex items-center gap-3 bg-white px-6 md:px-8 py-3 md:py-4 rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-slate-100 hover:border-amber-400 transition-all active:scale-95">
                            Highest Rated <ChevronDown size={14} className="text-amber-500" />
                         </button>
                      </div>

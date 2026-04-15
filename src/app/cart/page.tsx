@@ -30,14 +30,14 @@ const CartPage = () => {
             <div className="h-32 w-32 rounded-full bg-slate-50 flex items-center justify-center mb-10">
               <ShoppingBag className="h-12 w-12 text-slate-200" />
             </div>
-            <h2 className="text-2xl font-black text-[#022c22] uppercase tracking-tighter mb-4">Your Products is Empty</h2>
+            <h2 className="text-2xl font-bold text-[#022c22] uppercase tracking-tighter mb-4">Your Products is Empty</h2>
             <p className="text-slate-400 font-medium max-w-md mx-auto mb-12 leading-relaxed uppercase text-[11px] tracking-widest">
               It looks like you haven't selected any organic Items yet. Start exploring our traditional harvests.
             </p>
             <Link
               href="/products"
               style={{ backgroundColor: '#022c22' }}
-              className="px-12 py-5 rounded-2xl text-[10px] font-black uppercase tracking-[0.4em] text-white shadow-2xl shadow-emerald-950/20 hover:scale-105 transition-all"
+              className="px-12 py-5 rounded-2xl text-[10px] font-bold uppercase tracking-[0.4em] text-white shadow-2xl shadow-emerald-950/20 hover:scale-105 transition-all"
             >
               Explore Catalog
             </Link>
@@ -50,10 +50,10 @@ const CartPage = () => {
               {/* Shipping Progress */}
               <div className="bg-white rounded-3xl p-8 border border-slate-100 shadow-sm mb-4">
                 <div className="flex items-center justify-between mb-4">
-                  <span className="text-[11px] font-black uppercase tracking-widest text-[#022c22]">
+                  <span className="text-[11px] font-bold uppercase tracking-widest text-[#022c22]">
                     {total >= freeShippingThreshold ? '🎉 Free Shipping Applied!' : `Add ₹${freeShippingThreshold - total} for FREE delivery`}
                   </span>
-                  <span className="text-amber-500 font-black text-xs">{progress.toFixed(0)}%</span>
+                  <span className="text-amber-500 font-bold text-xs">{progress.toFixed(0)}%</span>
                 </div>
                 <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
                   <div
@@ -139,11 +139,11 @@ const CartPage = () => {
                 <div className="flex flex-col gap-4">
                   <button
                     style={{ backgroundColor: '#022c22' }}
-                    className="w-full flex items-center justify-center gap-4 py-6 rounded-2xl text-[11px] font-black uppercase tracking-[0.4em] text-white shadow-2xl shadow-emerald-950/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
+                    className="w-full flex items-center justify-center gap-4 py-6 rounded-2xl text-[11px] font-bold uppercase tracking-[0.4em] text-white shadow-2xl shadow-emerald-950/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
                   >
                     Proceed to Checkout <ArrowRight className="h-4 w-4" />
                   </button>
-                  <Link href="/products" className="text-center py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-[#022c22] transition-colors">
+                  <Link href="/products" className="text-center py-4 text-[10px] font-bold uppercase tracking-widest text-slate-400 hover:text-[#022c22] transition-colors">
                     Continue Shopping
                   </Link>
                 </div>

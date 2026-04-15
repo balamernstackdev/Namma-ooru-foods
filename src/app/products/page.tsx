@@ -98,7 +98,7 @@ const ProductsContent = () => {
                 <div className="flex flex-col">
                   <div className="flex items-center gap-3 mb-8 px-2">
                     <div className="h-2 w-2 rounded-full bg-amber-500" />
-                    <span className="text-[11px] font-black uppercase tracking-[0.4em] text-emerald-950">Catalog Genre</span>
+                    <span className="text-[11px] font-black uppercase tracking-[0.4em] text-emerald-950">Shop by Category</span>
                   </div>
                   <div className="flex flex-col gap-3">
                     {categories.map((cat) => {
