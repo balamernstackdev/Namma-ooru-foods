@@ -33,7 +33,7 @@ export default function AccountPage() {
           </div>
           <h2 className="text-4xl font-black text-[#022c22] tracking-tighter mb-4 leading-none">Welcome, {user.name.split(' ')[0]}!</h2>
           <p className="text-[11px] font-black uppercase tracking-[0.4em] text-slate-300 mb-14">{user.email}</p>
-          <button onClick={logout} style={{ backgroundColor: '#022c22' }} className="w-full h-18 py-6 rounded-2xl text-white text-[11px] font-black uppercase tracking-[0.4em] shadow-2xl">Sign Out from Vault</button>
+          <button onClick={logout} style={{ backgroundColor: '#022c22' }} className="w-full h-18 py-6 rounded-2xl text-white text-[11px] font-black uppercase tracking-[0.4em] shadow-2xl">Sign Out</button>
         </div>
       </div>
     );

@@ -39,7 +39,7 @@ export default function BestSellingPage() {
          {/* Cinematic Banner - Responsive Height */}
          <HeroCarousel
             images={['banners/best_1.png', 'banners/best_2.png']}
-            title={<>Best <span className="text-amber-400 italic font-medium text-4xl md:text-6xl xl:text-8xl">Selling</span> Vault</>}
+            title={<>Best <span className="text-amber-400 italic font-medium text-4xl md:text-6xl xl:text-8xl">Selling</span> Products</>}
             subtitle="Experience the gold standard of organic South Indian harvests. Verified for purity and tradition."
             badges={
                <div className="flex items-center gap-3">
@@ -66,18 +66,20 @@ export default function BestSellingPage() {
          <div className="w-full bg-white relative">
             <div className="max-w-[1536px] mx-auto flex flex-col lg:flex-row">
 
-               {/* SIDEBAR: MOBILE MODAL / DESKTOP ASIDE */}
+               {/* SIDEBAR: MOBILE DRAWER / DESKTOP ASIDE */}
+               <div className={`fixed inset-0 z-[200] bg-emerald-950/40 backdrop-blur-md lg:hidden transition-opacity duration-300 ${showFilters ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} onClick={() => setShowFilters(false)} />
+
                <aside className={`
-            fixed inset-0 z-[60] lg:relative lg:inset-auto lg:z-0
-            ${showFilters ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-            transition-transform duration-500 ease-in-out
-            w-full lg:w-[300px] xl:w-[320px] border-r border-slate-100 shrink-0 bg-white
-          `}>
+             fixed inset-y-0 left-0 z-[201] lg:relative lg:inset-auto lg:z-0
+             ${showFilters ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+             transition-transform duration-500 ease-in-out
+             w-full sm:w-[320px] lg:w-[300px] xl:w-[320px] border-r border-slate-100 shrink-0 bg-white
+           `}>
                   {/* Mobile Header for Sidebar */}
-                  <div className="lg:hidden flex items-center justify-between p-8 border-b border-slate-50">
-                     <span className="text-xl font-black text-[#022c22] tracking-tighter">Filter Catalog</span>
-                     <button onClick={() => setShowFilters(false)} className="h-12 w-12 rounded-full bg-slate-50 flex items-center justify-center">
-                        <X size={20} />
+                  <div className="lg:hidden flex items-center justify-between p-6 border-b border-slate-50 mt-20">
+                     <span className="text-xl font-black text-[#022c22] tracking-tighter uppercase text-sm tracking-widest">Filter Products</span>
+                     <button onClick={() => setShowFilters(false)} className="h-10 w-10 rounded-full bg-slate-50 flex items-center justify-center">
+                        <X size={18} />
                      </button>
                   </div>
 
@@ -120,7 +122,7 @@ export default function BestSellingPage() {
                </aside>
 
                {/* CONTENT: CATALOG GRID */}
-               <main className="flex-1 bg-slate-50/10 px-6 md:px-10 lg:px-16 pt-12 lg:pt-14 pb-16">
+               <main className="flex-1 bg-slate-50/10 px-6 md:px-10 lg:px-16 pt-12 lg:pt-14 pb-6">
 
                   {/* Unified Header & Filter Module */}
                   <div className="flex flex-col lg:flex-row lg:items-end justify-between mb-10 pb-6 border-b border-slate-200 gap-6">

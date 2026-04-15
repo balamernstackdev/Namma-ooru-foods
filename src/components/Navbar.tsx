@@ -216,9 +216,9 @@ const Navbar = () => {
             <div className="flex flex-col gap-3">
               <span className="text-[10px] font-black uppercase tracking-[0.5em] text-slate-400 mb-4 pl-4 border-l-2 border-amber-400">Main Directory</span>
               {[
-                { name: 'Home Garden', href: '/', icon: Home },
+                { name: 'Home', href: '/', icon: Home },
                 { name: 'All Categories', href: '/products', icon: LayoutGrid },
-                { name: 'Best Selling Vault', href: '/best-selling', icon: TrendingUp },
+                { name: 'Best Sellers', href: '/best-selling', icon: TrendingUp },
                 { name: 'Exclusive Offers', href: '/promotions', icon: Tag },
                 { name: 'Our Vision', href: '/about', icon: Star }
               ].map((item) => (
@@ -251,26 +251,11 @@ const Navbar = () => {
                 <div className="h-10 w-10 rounded-full bg-white/10 flex items-center justify-center">
                   <User size={18} className="text-amber-400" />
                 </div>
-                <span className="text-white text-[11px] font-black uppercase tracking-[0.4em]">Secure Member Access</span>
+                <span className="text-white text-[11px] font-black uppercase tracking-[0.4em]">Login</span>
               </Link>
             </div>
 
-            {/* Story Section: Sub-Card Style */}
-            <div className="mt-6">
-              <div className="p-8 rounded-[2.5rem] bg-amber-50 border border-amber-100 relative overflow-hidden group">
-                <div className="absolute top-0 right-0 h-32 w-32 bg-amber-400/20 rounded-full blur-3xl group-hover:bg-amber-400/30 transition-colors" />
-                <div className="relative z-10">
-                  <p className="text-[10px] font-black uppercase tracking-[0.4em] text-amber-600 mb-3">Farm-to-Door Initiative</p>
-                  <p className="text-[13px] font-bold text-emerald-900 leading-relaxed mb-6">
-                    Connecting 500+ small-scale farmers directly to your kitchen.
-                  </p>
-                  <div className="inline-flex items-center gap-3 px-4 py-2 bg-white rounded-full border border-amber-100 shadow-sm">
-                    <Star size={14} className="text-amber-500 fill-amber-500" />
-                    <span className="text-[10px] font-black uppercase tracking-widest text-emerald-950">100% Verified</span>
-                  </div>
-                </div>
-              </div>
-            </div>
+
           </div>
         </div>
       )}

@@ -49,9 +49,10 @@ const HeroCarousel = ({
             priority={index === 0}
             sizes="100vw"
           />
-          {/* Multi-layered gradient for depth */}
-          <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/40 z-10" />
-          <div className="absolute inset-0 bg-emerald-950/10 mix-blend-multiply z-10" />
+          {/* Multi-layered gradient for depth and text protection */}
+          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/20 to-black/60 z-10" />
+          <div className="absolute inset-0 bg-emerald-950/40 mix-blend-multiply z-10" />
+          <div className="absolute inset-0 bg-black/20 z-10" />
         </div>
       ))}
  
@@ -61,27 +62,18 @@ const HeroCarousel = ({
           <div className="flex flex-col items-center">
             {badges && <div className="mb-6 md:mb-12 animate-in fade-in slide-in-from-bottom-5 duration-1000">{badges}</div>}
             <div className="overflow-hidden mb-4 md:mb-8">
-              <h1 className="text-white tracking-tighter text-3xl sm:text-5xl md:text-8xl lg:text-9xl font-black leading-[0.9] animate-in slide-in-from-bottom-full duration-1000">
+              <h1 className="text-white tracking-tighter text-3xl sm:text-5xl md:text-8xl lg:text-9xl font-black leading-[0.9] animate-in slide-in-from-bottom-full duration-1000 drop-shadow-[0_4px_12px_rgba(0,0,0,0.5)]">
                 {title}
               </h1>
             </div>
             
             {subtitle && (
-              <p className="text-sm md:text-2xl text-white/80 max-w-3xl font-medium leading-relaxed mb-8 md:mb-16 animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-300 px-2">
+              <p className="text-sm md:text-2xl text-white font-medium leading-relaxed mb-8 md:mb-16 animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-300 px-2 drop-shadow-[0_2px_8px_rgba(0,0,0,0.4)]">
                 {subtitle}
               </p>
             )}
             
-            {/* Pagination / Dots */}
-            <div className="flex gap-4 animate-in fade-in duration-1000 delay-500">
-              {images.map((_, i) => (
-                <button 
-                  key={i} 
-                  onClick={() => setCurrentSlide(i)}
-                  className={`h-1.5 rounded-full transition-all duration-1000 ${i === currentSlide ? 'w-24 bg-amber-400' : 'w-4 bg-white/30 hover:bg-white/50'}`}
-                />
-              ))}
-            </div>
+
           </div>
         </div>
       </div>

@@ -412,7 +412,7 @@ export const ORDERS = [
 export const PROMOTIONS = [
   {
     id: 1,
-    title: 'Summer Harvest Sale',
+    title: 'Summer Sale',
     discount: '20% OFF',
     category: 'All Grains & Pulses',
     end: 'Ends in 3 days',

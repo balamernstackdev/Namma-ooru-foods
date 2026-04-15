@@ -57,7 +57,7 @@ const CartDrawer = () => {
               <div className="mb-6 h-20 w-20 rounded-full bg-slate-50 flex items-center justify-center">
                 <ShoppingBag className="h-8 w-8 text-slate-200" />
               </div>
-              <h3 className="text-lg font-black text-emerald-950 tracking-tighter uppercase">Vault is Empty</h3>
+              <h3 className="text-lg font-black text-emerald-950 tracking-tighter uppercase">Products is Empty</h3>
               <p className="mt-2 text-[11px] font-medium text-slate-400 leading-relaxed uppercase tracking-wider">Your harvest collection starts here. Explore our organic Items.</p>
               <button
                 onClick={() => setIsOpen(false)}
@@ -129,7 +129,7 @@ const CartDrawer = () => {
                 onClick={() => setIsOpen(false)}
                 className="flex w-full items-center justify-center gap-4 rounded-xl border-2 border-slate-100 py-4 text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 hover:border-[#022c22] hover:text-[#022c22] transition-all"
               >
-                Expand To Full Vault
+                Expand To Full Products
               </Link>
               <button
                 style={{ backgroundColor: '#022c22' }}

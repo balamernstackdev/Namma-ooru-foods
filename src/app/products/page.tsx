@@ -3,7 +3,7 @@
 import React, { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import ProductCard from '@/components/ProductCard';
-import { ArrowRight, TrendingUp, Flame, Star, Filter, SlidersHorizontal, ShoppingBag, Droplets, Utensils, Zap } from 'lucide-react';
+import { ArrowRight, TrendingUp, Flame, Star, Filter, SlidersHorizontal, ShoppingBag, Droplets, Utensils, Zap, X } from 'lucide-react';
 import { PRODUCTS } from '@/lib/staticData';
 import HeroCarousel from '@/components/HeroCarousel';
 
@@ -55,24 +55,24 @@ const ProductsContent = () => {
     <div className="flex flex-col bg-white w-full min-h-screen">
       <HeroCarousel
         images={['banners/products_1.png', 'banners/products_2.png']}
-        title={<>Pure <br /><span className="text-amber-400 italic">Harvest</span> Vault</>}
+        title={<>Pure <br /><span className="text-amber-400 italic"> Organic  </span> Products</>}
         subtitle="Experience the complete collection of Namma Orru's artisanal Items. Authentic, organic, and direct from the soil."
         badges={
           <div className="flex items-center gap-3">
             <div className="h-10 w-10 rounded-full bg-emerald-400/20 backdrop-blur-md flex items-center justify-center border border-emerald-400/30">
               <ShoppingBag className="h-5 w-5 text-emerald-300" />
             </div>
-            <span className="text-[10px] font-black uppercase tracking-[0.4em] text-emerald-300">Vault Member Access</span>
+            <span className="text-[10px] font-black uppercase tracking-[0.4em] text-emerald-300">Login</span>
           </div>
         }
       />
 
-      <div className="w-full bg-white flex justify-center border-t border-slate-100 relative">
-        <div className="standard-container flex flex-col lg:flex-row gap-8 lg:gap-14 pt-12 md:pt-16 lg:pt-20 pb-12">
+      <div className="w-full section-spacing section-no-bottom flex justify-center border-t border-slate-100 relative">
+        <div className="standard-container flex flex-col lg:flex-row gap-8 lg:gap-14 pt-4 md:pt-8 lg:pt-12 pb-6">
 
 
           {/* MOBILE TOGGLE BAR */}
-          <div className="lg:hidden flex items-center justify-between p-4 bg-slate-50 rounded-2xl mb-8">
+          <div className="lg:hidden flex items-center justify-between p-4 bg-slate-50 rounded-2xl mb-4">
             <span className="text-[10px] font-black uppercase tracking-widest text-emerald-950">Refine Catalog</span>
             <button
               onClick={() => setIsSidebarOpen(true)}
@@ -85,12 +85,12 @@ const ProductsContent = () => {
           {/* SIDEBAR - HIGH VISIBILITY REDESIGN */}
           <div className={`fixed inset-0 z-[100] bg-emerald-950/40 backdrop-blur-md lg:hidden transition-opacity duration-300 ${isSidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} onClick={() => setIsSidebarOpen(false)} />
 
-          <aside className={`fixed lg:sticky top-0 lg:top-[120px] left-0 h-full lg:h-fit w-72 bg-white lg:bg-transparent z-[101] lg:z-10 p-8 lg:p-0 transition-transform duration-300 lg:translate-x-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'} shrink-0 overflow-y-auto lg:overflow-visible`}>
+          <aside className={`fixed lg:sticky top-0 lg:top-[120px] left-0 h-full lg:h-fit w-72 bg-white lg:bg-transparent z-[201] lg:z-10 p-8 lg:p-0 transition-transform duration-300 lg:translate-x-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'} shrink-0 overflow-y-auto lg:overflow-visible`}>
             <div className="flex flex-col h-full">
-              <div className="flex items-center justify-between mb-10 lg:hidden">
+              <div className="flex items-center justify-between mb-10 lg:hidden mt-20">
                 <span className="text-[10px] font-black uppercase tracking-widest text-emerald-950">Refine Your Search</span>
                 <button onClick={() => setIsSidebarOpen(false)} className="h-10 w-10 rounded-full bg-slate-100 flex items-center justify-center">
-                  <ArrowRight className="h-4 w-4" />
+                  <X className="h-4 w-4" />
                 </button>
               </div>
 
@@ -139,8 +139,8 @@ const ProductsContent = () => {
           </aside>
 
           {/* MAIN GRID AREA */}
-          <main className="flex-1">
-            <div className="flex flex-col md:flex-row items-end justify-between mb-16 md:mb-20 gap-8">
+          <main className="flex-1 bg-slate-50/10 px-0 md:px-6 lg:px-10 pt-8 lg:pt-10 pb-6">
+            <div className="flex flex-col md:flex-row items-end justify-between mb-8 md:mb-12 gap-8 px-4 md:px-0">
               <div className="flex flex-col gap-5 text-left w-full md:w-auto">
                 <div className="flex items-center gap-4">
                   <div className="h-[2px] w-10 bg-amber-500" />
@@ -219,7 +219,7 @@ const ProductsContent = () => {
             ) : (
               <div className="h-[40vh] w-full rounded-[2rem] bg-slate-50 flex flex-col items-center justify-center text-center p-12 border border-slate-100">
                 <ShoppingBag className="h-10 w-10 text-slate-200 mb-6" />
-                <h3 className="text-emerald-950 font-bold tracking-tight">Vault Entry Empty</h3>
+                <h3 className="text-emerald-950 font-bold tracking-tight">Products Entry Empty</h3>
                 <p className="text-slate-400 text-xs max-w-xs mt-3 uppercase tracking-widest leading-loose">We haven't found any Items in this sector yet.</p>
               </div>
             )}

@@ -93,7 +93,7 @@ export default function Home() {
       <CategoriesCircles />
 
       {/* 03. Weekly Favorites (Featured Products) */}
-      <section className="py-10 md:py-16 bg-white border-y border-slate-50 flex justify-center">
+      <section className="pt-6 md:pt-10 pb-10 md:pb-16 bg-white border-y border-slate-50 flex justify-center">
         <div className="standard-container">
           <div className="flex flex-col gap-8 md:gap-12">
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
@@ -104,9 +104,7 @@ export default function Home() {
                   <span className="text-amber-500 italic">This Season</span>
                 </h2>
               </div>
-              <Link href="/products" className="group h-11 md:h-13 px-8 md:px-10 rounded-full bg-emerald-950 !text-white text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-4 hover:scale-105 transition-all shadow-xl mx-auto md:mx-0 shrink-0">
-                Full Inventory <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-2" />
-              </Link>
+
             </div>
 
             <StaggerContainer>
@@ -118,6 +116,9 @@ export default function Home() {
                 ))}
               </div>
             </StaggerContainer>
+            <Link href="/products" className="group h-11 md:h-13 px-8 md:px-10 rounded-full bg-emerald-950 !text-white text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-4 hover:scale-105 transition-all shadow-xl mx-auto md:mx-0 shrink-0">
+              View All Products <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-2" />
+            </Link>
           </div>
         </div>
       </section>
@@ -135,7 +136,7 @@ export default function Home() {
       <TrustMarquee />
 
       {/* 09. Brand Mission Section (Cinematic) */}
-      <section className="relative overflow-hidden section-spacing bg-emerald-950 flex justify-center min-h-[45vh] md:min-h-[50vh]">
+      <section className="relative overflow-hidden section-spacing section-no-bottom bg-emerald-950 flex justify-center min-h-[45vh] md:min-h-[50vh]">
 
         {/* Cinematic Backdrop */}
         <div className="absolute inset-0 z-0 opacity-10 bg-cover bg-center grayscale mix-blend-overlay scale-110 object-cover"

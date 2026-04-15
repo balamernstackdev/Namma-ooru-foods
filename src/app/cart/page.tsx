@@ -30,7 +30,7 @@ const CartPage = () => {
             <div className="h-32 w-32 rounded-full bg-slate-50 flex items-center justify-center mb-10">
               <ShoppingBag className="h-12 w-12 text-slate-200" />
             </div>
-            <h2 className="text-2xl font-black text-[#022c22] uppercase tracking-tighter mb-4">Your Vault is Empty</h2>
+            <h2 className="text-2xl font-black text-[#022c22] uppercase tracking-tighter mb-4">Your Products is Empty</h2>
             <p className="text-slate-400 font-medium max-w-md mx-auto mb-12 leading-relaxed uppercase text-[11px] tracking-widest">
               It looks like you haven't selected any organic Items yet. Start exploring our traditional harvests.
             </p>

@@ -11,7 +11,7 @@ const videos = [
 
 const ShopByVideo = () => {
   return (
-    <div className="w-full relative z-10 bg-[#fffefc] overflow-hidden section-spacing">
+    <div className="w-full relative z-10 bg-[#fffefc] overflow-hidden pt-10 md:pt-16 pb-12 md:pb-20">
       <div className="standard-container">
         <div className="flex flex-col md:flex-row md:items-end md:justify-between mb-6 md:mb-10 gap-6 text-center md:text-left">
           <div className="flex flex-col">

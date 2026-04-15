@@ -33,7 +33,7 @@ const TrustMarquee = () => {
         }
         .animate-marquee {
           display: inline-flex;
-          animation: marquee 40s linear infinite;
+          animation: marquee 80s linear infinite;
         }
       `}</style>
     </div>

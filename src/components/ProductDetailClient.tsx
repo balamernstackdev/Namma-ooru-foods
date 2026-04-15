@@ -20,7 +20,7 @@ const ProductDetailClient = ({ product, allProducts }: ProductDetailClientProps)
 
 
   return (
-    <div className="w-full min-h-screen bg-slate-50 pt-4 pb-32">
+    <div className="w-full min-h-screen bg-slate-50 pt-4 pb-10">
       {/* Main Content Container */}
       <div className="standard-container mt-4 md:mt-8">
         <div className="grid grid-cols-1 gap-8 lg:gap-20 lg:grid-cols-2 bg-white rounded-3xl md:rounded-[2.5rem] p-4 md:p-12 shadow-premium border border-slate-100 overflow-hidden relative">

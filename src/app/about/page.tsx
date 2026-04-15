@@ -11,7 +11,7 @@ import { Leaf, ShieldCheck, Truck, Heart, Users, Target, ArrowRight } from 'luci
 
 export default function AboutPage() {
   return (
-    <div className="flex flex-col bg-white w-full overflow-x-hidden pb-20">
+    <div className="flex flex-col bg-white w-full overflow-x-hidden">
 
       {/* Hero Section */}
       <section className="relative w-full overflow-hidden bg-emerald-950 h-[300px] md:h-[400px]">
@@ -123,7 +123,7 @@ export default function AboutPage() {
       </section>
 
       {/* CTA Section */}
-      <section className="w-full bg-white py-12 lg:py-16">
+      <section className="w-full bg-white pt-12 pb-6 md:pb-10 section-no-bottom">
         <div className="standard-container">
           <div className="bg-emerald-50 rounded-[3rem] md:rounded-[4rem] p-10 md:p-20 text-center relative overflow-hidden border border-emerald-100/50 shadow-sm">
             <div className="absolute top-0 right-0 h-96 w-96 bg-emerald-400 opacity-10 blur-[150px]" />

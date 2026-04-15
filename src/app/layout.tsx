@@ -69,7 +69,7 @@ export default function RootLayout({
           <ToastProvider>
             <SmoothScroll>
               <Navbar />
-              <main className="min-h-screen">
+              <main className="min-h-fit flex-1">
                 {children}
               </main>
               <Footer />

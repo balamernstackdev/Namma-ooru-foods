@@ -11,14 +11,14 @@ const HERO_SLIDES = [
     image: "/banners/home_1.png",
     title: "Taste the <span class=\"text-amber-400\">Purity</span> <br /> of Namma Orru",
     subtitle: "We bring you the finest harvest directly from sustainable local farms. No middlemen, no chemicals — just pure, authentic goodness delivered to your doorstep.",
-    tagline: "8K Premium Harvest • Sourced Locally"
+    tagline: "Fresh from Local Farms"
   },
   {
     id: 2,
     image: "/banners/home_2.png",
     title: "Real <span class=\"text-amber-400\">Organic</span> <br /> Everyday Food",
     subtitle: "Our cold-pressed oils and millets retain their complete nutritional profiles. Start your healthy journey with ancestral farming wisdom.",
-    tagline: "8K Healthy Living • Farm To Table"
+    tagline: "Quality You Can Trust"
   }
 ];
 
@@ -47,7 +47,7 @@ const Hero = () => {
             priority={idx === 0}
             sizes="100vw"
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-emerald-950/95 via-emerald-950/50 to-transparent z-10" />
+          <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent z-10" />
           <div className="absolute bottom-0 left-0 right-0 h-48 bg-gradient-to-t from-[#030712]/40 to-transparent z-10" />
         </div>
       ))}
@@ -60,9 +60,9 @@ const Hero = () => {
             <span className="text-[9px] md:text-[10px] font-black tracking-[0.3em] md:tracking-[0.4em] text-amber-400 uppercase">{slide.tagline}</span>
           </div>
 
-          <h1 className="text-white tracking-tight mb-6 md:mb-10 animate-slide-up text-[2rem] sm:text-5xl md:text-7xl lg:text-8xl leading-tight" dangerouslySetInnerHTML={{ __html: slide.title }} />
+          <h1 className="text-white tracking-tight mb-6 md:mb-10 animate-slide-up text-[2rem] sm:text-5xl md:text-7xl lg:text-8xl leading-tight drop-shadow-[0_4px_4px_rgba(0,0,0,0.25)]" dangerouslySetInnerHTML={{ __html: slide.title }} />
 
-          <p className="max-w-2xl text-sm md:text-lg lg:text-2xl text-emerald-50/70 font-medium leading-relaxed mb-10 md:mb-16 animate-slide-up delay-100">
+          <p className="max-w-2xl text-sm md:text-lg lg:text-2xl text-white font-medium leading-relaxed mb-10 md:mb-16 animate-slide-up delay-100 drop-shadow-[0_2px_2px_rgba(0,0,0,0.5)]">
             {slide.subtitle}
           </p>
 
@@ -77,16 +77,7 @@ const Hero = () => {
         </div>
       </div>
 
-      {/* Slide Navigation Pagination */}
-      <div className="absolute bottom-16 right-16 z-30 flex items-center gap-6">
-        {HERO_SLIDES.map((_, i) => (
-          <button
-            key={i}
-            onClick={() => setCurrentSlide(i)}
-            className={`h-2 rounded-full transition-all duration-700 ${i === currentSlide ? 'w-24 bg-amber-400' : 'w-6 bg-white/20'}`}
-          />
-        ))}
-      </div>
+
 
       <style dangerouslySetInnerHTML={{
         __html: `
