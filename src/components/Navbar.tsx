@@ -119,15 +119,17 @@ const Navbar = () => {
               )}
             </div>
 
-            {/* NOTIFICATIONS */}
-            <Link href="/account/notifications" className="flex items-center group">
-              <div className="relative h-11 w-11 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center group-hover:bg-emerald-50 group-hover:border-emerald-200 transition-all">
-                <Bell className="h-5 w-5 text-emerald-950" />
-                <div className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-emerald-600 text-[10px] font-black text-white border-2 border-white shadow-sm">
-                  2
+            {/* NOTIFICATIONS — only for logged in users */}
+            {user && (
+              <Link href="/account/notifications" className="flex items-center group">
+                <div className="relative h-11 w-11 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center group-hover:bg-emerald-50 group-hover:border-emerald-200 transition-all">
+                  <Bell className="h-5 w-5 text-emerald-950" />
+                  <div className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-emerald-600 text-[10px] font-black text-white border-2 border-white shadow-sm">
+                    2
+                  </div>
                 </div>
-              </div>
-            </Link>
+              </Link>
+            )}
 
 
             <button onClick={() => setIsOpen(true)} className="group flex items-center">

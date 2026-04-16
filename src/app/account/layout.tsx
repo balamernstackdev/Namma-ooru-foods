@@ -6,40 +6,49 @@ import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { User, Heart, Package, MapPin, CreditCard, Bell, Settings, LogOut, ChevronRight, LayoutDashboard } from 'lucide-react';
 
+import { useRouter } from 'next/navigation';
+
 export default function AccountLayout({ children }: { children: React.ReactNode }) {
   const { user, logout, isLoading } = useAuth();
   const pathname = usePathname();
+  const router = useRouter();
 
-  // If we are on the base /account page and NOT logged in, we don't show the sidebar
-  // Also if we are loading, we don't show it yet
-  if (isLoading || !user) {
+  // Redirect to login if unauthenticated on protected sub-pages
+  React.useEffect(() => {
+    if (!isLoading && !user && pathname !== '/account') {
+      router.replace('/account');
+    }
+  }, [user, isLoading, pathname, router]);
+
+  // While loading or on main /account page for guest, we don't show the layout wrapper
+  if (isLoading || !user || pathname === '/account') {
     return <>{children}</>;
   }
 
   const menuItems = [
-    { label: 'My Profile',       href: '/account/profile',      icon: User },
-    { label: 'Wishlist',         href: '/account/wishlist',     icon: Heart },
-    { label: 'My Orders',        href: '/account/orders',       icon: Package },
-    { label: 'Track Order',      href: '/account/tracking',     icon: MapPin },
-    { label: 'Payments',         href: '/account/payments',     icon: CreditCard },
-    { label: 'Notifications',    href: '/account/notifications',icon: Bell },
-    { label: 'Settings',         href: '/account/settings',     icon: Settings },
+    { label: 'My Profile', href: '/account/profile', icon: User },
+    { label: 'Wishlist', href: '/account/wishlist', icon: Heart },
+    { label: 'My Orders', href: '/account/orders', icon: Package },
+    { label: 'Track Order', href: '/account/tracking', icon: MapPin },
+    { label: 'Payments', href: '/account/payments', icon: CreditCard },
+    { label: 'Notifications', href: '/account/notifications', icon: Bell },
+    { label: 'Settings', href: '/account/settings', icon: Settings },
   ];
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
       <div className="standard-container mx-auto py-8 md:py-12 flex-1 flex flex-col md:flex-row gap-8">
-        
+
         {/* SIDEBAR - Persistent on Desktop, relative on Mobile if we want it above content */}
         <aside className="w-full md:w-80 shrink-0 hidden md:block">
           <div className="sticky top-28 space-y-6">
-            
+
             {/* User Profile Card - Compact Horizontal */}
             <div className="bg-emerald-950 rounded-[2rem] p-4 text-white shadow-premium relative overflow-hidden">
               <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.05] pointer-events-none" />
               <div className="relative z-10 flex items-center gap-4">
                 <div className="h-12 w-12 rounded-full overflow-hidden border-2 border-amber-400 shrink-0 shadow-lg">
-                  {user.avatar 
+                  {user.avatar
                     ? <img src={user.avatar} alt={user.name} className="h-full w-full object-cover" />
                     : <div className="h-full w-full bg-emerald-800 flex items-center justify-center text-sm font-black">{user.name[0]}</div>
                   }
