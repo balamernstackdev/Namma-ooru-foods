@@ -113,7 +113,7 @@ const Navbar = () => {
                   </div>
                   <div className="hidden lg:flex flex-col">
                     <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Account</span>
-                    <span className="text-[11px] font-black text-emerald-950 whitespace-nowrap leading-none">My Profile</span>
+                    <span className="text-[11px] font-black text-emerald-950 whitespace-nowrap leading-none">Login</span>
                   </div>
                 </Link>
               )}
