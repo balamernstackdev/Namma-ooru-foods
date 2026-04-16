@@ -3,14 +3,17 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Search, ShoppingCart, User, Menu, X, Home, LayoutGrid, TrendingUp, Star, Tag, ChevronRight } from 'lucide-react';
+import { Search, ShoppingCart, User, Menu, X, Home, LayoutGrid, TrendingUp, Star, Tag, ChevronRight, Heart, Package, MapPin, CreditCard, LogOut, Settings, Bell } from 'lucide-react';
 import { useCartStore } from '@/store/useCartStore';
+import { useAuth } from '@/context/AuthContext';
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isCategoryOpen, setIsCategoryOpen] = useState(false);
+  const [isAccountOpen, setIsAccountOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const { cart, setIsOpen } = useCartStore();
+  const { user, logout } = useAuth();
 
   React.useEffect(() => {
     const handleScroll = () => {
@@ -31,22 +34,32 @@ const Navbar = () => {
     { name: 'Pickles & Pastes', sub: ['Mango Pickle', 'Garlic Pickle', 'Ginger Paste', 'Tomato Thokku'] }
   ];
 
+  const accountMenuItems = [
+    { label: 'My Profile',       href: '/account/profile',      icon: User,        desc: 'Personal details & settings' },
+    { label: 'Wishlist',         href: '/account/wishlist',     icon: Heart,       desc: 'Saved products' },
+    { label: 'My Orders',        href: '/account/orders',       icon: Package,     desc: 'Order history & status' },
+    { label: 'Track Order',      href: '/account/tracking',     icon: MapPin,      desc: 'Real-time shipment tracking' },
+    { label: 'Payments',         href: '/account/payments',     icon: CreditCard,  desc: 'Transaction history' },
+    { label: 'Notifications',    href: '/account/notifications',icon: Bell,        desc: 'Alerts & updates' },
+    { label: 'Settings',         href: '/account/settings',     icon: Settings,    desc: 'Privacy & preferences' },
+  ];
+
   return (
     <nav className="sticky top-0 left-0 right-0 z-[500] w-full flex flex-col bg-white/95 backdrop-blur-md border-b border-slate-100 shadow-sm mb-0">
 
       {/* PRIMARY TIER */}
       <div className="w-full">
-        <div className={`standard-container mx-auto flex items-center justify-between gap-4 md:gap-24 py-1 transition-all duration-500 ${scrolled ? 'h-12 md:h-16' : 'h-14 md:h-20'}`}>
+        <div className={`standard-container mx-auto flex items-center justify-between gap-4 md:gap-24 transition-all duration-500 ${scrolled ? 'h-16 md:h-20' : 'h-20 md:h-24'}`}>
           {/* LOGO: Anchored Left */}
           <Link href="/" className="shrink-0 flex items-center transition-transform hover:scale-105">
             <Image
               src="/logo.webp"
               alt="Namma Orru Foods"
-              width={140}
-              height={40}
+              width={220}
+              height={64}
               priority
-              style={{ height: scrolled ? '24px' : '28px', width: 'auto', objectFit: 'contain' }}
-              className={`transition-all duration-500 ${scrolled ? 'md:!h-8' : 'md:!h-10'} w-auto object-contain`}
+              style={{ height: scrolled ? '44px' : '56px', width: 'auto', objectFit: 'contain' }}
+              className={`transition-all duration-500 w-auto object-contain`}
             />
           </Link>
 
@@ -74,26 +87,55 @@ const Navbar = () => {
 
           {/* UTILITIES: Anchored Right */}
           <div className="flex items-center gap-3 md:gap-10 shrink-0">
-            <Link href="/account" className="hidden sm:flex items-center gap-4 group">
-              <div className="h-11 w-11 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center group-hover:bg-emerald-50 group-hover:border-emerald-200 transition-all">
-                <User className="h-5 w-5 text-emerald-950" />
-              </div>
-              <div className="hidden lg:flex flex-col">
-                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Account</span>
-                <span className="text-[11px] font-black text-emerald-950 whitespace-nowrap leading-none">My Profile</span>
+
+            {/* ACCOUNT BUTTON — direct link to dashboard */}
+            <div className="hidden sm:inline-flex items-center relative">
+
+              {user ? (
+                /* ── LOGGED-IN TRIGGER ── */
+                <Link href="/account/profile" className="flex items-center gap-4 group">
+                  <div className="h-11 w-11 rounded-full overflow-hidden border-2 border-amber-400 shadow-sm transition-all group-hover:border-emerald-500">
+                    {user.avatar
+                      ? <img src={user.avatar} alt={user.name} className="h-full w-full object-cover" />
+                      : <div className="h-full w-full bg-emerald-950 flex items-center justify-center text-white text-sm font-black">{user.name[0]}</div>
+                    }
+                  </div>
+                  <div className="hidden lg:flex flex-col text-left">
+                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Account</span>
+                    <span className="text-[11px] font-black text-emerald-950 whitespace-nowrap leading-none">{user.name.split(' ')[0]}</span>
+                  </div>
+                </Link>
+              ) : (
+                /* ── GUEST TRIGGER ── */
+                <Link href="/account" className="flex items-center gap-4 group">
+                  <div className="h-11 w-11 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center group-hover:bg-emerald-50 group-hover:border-emerald-200 transition-all">
+                    <User className="h-5 w-5 text-emerald-950" />
+                  </div>
+                  <div className="hidden lg:flex flex-col">
+                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Account</span>
+                    <span className="text-[11px] font-black text-emerald-950 whitespace-nowrap leading-none">My Profile</span>
+                  </div>
+                </Link>
+              )}
+            </div>
+
+            {/* NOTIFICATIONS */}
+            <Link href="/account/notifications" className="flex items-center group">
+              <div className="relative h-11 w-11 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center group-hover:bg-emerald-50 group-hover:border-emerald-200 transition-all">
+                <Bell className="h-5 w-5 text-emerald-950" />
+                <div className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-emerald-600 text-[10px] font-black text-white border-2 border-white shadow-sm">
+                  2
+                </div>
               </div>
             </Link>
 
-            <button onClick={() => setIsOpen(true)} className="group flex items-center gap-4">
+
+            <button onClick={() => setIsOpen(true)} className="group flex items-center">
               <div className="relative h-11 w-11 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center group-hover:bg-emerald-50 group-hover:border-emerald-200 transition-all">
                 <ShoppingCart className="h-5 w-5 text-emerald-950" />
                 <div className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-amber-500 text-[10px] font-black text-emerald-950 border-2 border-white shadow-sm">
                   {cart.length}
                 </div>
-              </div>
-              <div className="hidden lg:flex flex-col">
-                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1">Basket</span>
-                <span className="text-[11px] font-bold text-emerald-950 leading-none">My Cart</span>
               </div>
             </button>
 
@@ -200,7 +242,7 @@ const Navbar = () => {
         >
           {/* Menu Header: Branded & Sticky */}
           <div className="sticky top-0 z-[110] bg-white/80 backdrop-blur-md px-6 h-20 flex items-center justify-between border-b border-slate-100">
-            <Image src="/logo.webp" alt="Namma Orru Foods" width={110} height={32} style={{ height: '24px', width: 'auto' }} />
+            <Image src="/logo.webp" alt="Namma Orru Foods" width={160} height={48} style={{ height: '40px', width: 'auto' }} />
             <button
               type="button"
               onClick={() => setIsMenuOpen(false)}
@@ -241,20 +283,77 @@ const Navbar = () => {
               ))}
             </div>
 
-            {/* CTA & Membership Section */}
-            <div className="pt-6">
-              <Link
-                href="/account"
-                onClick={() => setIsMenuOpen(false)}
-                className="w-full h-18 rounded-[2rem] bg-emerald-950 flex items-center justify-center gap-5 shadow-premium active:scale-95 transition-all"
-              >
-                <div className="h-10 w-10 rounded-full bg-white/10 flex items-center justify-center">
-                  <User size={18} className="text-amber-400" />
-                </div>
-                <span className="text-white text-[11px] font-black uppercase tracking-[0.4em]">Login</span>
-              </Link>
-            </div>
+            {/* ACCOUNT SECTION */}
+            {user ? (
+              <div className="flex flex-col gap-3">
+                {/* User Card */}
+                <Link 
+                  href="/account/profile"
+                  onClick={() => setIsMenuOpen(false)}
+                  className="flex items-center gap-4 px-6 py-4 rounded-[2rem] bg-emerald-950 shadow-premium active:scale-95 transition-all"
+                >
+                  <div className="h-12 w-12 rounded-full overflow-hidden border-2 border-amber-400 shrink-0">
+                    {user.avatar
+                      ? <img src={user.avatar} alt={user.name} className="h-full w-full object-cover" />
+                      : <div className="h-full w-full bg-emerald-700 flex items-center justify-center text-white text-lg font-black">{user.name[0]}</div>
+                    }
+                  </div>
+                  <div className="flex flex-col min-w-0">
+                    <span className="text-white text-[14px] font-black truncate">{user.name}</span>
+                    <span className="text-emerald-300/70 text-[10px] font-medium truncate">{user.email}</span>
+                  </div>
+                </Link>
 
+                <span className="text-[10px] font-black uppercase tracking-[0.5em] text-slate-400 mt-2 pl-4 border-l-2 border-amber-400">My Account</span>
+
+                {accountMenuItems.map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={() => setIsMenuOpen(false)}
+                    className="group flex items-center justify-between py-4 px-6 rounded-[2rem] bg-slate-50/50 hover:bg-emerald-50 transition-all border border-transparent hover:border-emerald-100"
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="h-10 w-10 rounded-2xl bg-white border border-slate-100 flex items-center justify-center text-emerald-700 group-hover:scale-110 transition-transform shadow-sm">
+                        <item.icon size={18} strokeWidth={2.5} />
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-[13px] font-black text-emerald-950">{item.label}</span>
+                        <span className="text-[10px] text-slate-400 font-medium">{item.desc}</span>
+                      </div>
+                    </div>
+                    <div className="h-8 w-8 rounded-full bg-white flex items-center justify-center shadow-sm">
+                      <ChevronRight className="h-4 w-4 text-emerald-950" strokeWidth={3} />
+                    </div>
+                  </Link>
+                ))}
+
+                {/* Sign Out */}
+                <button
+                  onClick={() => { logout(); setIsMenuOpen(false); }}
+                  className="group flex items-center gap-4 py-4 px-6 rounded-[2rem] bg-red-50 hover:bg-red-100 transition-all border border-red-100 mt-2"
+                >
+                  <div className="h-10 w-10 rounded-2xl bg-white border border-slate-100 flex items-center justify-center text-red-400 shadow-sm">
+                    <LogOut size={18} strokeWidth={2.5} />
+                  </div>
+                  <span className="text-[13px] font-black text-red-500 uppercase tracking-widest">Sign Out</span>
+                </button>
+              </div>
+            ) : (
+              /* CTA for guests */
+              <div className="pt-6">
+                <Link
+                  href="/account"
+                  onClick={() => setIsMenuOpen(false)}
+                  className="w-full h-18 rounded-[2rem] bg-emerald-950 flex items-center justify-center gap-5 shadow-premium active:scale-95 transition-all py-5"
+                >
+                  <div className="h-10 w-10 rounded-full bg-white/10 flex items-center justify-center">
+                    <User size={18} className="text-amber-400" />
+                  </div>
+                  <span className="text-white text-[11px] font-black uppercase tracking-[0.4em]">Login / Sign Up</span>
+                </Link>
+              </div>
+            )}
 
           </div>
         </div>

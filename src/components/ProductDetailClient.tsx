@@ -170,7 +170,7 @@ const ProductDetailClient = ({ product, allProducts }: ProductDetailClientProps)
         <div className="mt-20 grid grid-cols-1 lg:grid-cols-3 gap-12 lg:gap-20">
           <div className="lg:col-span-2 space-y-12">
             <div className="bg-white rounded-[2rem] p-10 md:p-14 border border-slate-100 shadow-sm">
-              <h3 className="text-[11px] font-black uppercase tracking-[0.5em] text-[#022c22] mb-10 inline-block border-b-2 border-amber-400 pb-3 font-bold">The Harvest Story</h3>
+              <h3 className="text-[11px] font-black uppercase tracking-[0.5em] text-[#022c22] mb-10 inline-block border-b-2 border-amber-400 pb-3 font-bold">Product Description</h3>
               <p className="text-slate-500 text-base md:text-lg leading-[1.8] font-medium">{product.description || 'This treasure represents the highest standard of our sustainable farming initiative.'}</p>
             </div>
           </div>
@@ -184,7 +184,7 @@ const ProductDetailClient = ({ product, allProducts }: ProductDetailClientProps)
                 <ShieldCheck className="h-8 w-8" />
               </div>
               <h4 className="text-[11px] font-black uppercase tracking-[0.3em] relative z-10">Purity Guarantee</h4>
-              <p className="text-[11px] font-bold text-emerald-100/70 leading-relaxed relative z-10 px-4">Every gram of this harvest is traced back to verified organic clusters.</p>
+              <p className="text-[11px] font-bold text-emerald-100/70 leading-relaxed relative z-10 px-4">Every gram of this Products is traced back to verified organic clusters.</p>
             </div>
           </div>
         </div>

@@ -10,7 +10,7 @@ const HERO_SLIDES = [
     id: 1,
     image: "/banners/home_1.png",
     title: "Taste the <span class=\"text-amber-400\">Purity</span> <br /> of Namma Orru",
-    subtitle: "We bring you the finest harvest directly from sustainable local farms. No middlemen, no chemicals — just pure, authentic goodness delivered to your doorstep.",
+    subtitle: "We bring you the finest Products  directly from sustainable local farms. No middlemen, no chemicals — just pure, authentic goodness delivered to your doorstep.",
     tagline: "Fresh from Local Farms"
   },
   {

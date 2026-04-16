@@ -53,7 +53,7 @@ const BannersRow = () => {
                 </p>
                 <div className="flex">
                   <button className="h-16 px-16 rounded-full bg-white text-emerald-950 font-black uppercase tracking-widest text-[11px] hover:bg-amber-400 transition-all shadow-premium group/btn">
-                    Explore Harvest <ArrowRight className="inline-block ml-4 h-5 w-5 group-hover:translate-x-3 transition-transform" />
+                    Explore Products <ArrowRight className="inline-block ml-4 h-5 w-5 group-hover:translate-x-3 transition-transform" />
                   </button>
                 </div>
               </div>

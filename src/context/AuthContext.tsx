@@ -24,10 +24,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Check for existing session
-    const savedUser = localStorage.getItem('namma_orru_user');
-    if (savedUser) {
-      setUser(JSON.parse(savedUser));
+    // Check for existing session safely
+    try {
+      const savedUser = localStorage.getItem('namma_orru_user');
+      if (savedUser && savedUser !== 'undefined') {
+        const parsed = JSON.parse(savedUser);
+        if (parsed && typeof parsed === 'object') {
+          setUser(parsed);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to restore auth session:', error);
+      localStorage.removeItem('namma_orru_user');
     }
     setIsLoading(false);
   }, []);

@@ -2,18 +2,36 @@
 
 import React, { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
-import { Mail, Lock, User, ArrowRight, ShieldCheck, Leaf, Globe, ShoppingBag, ChevronLeft } from 'lucide-react';
-import Link from 'next/image'; // Wait, I should use Next Link not Image for Link
-import NextLink from 'next/link';
+import { useRouter } from 'next/navigation';
+import { Mail, Lock, User, ArrowRight, ShieldCheck, Leaf, Globe, ShoppingBag, ChevronLeft, Heart, Package, MapPin, CreditCard, Bell, Settings, LogOut, ChevronRight } from 'lucide-react';
+import Link from 'next/link';
 import Image from 'next/image';
 
 export default function AccountPage() {
   const [isLogin, setIsLogin] = useState(true);
   const { user, login, signup, logout, isLoading } = useAuth();
+  const router = useRouter();
+
+  // Redirect to profile on desktop if logged in
+  React.useEffect(() => {
+    if (user && window.innerWidth >= 768) {
+      router.push('/account/profile');
+    }
+  }, [user, router]);
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
+
+  const menuItems = [
+    { label: 'My Profile',       href: '/account/profile',      icon: User,        desc: 'Personal details & settings' },
+    { label: 'Wishlist',         href: '/account/wishlist',     icon: Heart,       desc: 'Saved products' },
+    { label: 'My Orders',        href: '/account/orders',       icon: Package,     desc: 'Order history & status' },
+    { label: 'Track Order',      href: '/account/tracking',     icon: MapPin,      desc: 'Real-time shipment tracking' },
+    { label: 'Payments',         href: '/account/payments',     icon: CreditCard,  desc: 'Transaction history' },
+    { label: 'Notifications',    href: '/account/notifications',icon: Bell,        desc: 'Alerts & updates' },
+    { label: 'Settings',         href: '/account/settings',     icon: Settings,    desc: 'Privacy & preferences' },
+  ];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,15 +44,58 @@ export default function AccountPage() {
 
   if (user) {
     return (
-      <div className="min-h-screen bg-slate-50 pt-16 pb-20 flex items-center justify-center p-6 text-center">
-        <div className="w-full max-w-lg bg-white rounded-[3rem] p-12 md:p-16 border border-slate-100 shadow-premium relative overflow-hidden">
-          <div className="h-28 w-28 rounded-full overflow-hidden mx-auto border-4 border-white shadow-2xl mb-10">
-            <img src={user.avatar || '/ai_images/indian_spices_1776231045209.png'} alt={user.name} className="h-full w-full object-cover" />
+      <div className="md:hidden flex flex-col gap-4 p-4">
+        {/* User Card - Mobile Only */}
+        <div className="bg-emerald-950 rounded-[2rem] p-6 text-white shadow-premium relative overflow-hidden mb-4">
+          <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.05] pointer-events-none" />
+          <div className="relative z-10 flex items-center gap-4">
+            <div className="h-16 w-16 rounded-full overflow-hidden border-2 border-amber-400 shadow-xl shrink-0">
+              {user.avatar 
+                ? <img src={user.avatar} alt={user.name} className="h-full w-full object-cover" />
+                : <div className="h-full w-full bg-emerald-800 flex items-center justify-center text-xl font-black">{user.name[0]}</div>
+              }
+            </div>
+            <div className="flex flex-col min-w-0">
+              <h2 className="text-[18px] font-black tracking-tight leading-tight truncate">{user.name}</h2>
+              <p className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest opacity-80 truncate">{user.email}</p>
+            </div>
           </div>
-          <h2 className="text-4xl font-black text-[#022c22] tracking-tighter mb-4 leading-none">Welcome, {user.name.split(' ')[0]}!</h2>
-          <p className="text-[11px] font-black uppercase tracking-[0.4em] text-slate-300 mb-14">{user.email}</p>
-          <button onClick={logout} style={{ backgroundColor: '#022c22' }} className="w-full h-18 py-6 rounded-2xl text-white text-[11px] font-black uppercase tracking-[0.4em] shadow-2xl">Sign Out</button>
         </div>
+
+        <span className="text-[10px] font-black uppercase tracking-[0.5em] text-slate-400 pl-4 border-l-2 border-amber-400 mb-2">My Account</span>
+
+        <nav className="flex flex-col gap-3">
+          {menuItems.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className="group flex items-center justify-between py-4 px-6 rounded-[2rem] bg-white border border-slate-100 shadow-sm active:scale-95 transition-all"
+            >
+              <div className="flex items-center gap-4">
+                <div className="h-12 w-12 rounded-2xl bg-slate-50 flex items-center justify-center text-emerald-700 group-hover:bg-emerald-100 transition-all">
+                  <item.icon size={22} strokeWidth={2.5} />
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[14px] font-black text-emerald-950">{item.label}</span>
+                  <span className="text-[10px] text-slate-400 font-medium">{item.desc}</span>
+                </div>
+              </div>
+              <div className="h-8 w-8 rounded-full bg-slate-50 flex items-center justify-center">
+                <ChevronRight className="h-4 w-4 text-emerald-950" strokeWidth={3} />
+              </div>
+            </Link>
+          ))}
+
+          <button
+            onClick={logout}
+            className="flex items-center gap-4 py-4 px-6 rounded-[2rem] bg-red-50 active:bg-red-100 transition-all border border-red-100 mt-4 group"
+          >
+            <div className="h-12 w-12 rounded-2xl bg-white flex items-center justify-center text-red-400 shadow-sm transition-all group-active:scale-90">
+              <LogOut size={22} strokeWidth={2.5} />
+            </div>
+            <span className="text-[14px] font-black text-red-500 uppercase tracking-widest">Sign Out</span>
+          </button>
+        </nav>
       </div>
     );
   }
@@ -91,9 +152,9 @@ export default function AccountPage() {
 
 
             <div className="mb-10 flex flex-col items-center text-center">
-              <NextLink href="/" className="inline-block mb-6 hover:scale-105 transition-transform duration-500">
-                <img src="/logo.webp" alt="Namma Orru" className="h-12 w-auto object-contain" />
-              </NextLink>
+              <Link href="/" className="inline-block mb-6 hover:scale-105 transition-transform duration-500">
+                <img src="/logo.webp" alt="Namma Orru" className="h-16 w-auto object-contain" />
+              </Link>
               <h1 className="text-3xl md:text-4xl font-black text-[#022c22] tracking-tighter mb-3 leading-none">
                 {isLogin ? 'Welcome Back' : 'Sign Up'}
               </h1>
@@ -149,7 +210,7 @@ export default function AccountPage() {
                 style={{ backgroundColor: '#022c22' }}
                 className="w-full h-14 mt-4 rounded-xl text-white font-black uppercase tracking-[0.4em] text-[10px] hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3 shadow-premium"
               >
-                {isLoading ? 'Confirming Identity...' : (isLogin ? 'Signup' : 'Create Account')}
+                {isLoading ? 'Confirming Identity...' : (isLogin ? 'Log In' : 'Create Account')}
                 {!isLoading && <ArrowRight size={18} />}
               </button>
             </form>

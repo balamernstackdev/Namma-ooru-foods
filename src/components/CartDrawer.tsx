@@ -13,7 +13,7 @@ const CartDrawer = () => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[160] flex justify-end">
+    <div className="fixed inset-0 z-[1000] flex justify-end">
       {/* Overlay */}
       <div
         className="absolute inset-0 bg-black/40 backdrop-blur-sm"
@@ -39,7 +39,7 @@ const CartDrawer = () => {
           {/* Free Shipping Progress Bar */}
           <div className="mt-2">
             <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest text-emerald-950 mb-2">
-              <span>{total >= 499 ? '🎉 Free Harvest Shipping!' : `Add ₹${499 - total} more for FREE shipping`}</span>
+              <span>{total >= 499 ? '🎉 Free  Shipping!' : `Add ₹${499 - total} more for FREE shipping`}</span>
               <span className="text-amber-500">{Math.min(100, (total / 499) * 100).toFixed(0)}%</span>
             </div>
             <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
@@ -58,7 +58,7 @@ const CartDrawer = () => {
                 <ShoppingBag className="h-8 w-8 text-slate-200" />
               </div>
               <h3 className="text-lg font-black text-emerald-950 tracking-tighter uppercase">Products is Empty</h3>
-              <p className="mt-2 text-[11px] font-medium text-slate-400 leading-relaxed uppercase tracking-wider">Your harvest collection starts here. Explore our organic Items.</p>
+              <p className="mt-2 text-[11px] font-medium text-slate-400 leading-relaxed uppercase tracking-wider">Your Offer collection starts here. Explore our organic Items.</p>
               <button
                 onClick={() => setIsOpen(false)}
                 className="mt-8 rounded-xl bg-emerald-950 px-10 py-4 text-[10px] font-black uppercase tracking-[0.3em] text-white shadow-xl shadow-emerald-950/20"
@@ -135,7 +135,7 @@ const CartDrawer = () => {
                 style={{ backgroundColor: '#022c22' }}
                 className="flex w-full items-center justify-center gap-4 rounded-2xl py-5 text-[11px] font-black uppercase tracking-[0.4em] text-white shadow-2xl shadow-emerald-950/20 transition-all hover:bg-emerald-900 active:scale-[0.98]"
               >
-                Finalize Harvest <ArrowRight className="h-4 w-4" />
+                Finalize Products <ArrowRight className="h-4 w-4" />
               </button>
             </div>
           </div>

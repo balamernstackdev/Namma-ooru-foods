@@ -20,6 +20,7 @@ const jost = Jost({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://namma-urru-foods.web.app"),
   title: {
     default: "Namma Orru Foods | Premium Organic & Local Essentials",
     template: "%s | Namma Orru Foods"
@@ -31,7 +32,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_IN",
-    url: "https://nammaorrufoods.com",
+    url: "https://namma-urru-foods.web.app",
     title: "Namma Orru Foods | Premium Organic & Local Essentials",
     description: "Pure, local, and organic essentials delivered from our community to your kitchen.",
     siteName: "Namma Orru Foods",
@@ -73,9 +74,9 @@ export default function RootLayout({
                 {children}
               </main>
               <Footer />
-              <CartDrawer />
               <StickyAssistant />
             </SmoothScroll>
+            <CartDrawer />
           </ToastProvider>
         </AuthProvider>
 

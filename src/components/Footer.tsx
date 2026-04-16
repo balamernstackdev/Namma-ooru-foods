@@ -59,9 +59,9 @@ const Footer = () => {
               <Image
                 src="/logo.webp"
                 alt="Namma Orru Foods"
-                width={160}
-                height={48}
-                style={{ height: '44px', width: 'auto', objectFit: 'contain' }}
+                width={200}
+                height={60}
+                style={{ height: '56px', width: 'auto', objectFit: 'contain' }}
               />
             </Link>
             <p className="text-[13px] leading-7 text-emerald-900 font-medium">

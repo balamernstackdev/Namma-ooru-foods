@@ -38,6 +38,7 @@ const StickyAssistant = () => {
           </button>
         )}
         
+        {/* WhatsApp button — hidden for now, re-enable when ready
         <a
           href="https://wa.me/919876543210"
           target="_blank"
@@ -49,6 +50,7 @@ const StickyAssistant = () => {
           </svg>
           <div className="absolute -top-1 -right-1 h-3.5 w-3.5 bg-red-500 border-2 border-white rounded-full animate-ping" />
         </a>
+        */}
       </div>
     </>
   );

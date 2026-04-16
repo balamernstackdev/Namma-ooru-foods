@@ -12,15 +12,15 @@ const categories = ['All', 'Grains & Pulses', 'Organic Oils', 'Authentic Spices'
 export default function OrganicSpecialPage() {
   const organicProducts = PRODUCTS.filter(p => p.tags?.includes('organic-special'));
   const [activeCategory, setActiveCategory] = useState('All');
-  
-  const filteredProducts = activeCategory === 'All' 
-    ? organicProducts 
+
+  const filteredProducts = activeCategory === 'All'
+    ? organicProducts
     : organicProducts.filter(p => p.category === activeCategory);
 
   return (
     <div className="flex flex-col bg-white w-full min-h-screen">
-      
-      <HeroCarousel 
+
+      <HeroCarousel
         images={['banners/special_1.png', 'banners/special_2.png']}
         title={<>Organic <span className="text-emerald-300 italic">Special</span> Collection</>}
         subtitle="Handpicked organic products from certified farms — grown without pesticides, chemicals, or GMOs."
@@ -46,11 +46,10 @@ export default function OrganicSpecialPage() {
               <button
                 key={cat}
                 onClick={() => setActiveCategory(cat)}
-                className={`flex-shrink-0 px-8 py-3.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${
-                  activeCategory === cat 
-                    ? 'bg-emerald-950 text-white shadow-xl shadow-emerald-500/20' 
+                className={`flex-shrink-0 px-8 py-3.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${activeCategory === cat
+                    ? 'bg-emerald-950 text-white shadow-xl shadow-emerald-500/20'
                     : 'bg-gray-50 text-gray-400 hover:bg-gray-100 hover:text-gray-800'
-                }`}
+                  }`}
               >
                 {cat}
               </button>
@@ -62,8 +61,8 @@ export default function OrganicSpecialPage() {
       <div className="w-full bg-[#fafafa] py-16 md:py-24 flex justify-center">
         <div className="standard-container">
           <div className="flex flex-col md:flex-row items-center md:justify-between mb-12 md:mb-16 border-b border-gray-100 pb-8 gap-6 text-center md:text-left">
-             <h2 className="text-2xl md:text-3xl font-black text-emerald-950 tracking-tight">Pure Harvest Curations</h2>
-             <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">{filteredProducts.length} Results Found</span>
+            <h2 className="text-2xl md:text-3xl font-black text-emerald-950 tracking-tight">Pure Organic Products</h2>
+            <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">{filteredProducts.length} Results Found</span>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 md:gap-8">
