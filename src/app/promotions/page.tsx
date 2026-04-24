@@ -3,20 +3,32 @@
 import React, { useState } from 'react';
 import Image from 'next/image';
 import { Tag, Sparkles, Clock, ArrowRight } from 'lucide-react';
-import { PROMOTIONS } from '@/lib/staticData';
+import useSWR from 'swr';
+import { API_URL } from '@/lib/api';
+
+const fetcher = (url: string) => fetch(url).then(res => res.json());
 import HeroCarousel from '@/components/HeroCarousel';
 
 const PromoCard = ({ promo, copiedCode, onCopy, upcoming = false }: any) => {
   return (
     <div className={`group relative flex flex-col bg-white rounded-[3.5rem] overflow-hidden transition-all duration-700 h-full ${upcoming ? 'opacity-80 scale-95 border border-dashed border-gray-200' : 'hover:shadow-[0_40px_120px_rgba(0,0,0,0.12)] hover:-translate-y-4 shadow-sm border border-gray-100'}`}>
       <div className="relative h-72 md:h-80 w-full overflow-hidden">
-        <Image
-          src={promo.image}
-          alt={promo.title}
-          fill
-          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-          className="object-cover transition-transform duration-[2000ms] group-hover:scale-110"
-        />
+        {(promo.image && promo.image.trim() !== '') ? (
+          <Image
+            src={promo.image}
+            alt={promo.title}
+            fill
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            className="object-cover transition-transform duration-[2000ms] group-hover:scale-110"
+          />
+        ) : (
+          <Image
+            src="/ai_images/organic_grains_1776231059575.png"
+            alt={promo.title}
+            fill
+            className="object-cover transition-transform duration-[2000ms] group-hover:scale-110"
+          />
+        )}
         <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-emerald-950/90 to-transparent flex flex-col justify-end p-10 md:p-12">
           <div className="flex items-center gap-3 mb-4">
             <div className="px-5 py-2 rounded-full bg-white/20 backdrop-blur-xl text-[10px] font-black text-white uppercase tracking-widest border border-white/20">
@@ -61,6 +73,7 @@ const PromoCard = ({ promo, copiedCode, onCopy, upcoming = false }: any) => {
 };
 
 export default function PromotionsPage() {
+  const { data: promotions, error } = useSWR(`${API_URL}/api/promotions`, fetcher);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
 
   const copyCode = (code: string) => {
@@ -69,8 +82,8 @@ export default function PromotionsPage() {
     setTimeout(() => setCopiedCode(null), 3000);
   };
 
-  const activeDeals = PROMOTIONS.filter(p => p.active);
-  const upcomingDeals = PROMOTIONS.filter(p => !p.active);
+  const activeDeals = promotions?.filter((p: any) => p.isActive) || [];
+  const upcomingDeals = promotions?.filter((p: any) => !p.isActive) || [];
 
   return (
     <div className="w-full bg-[#fafafa] min-h-screen">
@@ -97,7 +110,7 @@ export default function PromotionsPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 md:gap-8">
-            {activeDeals.map((promo) => (
+            {activeDeals.map((promo: any) => (
               <PromoCard key={promo.id} promo={promo} copiedCode={copiedCode} onCopy={copyCode} />
             ))}
           </div>

@@ -20,15 +20,15 @@ export default function TermsPage() {
           <div className="prose prose-emerald max-w-none text-slate-600 font-medium leading-relaxed">
             <h3 className="text-xl font-black text-emerald-950 mt-8 mb-4">Store Wallet & Transactions</h3>
             <p className="mb-4">
-              Please read the following terms and conditions (“T&Cs”) carefully before registering for, accessing or using the store Wallet, located at the Rodeo-powered store mobile application on any device and/or before availing any e-wallet services that may be offered by the store using Rodeo technology on the store Platform.
+              Please read the following terms and conditions (“T&Cs”) carefully before registering for, accessing or using the store Wallet, located at the Namma Orru Foods store mobile application on any device and/or before availing any e-wallet services that may be offered by the store using our proprietary technology on the store Platform.
             </p>
             <p className="mb-4">
-              The store Wallet is issued by the store and the store Wallet Services powered by Rodeo are provided by Rodeo Digital Pvt. Ltd. The customers using the store Wallet may use the amounts in the store Wallet for making payments towards transactions done by customers on the store App. Customers shall not be permitted to make any cash withdrawals from the store Wallet.
+              The store Wallet is issued by Namma Orru Foods Pvt Ltd. The customers using the store Wallet may use the amounts in the store Wallet for making payments towards transactions done by customers on the store App. Customers shall not be permitted to make any cash withdrawals from the store Wallet.
             </p>
             
             <h3 className="text-xl font-black text-emerald-950 mt-8 mb-4">Eligibility</h3>
             <p className="mb-4">
-              The store Wallet Services powered by Rodeo are not available to persons under the age of 18 or to anyone previously suspended or removed by store owners with assistance from Rodeo. By accepting the T&Cs, you represent that you are at least 18 years of age. You represent and warrant that you have the right, authority, and capacity to enter into these T&Cs.
+              The store Wallet Services are not available to persons under the age of 18 or to anyone previously suspended or removed by Namma Orru Foods. By accepting the T&Cs, you represent that you are at least 18 years of age. You represent and warrant that you have the right, authority, and capacity to enter into these T&Cs.
             </p>
             
             <h3 className="text-xl font-black text-emerald-950 mt-8 mb-4">General Conditions</h3>

@@ -30,35 +30,33 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   return (
     <ToastContext.Provider value={{ addToast }}>
       {children}
-      <div className="fixed top-24 right-6 left-6 md:left-auto md:w-[400px] z-[200] flex flex-col gap-3">
+      <div className="fixed bottom-10 right-10 z-[300] flex flex-col gap-3">
         {toasts.map((toast) => (
           <div
             key={toast.id}
-            className="w-full bg-emerald-950 text-white p-5 rounded-2xl shadow-2xl flex items-center justify-between gap-4 animate-in fade-in slide-in-from-top-6 duration-500 border border-emerald-800/50 backdrop-blur-md"
+            className={`flex items-center gap-3 px-6 py-3.5 rounded-full shadow-[0_20px_50px_rgba(0,0,0,0.3)] animate-in fade-in slide-in-from-bottom-4 duration-500 border border-white/10 ${
+              toast.message === 'Error' || toast.message === 'Critical Error' 
+                ? 'bg-red-950 text-white' 
+                : 'bg-emerald-950 text-white'
+            }`}
           >
-            <div className="flex items-center gap-4">
-              <div className="h-10 w-10 rounded-xl bg-amber-500 flex items-center justify-center text-emerald-950 shrink-0">
-                <ShoppingCart size={20} strokeWidth={3} />
-              </div>
-              <div className="flex flex-col">
-                <span className="text-[10px] font-black uppercase tracking-widest text-amber-500 mb-1">{toast.message}</span>
-                <span className="text-sm font-bold leading-tight line-clamp-1">{toast.productName}</span>
-              </div>
+            <div className={`h-6 w-6 rounded-full flex items-center justify-center ${
+              toast.message === 'Error' || toast.message === 'Critical Error'
+                ? 'bg-red-500 text-red-950'
+                : 'bg-emerald-500 text-emerald-950'
+            }`}>
+              <CheckCircle2 size={14} strokeWidth={3} />
             </div>
-            <div className="flex items-center gap-3">
-              <Link
-                href="/cart"
-                className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all"
-              >
-                View Cart
-              </Link>
-              <button 
-                onClick={() => setToasts((prev) => prev.filter((t) => t.id !== toast.id))}
-                className="text-white/40 hover:text-white transition-colors"
-              >
-                <X size={18} />
-              </button>
+            <div className="flex flex-col">
+              {toast.message && <span className="text-[10px] font-black uppercase tracking-widest opacity-60 leading-none mb-1">{toast.message}</span>}
+              <span className="text-[13px] font-bold whitespace-nowrap">{toast.productName}</span>
             </div>
+            <button 
+              onClick={() => setToasts((prev) => prev.filter((t) => t.id !== toast.id))}
+              className="ml-2 text-white/40 hover:text-white transition-colors"
+            >
+              <X size={14} />
+            </button>
           </div>
         ))}
       </div>

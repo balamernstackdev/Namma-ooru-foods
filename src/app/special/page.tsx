@@ -4,18 +4,23 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { ArrowRight, Leaf, ShieldCheck, Award, Sparkles, Filter } from 'lucide-react';
 import ProductCard from '@/components/ProductCard';
-import { PRODUCTS } from '@/lib/staticData';
+import useSWR from 'swr';
+import { API_URL } from '@/lib/api';
 import HeroCarousel from '@/components/HeroCarousel';
 
 const categories = ['All', 'Grains & Pulses', 'Organic Oils', 'Authentic Spices', 'Dairy Products', 'Local Sweets'];
 
+const fetcher = (url: string) => fetch(url).then(res => res.json());
+
 export default function OrganicSpecialPage() {
-  const organicProducts = PRODUCTS.filter(p => p.tags?.includes('organic-special'));
+  const { data: products, error } = useSWR(`${API_URL}/api/products`, fetcher);
   const [activeCategory, setActiveCategory] = useState('All');
+
+  const organicProducts = products?.filter((p: any) => p.tags?.includes('organic-special')) || [];
 
   const filteredProducts = activeCategory === 'All'
     ? organicProducts
-    : organicProducts.filter(p => p.category === activeCategory);
+    : organicProducts.filter((p: any) => (p.category?.name === activeCategory) || (p.category === activeCategory));
 
   return (
     <div className="flex flex-col bg-white w-full min-h-screen">
@@ -66,7 +71,7 @@ export default function OrganicSpecialPage() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 md:gap-8">
-            {filteredProducts.map((product) => (
+            {filteredProducts.map((product: any) => (
               <ProductCard key={product.id} product={product} />
             ))}
           </div>

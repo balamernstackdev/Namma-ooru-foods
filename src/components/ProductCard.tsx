@@ -1,22 +1,25 @@
 'use client';
 
 import React from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
-import { Star, ShoppingCart, ArrowUpRight } from 'lucide-react';
+import { Star, ShoppingCart, ArrowUpRight, ShieldCheck } from 'lucide-react';
 import { useCartStore } from '@/store/useCartStore';
 import { useToast } from '@/context/ToastContext';
+import { useRouter } from 'next/navigation';
+import OptimizedImage from '@/components/ui/OptimizedImage';
 
 interface ProductCardProps {
   product: {
     id: number;
+    slug?: string;
     name: string;
-    category: string;
-    brand: string;
-    price: number;
-    originalPrice: number;
-    image: string;
-    rating: number;
+    category?: any;
+    brand?: any;
+    price: number | string;
+    originalPrice?: number | string;
+    image?: string;
+    images?: any[];
+    rating?: number;
     tags?: string[];
   };
 }
@@ -24,14 +27,48 @@ interface ProductCardProps {
 const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const { addToCart } = useCartStore();
   const { addToast } = useToast();
+  const router = useRouter();
+
+  const mainImage = product.image || (product.images && product.images[0]?.url) || '/ai_images/organic_grains_1776231059575.png';
+  const displayPrice = Number(product.price);
+  const displayOriginalPrice = product.originalPrice ? Number(product.originalPrice) : null;
+  const categoryName = typeof product.category === 'object' ? product.category?.name : product.category;
+
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    addToCart({
+      productId: product.id,
+      name: product.name,
+      price: displayPrice,
+      quantity: 1,
+      image: mainImage,
+      variant: 'Standard'
+    });
+    addToast('Success', `${product.name} added to Cart`);
+  };
+
+  const handleBuyNow = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    addToCart({
+      productId: product.id,
+      name: product.name,
+      price: displayPrice,
+      quantity: 1,
+      image: mainImage,
+      variant: 'Standard'
+    });
+    router.push('/checkout');
+  };
 
   return (
-    <div className="group relative w-full h-[100%] flex flex-col bg-white rounded-[2rem] border border-slate-100 transition-all duration-700 hover:shadow-[0_30px_60px_-15px_rgba(2,44,34,0.1)] hover:-translate-y-2 overflow-hidden card">
+    <div className="group relative w-full h-[100%] flex flex-col bg-white rounded-[2rem] border border-slate-100 transition-all duration-700 hover:shadow-[0_30px_60px_-15px_rgba(2,44,34,0.1)] overflow-hidden card">
       {/* Image Container */}
-      <div className="relative aspect-[4/5] sm:aspect-square w-full overflow-hidden bg-slate-50/50 flex-shrink-0">
-        <Link href={`/products/${product.id}`} className="relative block h-full w-full">
-          <Image
-            src={product.image}
+      <div className="relative aspect-[4/5] sm:aspect-square w-full overflow-hidden bg-white flex-shrink-0">
+        <Link href={`/products/${product.slug || product.id}`} className="relative block h-full w-full">
+          <OptimizedImage
+            src={mainImage}
             alt={product.name}
             fill
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
@@ -39,77 +76,84 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           />
         </Link>
 
-        {/* Badges */}
-        <div className="absolute top-5 left-5 flex flex-col gap-2 z-10">
-          {product.originalPrice && product.originalPrice > product.price && (
-            <div className="bg-amber-400 text-[#06241c] text-[8px] md:text-[11px] font-black px-4 py-2 rounded-lg shadow-sm uppercase tracking-widest overlay">
-              {Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}% OFF
+        {/* Subtle Save Badge - Top Right */}
+        <div className="absolute top-4 right-4 z-10">
+          {displayOriginalPrice && displayOriginalPrice > displayPrice && (
+            <div className="bg-white/90 backdrop-blur-md text-emerald-900 text-[9px] font-black px-3 py-1.5 rounded-full shadow-lg border border-emerald-950/5 uppercase tracking-widest animate-in fade-in zoom-in duration-500">
+              <span className="text-amber-500">Save</span> ₹{displayOriginalPrice - displayPrice}
             </div>
           )}
-        </div>
-
-        {/* Quick Add Overlay */}
-        <div className="absolute inset-x-5 bottom-5 translate-y-8 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500 z-20">
-          <button
-            onClick={(e) => {
-              e.preventDefault();
-              addToCart({
-                productId: product.id,
-                name: product.name,
-                price: product.price,
-                quantity: 1,
-                image: product.image,
-                variant: 'Standard'
-              });
-              addToast('Successfully added to basket', product.name);
-            }}
-            className="w-full h-12 rounded-xl bg-[#06241c] text-white text-[10px] md:text-[11px] font-black uppercase tracking-widest hover:bg-amber-500 hover:text-[#06241c] transition-all shadow-xl flex items-center justify-center gap-2 active:scale-95"
-          >
-            <ShoppingCart className="h-4 w-4" /> Add To Cart
-          </button>
         </div>
       </div>
 
       {/* Content Section */}
-      <div className="flex flex-col flex-1 p-4 md:p-6 pb-4 md:pb-6 bg-white z-10 relative">
-
+      <div className="flex flex-col flex-1 p-3 md:p-6 pb-4 md:pb-6 bg-white z-10 relative">
         <div className="flex-1">
-          <div className="flex items-center justify-between mb-4">
-
-            <span className="text-[9px] md:text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">{product.category}</span>
-            <div className="flex items-center gap-1.5 bg-slate-50 px-3 py-1.5 rounded-full border border-slate-100">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex flex-col">
+              <div className="flex items-center gap-2 mb-1.5">
+                <span className="text-[10px] font-black text-slate-300 uppercase tracking-[0.3em] leading-none">{categoryName || 'Reseller Choice'}</span>
+                <div className="h-3 w-px bg-slate-100" />
+                <div className="flex items-center gap-1 text-emerald-600">
+                  <ShieldCheck size={10} strokeWidth={3} />
+                  <span className="text-[8px] font-black uppercase tracking-widest">Verified</span>
+                </div>
+              </div>
+              {product.brand ? (
+                <span className="text-[9px] font-black text-amber-500 uppercase tracking-widest">{product.brand.name}</span>
+              ) : (
+                <span className="text-[9px] font-black text-emerald-600 uppercase tracking-widest">Official Store</span>
+              )}
+            </div>
+            <div className="flex items-center gap-1.5 bg-slate-50 px-3 py-1 rounded-full border border-slate-100">
               <Star className="h-3 w-3 fill-amber-500 text-amber-500" />
-              <span className="text-[10px] md:text-[11px] font-bold text-emerald-900">{product.rating}</span>
+              <span className="text-[10px] font-black text-emerald-950">{product.rating || '4.5'}</span>
             </div>
           </div>
 
-          <Link href={`/products/${product.id}`} className="block">
-            <h3 className="text-[20px] md:text-[24px] font-bold text-emerald-950 mb-4 group-hover:text-emerald-700 transition-colors leading-[1.2] line-clamp-2 tracking-tight">
+          <Link href={`/products/${product.slug || product.id}`} className="block">
+            <h3 className="text-[15px] md:text-[18px] font-black text-emerald-950 mb-3 group-hover:text-emerald-700 transition-colors leading-[1.2] line-clamp-2 tracking-tight">
               {product.name}
             </h3>
           </Link>
         </div>
 
-        <div className="flex items-center justify-between gap-4 pt-3 border-t border-slate-50 mt-auto">
-
-          <div className="flex flex-col">
-            <span className="text-[8px] md:text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">Our Price</span>
-            <div className="flex items-baseline gap-2">
-              <span className="text-2xl md:text-3xl font-bold text-emerald-900 tracking-tight">
-                <span className="text-[12px] md:text-[14px] font-medium text-slate-300 mr-1">₹</span>
-                {product.price}
+        <div className="flex flex-col gap-4 mt-2">
+          {/* Price Component */}
+          <div className="flex flex-col gap-1">
+            <div className="flex items-center gap-2">
+              <span className="text-lg md:text-2xl font-black text-emerald-950 tracking-tighter">
+                ₹{displayPrice}
               </span>
-              {product.originalPrice && (
-                <span className="text-[10px] md:text-[12px] text-slate-300 line-through font-medium">
-                  ₹{product.originalPrice}
-                </span>
+              {displayOriginalPrice && (
+                <div className="bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded-md text-[8px] md:text-[9px] font-black uppercase tracking-widest">
+                  {Math.round(((displayOriginalPrice - displayPrice) / displayOriginalPrice) * 100)}% OFF
+                </div>
               )}
             </div>
+            {displayOriginalPrice && (
+              <span className="text-[10px] text-slate-300 line-through font-bold">
+                M.R.P: ₹{displayOriginalPrice}
+              </span>
+            )}
           </div>
 
-          <Link href={`/products/${product.id}`} className="h-10 w-10 md:h-12 md:w-12 rounded-full bg-emerald-50/80 text-emerald-900 hidden lg:flex flex-shrink-0 items-center justify-center transition-all hover:bg-emerald-900 hover:text-white shadow-sm group/btn border border-emerald-100/50">
-            <ArrowUpRight className="h-4 w-4 group-hover:rotate-45 transition-transform" strokeWidth={2.5} />
-          </Link>
+          {/* Action Buttons */}
+          <div className="grid grid-cols-2 gap-1.5 mt-2">
+            <button
+              onClick={handleAddToCart}
+              className="h-10 md:h-12 rounded-xl bg-slate-100 text-emerald-950 text-[9px] md:text-[10px] font-black uppercase tracking-widest hover:bg-emerald-50 transition-all flex items-center justify-center gap-1.5"
+            >
+              <ShoppingCart size={12} className="md:w-[14px]" />
+              <span className="hidden xs:inline">Add</span>
+            </button>
+            <button
+              onClick={handleBuyNow}
+              className="h-10 md:h-12 rounded-xl bg-emerald-950 text-white text-[9px] md:text-[10px] font-black uppercase tracking-widest hover:bg-emerald-900 transition-all shadow-lg active:scale-95 flex items-center justify-center gap-1.5"
+            >
+              Buy
+            </button>
+          </div>
         </div>
       </div>
     </div>

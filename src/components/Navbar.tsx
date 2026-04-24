@@ -6,7 +6,10 @@ import Image from 'next/image';
 import { Search, ShoppingCart, User, Menu, X, Home, LayoutGrid, TrendingUp, Star, Tag, ChevronRight, Heart, Package, MapPin, CreditCard, LogOut, Settings, Bell } from 'lucide-react';
 import { useCartStore } from '@/store/useCartStore';
 import { useAuth } from '@/context/AuthContext';
+import useSWR from 'swr';
+import { API_URL } from '@/lib/api';
 
+const fetcher = (url: string) => fetch(url).then(res => res.json());
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isCategoryOpen, setIsCategoryOpen] = useState(false);
@@ -23,17 +26,15 @@ const Navbar = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const categoriesMenu = [
-    { name: 'Grains & Pulses', sub: ['Toor Dal', 'Urad Dal', 'Moong Dal', 'Traditional Rice', 'Millets'] },
-    { name: 'Organic Oils', sub: ['Groundnut Oil', 'Sesame Oil', 'Coconut Oil', 'Castor Oil'] },
-    { name: 'Authentic Spices', sub: ['Turmeric Powder', 'Chilli Powder', 'Whole Spices', 'Homemade Masalas'] },
-    { name: 'Dairy Products', sub: ['A2 Milk', 'Paneer', 'Organic Butter', 'Desi Ghee'] },
-    { name: 'Indian Snacks', sub: ['Murukku', 'Mixture', 'Seedattal', 'Chips'] },
-    { name: 'Local Sweets', sub: ['Mysore Pak', 'Ladoo', 'Halwa', 'Jaggery Sweets'] },
-    { name: 'Cold Pressed', sub: ['Almond Oil', 'Mustard Oil', 'Neem Oil'] },
-    { name: 'Pickles & Pastes', sub: ['Mango Pickle', 'Garlic Pickle', 'Ginger Paste', 'Tomato Thokku'] }
-  ];
+  const { data: apiCategories } = useSWR(`${API_URL}/api/categories`, fetcher);
 
+  const dynamicCategoriesMenu = Array.isArray(apiCategories) ? apiCategories
+    .filter((cat: any) => cat.parentId === null)
+    .slice(0, 8)
+    .map((cat: any) => ({
+      name: cat.name,
+      sub: cat.children ? cat.children.map((c: any) => c.name) : []
+    })) : [];
   const accountMenuItems = [
     { label: 'My Profile',       href: '/account/profile',      icon: User,        desc: 'Personal details & settings' },
     { label: 'Wishlist',         href: '/account/wishlist',     icon: Heart,       desc: 'Saved products' },
@@ -65,18 +66,18 @@ const Navbar = () => {
 
 
           {/* SEARCH BAR SYSTEM */}
-          <div className="hidden lg:flex flex-1 relative group">
+            <div className="hidden lg:flex flex-1 relative group">
             <div className="flex h-12 w-full items-center rounded-2xl border-2 border-slate-100 focus-within:border-emerald-600 focus-within:ring-4 focus-within:ring-emerald-50 transition-all overflow-hidden bg-slate-50/50">
               <div className="relative h-full flex items-center">
                 <select className="appearance-none h-full pl-6 pr-10 bg-white border-r border-slate-100 text-[11px] font-bold text-emerald-950 uppercase tracking-widest cursor-pointer outline-none hover:bg-slate-50 transition-colors">
                   <option>All Categories</option>
-                  {categoriesMenu.map(cat => <option key={cat.name}>{cat.name}</option>)}
+                  {dynamicCategoriesMenu.map((cat: any) => <option key={cat.name}>{cat.name}</option>)}
                 </select>
                 <ChevronRight className="absolute right-4 h-3 w-3 rotate-90 pointer-events-none text-slate-400" strokeWidth={3} />
               </div>
               <input
                 type="text"
-                placeholder="Search across 8,000+ organic harvests..."
+                placeholder="Search for organic harvests..."
                 className="flex-1 h-full px-6 bg-transparent text-[14px] font-bold outline-none placeholder:text-slate-400 text-emerald-950"
               />
               <button className="h-full px-8 bg-emerald-950 text-white hover:bg-emerald-800 transition-colors flex items-center gap-2">
@@ -93,15 +94,15 @@ const Navbar = () => {
 
               {user ? (
                 /* ── LOGGED-IN TRIGGER ── */
-                <Link href="/account/profile" className="flex items-center gap-4 group">
-                  <div className="h-11 w-11 rounded-full overflow-hidden border-2 border-amber-400 shadow-sm transition-all group-hover:border-emerald-500">
-                    {user.avatar
+                <Link href={user.role === 'admin' ? "/admin" : "/account/profile"} className="flex items-center gap-4 group">
+                  <div className={`h-11 w-11 rounded-full border-2 flex items-center justify-center overflow-hidden transition-all ${user.role === 'admin' ? 'border-amber-400' : 'border-slate-100'}`}>
+                    {user.avatar 
                       ? <img src={user.avatar} alt={user.name} className="h-full w-full object-cover" />
-                      : <div className="h-full w-full bg-emerald-950 flex items-center justify-center text-white text-sm font-black">{user.name[0]}</div>
+                      : <div className={`h-full w-full flex items-center justify-center text-sm font-black ${user.role === 'admin' ? 'bg-amber-400 text-emerald-950' : 'bg-emerald-950 text-white'}`}>{user.name[0]}</div>
                     }
                   </div>
                   <div className="hidden lg:flex flex-col text-left">
-                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Account</span>
+                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">{user.role === 'admin' ? 'Admin Panel' : 'Account'}</span>
                     <span className="text-[11px] font-black text-emerald-950 whitespace-nowrap leading-none">{user.name.split(' ')[0]}</span>
                   </div>
                 </Link>
@@ -120,13 +121,10 @@ const Navbar = () => {
             </div>
 
             {/* NOTIFICATIONS — only for logged in users */}
-            {user && (
+            {user?.id && (
               <Link href="/account/notifications" className="flex items-center group">
                 <div className="relative h-11 w-11 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center group-hover:bg-emerald-50 group-hover:border-emerald-200 transition-all">
                   <Bell className="h-5 w-5 text-emerald-950" />
-                  <div className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-emerald-600 text-[10px] font-black text-white border-2 border-white shadow-sm">
-                    2
-                  </div>
                 </div>
               </Link>
             )}
@@ -178,33 +176,41 @@ const Navbar = () => {
                 className="absolute top-full left-0 w-64 bg-white border border-slate-100 shadow-2xl rounded-b-2xl py-6 animate-in fade-in slide-in-from-top-2 duration-300 z-50"
               >
                 <div className="flex flex-col gap-1 px-2">
-                  {categoriesMenu.map((cat) => (
-                    <div key={cat.name} className="relative group/navitem">
-                      <Link
-                        href={`/products?category=${encodeURIComponent(cat.name)}`}
-                        className="px-6 py-3 rounded-xl hover:bg-emerald-50 text-[13px] font-bold text-emerald-950 flex items-center justify-between transition-all"
-                      >
-                        {cat.name}
-                        <ChevronRight className="h-4 w-4 opacity-40 group-hover/navitem:opacity-100 group-hover/navitem:text-amber-500 transition-all text-emerald-900" strokeWidth={3} />
-                      </Link>
+                  {dynamicCategoriesMenu.length > 0 ? (
+                    dynamicCategoriesMenu.map((cat: any) => (
+                      <div key={cat.name} className="relative group/navitem">
+                        <Link
+                          href={`/products?category=${encodeURIComponent(cat.name)}`}
+                          className="px-6 py-3 rounded-xl hover:bg-emerald-50 text-[13px] font-bold text-emerald-950 flex items-center justify-between transition-all"
+                        >
+                          {cat.name}
+                          <ChevronRight className="h-4 w-4 opacity-40 group-hover/navitem:opacity-100 group-hover/navitem:text-amber-500 transition-all text-emerald-900" strokeWidth={3} />
+                        </Link>
 
-                      {/* FLYOUT SUB-MENU */}
-                      <div className="absolute top-0 left-[100%] ml-0 w-56 bg-white border border-slate-100 shadow-[20px_20px_60px_rgba(0,0,0,0.05)] rounded-2xl py-3 opacity-0 invisible group-hover/navitem:opacity-100 group-hover/navitem:visible transition-all duration-200 z-[60] -translate-x-2 group-hover/navitem:translate-x-0">
-                        <div className="flex flex-col gap-1 px-3">
-                          {cat.sub.map(subItem => (
-                            <Link
-                              key={subItem}
-                              href={`/products?category=${encodeURIComponent(subItem)}`}
-                              onClick={() => setIsCategoryOpen(false)}
-                              className="px-4 py-2.5 rounded-xl hover:bg-slate-50 text-[12px] font-bold text-emerald-900/80 transition-all hover:text-emerald-950 hover:translate-x-1 flex items-center"
-                            >
-                              {subItem}
-                            </Link>
-                          ))}
-                        </div>
+                        {/* FLYOUT SUB-MENU */}
+                        {cat.sub?.length > 0 && (
+                          <div className="absolute top-0 left-[100%] ml-0 w-56 bg-white border border-slate-100 shadow-[20px_20px_60px_rgba(0,0,0,0.05)] rounded-2xl py-3 opacity-0 invisible group-hover/navitem:opacity-100 group-hover/navitem:visible transition-all duration-200 z-[60] -translate-x-2 group-hover/navitem:translate-x-0">
+                            <div className="flex flex-col gap-1 px-3">
+                              {cat.sub.map((subItem: any) => (
+                                <Link
+                                  key={subItem}
+                                  href={`/products?category=${encodeURIComponent(subItem)}`}
+                                  onClick={() => setIsCategoryOpen(false)}
+                                  className="px-4 py-2.5 rounded-xl hover:bg-slate-50 text-[12px] font-bold text-emerald-900/80 transition-all hover:text-emerald-950 hover:translate-x-1 flex items-center"
+                                >
+                                  {subItem}
+                                </Link>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                       </div>
+                    ))
+                  ) : (
+                    <div className="px-6 py-4 text-[11px] font-bold text-slate-400 uppercase tracking-widest text-center">
+                      {apiCategories ? 'No Categories Found' : 'Loading Live Data...'}
                     </div>
-                  ))}
+                  )}
                 </div>
               </div>
             )}

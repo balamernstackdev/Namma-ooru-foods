@@ -3,11 +3,13 @@
 import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { ShoppingBag, Trash2, ArrowRight, ShieldCheck, Truck, RefreshCw, ChevronLeft } from 'lucide-react';
 import { useCartStore } from '@/store/useCartStore';
 import ProductCard from '@/components/ProductCard';
 
 const CartPage = () => {
+  const router = useRouter();
   const { cart, removeFromCart, updateQuantity, getTotal } = useCartStore();
   const total = getTotal();
   const freeShippingThreshold = 499;
@@ -138,6 +140,7 @@ const CartPage = () => {
 
                 <div className="flex flex-col gap-4">
                   <button
+                    onClick={() => router.push('/checkout')}
                     style={{ backgroundColor: '#022c22' }}
                     className="w-full flex items-center justify-center gap-4 py-6 rounded-2xl text-[11px] font-bold uppercase tracking-[0.4em] text-white shadow-2xl shadow-emerald-950/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
                   >

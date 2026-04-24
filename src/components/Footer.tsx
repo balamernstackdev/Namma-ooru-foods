@@ -46,7 +46,7 @@ const Footer = () => {
   return (
     <footer className="w-full bg-[#fdfbf7] text-emerald-950 pt-16 pb-12 border-t border-emerald-900/5 relative z-10 mt-auto flex flex-col justify-center font-sans">
 
-      <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.03] pointer-events-none mix-blend-multiply" />
+      <div className="absolute inset-0 bg-emerald-950/5 opacity-[0.03] pointer-events-none mix-blend-multiply" />
       <div className="standard-container mx-auto relative z-10">
 
         {/* MAIN GRID: col-span-2 brand on mobile, 4 cols on desktop */}
@@ -71,8 +71,8 @@ const Footer = () => {
             </p>
             <div className="pt-2 border-t border-emerald-900/10 w-full">
               <p className="text-[10px] font-bold text-emerald-800 uppercase tracking-widest mb-2">Direct Support</p>
-              <Link href="tel:+919876543210" className="text-lg font-bold text-emerald-950 tracking-tight hover:text-amber-600 transition-colors">
-                +91 98765 43210
+              <Link href="tel:+919840012345" className="text-lg font-bold text-emerald-950 tracking-tight hover:text-amber-600 transition-colors">
+                +91 98400 12345
               </Link>
             </div>
           </div>

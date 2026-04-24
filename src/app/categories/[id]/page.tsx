@@ -1,29 +1,25 @@
 import React from 'react';
-import { PRODUCTS, CATEGORIES } from '@/lib/staticData';
-import CategoryDetailClient from '@/components/CategoryDetailClient';
+import CategoryDetailLoader from './CategoryDetailLoader';
+import { CATEGORIES } from '@/lib/staticData';
+import { BRANDS } from '@/lib/staticData';
+import { API_URL } from '@/lib/api';
 
 export async function generateStaticParams() {
-  // Use the actual categories from static data
-  return CATEGORIES.map((cat) => ({
-    id: cat.name.toLowerCase().replace(/\s+/g, '-'),
-  }));
+  try {
+    const res = await fetch(`${API_URL}/api/categories`);
+    const categories = await res.json();
+    return Array.isArray(categories) ? categories.map((c: any) => ({ id: c.id.toString() })) : [];
+  } catch (error) {
+    return CATEGORIES.map((c) => ({
+      id: c.id.toString(),
+    }));
+  }
 }
 
 export default async function CategoryPage({ params }: { params: Promise<{ id: string }> }) {
-  const resolvedParams = await params;
-  
-  // Clean up the ID to match category naming
-  const categoryName = resolvedParams.id
-    .split('-')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ');
-  
-  const categoryProducts = PRODUCTS.filter(p => 
-    p.category.toLowerCase().includes(categoryName.toLowerCase()) || 
-    p.name.toLowerCase().includes(categoryName.toLowerCase())
-  );
+  const { id } = await params;
 
   return (
-    <CategoryDetailClient categoryId={resolvedParams.id} categoryProducts={categoryProducts} />
+    <CategoryDetailLoader id={id} />
   );
 }

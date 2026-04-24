@@ -8,8 +8,12 @@ import StickyAssistant from "@/components/StickyAssistant";
 
 import { AuthProvider } from "@/context/AuthContext";
 import { ToastProvider } from "@/context/ToastContext";
+import { ThemeProvider } from "@/context/ThemeContext";
+import SmoothScroll from "@/components/SmoothScroll";
+import CustomCursor from "@/components/CustomCursor";
+import ClientLayout from "@/components/ClientLayout";
 
-const inter = Inter({ 
+const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
 });
@@ -37,7 +41,7 @@ export const metadata: Metadata = {
     description: "Pure, local, and organic essentials delivered from our community to your kitchen.",
     siteName: "Namma Orru Foods",
     images: [{
-      url: "/og-image.jpg", // Make sure this file exists in public/
+      url: "/og-image.jpg",
       width: 1200,
       height: 630,
       alt: "Namma Orru Foods"
@@ -55,9 +59,6 @@ export const metadata: Metadata = {
   }
 };
 
-import SmoothScroll from "@/components/SmoothScroll";
-import CustomCursor from "@/components/CustomCursor";
-
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -65,22 +66,19 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${inter.variable} ${jost.variable}`}>
-      <body className={`antialiased font-sans`}>
-        <AuthProvider>
-          <ToastProvider>
-            <SmoothScroll>
-              <Navbar />
-              <main className="min-h-fit flex-1">
-                {children}
-              </main>
-              <Footer />
-              <StickyAssistant />
-            </SmoothScroll>
-            <CartDrawer />
-          </ToastProvider>
-        </AuthProvider>
-
-
+      <body className={`antialiased font-sans transition-colors duration-500`}>
+        <ThemeProvider>
+          <AuthProvider>
+            <ToastProvider>
+              <SmoothScroll>
+                <ClientLayout>
+                  {children}
+                </ClientLayout>
+              </SmoothScroll>
+              <CartDrawer />
+            </ToastProvider>
+          </AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

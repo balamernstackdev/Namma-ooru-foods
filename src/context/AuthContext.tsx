@@ -1,12 +1,24 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { API_URL } from '@/lib/api';
 
 interface User {
   id: string;
   name: string;
   email: string;
+  phone?: string;
+  role?: 'user' | 'admin' | 'vendor';
+  brandId?: number;
   avatar?: string;
+  defaultAddress?: {
+    id: number;
+    line1: string;
+    line2?: string;
+    city: string;
+    state: string;
+    pincode: string;
+  };
 }
 
 interface AuthContextType {
@@ -24,47 +36,81 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Check for existing session safely
-    try {
-      const savedUser = localStorage.getItem('namma_orru_user');
-      if (savedUser && savedUser !== 'undefined') {
-        const parsed = JSON.parse(savedUser);
-        if (parsed && typeof parsed === 'object') {
-          setUser(parsed);
-        }
-      }
-    } catch (error) {
-      console.error('Failed to restore auth session:', error);
-      localStorage.removeItem('namma_orru_user');
-    }
-    setIsLoading(false);
+    checkAuth();
   }, []);
+
+  const checkAuth = async () => {
+    const token = localStorage.getItem('namma_orru_token');
+    if (!token) {
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API_URL}/api/auth/me`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setUser(data);
+      } else {
+        localStorage.removeItem('namma_orru_token');
+      }
+    } catch (err: any) {
+      // Use console.warn instead of console.error to avoid intercept by Next.js Global Error Overlay
+      console.warn('Auth verification failed. Server might be unreachable or token invalid:', err.message || err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const login = async (email: string, pass: string) => {
     setIsLoading(true);
-    // Mock API call
-    setTimeout(() => {
-      const mockUser = { id: '1', name: 'John Doe', email, avatar: '/ai_images/organic_grains_1776231059575.png' };
-      setUser(mockUser);
-      localStorage.setItem('namma_orru_user', JSON.stringify(mockUser));
+    try {
+      const res = await fetch(`${API_URL}/api/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password: pass })
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Login failed');
+
+      setUser(data.user);
+      localStorage.setItem('namma_orru_token', data.token);
+    } catch (err: any) {
       setIsLoading(false);
-    }, 1500);
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const signup = async (name: string, email: string, pass: string) => {
     setIsLoading(true);
-    // Mock API call
-    setTimeout(() => {
-      const mockUser = { id: '2', name, email };
-      setUser(mockUser);
-      localStorage.setItem('namma_orru_user', JSON.stringify(mockUser));
+    try {
+      const res = await fetch(`${API_URL}/api/auth/signup`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, password: pass })
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Signup failed');
+
+      setUser(data.user);
+      localStorage.setItem('namma_orru_token', data.token);
+    } catch (err: any) {
       setIsLoading(false);
-    }, 1500);
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const logout = () => {
     setUser(null);
-    localStorage.removeItem('namma_orru_user');
+    localStorage.removeItem('namma_orru_token');
   };
 
   return (

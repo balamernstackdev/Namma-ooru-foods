@@ -21,12 +21,12 @@ const CartDrawer = () => {
       />
 
       {/* Drawer */}
-      <div className="relative z-10 flex h-full w-full max-w-sm flex-col bg-white shadow-2xl animate-slide-left">
+      <div className="relative z-10 flex h-full w-full max-w-sm flex-col bg-white shadow-2xl animate-slide-left" data-lenis-prevent>
         <div className="flex flex-col border-b border-slate-100 p-6 gap-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <ShoppingBag className="h-5 w-5 text-emerald-950" />
-              <h2 className="text-xl font-black text-emerald-950 tracking-tighter">Your Basket ({cart.length})</h2>
+              <h2 className="text-xl font-black text-emerald-950 tracking-tighter">Your Cart ({cart.length})</h2>
             </div>
             <button
               onClick={() => setIsOpen(false)}

@@ -2,28 +2,43 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ArrowRight, TrendingUp, Star, SlidersHorizontal, Check, ChevronDown, X } from 'lucide-react';
+import { TrendingUp, SlidersHorizontal, Check, ChevronDown, X } from 'lucide-react';
 import ProductCard from '@/components/ProductCard';
-import { PRODUCTS } from '@/lib/staticData';
 import HeroCarousel from '@/components/HeroCarousel';
+import useSWR from 'swr';
+import { API_URL } from '@/lib/api';
 
-const categories = ['All', 'Grains & Pulses', 'Organic Oils', 'Authentic Spices', 'Dairy Products', 'Indian Snacks', 'Local Sweets'];
+const fetcher = (url: string) => fetch(url).then(res => res.json());
 
 export default function BestSellingPage() {
-   const bestSellingProducts = PRODUCTS.filter(p => p.tags?.includes('best-selling'));
+   const { data: products } = useSWR(`${API_URL}/api/products`, fetcher);
+   const { data: categoriesData } = useSWR(`${API_URL}/api/categories`, fetcher);
+
    const [activeCategory, setActiveCategory] = useState('All');
    const [showFilters, setShowFilters] = useState(false);
    const [currentPage, setCurrentPage] = useState(1);
+   const [sortOrder, setSortOrder] = useState<'rating' | 'price_asc' | 'price_desc'>('rating');
    const itemsPerPage = 9;
 
+   // Dynamic category list from API
+   const categoryNames: string[] = ['All', ...(categoriesData?.map((c: any) => c.name) || [])];
+
+   // All products — sorted by selected order
+   const allProducts: any[] = products || [];
+   const sortedProducts = [...allProducts].sort((a, b) => {
+      if (sortOrder === 'rating') return (b.avgRating ?? 0) - (a.avgRating ?? 0);
+      if (sortOrder === 'price_asc') return parseFloat(a.price) - parseFloat(b.price);
+      if (sortOrder === 'price_desc') return parseFloat(b.price) - parseFloat(a.price);
+      return 0;
+   });
 
    const filteredProducts = activeCategory === 'All'
-      ? bestSellingProducts
-      : bestSellingProducts.filter(p => p.category === activeCategory);
+      ? sortedProducts
+      : sortedProducts.filter((p: any) => p.category?.name === activeCategory);
 
    useEffect(() => {
       if (showFilters) setShowFilters(false);
-      setCurrentPage(1); // Reset to first page on category change
+      setCurrentPage(1);
    }, [activeCategory]);
 
    const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
@@ -32,11 +47,10 @@ export default function BestSellingPage() {
       currentPage * itemsPerPage
    );
 
-
    return (
       <div className="flex flex-col bg-white w-full border-t border-slate-100">
 
-         {/* Cinematic Banner - Responsive Height */}
+         {/* Cinematic Banner */}
          <HeroCarousel
             images={['banners/best_1.png', 'banners/best_2.png']}
             title={<>Best <span className="text-amber-400 italic font-bold">Selling</span> Products</>}
@@ -51,7 +65,7 @@ export default function BestSellingPage() {
             }
          />
 
-         {/* Mobile Filter Toggle (Floats on scroll) */}
+         {/* Mobile Filter Toggle */}
          <div className="lg:hidden sticky top-[100px] z-30 px-4 py-3 bg-white/80 backdrop-blur-md border-b border-slate-100 flex items-center justify-between">
             <button
                onClick={() => setShowFilters(true)}
@@ -84,13 +98,13 @@ export default function BestSellingPage() {
                   </div>
 
                   <div className="p-8 xl:p-10 lg:pt-14 overflow-y-auto max-h-screen lg:max-h-none lg:sticky lg:top-[120px] flex flex-col gap-10">
-                     {/* Department Section */}
+                     {/* Category Section */}
                      <div className="flex flex-col">
                         <h3 className="text-[10px] md:text-[12px] font-black uppercase tracking-widest text-[#022c22]/30 mb-6 pl-3 pr-2">
                            Shop by Category
                         </h3>
                         <div className="flex flex-col gap-1">
-                           {categories.map((cat) => (
+                           {categoryNames.map((cat: string) => (
                               <button
                                  key={cat}
                                  onClick={() => setActiveCategory(cat)}
@@ -110,15 +124,13 @@ export default function BestSellingPage() {
                            ))}
                         </div>
                      </div>
-
-
                   </div>
                </aside>
 
                {/* CONTENT: CATALOG GRID */}
                <main className="flex-1 bg-slate-50/10 px-6 md:px-10 lg:px-16 pt-4 md:pt-8 pb-6">
 
-                  {/* Unified Header & Filter Module */}
+                  {/* Header & Sort */}
                   <div className="flex flex-col lg:flex-row lg:items-end justify-between mb-10 pb-6 border-b border-slate-200 gap-6">
                      <div className="flex flex-col text-left">
                         <div className="flex items-center gap-3 mb-2">
@@ -132,28 +144,38 @@ export default function BestSellingPage() {
 
                      <div className="flex items-center gap-4">
                         <span className="hidden md:inline-block text-[10px] font-black uppercase tracking-[0.2em] text-slate-300">Sort Selection</span>
-                        <button className="text-[10px] sm:text-[11px] font-bold text-[#022c22] uppercase tracking-[0.1em] flex items-center gap-3 bg-white px-6 md:px-8 py-3 md:py-4 rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-slate-100 hover:border-amber-400 transition-all active:scale-95">
-                           Highest Rated <ChevronDown size={14} className="text-amber-500" />
-                        </button>
+                        <select
+                           value={sortOrder}
+                           onChange={e => { setSortOrder(e.target.value as typeof sortOrder); setCurrentPage(1); }}
+                           className="text-[10px] sm:text-[11px] font-bold text-[#022c22] uppercase tracking-[0.1em] bg-white px-6 md:px-8 py-3 md:py-4 rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-slate-100 hover:border-amber-400 transition-all cursor-pointer outline-none"
+                        >
+                           <option value="rating">Highest Rated</option>
+                           <option value="price_asc">Price: Low to High</option>
+                           <option value="price_desc">Price: High to Low</option>
+                        </select>
                      </div>
                   </div>
 
+                  {paginatedProducts.length === 0 && (
+                     <div className="flex flex-col items-center justify-center py-24 text-center">
+                        <span className="text-5xl mb-4">🌿</span>
+                        <p className="text-[13px] font-black uppercase tracking-widest text-slate-400">No products found</p>
+                        <p className="text-[11px] text-slate-300 mt-2">Try selecting a different category</p>
+                     </div>
+                  )}
+
                   <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-8 md:gap-12 xl:gap-20">
-                     {paginatedProducts.map((product) => (
+                     {paginatedProducts.map((product: any) => (
                         <ProductCard key={product.id} product={product} />
                      ))}
                   </div>
 
-                  {/* Pagination Component */}
+                  {/* Pagination */}
                   {totalPages > 1 && (
                      <div className="flex items-center justify-center gap-2 mt-8 md:mt-12">
-
                         <button
                            disabled={currentPage === 1}
-                           onClick={() => {
-                              setCurrentPage(prev => Math.max(1, prev - 1));
-                              window.scrollTo({ top: 400, behavior: 'smooth' });
-                           }}
+                           onClick={() => { setCurrentPage(prev => Math.max(1, prev - 1)); window.scrollTo({ top: 400, behavior: 'smooth' }); }}
                            className="h-12 w-12 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-emerald-950 disabled:opacity-30 transition-all hover:bg-emerald-50 active:scale-90"
                         >
                            <ChevronDown className="rotate-90" size={18} />
@@ -162,10 +184,7 @@ export default function BestSellingPage() {
                         {[...Array(totalPages)].map((_, i) => (
                            <button
                               key={i + 1}
-                              onClick={() => {
-                                 setCurrentPage(i + 1);
-                                 window.scrollTo({ top: 400, behavior: 'smooth' });
-                              }}
+                              onClick={() => { setCurrentPage(i + 1); window.scrollTo({ top: 400, behavior: 'smooth' }); }}
                               className={`h-12 w-12 rounded-xl text-[11px] font-black transition-all ${currentPage === i + 1
                                  ? 'bg-emerald-950 text-white shadow-lg'
                                  : 'bg-white border border-slate-200 text-slate-400 hover:bg-slate-50'
@@ -177,18 +196,13 @@ export default function BestSellingPage() {
 
                         <button
                            disabled={currentPage === totalPages}
-                           onClick={() => {
-                              setCurrentPage(prev => Math.min(totalPages, prev + 1));
-                              window.scrollTo({ top: 400, behavior: 'smooth' });
-                           }}
+                           onClick={() => { setCurrentPage(prev => Math.min(totalPages, prev + 1)); window.scrollTo({ top: 400, behavior: 'smooth' }); }}
                            className="h-12 w-12 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-emerald-950 disabled:opacity-30 transition-all hover:bg-emerald-50 active:scale-90"
                         >
                            <ChevronDown className="-rotate-90" size={18} />
                         </button>
                      </div>
                   )}
-
-
 
                </main>
             </div>

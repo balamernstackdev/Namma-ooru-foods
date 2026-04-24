@@ -19,44 +19,48 @@ export default function CategoryDetailClient({ categoryId, categoryProducts }: C
   
   return (
     <div className="flex flex-col bg-white w-full min-h-screen">
-      <div className="w-full bg-gray-50 border-b border-gray-100" style={{ paddingTop: '50px', paddingBottom: '40px' }}>
-        <div className="mx-auto w-full" style={{ maxWidth: '1400px', paddingLeft: '5%', paddingRight: '5%' }}>
-          <Link href="/categories" className="inline-flex items-center gap-2 text-sm font-bold text-gray-500 hover:text-[var(--primary)] mb-6 transition-colors">
-            <ArrowLeft className="h-4 w-4" /> Back to Categories
+      <div className="w-full bg-[#f9fafb] border-b border-slate-100 py-10 md:py-16">
+        <div className="standard-container">
+          <Link href="/categories" className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 hover:text-emerald-600 mb-8 transition-colors">
+            <ArrowLeft size={14} /> Back to Categories
           </Link>
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-            <div>
-              <h1 className="text-4xl md:text-5xl font-black text-[#1a1a1a] tracking-tight">{categoryName}</h1>
-              <p className="mt-2 text-sm font-bold text-gray-400">
-                {categoryProducts.length} {categoryProducts.length === 1 ? 'Product' : 'Products'} found
-              </p>
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
+            <div className="space-y-4">
+              <span className="text-[11px] font-black uppercase tracking-[0.5em] text-amber-500">Collection Showcase</span>
+              <h1 className="text-5xl md:text-7xl font-black text-emerald-950 tracking-tighter leading-none">{categoryName}</h1>
+              <div className="flex items-center gap-3">
+                 <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                 <p className="text-[11px] font-black uppercase tracking-widest text-slate-400">
+                   {categoryProducts.length} Artisan {categoryProducts.length === 1 ? 'Product' : 'Products'} Synchronized
+                 </p>
+              </div>
             </div>
-            <button className="flex items-center gap-2 rounded-full border border-gray-200 bg-white px-5 py-3 text-xs font-black uppercase tracking-widest text-[#1a1a1a] hover:border-[var(--primary)] hover:text-[var(--primary)] transition-all">
-              <Filter className="h-4 w-4" /> Filter
+            <button className="flex items-center gap-3 rounded-2xl border border-slate-100 bg-white px-8 py-4 text-[10px] font-black uppercase tracking-widest text-emerald-950 hover:border-emerald-600 hover:text-emerald-600 transition-all shadow-sm">
+              <Filter className="h-4 w-4" /> Filter Selection
             </button>
           </div>
         </div>
       </div>
 
-      <div className="w-full" style={{ paddingTop: '80px', paddingBottom: '120px' }}>
-        <div className="mx-auto w-full" style={{ maxWidth: '1400px', paddingLeft: '5%', paddingRight: '5%' }}>
+      <div className="w-full py-12 md:py-20">
+        <div className="standard-container">
           {categoryProducts.length > 0 ? (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-8">
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-10">
               {categoryProducts.map((product) => (
                 <ProductCard key={product.id} product={product} />
               ))}
             </div>
           ) : (
-            <div className="flex flex-col items-center justify-center text-center py-20 px-4">
-              <div className="h-24 w-24 rounded-full bg-gray-50 flex items-center justify-center mb-6">
-                <span className="text-4xl">🌾</span>
+            <div className="flex flex-col items-center justify-center text-center py-32 px-4">
+              <div className="h-32 w-32 rounded-[3rem] bg-slate-50 border border-slate-100 flex items-center justify-center mb-10 text-6xl grayscale opacity-50">
+                🌾
               </div>
-              <h2 className="text-2xl font-black text-[#1a1a1a] mb-3">No products found</h2>
-              <p className="text-gray-500 max-w-md mx-auto mb-8">
-                We're currently stocking up on fresh {categoryName.toLowerCase()}. Please check back soon!
+              <h2 className="text-4xl font-black text-emerald-950 tracking-tighter mb-4">Awaiting Fresh Harvest</h2>
+              <p className="text-slate-400 font-medium max-w-sm mx-auto mb-12">
+                Our agrarian cluster is currently preparing the next batch of {categoryName.toLowerCase()}. 
               </p>
-              <Link href="/products" className="rounded-full bg-[var(--primary)] px-8 py-4 text-sm font-black text-white hover:bg-black transition-all">
-                Browse All Products
+              <Link href="/products" className="h-16 px-12 rounded-2xl bg-emerald-950 text-white flex items-center justify-center text-[11px] font-black uppercase tracking-widest hover:bg-emerald-800 transition-all shadow-2xl shadow-emerald-900/20">
+                Explore All Offerings
               </Link>
             </div>
           )}

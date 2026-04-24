@@ -4,7 +4,6 @@ import React, { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import ProductCard from '@/components/ProductCard';
 import { ArrowRight, TrendingUp, Flame, Star, Filter, SlidersHorizontal, ShoppingBag, Droplets, Utensils, Zap, X } from 'lucide-react';
-import { PRODUCTS } from '@/lib/staticData';
 import HeroCarousel from '@/components/HeroCarousel';
 
 const categories = ['All', 'Grains & Pulses', 'Organic Oils', 'Authentic Spices', 'Dairy Products', 'Indian Snacks', 'Local Sweets'];
@@ -18,6 +17,10 @@ const categoryIcons: { [key: string]: any } = {
   'Indian Snacks': Zap,
   'Local Sweets': Utensils
 };
+import useSWR from 'swr';
+import { API_URL } from '@/lib/api';
+
+const fetcher = (url: string) => fetch(url).then(res => res.json());
 
 const ProductsContent = () => {
   const searchParams = useSearchParams();
@@ -27,21 +30,33 @@ const ProductsContent = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 9;
 
+  // Fetch live products
+  const { data: products, error: productsError } = useSWR(`${API_URL}/api/products`, fetcher);
+  // Fetch live categories
+  const { data: apiCategories } = useSWR(`${API_URL}/api/categories`, fetcher);
+
+  const dynamicCategories = apiCategories ? ['All', ...apiCategories.map((c: any) => c.name)] : categories;
 
   useEffect(() => {
-    if (categoryParam && categories.includes(categoryParam)) {
+    if (categoryParam && dynamicCategories.includes(categoryParam)) {
       setActiveCategory(categoryParam);
     } else {
       setActiveCategory('All');
     }
-  }, [categoryParam]);
+  }, [categoryParam, apiCategories]);
 
-  const filteredProducts = activeCategory === 'All'
-    ? PRODUCTS
-    : PRODUCTS.filter(p => p.category === activeCategory);
+  const filteredProducts = products ? (
+    activeCategory === 'All'
+      ? products
+      : products.filter((p: any) => 
+          (p.category?.name === activeCategory) || 
+          (p.category === activeCategory) ||
+          (Array.isArray(p.tags) && p.tags.includes(activeCategory))
+        )
+  ) : [];
 
   useEffect(() => {
-    setCurrentPage(1); // Reset to first page on category change
+    setCurrentPage(1);
   }, [activeCategory]);
 
   const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
@@ -50,9 +65,37 @@ const ProductsContent = () => {
     currentPage * itemsPerPage
   );
 
+  if (!products && !productsError) {
+     return (
+        <div className="w-full h-[60vh] flex flex-col items-center justify-center bg-white gap-6">
+           <div className="h-14 w-14 border-4 border-emerald-950 border-t-amber-400 rounded-full animate-spin" />
+           <p className="text-[10px] font-black uppercase tracking-widest text-[#022c22]">Synchronizing Supply Chain...</p>
+        </div>
+     );
+  }
+
+  const collectionSchema = {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    "name": activeCategory === 'All' ? "Organic Food Collection" : `${activeCategory} | Namma Orru Foods`,
+    "description": "Explore our curated collection of authentic, organic, and farm-fresh products sourced directly from local agrarian clusters.",
+    "url": `https://nammaorrufoods.com/products?category=${activeCategory}`,
+    "mainEntity": {
+      "@type": "ItemList",
+      "itemListElement": paginatedProducts.map((p: any, idx: number) => ({
+        "@type": "ListItem",
+        "position": idx + 1,
+        "url": `https://nammaorrufoods.com/products/${p.slug || p.id}`
+      }))
+    }
+  };
 
   return (
     <div className="flex flex-col bg-white w-full min-h-screen">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(collectionSchema) }}
+      />
       <HeroCarousel
         images={['banners/products_1.png', 'banners/products_2.png']}
         title={<>Pure <br /><span className="text-amber-400 italic"> Organic  </span> Products</>}
@@ -82,7 +125,7 @@ const ProductsContent = () => {
             </button>
           </div>
 
-          {/* SIDEBAR - HIGH VISIBILITY REDESIGN */}
+          {/* SIDEBAR */}
           <div className={`fixed inset-0 z-[100] bg-emerald-950/40 backdrop-blur-md lg:hidden transition-opacity duration-300 ${isSidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} onClick={() => setIsSidebarOpen(false)} />
 
           <aside className={`fixed lg:sticky top-0 lg:top-[120px] left-0 h-full lg:h-fit w-72 bg-white lg:bg-transparent z-[201] lg:z-10 p-8 lg:p-0 transition-transform duration-300 lg:translate-x-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'} shrink-0 overflow-y-auto lg:overflow-visible`}>
@@ -101,7 +144,7 @@ const ProductsContent = () => {
                     <span className="text-[11px] font-black uppercase tracking-[0.4em] text-emerald-950">Shop by Category</span>
                   </div>
                   <div className="flex flex-col gap-3">
-                    {categories.map((cat) => {
+                    {dynamicCategories.map((cat) => {
                       const Icon = categoryIcons[cat] || Star;
                       const isActive = activeCategory === cat;
                       return (
@@ -159,16 +202,15 @@ const ProductsContent = () => {
 
             {paginatedProducts.length > 0 ? (
               <>
-                <div className="grid grid-cols-2 xl:grid-cols-3 gap-4 md:gap-10">
-                  {paginatedProducts.map((product) => (
+                <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-4 md:gap-10">
+                  {paginatedProducts.map((product: any) => (
                     <ProductCard key={product.id} product={product} />
                   ))}
                 </div>
 
-                {/* Pagination Component */}
+                {/* Pagination */}
                 {totalPages > 1 && (
                   <div className="flex items-center justify-center gap-2 mt-8 md:mt-12">
-
                     <button
                       disabled={currentPage === 1}
                       onClick={() => {
@@ -179,7 +221,6 @@ const ProductsContent = () => {
                     >
                       <ArrowRight className="rotate-180" size={18} />
                     </button>
-
                     {[...Array(totalPages)].map((_, i) => (
                       <button
                         key={i + 1}
@@ -195,7 +236,6 @@ const ProductsContent = () => {
                         {String(i + 1).padStart(2, '0')}
                       </button>
                     ))}
-
                     <button
                       disabled={currentPage === totalPages}
                       onClick={() => {

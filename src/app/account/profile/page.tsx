@@ -1,24 +1,63 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { User, Mail, Phone, MapPin, Edit3, Save, X, Camera, ShieldCheck, Calendar, ChevronLeft } from 'lucide-react';
 import Link from 'next/link';
+import { useAuth } from '@/context/AuthContext';
+import { Skeleton } from '@/components/Skeleton';
 
 export default function ProfilePage() {
+  const { user, isLoading } = useAuth();
   const [editing, setEditing] = useState(false);
-  const [profile, setProfile] = useState({
-    name: 'John Doe',
-    email: 'admiun@gmail.com',
-    phone: '+91 98765 43210',
-    dob: '1992-06-15',
-    address: '9, First Floor, Opp. Jayam Hospital',
-    city: 'Madurai',
-    state: 'Tamil Nadu',
-    pincode: '625002',
+  
+  // Local state for editing form
+  const [form, setForm] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    dob: '',
+    address: '',
+    city: '',
+    state: '',
+    pincode: '',
   });
-  const [form, setForm] = useState(profile);
 
-  const handleSave = () => { setProfile(form); setEditing(false); };
+  // Sync local form state with user data when it loads
+  useEffect(() => {
+    if (user) {
+      setForm({
+        name: user.name || '',
+        email: user.email || '',
+        phone: user.phone || 'Not provided',
+        dob: '', 
+        address: user.defaultAddress?.line1 || '',
+        city: user.defaultAddress?.city || '',
+        state: user.defaultAddress?.state || '',
+        pincode: user.defaultAddress?.pincode || '',
+      });
+    }
+  }, [user]);
+
+  const handleSave = () => { 
+    // Logic for saving to backend would go here
+    setEditing(false); 
+  };
+
+  if (isLoading) {
+    return (
+      <div className="max-w-4xl space-y-8">
+        <Skeleton className="h-10 w-48 rounded-xl" />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+           <Skeleton className="h-64 rounded-[1.5rem]" />
+           <Skeleton className="h-64 rounded-[1.5rem]" />
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+     return <div className="text-slate-400 font-bold uppercase tracking-widest text-center py-20">Please log in to view profile</div>;
+  }
 
   return (
     <div className="py-0 px-0 md:px-4">
@@ -61,13 +100,13 @@ export default function ProfilePage() {
                     <input
                       type={type}
                       value={form[key as keyof typeof form]}
-                      onChange={e => setForm(f => ({ ...f, [key]: e.target.value }))}
+                      onChange={e => setForm((f: any) => ({ ...f, [key]: e.target.value }))}
                       className="w-full h-11 px-4 rounded-xl border-2 border-slate-100 focus:border-emerald-500 outline-none text-[13px] font-bold text-emerald-950 bg-slate-50 transition-all"
                     />
                   ) : (
                     <div className="flex items-center gap-3">
                       <Icon className="h-4 w-4 text-emerald-600 shrink-0" strokeWidth={2.5} />
-                      <span className="text-[13px] font-bold text-emerald-950">{profile[key as keyof typeof profile]}</span>
+                      <span className="text-[13px] font-bold text-emerald-950 capitalize">{form[key as keyof typeof form]}</span>
                     </div>
                   )}
                 </div>
@@ -91,13 +130,13 @@ export default function ProfilePage() {
                     <input
                       type={type}
                       value={form[key as keyof typeof form]}
-                      onChange={e => setForm(f => ({ ...f, [key]: e.target.value }))}
+                      onChange={e => setForm((f: any) => ({ ...f, [key]: e.target.value }))}
                       className="w-full h-11 px-4 rounded-xl border-2 border-slate-100 focus:border-emerald-500 outline-none text-[13px] font-bold text-emerald-950 bg-slate-50 transition-all"
                     />
                   ) : (
                     <div className="flex items-center gap-3">
                       <MapPin className="h-4 w-4 text-emerald-600 shrink-0" strokeWidth={2.5} />
-                      <span className="text-[14px] font-bold text-emerald-950">{profile[key as keyof typeof profile]}</span>
+                      <span className="text-[14px] font-bold text-emerald-950">{form[key as keyof typeof form] || 'N/A'}</span>
                     </div>
                   )}
                 </div>
@@ -109,7 +148,7 @@ export default function ProfilePage() {
         {editing && (
           <div className="mt-6 flex gap-4 justify-end">
             <button
-              onClick={() => { setForm(profile); setEditing(false); }}
+              onClick={() => { setEditing(false); }}
               className="flex items-center gap-2 px-6 py-3 rounded-2xl border-2 border-slate-200 text-slate-500 font-black text-[12px] uppercase tracking-widest hover:bg-slate-50 transition-all"
             >
               <X className="h-4 w-4" /> Discard

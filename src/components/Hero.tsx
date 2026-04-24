@@ -4,40 +4,64 @@ import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowRight, Star, Leaf, ShieldCheck, ChevronRight, ChevronLeft, Sparkles } from 'lucide-react';
+import { API_URL } from '@/lib/api';
 
 const HERO_SLIDES = [
   {
     id: 1,
     image: "/banners/home_1.png",
     title: "Taste the <span class=\"text-amber-400\">Purity</span> <br /> of Namma Orru",
-    subtitle: "We bring you the finest Products  directly from sustainable local farms. No middlemen, no chemicals — just pure, authentic goodness delivered to your doorstep.",
-    tagline: "Fresh from Local Farms"
+    subtitle: "We bring you the finest Products directly from sustainable local farms. No middlemen, no chemicals — just pure, authentic goodness delivered to your doorstep.",
+    tagline: "Fresh from Local Farms",
+    link: "/products"
   },
   {
     id: 2,
     image: "/banners/home_2.png",
     title: "Real <span class=\"text-amber-400\">Organic</span> <br /> Everyday Food",
     subtitle: "Our cold-pressed oils and millets retain their complete nutritional profiles. Start your healthy journey with ancestral farming wisdom.",
-    tagline: "Quality You Can Trust"
+    tagline: "Quality You Can Trust",
+    link: "/products"
   }
 ];
 
 const Hero = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [slides, setSlides] = useState<any[]>(HERO_SLIDES);
+
+  useEffect(() => {
+    // Fetch dynamic banners from admin
+    fetch(`${API_URL}/api/admin-ops/banners/active`)
+      .then(r => r.json())
+      .then(data => {
+        if (Array.isArray(data) && data.length > 0) {
+          const dynamicSlides = data.map((b: any) => ({
+            id: b.id,
+            image: b.image,
+            title: b.title,
+            subtitle: b.subtitle || "Exclusive platform campaign. Shop the collection now for premium harvests.",
+            tagline: b.tagline || "Special Promotion",
+            link: b.link || "/products"
+          }));
+          setSlides(dynamicSlides);
+        }
+      })
+      .catch(err => console.error('Hero banner fetch failed:', err));
+  }, []);
 
   useEffect(() => {
     const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % HERO_SLIDES.length);
+      setCurrentSlide((prev) => (prev + 1) % slides.length);
     }, 6000);
     return () => clearInterval(timer);
-  }, []);
+  }, [slides]);
 
-  const slide = HERO_SLIDES[currentSlide];
+  const slide = slides[currentSlide];
 
   return (
     <section className="relative w-full overflow-hidden bg-[#030712] flex items-center min-h-[450px] md:min-h-[550px] lg:min-h-[600px]">
       {/* Background Slides */}
-      {HERO_SLIDES.map((s, idx) => (
+      {slides.map((s, idx) => (
         <div key={s.id} className={`absolute inset-0 z-0 transition-opacity duration-[2000ms] ease-in-out ${currentSlide === idx ? 'opacity-100 scale-105' : 'opacity-0 scale-110'}`}>
           <Image
             src={s.image}
@@ -67,7 +91,7 @@ const Hero = () => {
           </p>
 
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-start gap-4 md:gap-6 animate-slide-up delay-200">
-            <Link href="/products" className="w-full sm:w-auto sm:min-w-[180px] h-11 md:h-14 px-8 md:px-12 rounded-full bg-amber-500 !text-white font-black uppercase tracking-[0.2em] text-[10px] md:text-[11px] hover:bg-white hover:!text-emerald-950 transition-all flex items-center justify-center shadow-2xl group whitespace-nowrap">
+            <Link href={slide.link} className="w-full sm:w-auto sm:min-w-[180px] h-11 md:h-14 px-8 md:px-12 rounded-full bg-amber-500 !text-white font-black uppercase tracking-[0.2em] text-[10px] md:text-[11px] hover:bg-white hover:!text-emerald-950 transition-all flex items-center justify-center shadow-2xl group whitespace-nowrap">
               Start Shopping <ArrowRight className="ml-3 h-4 w-4 md:h-5 md:w-5 group-hover:translate-x-3 transition-all" />
             </Link>
             <Link href="/about" className="w-full sm:w-auto sm:min-w-[180px] h-11 md:h-14 px-8 md:px-12 rounded-full bg-white/10 border-2 border-white/30 backdrop-blur-xl !text-white font-black uppercase tracking-[0.2em] text-[10px] md:text-[11px] hover:bg-white/20 transition-all flex items-center justify-center whitespace-nowrap">

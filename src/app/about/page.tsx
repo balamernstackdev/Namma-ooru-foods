@@ -74,13 +74,13 @@ export default function AboutPage() {
               </h2>
               <div className="space-y-6 md:space-y-8 text-base md:text-lg text-gray-600 font-medium leading-relaxed">
                 <p>
-                  <strong className="text-emerald-950">Namma Ooru Foods Pvt Ltd</strong> is committed to producing, processing, packaging, and distributing organic food products that emphasize traditional, ancient food-making techniques. Specializing in a diverse range of items such as organic snacks, pickles, herbal products, edible oils, sweets, millets, spices, homemade masalas, and more, the company ensures all ingredients are naturally sourced and free from chemicals.
+                  <strong className="text-emerald-950">Namma Orru Foods Pvt Ltd</strong> is committed to producing, processing, packaging, and distributing organic food products that emphasize traditional, ancient food-making techniques. Specializing in a diverse range of items such as organic snacks, pickles, herbal products, edible oils, sweets, millets, spices, homemade masalas, and more, the company ensures all ingredients are naturally sourced and free from chemicals.
                 </p>
                 <p>
-                  At the heart of Namma Ooru Foods is a focus on preserving culinary Story. The company revives time-tested food preparation methods like slow cooking, hand grinding, and other authentic processes that help retain the natural flavors and nutritional value of ingredients. These traditional practices, passed down through generations, not only ensure superior product quality but also celebrate the wisdom of age-old food-making techniques.
+                  At the heart of Namma Orru Foods is a focus on preserving culinary Story. The company revives time-tested food preparation methods like slow cooking, hand grinding, and other authentic processes that help retain the natural flavors and nutritional value of ingredients. These traditional practices, passed down through generations, not only ensure superior product quality but also celebrate the wisdom of age-old food-making techniques.
                 </p>
                 <p>
-                  Namma Ooru Foods actively empowers rural communities, particularly women, by involving them in the production process. This approach not only helps preserve traditional food-making skills but also provides women with economic opportunities and a platform for leadership.
+                  Namma Orru Foods actively empowers rural communities, particularly women, by involving them in the production process. This approach not only helps preserve traditional food-making skills but also provides women with economic opportunities and a platform for leadership.
                 </p>
               </div>
             </div>
