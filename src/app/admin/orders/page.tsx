@@ -1,18 +1,41 @@
 'use client';
 
-import { Search, Filter, ShoppingBag, Truck, CheckCircle2, XCircle, Clock, ChevronDown } from 'lucide-react';
+import React from 'react';
+import { Search, Truck, CheckCircle2, XCircle, Clock, ChevronDown, Package, Store } from 'lucide-react';
 import useSWR from 'swr';
 import { API_URL } from '@/lib/api';
+import { useState } from 'react';
 
 const fetcher = (url: string) => fetch(url).then(res => res.json());
 
 export default function AdminOrders() {
   const { data, error } = useSWR(`${API_URL}/api/admin/orders`, fetcher);
+  const [expandedOrder, setExpandedOrder] = useState<number | null>(null);
 
   const { orders = [], statusCounts = [] } = data || {};
 
   const getStatusCount = (status: string) => {
     return statusCounts.find((s: any) => s.status === status)?._count || 0;
+  };
+
+  // Extract unique vendors from order items, distinguishing between official and resellers
+  const getOrderVendors = (order: any) => {
+    const vendorMap = new Map();
+    let hasOfficial = false;
+    
+    order.items?.forEach((item: any) => {
+      const brand = item.product?.brand;
+      if (brand && brand.userId) {
+        vendorMap.set(brand.id, brand);
+      } else {
+        hasOfficial = true;
+      }
+    });
+
+    return { 
+      resellers: Array.from(vendorMap.values()), 
+      hasOfficial 
+    };
   };
 
   if (!data && !error) {
@@ -68,55 +91,138 @@ export default function AdminOrders() {
            <table className="w-full text-left border-collapse">
               <thead>
                  <tr className="bg-slate-50/50">
-                    <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Order & Date</th>
-                    <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Customer</th>
-                    <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Payment</th>
-                    <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Status</th>
-                    <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 text-right">Total</th>
+                    <th className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Order & Date</th>
+                    <th className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Customer</th>
+                    <th className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Vendor(s)</th>
+                    <th className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Items</th>
+                    <th className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Status</th>
+                    <th className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 text-right">Total</th>
                  </tr>
               </thead>
               <tbody className="divide-y divide-slate-50">
-                 {orders.map((order: any) => (
-                    <tr key={order.id} className="group hover:bg-slate-50/50 transition-all cursor-pointer">
-                       <td className="px-8 py-6">
-                          <span className="text-sm font-black text-[#022c22] flex items-center gap-2">
-                             #ORD-{order.id.toString().padStart(4, '0')}
-                             <ChevronDown size={14} className="text-slate-300 transition-opacity" />
-                          </span>
-                          <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1 block">
-                            {new Date(order.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}
-                          </span>
-                       </td>
-                       <td className="px-8 py-6">
-                          <div className="flex flex-col">
-                             <span className="text-sm font-bold text-slate-700">{order.user?.name}</span>
-                             <span className="text-[10px] text-slate-400 font-medium lowercase">{order.user?.email}</span>
-                          </div>
-                       </td>
-                       <td className="px-8 py-6">
-                          <div className="flex flex-col">
-                             <span className="text-[11px] font-black uppercase tracking-widest text-slate-400">PREPAID</span>
-                             <span className="text-[10px] text-slate-400 font-medium">{order.items?.length} Items</span>
-                          </div>
-                       </td>
-                       <td className="px-8 py-6">
-                          <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider
-                             ${order.status === 'DELIVERED' ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' : 
-                               order.status === 'SHIPPED' ? 'bg-blue-100 text-blue-700 border border-blue-200' : 
-                               order.status === 'CANCELLED' ? 'bg-red-100 text-red-700 border border-red-200' : 
-                               'bg-amber-100 text-amber-700 border border-amber-200'}
-                          `}>
-                             {order.status}
-                          </span>
-                       </td>
-                       <td className="px-8 py-6 text-right">
-                          <span className="text-base font-black text-[#022c22] tracking-tighter">₹{Number(order.totalAmount).toLocaleString()}</span>
-                       </td>
-                    </tr>
-                 ))}
+                 {orders.map((order: any) => {
+                   const { resellers, hasOfficial } = getOrderVendors(order);
+                   return (
+                     <React.Fragment key={order.id}> 
+                      <tr 
+                        className="group hover:bg-slate-50/50 transition-all cursor-pointer"
+                        onClick={() => setExpandedOrder(expandedOrder === order.id ? null : order.id)}
+                      >
+                        <td className="px-6 py-6">
+                           <span className="text-sm font-black text-[#022c22] flex items-center gap-2">
+                              #ORD-{order.id.toString().padStart(4, '0')}
+                              <ChevronDown size={14} className={`text-slate-300 transition-transform ${expandedOrder === order.id ? 'rotate-180' : ''}`} />
+                           </span>
+                           <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1 block">
+                             {new Date(order.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}
+                           </span>
+                        </td>
+                        <td className="px-6 py-6">
+                           <div className="flex flex-col">
+                              <span className="text-sm font-bold text-slate-700">{order.user?.name}</span>
+                              <span className="text-[10px] text-slate-400 font-medium lowercase">{order.user?.email}</span>
+                           </div>
+                        </td>
+                        <td className="px-6 py-6">
+                           <div className="flex flex-col gap-1.5">
+                              {/* Official Brand if present */}
+                              {hasOfficial && (
+                                <div className="flex items-center gap-2">
+                                  <div className="h-7 w-7 rounded-lg bg-emerald-950 flex items-center justify-center shadow-inner">
+                                    <div className="h-4 w-4 bg-amber-400 rounded-sm" />
+                                  </div>
+                                  <span className="text-[11px] font-black text-emerald-950 uppercase tracking-tight">Originals</span>
+                                </div>
+                              )}
+                              {/* Resellers */}
+                              {resellers.map((vendor: any) => (
+                                <div key={vendor.id} className="flex items-center gap-2">
+                                  <div className="h-7 w-7 rounded-lg bg-white border border-slate-100 flex items-center justify-center shadow-sm">
+                                    {vendor.logo ? (
+                                      <img src={vendor.logo} alt={vendor.name} className="h-4 w-4 rounded object-cover" />
+                                    ) : (
+                                      <Store size={12} className="text-emerald-600" />
+                                    )}
+                                  </div>
+                                  <span className="text-[11px] font-bold text-slate-600 truncate max-w-[120px]">{vendor.name}</span>
+                                </div>
+                              ))}
+                              {resellers.length === 0 && !hasOfficial && (
+                                <span className="text-[10px] text-slate-300 font-bold uppercase tracking-widest">No Vendor</span>
+                              )}
+                           </div>
+                        </td>
+                        <td className="px-6 py-6">
+                           <div className="flex items-center gap-2">
+                             <Package size={14} className="text-slate-300" />
+                             <span className="text-[11px] font-black uppercase tracking-widest text-slate-400">{order.items?.length} Items</span>
+                           </div>
+                        </td>
+                        <td className="px-6 py-6">
+                           <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider
+                              ${order.status === 'DELIVERED' ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' : 
+                                order.status === 'SHIPPED' ? 'bg-blue-100 text-blue-700 border border-blue-200' : 
+                                order.status === 'CANCELLED' ? 'bg-red-100 text-red-700 border border-red-200' : 
+                                'bg-amber-100 text-amber-700 border border-amber-200'}
+                           `}>
+                              {order.status}
+                           </span>
+                        </td>
+                        <td className="px-6 py-6 text-right">
+                           <span className="text-base font-black text-[#022c22] tracking-tighter">₹{Number(order.totalAmount).toLocaleString()}</span>
+                        </td>
+                      </tr>
+
+                      {/* Expanded order items detail */}
+                      {expandedOrder === order.id && (
+                        <tr key={`${order.id}-detail`}>
+                          <td colSpan={6} className="p-8 bg-slate-50/50">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                              {/* Group items by vendor */}
+                              {(() => {
+                                const groups: any = {};
+                                order.items.forEach((item: any) => {
+                                  const vName = item.product?.brand?.name || 'Namma Orru Originals';
+                                  if (!groups[vName]) groups[vName] = [];
+                                  groups[vName].push(item);
+                                });
+                                
+                                return Object.keys(groups).map(vendorName => (
+                                  <div key={vendorName} className="space-y-4">
+                                    <div className="flex items-center gap-2 mb-4">
+                                      <div className="h-5 w-1 bg-emerald-500 rounded-full" />
+                                      <span className="text-[11px] font-black text-emerald-950 uppercase tracking-[0.2em]">{vendorName}</span>
+                                      <span className="text-[9px] font-bold text-slate-400 bg-white px-2 py-0.5 rounded-full border border-slate-100">{groups[vendorName].length} items</span>
+                                    </div>
+                                    <div className="space-y-3">
+                                      {groups[vendorName].map((item: any) => (
+                                        <div key={item.id} className="flex items-center gap-4 bg-white rounded-2xl p-4 border border-slate-100 shadow-sm transition-all hover:shadow-md">
+                                          <div className="h-14 w-14 rounded-xl overflow-hidden shrink-0 bg-slate-50 border border-slate-50">
+                                            <img src={item.product?.image} className="h-full w-full object-cover" alt="" />
+                                          </div>
+                                          <div className="flex-1 min-w-0">
+                                            <p className="text-[13px] font-black text-[#022c22] truncate">{item.product?.name}</p>
+                                            <div className="flex items-center gap-4 mt-1">
+                                              <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Qty: {item.quantity}</span>
+                                              <span className="text-[12px] font-black text-emerald-600 tracking-tighter">₹{Number(item.price * item.quantity).toLocaleString()}</span>
+                                            </div>
+                                          </div>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+                                ));
+                              })()}
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                     </React.Fragment>
+                   );
+                 })}
                  {orders.length === 0 && (
                     <tr>
-                       <td colSpan={5} className="px-8 py-20 text-center">
+                       <td colSpan={6} className="px-8 py-20 text-center">
                           <p className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-300">No transactions recorded yet.</p>
                        </td>
                     </tr>

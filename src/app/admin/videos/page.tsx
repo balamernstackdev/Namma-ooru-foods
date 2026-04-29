@@ -30,6 +30,7 @@ export default function AdminVideosPage() {
   const [isActive, setIsActive] = useState(true);
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
+  const [videoUrl, setVideoUrl] = useState('');
 
   const [submitting, setSubmitting] = useState(false);
 
@@ -49,6 +50,7 @@ export default function AdminVideosPage() {
     setIsActive(true);
     setVideoFile(null);
     setThumbnailFile(null);
+    setVideoUrl('');
     setEditId(null);
     setShowForm(false);
   };
@@ -62,6 +64,7 @@ export default function AdminVideosPage() {
     setIsActive(v.isActive);
     setVideoFile(null);
     setThumbnailFile(null);
+    setVideoUrl(v.videoUrl || '');
     setEditId(v.id);
     setShowForm(true);
   };
@@ -82,6 +85,7 @@ export default function AdminVideosPage() {
       if (price) formData.append('price', price);
       formData.append('sortOrder', sortOrder);
       formData.append('isActive', isActive.toString());
+      if (videoUrl) formData.append('videoUrl', videoUrl);
       if (videoFile) formData.append('video', videoFile);
       if (thumbnailFile) formData.append('thumbnail', thumbnailFile);
 
@@ -152,8 +156,12 @@ export default function AdminVideosPage() {
                 <input value={description} onChange={e => setDescription(e.target.value)} className="w-full h-14 bg-slate-50 border-2 border-slate-100 rounded-2xl px-5 text-sm font-bold outline-none focus:border-emerald-600" />
              </div>
              <div className="space-y-2">
-                <label className="text-[10px] uppercase font-black tracking-widest text-slate-400">Video File * {editId && '(Leave blank to keep existing)'}</label>
-                <input type="file" accept="video/*" onChange={e => setVideoFile(e.target.files?.[0] || null)} required={!editId} className="w-full h-14 bg-slate-50 border-2 border-slate-100 rounded-2xl px-5 py-4 text-xs font-bold outline-none focus:border-emerald-600" />
+                <label className="text-[10px] uppercase font-black tracking-widest text-slate-400">Video File {editId && '(Keep existing)'}</label>
+                <input type="file" accept="video/*" onChange={e => setVideoFile(e.target.files?.[0] || null)} className="w-full h-14 bg-slate-50 border-2 border-slate-100 rounded-2xl px-5 py-4 text-xs font-bold outline-none focus:border-emerald-600" />
+             </div>
+             <div className="space-y-2">
+                <label className="text-[10px] uppercase font-black tracking-widest text-slate-400">OR External Video URL</label>
+                <input value={videoUrl} onChange={e => setVideoUrl(e.target.value)} placeholder="https://example.com/video.mp4" className="w-full h-14 bg-slate-50 border-2 border-slate-100 rounded-2xl px-5 text-sm font-bold outline-none focus:border-emerald-600" />
              </div>
              <div className="space-y-2">
                 <label className="text-[10px] uppercase font-black tracking-widest text-slate-400">Thumbnail Image * {editId && '(Leave blank to keep existing)'}</label>

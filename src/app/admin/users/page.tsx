@@ -41,18 +41,18 @@ export default function AdminUsersPage() {
     e.preventDefault();
     setSubmitting(true);
     try {
-      const url = editId 
-        ? `${API_URL}/api/admin-ops/users/${editId}` 
+      const url = editId
+        ? `${API_URL}/api/admin-ops/users/${editId}`
         : `${API_URL}/api/admin-ops/users`;
       const method = editId ? 'PUT' : 'POST';
-      
+
       const res = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
       });
       if (!res.ok) throw new Error('Action failed');
-      
+
       fetchUsers();
       setIsModalOpen(false);
       resetForm();
@@ -72,8 +72,8 @@ export default function AdminUsersPage() {
     setIsModalOpen(true);
   };
 
-  const filtered = (users || []).filter(u => 
-    u.name?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+  const filtered = (users || []).filter(u =>
+    u.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     u.email?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -87,22 +87,22 @@ export default function AdminUsersPage() {
     <div className="space-y-8 animate-in fade-in duration-700">
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
         <div>
-          <h2 className="text-4xl font-black text-[var(--admin-sidebar)] tracking-tighter">Partner & User Registry</h2>
+          <h2 className="text-4xl font-black text-[var(--admin-sidebar)] tracking-tighter">Vendors & User Listing</h2>
           <p className="text-slate-400 font-medium text-sm mt-1">Onboard and manage customers, administrators, and marketplace vendors.</p>
         </div>
         <div className="flex flex-wrap gap-4">
-           <button 
-              onClick={() => { resetForm(); setFormData({ ...formData, role: 'VENDOR' }); setIsModalOpen(true); }}
-              className="h-16 px-10 rounded-2xl bg-emerald-950 text-white text-[11px] font-black uppercase tracking-widest flex items-center gap-3 hover:bg-emerald-800 transition-all shadow-xl shadow-emerald-900/20"
-           >
-              <UserPlus size={20} className="text-amber-400" /> Onboard Vendor
-           </button>
-           <button 
-              onClick={() => { resetForm(); setIsModalOpen(true); }}
-              className="h-16 px-10 rounded-2xl bg-white border border-slate-100 text-[var(--admin-sidebar)] text-[11px] font-black uppercase tracking-widest flex items-center gap-3 hover:bg-slate-50 transition-all shadow-sm"
-           >
-              <Plus size={20} className="text-slate-400" /> New Customer
-           </button>
+          {/* <button
+            onClick={() => { resetForm(); setFormData({ ...formData, role: 'VENDOR' }); setIsModalOpen(true); }}
+            className="h-16 px-10 rounded-2xl bg-emerald-950 text-white text-[11px] font-black uppercase tracking-widest flex items-center gap-3 hover:bg-emerald-800 transition-all shadow-xl shadow-emerald-900/20"
+          >
+            <UserPlus size={20} className="text-amber-400" /> Onboard Vendor
+          </button> */}
+          <button
+            onClick={() => { resetForm(); setIsModalOpen(true); }}
+            className="h-16 px-10 rounded-2xl bg-white border border-slate-100 text-[var(--admin-sidebar)] text-[11px] font-black uppercase tracking-widest flex items-center gap-3 hover:bg-slate-50 transition-all shadow-sm"
+          >
+            <Plus size={20} className="text-slate-400" /> New User
+          </button>
         </div>
       </div>
 
@@ -110,9 +110,9 @@ export default function AdminUsersPage() {
         <div className="p-8 border-b border-slate-50 flex items-center gap-4 bg-slate-50/20">
           <div className="relative flex-1 max-w-md">
             <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-300" />
-            <input 
-              type="text" 
-              placeholder="Search by name, email or partner ID..." 
+            <input
+              type="text"
+              placeholder="Search by name, email or partner ID..."
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
               className="w-full h-12 bg-white rounded-xl pl-14 pr-4 text-xs font-bold outline-none border border-slate-100 focus:border-amber-400 transition-all shadow-sm"
@@ -124,10 +124,10 @@ export default function AdminUsersPage() {
           <table className="w-full text-left">
             <thead>
               <tr className="bg-slate-50/50">
-                <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100">Identity Details</th>
-                <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100">Channel Integration</th>
-                <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100">Ecosystem Role</th>
-                <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100">Performance</th>
+                <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100">User Name</th>
+                <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100">Email Address</th>
+                <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100">Phone Number</th>
+                <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100">Role</th>
                 <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100 text-right">Actions</th>
               </tr>
             </thead>
@@ -160,25 +160,24 @@ export default function AdminUsersPage() {
                     </div>
                   </td>
                   <td className="px-8 py-5">
-                     <div className="flex flex-col gap-1.5">
-                        <span className={`inline-flex w-fit px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest ${
-                           user.role === 'ADMIN' ? 'bg-purple-100 text-purple-700' : 
-                           user.role === 'VENDOR' ? 'bg-emerald-100 text-emerald-700' : 
-                           'bg-blue-100 text-blue-700'
+                    <div className="flex flex-col gap-1.5">
+                      <span className={`inline-flex w-fit px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest ${user.role === 'ADMIN' ? 'bg-purple-100 text-purple-700' :
+                        user.role === 'VENDOR' ? 'bg-emerald-100 text-emerald-700' :
+                          'bg-blue-100 text-blue-700'
                         }`}>
-                           {user.role}
-                        </span>
-                     </div>
+                        {user.role}
+                      </span>
+                    </div>
                   </td>
                   <td className="px-8 py-5">
-                     <span className="text-[10px] font-black uppercase tracking-widest text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-full border border-emerald-100">
-                        {user._count?.orders || 0} Orders
-                     </span>
+                    <span className="text-[10px] font-black uppercase tracking-widest text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-full border border-emerald-100">
+                      {user._count?.orders || 0} Orders
+                    </span>
                   </td>
                   <td className="px-8 py-5 text-right">
                     <div className="flex items-center justify-end gap-2">
-                       <button onClick={() => startEdit(user)} className="h-10 w-10 flex items-center justify-center rounded-xl bg-white border border-slate-100 text-slate-400 hover:bg-[var(--admin-sidebar)] hover:text-white transition-all shadow-sm"><Edit2 size={16} /></button>
-                       <button onClick={() => deleteUser(user.id)} className="h-10 w-10 flex items-center justify-center rounded-xl bg-white border border-slate-100 text-red-300 hover:bg-red-500 hover:text-white transition-all shadow-sm"><Trash2 size={16} /></button>
+                      <button onClick={() => startEdit(user)} className="h-10 w-10 flex items-center justify-center rounded-xl bg-white border border-slate-100 text-slate-400 hover:bg-[var(--admin-sidebar)] hover:text-white transition-all shadow-sm"><Edit2 size={16} /></button>
+                      <button onClick={() => deleteUser(user.id)} className="h-10 w-10 flex items-center justify-center rounded-xl bg-white border border-slate-100 text-red-300 hover:bg-red-500 hover:text-white transition-all shadow-sm"><Trash2 size={16} /></button>
                     </div>
                   </td>
                 </tr>
@@ -195,52 +194,52 @@ export default function AdminUsersPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-emerald-950/40 backdrop-blur-md animate-in fade-in duration-300">
           <div className="bg-white rounded-[3rem] w-full max-w-2xl overflow-hidden shadow-2xl animate-in zoom-in-95 duration-300 border border-emerald-100/20">
             <div className="p-10 border-b border-slate-50 bg-slate-50/30">
-               <div className="h-14 w-14 rounded-2xl bg-emerald-50 flex items-center justify-center text-emerald-600 mb-6">
-                  {formData.role === 'VENDOR' ? <UserPlus size={28} /> : <Users size={28} />}
-               </div>
-               <h3 className="text-3xl font-black text-[var(--admin-sidebar)] tracking-tight">{editId ? 'Calibrate Identity' : 'Onboard New Partner'}</h3>
-               <p className="text-slate-400 text-sm font-medium mt-1">Configure credentials and ecosystem permissions.</p>
+              <div className="h-14 w-14 rounded-2xl bg-emerald-50 flex items-center justify-center text-emerald-600 mb-6">
+                {formData.role === 'VENDOR' ? <UserPlus size={28} /> : <Users size={28} />}
+              </div>
+              <h3 className="text-3xl font-black text-[var(--admin-sidebar)] tracking-tight">{editId ? 'Calibrate Identity' : 'Add New Vendor'}</h3>
+              <p className="text-slate-400 text-sm font-medium mt-1">Configure credentials and ecosystem permissions.</p>
             </div>
-            
+
             <form onSubmit={handleSubmit} className="p-10 space-y-8">
-               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  <div className="space-y-3">
-                     <label className="text-[10px] uppercase font-black tracking-widest text-slate-400 ml-1">Full Legal Name</label>
-                     <input required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="w-full h-16 bg-slate-50 border-2 border-transparent focus:bg-white focus:border-amber-400 rounded-2xl px-6 font-bold text-emerald-950 outline-none transition-all shadow-inner" />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="space-y-3">
+                  <label className="text-[10px] uppercase font-black tracking-widest text-slate-400 ml-1">Name</label>
+                  <input required value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} className="w-full h-16 bg-slate-50 border-2 border-transparent focus:bg-white focus:border-amber-400 rounded-2xl px-6 font-bold text-emerald-950 outline-none transition-all shadow-inner" />
+                </div>
+                <div className="space-y-3">
+                  <label className="text-[10px] uppercase font-black tracking-widest text-slate-400 ml-1">Email</label>
+                  <input required type="email" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} className="w-full h-16 bg-slate-50 border-2 border-transparent focus:bg-white focus:border-amber-400 rounded-2xl px-6 font-bold text-emerald-950 outline-none transition-all shadow-inner" />
+                </div>
+                <div className="space-y-3">
+                  <label className="text-[10px] uppercase font-black tracking-widest text-slate-400 ml-1">Phone</label>
+                  <input value={formData.phone} onChange={e => setFormData({ ...formData, phone: e.target.value })} className="w-full h-16 bg-slate-50 border-2 border-transparent focus:bg-white focus:border-amber-400 rounded-2xl px-6 font-bold text-emerald-950 outline-none transition-all shadow-inner" />
+                </div>
+                <div className="space-y-3">
+                  <label className="text-[10px] uppercase font-black tracking-widest text-slate-400 ml-1">Role</label>
+                  <div className="relative">
+                    <select value={formData.role} onChange={e => setFormData({ ...formData, role: e.target.value })} className="w-full h-16 bg-slate-50 border-2 border-transparent focus:bg-white focus:border-amber-400 rounded-2xl px-6 font-bold text-emerald-950 outline-none transition-all appearance-none shadow-inner">
+                      <option value="USER">Standard Customer</option>
+                      <option value="ADMIN">System Administrator</option>
+                      <option value="VENDOR">Verified Vendor Partner</option>
+                    </select>
+                    <ChevronDown className="absolute right-6 top-1/2 -translate-y-1/2 text-slate-300 pointer-events-none" size={18} />
                   </div>
-                  <div className="space-y-3">
-                     <label className="text-[10px] uppercase font-black tracking-widest text-slate-400 ml-1">Digital Mailbox (Email)</label>
-                     <input required type="email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} className="w-full h-16 bg-slate-50 border-2 border-transparent focus:bg-white focus:border-amber-400 rounded-2xl px-6 font-bold text-emerald-950 outline-none transition-all shadow-inner" />
+                </div>
+                {!editId && (
+                  <div className="space-y-3 md:col-span-2">
+                    <label className="text-[10px] uppercase font-black tracking-widest text-slate-400 ml-1">Password</label>
+                    <input required type="password" value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value })} className="w-full h-16 bg-slate-50 border-2 border-transparent focus:bg-white focus:border-amber-400 rounded-2xl px-6 font-bold text-emerald-950 outline-none transition-all shadow-inner" placeholder="Minimum 8 characters recommended..." />
                   </div>
-                  <div className="space-y-3">
-                     <label className="text-[10px] uppercase font-black tracking-widest text-slate-400 ml-1">Cellular Node (Phone)</label>
-                     <input value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} className="w-full h-16 bg-slate-50 border-2 border-transparent focus:bg-white focus:border-amber-400 rounded-2xl px-6 font-bold text-emerald-950 outline-none transition-all shadow-inner" />
-                  </div>
-                  <div className="space-y-3">
-                     <label className="text-[10px] uppercase font-black tracking-widest text-slate-400 ml-1">Ecosystem Permission</label>
-                     <div className="relative">
-                        <select value={formData.role} onChange={e => setFormData({...formData, role: e.target.value})} className="w-full h-16 bg-slate-50 border-2 border-transparent focus:bg-white focus:border-amber-400 rounded-2xl px-6 font-bold text-emerald-950 outline-none transition-all appearance-none shadow-inner">
-                           <option value="USER">Standard Customer</option>
-                           <option value="ADMIN">System Administrator</option>
-                           <option value="VENDOR">Verified Vendor Partner</option>
-                        </select>
-                        <ChevronDown className="absolute right-6 top-1/2 -translate-y-1/2 text-slate-300 pointer-events-none" size={18} />
-                     </div>
-                  </div>
-                  {!editId && (
-                    <div className="space-y-3 md:col-span-2">
-                       <label className="text-[10px] uppercase font-black tracking-widest text-slate-400 ml-1">Security Credential (Password)</label>
-                       <input required type="password" value={formData.password} onChange={e => setFormData({...formData, password: e.target.value})} className="w-full h-16 bg-slate-50 border-2 border-transparent focus:bg-white focus:border-amber-400 rounded-2xl px-6 font-bold text-emerald-950 outline-none transition-all shadow-inner" placeholder="Minimum 8 characters recommended..." />
-                    </div>
-                  )}
-               </div>
-               
-               <div className="flex gap-4 pt-4">
-                  <button disabled={submitting} type="submit" className="flex-1 h-16 bg-emerald-950 text-white rounded-2xl text-[11px] font-black uppercase tracking-widest hover:bg-emerald-900 disabled:opacity-50 flex items-center justify-center gap-3 shadow-2xl shadow-emerald-950/20">
-                    {submitting ? <Loader2 className="animate-spin" /> : editId ? 'Commit Calibration' : 'Establish Registry'}
-                  </button>
-                  <button type="button" onClick={() => setIsModalOpen(false)} className="px-10 h-16 bg-white border-2 border-slate-100 rounded-2xl text-[11px] font-black uppercase tracking-widest text-slate-400 hover:bg-slate-50 hover:text-slate-600 transition-all">Abort</button>
-               </div>
+                )}
+              </div>
+
+              <div className="flex gap-4 pt-4">
+                <button disabled={submitting} type="submit" className="flex-1 h-16 bg-emerald-950 text-white rounded-2xl text-[11px] font-black uppercase tracking-widest hover:bg-emerald-900 disabled:opacity-50 flex items-center justify-center gap-3 shadow-2xl shadow-emerald-950/20">
+                  {submitting ? <Loader2 className="animate-spin" /> : editId ? 'Update Vendor' : 'Create Vendor'}
+                </button>
+                <button type="button" onClick={() => setIsModalOpen(false)} className="px-10 h-16 bg-white border-2 border-slate-100 rounded-2xl text-[11px] font-black uppercase tracking-widest text-slate-400 hover:bg-slate-50 hover:text-slate-600 transition-all">Abort</button>
+              </div>
             </form>
           </div>
         </div>
@@ -251,19 +250,19 @@ export default function AdminUsersPage() {
 
 function ChevronDown(props: any) {
   return (
-    <svg 
+    <svg
       {...props}
-      xmlns="http://www.w3.org/2000/svg" 
-      width="24" 
-      height="24" 
-      viewBox="0 0 24 24" 
-      fill="none" 
-      stroke="currentColor" 
-      strokeWidth="3" 
-      strokeLinecap="round" 
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="3"
+      strokeLinecap="round"
       strokeLinejoin="round"
     >
-      <path d="m6 9 6 6 6-6"/>
+      <path d="m6 9 6 6 6-6" />
     </svg>
   );
 }

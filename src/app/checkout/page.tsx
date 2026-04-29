@@ -213,7 +213,7 @@ export default function ElasticCheckout() {
           <div className="mx-auto w-24 h-24 rounded-[2rem] bg-emerald-50 flex items-center justify-center mb-8 border-2 border-emerald-100">
             <CheckCircle className="h-12 w-12 text-emerald-600" />
           </div>
-          <h1 className="text-4xl font-black text-[#022c22] uppercase tracking-tighter">Harvest Confirmed!</h1>
+          <h1 className="text-4xl font-black text-[#022c22] uppercase tracking-tighter">Order Confirmed!</h1>
           <p className="mt-4 text-slate-400 font-bold uppercase tracking-widest text-[11px]">Supporting local clusters with every bite.</p>
           <div className="mt-8 bg-slate-50 p-6 rounded-[2rem] border border-slate-100">
              <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest block mb-2">Tracking Ledger ID</span>

@@ -158,7 +158,7 @@ export default function AdminBannersPage() {
                         {uploading ? (
                            <Loader2 className="h-10 w-10 animate-spin text-amber-500" />
                         ) : (formData.image && formData.image.trim() !== '') ? (
-                      <img src={formData.image || undefined} className="w-full h-full object-cover" alt="Preview" />
+                           <img src={formData.image || undefined} className="w-full h-full object-cover" alt="Preview" />
                         ) : (
                            <>
                               <Upload className="text-slate-300" size={32} />
@@ -219,6 +219,8 @@ export default function AdminBannersPage() {
                            setEditId(banner.id);
                            setFormData({
                               title: banner.title || '',
+                              subtitle: banner.subtitle || '',
+                              tagline: banner.tagline || '',
                               image: banner.image || '',
                               link: banner.link || '',
                               isActive: banner.isActive,

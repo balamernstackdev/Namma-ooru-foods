@@ -129,14 +129,8 @@ const CartDrawer = () => {
                 onClick={() => setIsOpen(false)}
                 className="flex w-full items-center justify-center gap-4 rounded-xl border-2 border-slate-100 py-4 text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 hover:border-[#022c22] hover:text-[#022c22] transition-all"
               >
-                Expand To Full Products
+                Go to Cart Page
               </Link>
-              <button
-                style={{ backgroundColor: '#022c22' }}
-                className="flex w-full items-center justify-center gap-4 rounded-2xl py-5 text-[11px] font-black uppercase tracking-[0.4em] text-white shadow-2xl shadow-emerald-950/20 transition-all hover:bg-emerald-900 active:scale-[0.98]"
-              >
-                Finalize Products <ArrowRight className="h-4 w-4" />
-              </button>
             </div>
           </div>
         )}

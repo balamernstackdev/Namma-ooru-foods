@@ -130,9 +130,11 @@ const Footer = () => {
               <input
                 type="email"
                 placeholder="Your email address"
+                aria-label="Email for newsletter subscription"
                 className="w-full h-14 rounded-2xl bg-white border-2 border-emerald-900/10 text-emerald-950 placeholder:text-emerald-900/40 text-[13px] font-bold outline-none px-5 pr-24 focus:border-amber-500 shadow-sm transition-all"
               />
               <button
+                aria-label="Join newsletter"
                 className="absolute right-2 top-2 bottom-2 px-6 rounded-xl bg-emerald-950 text-white text-[11px] font-bold uppercase tracking-widest shadow-md hover:bg-amber-600 transition-colors"
               >
                 Join
@@ -159,6 +161,8 @@ const Footer = () => {
               <Link
                 key={social.label}
                 href={social.href}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="h-12 w-12 rounded-full border border-emerald-900/10 flex items-center justify-center text-emerald-950 hover:bg-emerald-950 hover:text-white hover:-translate-y-1 transition-all duration-300"
                 aria-label={social.label}
               >

@@ -59,17 +59,19 @@ const Hero = () => {
   const slide = slides[currentSlide];
 
   return (
-    <section className="relative w-full overflow-hidden bg-[#030712] flex items-center min-h-[450px] md:min-h-[550px] lg:min-h-[600px]">
+    <section className="relative w-full overflow-hidden bg-[#030712] flex items-center min-h-[300px] md:min-h-[500px] lg:min-h-[550px] xl:min-h-[600px]">
       {/* Background Slides */}
       {slides.map((s, idx) => (
         <div key={s.id} className={`absolute inset-0 z-0 transition-opacity duration-[2000ms] ease-in-out ${currentSlide === idx ? 'opacity-100 scale-105' : 'opacity-0 scale-110'}`}>
           <Image
             src={s.image}
-            alt=""
+            alt={s.tagline || 'Hero Banner'}
             fill
             className="object-cover"
             priority={idx === 0}
-            sizes="100vw"
+            fetchPriority={idx === 0 ? "high" : "auto"}
+            sizes="(max-width: 1920) 100vw, 1920px"
+            quality={90}
           />
           <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent z-10" />
           <div className="absolute bottom-0 left-0 right-0 h-48 bg-gradient-to-t from-[#030712]/40 to-transparent z-10" />
@@ -77,7 +79,7 @@ const Hero = () => {
       ))}
 
       {/* Content Overlay */}
-      <div className="relative z-20 w-full flex flex-col justify-center py-12 md:py-24 standard-container mx-auto">
+      <div className="relative z-20 w-full flex flex-col justify-center py-16 md:py-24 pb-20 md:pb-32 standard-container mx-auto">
         <div className="max-w-4xl text-left" key={currentSlide}>
           <div className="inline-flex items-center gap-4 rounded-full bg-amber-400/10 backdrop-blur-xl border border-amber-400/20 px-6 py-2.5 md:px-8 md:py-3 mb-8 md:mb-12 animate-fade-in group cursor-default">
             <Sparkles className="h-3.5 w-3.5 md:h-4 md:w-4 text-amber-400 group-hover:rotate-12 transition-transform" />
@@ -91,10 +93,18 @@ const Hero = () => {
           </p>
 
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-start gap-4 md:gap-6 animate-slide-up delay-200">
-            <Link href={slide.link} className="w-full sm:w-auto sm:min-w-[180px] h-11 md:h-14 px-8 md:px-12 rounded-full bg-amber-500 !text-white font-black uppercase tracking-[0.2em] text-[10px] md:text-[11px] hover:bg-white hover:!text-emerald-950 transition-all flex items-center justify-center shadow-2xl group whitespace-nowrap">
+            <Link
+              href={slide.link}
+              aria-label={`Start shopping for ${slide.tagline}`}
+              className="w-full sm:w-auto sm:min-w-[180px] h-11 md:h-14 px-8 md:px-12 rounded-full bg-amber-500 !text-white font-black uppercase tracking-[0.2em] text-[10px] md:text-[11px] hover:bg-white hover:!text-emerald-950 transition-all flex items-center justify-center shadow-2xl group whitespace-nowrap"
+            >
               Start Shopping <ArrowRight className="ml-3 h-4 w-4 md:h-5 md:w-5 group-hover:translate-x-3 transition-all" />
             </Link>
-            <Link href="/about" className="w-full sm:w-auto sm:min-w-[180px] h-11 md:h-14 px-8 md:px-12 rounded-full bg-white/10 border-2 border-white/30 backdrop-blur-xl !text-white font-black uppercase tracking-[0.2em] text-[10px] md:text-[11px] hover:bg-white/20 transition-all flex items-center justify-center whitespace-nowrap">
+            <Link
+              href="/about"
+              aria-label="Learn more about our story"
+              className="w-full sm:w-auto sm:min-w-[180px] h-11 md:h-14 px-8 md:px-12 rounded-full bg-white/10 border-2 border-white/30 backdrop-blur-xl !text-white font-black uppercase tracking-[0.2em] text-[10px] md:text-[11px] hover:bg-white/20 transition-all flex items-center justify-center whitespace-nowrap"
+            >
               Our Story
             </Link>
           </div>
@@ -105,13 +115,13 @@ const Hero = () => {
 
       <style dangerouslySetInnerHTML={{
         __html: `
-        .animate-fade-in { animation: fadeIn 1.5s ease-out forwards; }
-        .animate-slide-up { animation: slideUp 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-        .delay-100 { animation-delay: 0.2s; opacity: 0; }
-        .delay-200 { animation-delay: 0.4s; opacity: 0; }
+        .animate-fade-in { animation: fadeIn 1s ease-out forwards; will-change: opacity; }
+        .animate-slide-up { animation: slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; will-change: transform, opacity; }
+        .delay-100 { animation-delay: 0.1s; opacity: 0; }
+        .delay-200 { animation-delay: 0.2s; opacity: 0; }
         
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(60px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
       `}} />
     </section>
   );

@@ -29,8 +29,8 @@ export default function AdminProducts() {
    const [searchTerm, setSearchTerm] = useState('');
 
    const isVendor = user?.role?.toLowerCase() === 'vendor';
-   const fetchUrl = isVendor && user?.brandId 
-      ? `${API_URL}/api/products?brandId=${user?.brandId}` 
+   const fetchUrl = isVendor && user?.brandId
+      ? `${API_URL}/api/products?brandId=${user?.brandId}`
       : `${API_URL}/api/products`;
 
    const { data: swrProducts, error, mutate } = useSWR(user ? fetchUrl : null, (url: string) => fetch(url).then(res => res.json()));
@@ -66,10 +66,10 @@ export default function AdminProducts() {
          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div className="space-y-1">
                <h2 className="text-4xl font-black text-[var(--admin-sidebar)] tracking-tighter">
-                  {isVendor ? 'Vendor Inventory' : 'Global Inventory'}
+                  {isVendor ? 'Vendor Inventory' : 'Admin Inventory'}
                </h2>
                <p className="text-slate-400 font-medium text-sm">
-                  {isVendor ? 'Managing your premium brand harvests.' : 'Synchronizing the physical harvest with the digital storefront.'}
+                  {isVendor ? 'Managing your premium brand Products.' : 'Synchronizing the physical harvest with the digital storefront.'}
                </p>
             </div>
             <button
@@ -77,7 +77,7 @@ export default function AdminProducts() {
                className="h-16 px-10 rounded-2xl bg-[var(--admin-sidebar)] text-white text-[11px] font-black uppercase tracking-widest flex items-center justify-center gap-3 hover:bg-slate-900 transition-all shadow-2xl shadow-slate-900/20 active:scale-95"
             >
                <Plus size={24} className="text-[var(--admin-accent)]" />
-               Onboard New Product
+               Add New Product
             </button>
          </div>
 
@@ -105,10 +105,10 @@ export default function AdminProducts() {
                <table className="w-full text-left border-collapse">
                   <thead>
                      <tr className="bg-slate-50/50">
-                        <th className="px-10 py-6 text-[11px] font-black uppercase tracking-[0.3em] text-slate-400 border-b border-slate-100">Harvest Details</th>
-                        <th className="px-10 py-6 text-[11px] font-black uppercase tracking-[0.3em] text-slate-400 border-b border-slate-100">Taxonomy</th>
-                        <th className="px-10 py-6 text-[11px] font-black uppercase tracking-[0.3em] text-slate-400 border-b border-slate-100">Inventory</th>
-                        <th className="px-10 py-6 text-[11px] font-black uppercase tracking-[0.3em] text-slate-400 border-b border-slate-100">Valuation</th>
+                        <th className="px-10 py-6 text-[11px] font-black uppercase tracking-[0.3em] text-slate-400 border-b border-slate-100">Products</th>
+                        <th className="px-10 py-6 text-[11px] font-black uppercase tracking-[0.3em] text-slate-400 border-b border-slate-100">Category</th>
+                        <th className="px-10 py-6 text-[11px] font-black uppercase tracking-[0.3em] text-slate-400 border-b border-slate-100">Stock</th>
+                        <th className="px-10 py-6 text-[11px] font-black uppercase tracking-[0.3em] text-slate-400 border-b border-slate-100">Price</th>
                         <th className="px-10 py-6 text-[11px] font-black uppercase tracking-[0.3em] text-slate-400 text-right border-b border-slate-100">Operations</th>
                      </tr>
                   </thead>
@@ -174,7 +174,7 @@ export default function AdminProducts() {
                                     >
                                        <Trash2 size={18} />
                                     </button>
-                                    <button 
+                                    <button
                                        onClick={() => window.open(`/product/${product.id}`, '_blank')}
                                        className="h-12 w-12 flex items-center justify-center rounded-xl bg-white border border-slate-100 text-slate-400 hover:bg-emerald-600 hover:text-white transition-all shadow-sm"
                                        title="View Live"

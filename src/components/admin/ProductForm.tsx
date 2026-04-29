@@ -24,8 +24,6 @@ export default function ProductForm({ initialData, mode }: ProductFormProps) {
    const [formData, setFormData] = useState({
       name: initialData?.name || '',
       categoryId: initialData?.categoryId?.toString() || '',
-      price: initialData?.price?.toString() || '',
-      stock: '50',
       description: initialData?.description || '',
       image: initialData?.image || ''
    });
@@ -74,9 +72,8 @@ export default function ProductForm({ initialData, mode }: ProductFormProps) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                ...formData,
-               price: parseFloat(formData.price),
                categoryId: parseInt(formData.categoryId),
-               variants: [{ name: 'Standard', price: parseFloat(formData.price), stock: parseInt(formData.stock) }]
+               variants: []
             })
          });
 
@@ -163,36 +160,6 @@ export default function ProductForm({ initialData, mode }: ProductFormProps) {
                   </div>
                </div>
 
-               <div className="bg-white p-10 rounded-[3rem] border border-slate-100 shadow-sm space-y-10">
-                  <h4 className="text-xl font-black text-[var(--admin-sidebar)] tracking-tighter flex items-center gap-3">
-                     <span className="h-8 w-1.5 bg-[var(--admin-accent)] rounded-full"></span>
-                     Commercial Parameters
-                  </h4>
-                  <div className="grid grid-cols-2 gap-10">
-                     <div className="flex flex-col gap-4">
-                        <label className="text-[11px] font-black uppercase tracking-[0.4em] text-slate-400">Market Valuation (₹)</label>
-                        <div className="relative">
-                           <span className="absolute left-8 top-1/2 -translate-y-1/2 font-black text-2xl text-slate-300">₹</span>
-                           <input
-                              type="number"
-                              required
-                              className="h-20 pl-16 pr-8 rounded-3xl bg-slate-50/50 border border-slate-100 outline-none font-black text-3xl text-[var(--admin-sidebar)] focus:bg-white focus:border-[var(--admin-accent)]/30 transition-all"
-                              value={formData.price}
-                              onChange={e => setFormData({ ...formData, price: e.target.value })}
-                           />
-                        </div>
-                     </div>
-                     <div className="flex flex-col gap-4">
-                        <label className="text-[11px] font-black uppercase tracking-[0.4em] text-slate-400">Stock Availability</label>
-                        <input
-                           type="number"
-                           className="h-20 px-8 rounded-3xl bg-slate-50/50 border border-slate-100 outline-none font-black text-2xl text-[var(--admin-sidebar)] focus:bg-white transition-all"
-                           value={formData.stock}
-                           onChange={e => setFormData({ ...formData, stock: e.target.value })}
-                        />
-                     </div>
-                  </div>
-               </div>
             </div>
 
             {/* Right Column */}

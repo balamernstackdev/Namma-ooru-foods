@@ -4,6 +4,8 @@ import { CATEGORIES } from '@/lib/staticData';
 import { BRANDS } from '@/lib/staticData';
 import { API_URL } from '@/lib/api';
 
+export const dynamicParams = false;
+
 export async function generateStaticParams() {
   try {
     const res = await fetch(`${API_URL}/api/categories`);

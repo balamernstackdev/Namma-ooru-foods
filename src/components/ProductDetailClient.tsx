@@ -61,9 +61,14 @@ export default function ProductDetailClient({ product: initialProduct, allProduc
       }
    }, [product, selectedVariant.name]);
 
-   const galleryImages = (product.images && product.images.length > 0)
+   // Always include main product.image first, then append gallery images (deduplicated)
+   const mainImage = product.image || null;
+   const additionalImages = (product.images && product.images.length > 0)
       ? product.images.map((img: any) => img.url)
-      : [product.image].filter(Boolean);
+      : [];
+   const galleryImages = [mainImage, ...additionalImages]
+      .filter((url): url is string => Boolean(url))
+      .filter((url, idx, arr) => arr.indexOf(url) === idx); // deduplicate
 
    // Mock data for Trust Signals & Features
    const trustSignals = [

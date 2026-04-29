@@ -1,43 +1,52 @@
 import { MetadataRoute } from 'next';
-import { PRODUCTS, CATEGORIES } from '@/lib/staticData';
+import { API_URL } from '@/lib/api';
 
 export const dynamic = 'force-static';
+export const revalidate = 3600; // optionally revalidate every hour if supported, but dynamic='force-static' is key for export
 
-export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = 'https://nammaorrufoods.com'; // Replace with actual domain
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const baseUrl = 'https://namma-urru-foods.web.app';
 
-  // Base routes
-  const routes = [
-    '',
-    '/products',
-    '/categories',
-    '/best-selling',
-    '/special',
-    '/promotions',
-    '/about',
-    '/account',
-  ].map((route) => ({
-    url: `${baseUrl}${route}`,
-    lastModified: new Date(),
-    changeFrequency: 'weekly' as const,
-    priority: route === '' ? 1 : 0.8,
-  }));
+  try {
+    const res = await fetch(`${API_URL}/api/products`);
+    const products = await res.json();
 
-  // Dynamic Product routes
-  const productRoutes = PRODUCTS.map((product) => ({
-    url: `${baseUrl}/products/${product.id}`,
-    lastModified: new Date(),
-    changeFrequency: 'monthly' as const,
-    priority: 0.6,
-  }));
+    const productUrls = products.map((p: any) => ({
+      url: `${baseUrl}/products/${p.slug || p.id}`,
+      lastModified: new Date(p.updatedAt || new Date()),
+      changeFrequency: 'weekly',
+      priority: 0.8,
+    }));
 
-  // Dynamic Category routes
-  const categoryRoutes = CATEGORIES.map((category) => ({
-    url: `${baseUrl}/products?category=${encodeURIComponent(category.name)}`,
-    lastModified: new Date(),
-    changeFrequency: 'weekly' as const,
-    priority: 0.7,
-  }));
-
-  return [...routes, ...productRoutes, ...categoryRoutes];
+    return [
+      {
+        url: baseUrl,
+        lastModified: new Date(),
+        changeFrequency: 'daily',
+        priority: 1,
+      },
+      {
+        url: `${baseUrl}/products`,
+        lastModified: new Date(),
+        changeFrequency: 'daily',
+        priority: 0.9,
+      },
+      {
+        url: `${baseUrl}/about`,
+        lastModified: new Date(),
+        changeFrequency: 'monthly',
+        priority: 0.7,
+      },
+      ...productUrls,
+    ];
+  } catch (e) {
+    return [
+      {
+        url: baseUrl,
+        lastModified: new Date(),
+        changeFrequency: 'daily',
+        priority: 1,
+      },
+    ];
+  }
 }

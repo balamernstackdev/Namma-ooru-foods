@@ -96,17 +96,17 @@ export default function AdminVariantsPage() {
     e.preventDefault();
     setSubmitting(true);
     try {
-      const url = editId 
-        ? `${API_URL}/api/variants/${editId}` 
+      const url = editId
+        ? `${API_URL}/api/variants/${editId}`
         : `${API_URL}/api/variants`;
       const method = editId ? 'PUT' : 'POST';
-      
+
       const res = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
       });
-      
+
       if (res.ok) {
         addToast('Success', `Variant ${editId ? 'updated' : 'created'}`);
         setShowForm(false);
@@ -131,8 +131,8 @@ export default function AdminVariantsPage() {
     setShowForm(true);
   };
 
-  const filtered = variants.filter(v => 
-    v.sku.toLowerCase().includes(searchTerm.toLowerCase()) || 
+  const filtered = variants.filter(v =>
+    v.sku.toLowerCase().includes(searchTerm.toLowerCase()) ||
     v.product.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -143,7 +143,7 @@ export default function AdminVariantsPage() {
           <h2 className="text-4xl font-black text-[var(--admin-sidebar)] tracking-tighter">Inventory Console</h2>
           <p className="text-slate-400 font-medium text-sm mt-1">Directly manage stock and SKUs for all product variations.</p>
         </div>
-        <button 
+        <button
           onClick={() => { setShowForm(true); setEditId(null); setFormData({ productId: '', name: '', sku: '', price: '', stock: '' }); }}
           className="h-16 px-10 rounded-2xl bg-[var(--admin-sidebar)] text-white text-[11px] font-black uppercase tracking-widest flex items-center gap-3 hover:bg-slate-900 transition-all shadow-xl"
         >
@@ -155,9 +155,9 @@ export default function AdminVariantsPage() {
         <div className="p-8 border-b border-slate-50 flex flex-col md:flex-row items-center gap-4 bg-slate-50/20">
           <div className="relative flex-1 w-full max-w-md">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-300" />
-            <input 
-              type="text" 
-              placeholder="Search by SKU or Product name..." 
+            <input
+              type="text"
+              placeholder="Search by SKU or Product name..."
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
               className="w-full h-12 bg-white rounded-xl pl-11 pr-4 text-xs font-bold outline-none border border-slate-100 focus:border-[var(--admin-accent)] transition-all shadow-sm"
@@ -208,34 +208,33 @@ export default function AdminVariantsPage() {
                   </td>
                   <td className="px-8 py-5">
                     <div className="flex items-center gap-4">
-                      <input 
-                        type="number" 
+                      <input
+                        type="number"
                         value={variant.stock}
                         onChange={(e) => {
-                           const val = parseInt(e.target.value);
-                           if (!isNaN(val)) {
-                              setVariants(prev => prev.map(v => v.id === variant.id ? { ...v, stock: val } : v));
-                           }
+                          const val = parseInt(e.target.value);
+                          if (!isNaN(val)) {
+                            setVariants(prev => prev.map(v => v.id === variant.id ? { ...v, stock: val } : v));
+                          }
                         }}
                         onBlur={(e) => {
                           const val = parseInt(e.target.value);
                           if (!isNaN(val) && val !== variant.stock) {
-                             updateVariantDetails(variant.id, { stock: val });
+                            updateVariantDetails(variant.id, { stock: val });
                           }
                         }}
-                        className={`w-20 h-9 rounded-lg border-2 text-center text-xs font-black outline-none transition-all ${
-                          variant.stock <= 5 ? 'border-red-100 bg-red-50 text-red-600' : 
-                          variant.stock <= 20 ? 'border-amber-100 bg-amber-50 text-amber-600' :
-                          'border-slate-100 bg-slate-50 text-[var(--admin-sidebar)]'
-                        }`}
+                        className={`w-20 h-9 rounded-lg border-2 text-center text-xs font-black outline-none transition-all ${variant.stock <= 5 ? 'border-red-100 bg-red-50 text-red-600' :
+                            variant.stock <= 20 ? 'border-amber-100 bg-amber-50 text-amber-600' :
+                              'border-slate-100 bg-slate-50 text-[var(--admin-sidebar)]'
+                          }`}
                       />
                       {updating === variant.id && <Loader2 className="h-3 w-3 animate-spin text-[var(--admin-accent)]" />}
                     </div>
                   </td>
                   <td className="px-8 py-5 text-right">
                     <div className="flex items-center justify-end gap-2">
-                       <button onClick={() => startEdit(variant)} className="h-9 w-9 flex items-center justify-center rounded-xl bg-slate-50 text-slate-400 hover:bg-[var(--admin-sidebar)] hover:text-white transition-all"><Edit2 size={14} /></button>
-                       <button onClick={() => deleteVariant(variant.id)} className="h-9 w-9 flex items-center justify-center rounded-xl bg-slate-50 text-red-300 hover:bg-red-500 hover:text-white transition-all"><Trash2 size={14} /></button>
+                      <button onClick={() => startEdit(variant)} className="h-9 w-9 flex items-center justify-center rounded-xl bg-slate-50 text-slate-400 hover:bg-[var(--admin-sidebar)] hover:text-white transition-all"><Edit2 size={14} /></button>
+                      <button onClick={() => deleteVariant(variant.id)} className="h-9 w-9 flex items-center justify-center rounded-xl bg-slate-50 text-red-300 hover:bg-red-500 hover:text-white transition-all"><Trash2 size={14} /></button>
                     </div>
                   </td>
                 </tr>
@@ -251,59 +250,59 @@ export default function AdminVariantsPage() {
       {/* Modal Overlay for Form */}
       {showForm && (
         <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-6 animate-in fade-in duration-300">
-           <div className="bg-white rounded-[3rem] w-full max-w-4xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
-              <div className="p-10 border-b border-slate-50 flex items-center justify-between">
-                 <div>
-                    <h3 className="text-2xl font-black text-[var(--admin-sidebar)] tracking-tighter">{editId ? 'Edit Variation' : 'New Product Variant'}</h3>
-                    <p className="text-xs text-slate-400 font-medium mt-1">Configure SKU specifics and warehouse initial values.</p>
-                 </div>
-                 <button onClick={() => setShowForm(false)} className="h-12 w-12 rounded-2xl bg-slate-50 text-slate-400 hover:bg-red-50 hover:text-red-500 transition-all flex items-center justify-center">
-                    <X size={20} />
-                 </button>
+          <div className="bg-white rounded-[3rem] w-full max-w-4xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
+            <div className="p-10 border-b border-slate-50 flex items-center justify-between">
+              <div>
+                <h3 className="text-2xl font-black text-[var(--admin-sidebar)] tracking-tighter">{editId ? 'Edit Variation' : 'New Variant'}</h3>
+                <p className="text-xs text-slate-400 font-medium mt-1">Configure SKU specifics and warehouse initial values.</p>
               </div>
-              
-              <div className="p-10">
-                <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <button onClick={() => setShowForm(false)} className="h-12 w-12 rounded-2xl bg-slate-50 text-slate-400 hover:bg-red-50 hover:text-red-500 transition-all flex items-center justify-center">
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="p-10">
+              <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="space-y-4">
+                  <label className="text-[10px] uppercase font-black tracking-widest text-slate-400">Parent Product</label>
+                  <select
+                    required
+                    value={formData.productId}
+                    onChange={e => setFormData({ ...formData, productId: e.target.value })}
+                    className="w-full h-14 bg-slate-50 border-2 border-slate-100 rounded-2xl px-5 text-sm font-bold outline-none focus:border-[var(--admin-accent)] transition-all"
+                  >
+                    <option value="">Select Product...</option>
+                    {products.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                  </select>
+                </div>
+                <div className="space-y-4">
+                  <label className="text-[10px] uppercase font-black tracking-widest text-slate-400">Variant Name / Spec</label>
+                  <input required placeholder="e.g. 500ml Bottle" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} className="w-full h-14 bg-slate-50 border-2 border-slate-100 rounded-2xl px-5 text-sm font-bold outline-none focus:border-[var(--admin-accent)]" />
+                </div>
+                <div className="space-y-4">
+                  <label className="text-[10px] uppercase font-black tracking-widest text-slate-400">SKU Code</label>
+                  <input required placeholder="e.g. OIL-SES-500" value={formData.sku} onChange={e => setFormData({ ...formData, sku: e.target.value })} className="w-full h-14 bg-slate-50 border-2 border-slate-100 rounded-2xl px-5 text-sm font-bold outline-none focus:border-[var(--admin-accent)]" />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-4">
-                      <label className="text-[10px] uppercase font-black tracking-widest text-slate-400">Parent Product</label>
-                      <select 
-                        required 
-                        value={formData.productId} 
-                        onChange={e => setFormData({...formData, productId: e.target.value})}
-                        className="w-full h-14 bg-slate-50 border-2 border-slate-100 rounded-2xl px-5 text-sm font-bold outline-none focus:border-[var(--admin-accent)] transition-all"
-                      >
-                        <option value="">Select Product...</option>
-                        {products.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-                      </select>
+                    <label className="text-[10px] uppercase font-black tracking-widest text-slate-400">Price (₹)</label>
+                    <input required type="number" placeholder="0.00" value={formData.price} onChange={e => setFormData({ ...formData, price: e.target.value })} className="w-full h-14 bg-slate-50 border-2 border-slate-100 rounded-2xl px-5 text-sm font-bold outline-none focus:border-[var(--admin-accent)]" />
                   </div>
                   <div className="space-y-4">
-                      <label className="text-[10px] uppercase font-black tracking-widest text-slate-400">Variant Name / Spec</label>
-                      <input required placeholder="e.g. 500ml Bottle" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="w-full h-14 bg-slate-50 border-2 border-slate-100 rounded-2xl px-5 text-sm font-bold outline-none focus:border-[var(--admin-accent)]" />
+                    <label className="text-[10px] uppercase font-black tracking-widest text-slate-400">Initial Stock</label>
+                    <input required type="number" placeholder="0" value={formData.stock} onChange={e => setFormData({ ...formData, stock: e.target.value })} className="w-full h-14 bg-slate-50 border-2 border-slate-100 rounded-2xl px-5 text-sm font-bold outline-none focus:border-[var(--admin-accent)]" />
                   </div>
-                  <div className="space-y-4">
-                      <label className="text-[10px] uppercase font-black tracking-widest text-slate-400">SKU Code</label>
-                      <input required placeholder="e.g. OIL-SES-500" value={formData.sku} onChange={e => setFormData({...formData, sku: e.target.value})} className="w-full h-14 bg-slate-50 border-2 border-slate-100 rounded-2xl px-5 text-sm font-bold outline-none focus:border-[var(--admin-accent)]" />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-4">
-                        <label className="text-[10px] uppercase font-black tracking-widest text-slate-400">Price (₹)</label>
-                        <input required type="number" placeholder="0.00" value={formData.price} onChange={e => setFormData({...formData, price: e.target.value})} className="w-full h-14 bg-slate-50 border-2 border-slate-100 rounded-2xl px-5 text-sm font-bold outline-none focus:border-[var(--admin-accent)]" />
-                    </div>
-                    <div className="space-y-4">
-                        <label className="text-[10px] uppercase font-black tracking-widest text-slate-400">Initial Stock</label>
-                        <input required type="number" placeholder="0" value={formData.stock} onChange={e => setFormData({...formData, stock: e.target.value})} className="w-full h-14 bg-slate-50 border-2 border-slate-100 rounded-2xl px-5 text-sm font-bold outline-none focus:border-[var(--admin-accent)]" />
-                    </div>
-                  </div>
-                  
-                  <div className="md:col-span-2 pt-6 flex gap-4">
-                      <button disabled={submitting} type="submit" className="flex-1 h-16 bg-[var(--admin-sidebar)] text-white rounded-2xl text-[11px] font-black uppercase tracking-widest hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-3 shadow-xl shadow-slate-200">
-                        {submitting ? <Loader2 className="h-5 w-5 animate-spin" /> : <Save size={20} />} {editId ? 'Update Variation' : 'Confirm & Create Variant'}
-                      </button>
-                      <button type="button" onClick={() => setShowForm(false)} className="h-16 px-10 border-2 border-slate-100 rounded-2xl text-[11px] font-black uppercase tracking-widest text-slate-400 hover:bg-slate-50 transition-all">Cancel</button>
-                  </div>
-                </form>
-              </div>
-           </div>
+                </div>
+
+                <div className="md:col-span-2 pt-6 flex gap-4">
+                  <button disabled={submitting} type="submit" className="flex-1 h-16 bg-[var(--admin-sidebar)] text-white rounded-2xl text-[11px] font-black uppercase tracking-widest hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-3 shadow-xl shadow-slate-200">
+                    {submitting ? <Loader2 className="h-5 w-5 animate-spin" /> : <Save size={20} />} {editId ? 'Update Variation' : 'Confirm & Create Variant'}
+                  </button>
+                  <button type="button" onClick={() => setShowForm(false)} className="h-16 px-10 border-2 border-slate-100 rounded-2xl text-[11px] font-black uppercase tracking-widest text-slate-400 hover:bg-slate-50 transition-all">Cancel</button>
+                </div>
+              </form>
+            </div>
+          </div>
         </div>
       )}
     </div>

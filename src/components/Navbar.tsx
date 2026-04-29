@@ -36,17 +36,21 @@ const Navbar = () => {
       sub: cat.children ? cat.children.map((c: any) => c.name) : []
     })) : [];
   const accountMenuItems = [
-    { label: 'My Profile',       href: '/account/profile',      icon: User,        desc: 'Personal details & settings' },
-    { label: 'Wishlist',         href: '/account/wishlist',     icon: Heart,       desc: 'Saved products' },
-    { label: 'My Orders',        href: '/account/orders',       icon: Package,     desc: 'Order history & status' },
-    { label: 'Track Order',      href: '/account/tracking',     icon: MapPin,      desc: 'Real-time shipment tracking' },
-    { label: 'Payments',         href: '/account/payments',     icon: CreditCard,  desc: 'Transaction history' },
-    { label: 'Notifications',    href: '/account/notifications',icon: Bell,        desc: 'Alerts & updates' },
-    { label: 'Settings',         href: '/account/settings',     icon: Settings,    desc: 'Privacy & preferences' },
+    { label: 'My Profile', href: '/account/profile', icon: User, desc: 'Personal details & settings' },
+    { label: 'Wishlist', href: '/account/wishlist', icon: Heart, desc: 'Saved products' },
+    { label: 'My Orders', href: '/account/orders', icon: Package, desc: 'Order history & status' },
+    { label: 'Track Order', href: '/account/tracking', icon: MapPin, desc: 'Real-time shipment tracking' },
+    { label: 'Payments', href: '/account/payments', icon: CreditCard, desc: 'Transaction history' },
+    { label: 'Notifications', href: '/account/notifications', icon: Bell, desc: 'Alerts & updates' },
+    { label: 'Settings', href: '/account/settings', icon: Settings, desc: 'Privacy & preferences' },
   ];
 
   return (
-    <nav className="sticky top-0 left-0 right-0 z-[500] w-full flex flex-col bg-white/95 backdrop-blur-md border-b border-slate-100 shadow-sm mb-0">
+    <nav 
+      role="navigation"
+      aria-label="Main navigation"
+      className="sticky top-0 left-0 right-0 z-[500] w-full flex flex-col bg-white/95 backdrop-blur-md border-b border-slate-100 shadow-sm mb-0"
+    >
 
       {/* PRIMARY TIER */}
       <div className="w-full">
@@ -66,10 +70,13 @@ const Navbar = () => {
 
 
           {/* SEARCH BAR SYSTEM */}
-            <div className="hidden lg:flex flex-1 relative group">
+          <div className="hidden lg:flex flex-1 relative group">
             <div className="flex h-12 w-full items-center rounded-2xl border-2 border-slate-100 focus-within:border-emerald-600 focus-within:ring-4 focus-within:ring-emerald-50 transition-all overflow-hidden bg-slate-50/50">
               <div className="relative h-full flex items-center">
-                <select className="appearance-none h-full pl-6 pr-10 bg-white border-r border-slate-100 text-[11px] font-bold text-emerald-950 uppercase tracking-widest cursor-pointer outline-none hover:bg-slate-50 transition-colors">
+                <select 
+                  aria-label="Filter by category"
+                  className="appearance-none h-full pl-6 pr-10 bg-white border-r border-slate-100 text-[11px] font-bold text-emerald-950 uppercase tracking-widest cursor-pointer outline-none hover:bg-slate-50 transition-colors"
+                >
                   <option>All Categories</option>
                   {dynamicCategoriesMenu.map((cat: any) => <option key={cat.name}>{cat.name}</option>)}
                 </select>
@@ -78,9 +85,13 @@ const Navbar = () => {
               <input
                 type="text"
                 placeholder="Search for organic harvests..."
+                aria-label="Search"
                 className="flex-1 h-full px-6 bg-transparent text-[14px] font-bold outline-none placeholder:text-slate-400 text-emerald-950"
               />
-              <button className="h-full px-8 bg-emerald-950 text-white hover:bg-emerald-800 transition-colors flex items-center gap-2">
+              <button 
+                aria-label="Submit search"
+                className="h-full px-8 bg-emerald-950 text-white hover:bg-emerald-800 transition-colors flex items-center gap-2"
+              >
                 <Search className="h-4 w-4" strokeWidth={3} />
               </button>
             </div>
@@ -94,26 +105,34 @@ const Navbar = () => {
 
               {user ? (
                 /* ── LOGGED-IN TRIGGER ── */
-                <Link href={user.role === 'admin' ? "/admin" : "/account/profile"} className="flex items-center gap-4 group">
-                  <div className={`h-11 w-11 rounded-full border-2 flex items-center justify-center overflow-hidden transition-all ${user.role === 'admin' ? 'border-amber-400' : 'border-slate-100'}`}>
-                    {user.avatar 
+                <Link 
+                  href={user.role?.toLowerCase() === 'admin' ? "/admin" : user.role?.toLowerCase() === 'vendor' ? "/vendor" : "/account/profile"} 
+                  className="flex items-center gap-4 group"
+                >
+                  <div className={`h-11 w-11 rounded-full border-2 flex items-center justify-center overflow-hidden transition-all ${user.role?.toLowerCase() === 'admin' ? 'border-amber-400' : user.role?.toLowerCase() === 'vendor' ? 'border-blue-400' : 'border-slate-100'}`}>
+                    {user.avatar
                       ? <img src={user.avatar} alt={user.name} className="h-full w-full object-cover" />
-                      : <div className={`h-full w-full flex items-center justify-center text-sm font-black ${user.role === 'admin' ? 'bg-amber-400 text-emerald-950' : 'bg-emerald-950 text-white'}`}>{user.name[0]}</div>
+                      : <div className={`h-full w-full flex items-center justify-center text-sm font-black ${user.role?.toLowerCase() === 'admin' ? 'bg-amber-400 text-emerald-950' : user.role?.toLowerCase() === 'vendor' ? 'bg-blue-600 text-white' : 'bg-emerald-950 text-white'}`}>{user.name[0]}</div>
                     }
                   </div>
                   <div className="hidden lg:flex flex-col text-left">
-                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">{user.role === 'admin' ? 'Admin Panel' : 'Account'}</span>
+                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">
+                      {user.role?.toLowerCase() === 'admin' ? 'Admin Panel' : user.role?.toLowerCase() === 'vendor' ? 'Vendor Portal' : 'Account'}
+                    </span>
                     <span className="text-[11px] font-black text-emerald-950 whitespace-nowrap leading-none">{user.name.split(' ')[0]}</span>
                   </div>
                 </Link>
               ) : (
                 /* ── GUEST TRIGGER ── */
                 <Link href="/account" className="flex items-center gap-4 group">
-                  <div className="h-11 w-11 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center group-hover:bg-emerald-50 group-hover:border-emerald-200 transition-all">
+                  <div 
+                    aria-label="User account"
+                    className="h-11 w-11 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center group-hover:bg-emerald-50 group-hover:border-emerald-200 transition-all"
+                  >
                     <User className="h-5 w-5 text-emerald-950" />
                   </div>
                   <div className="hidden lg:flex flex-col">
-                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Account</span>
+                    <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest leading-none mb-1">Account</span>
                     <span className="text-[11px] font-black text-emerald-950 whitespace-nowrap leading-none">Login</span>
                   </div>
                 </Link>
@@ -123,14 +142,21 @@ const Navbar = () => {
             {/* NOTIFICATIONS — only for logged in users */}
             {user?.id && (
               <Link href="/account/notifications" className="flex items-center group">
-                <div className="relative h-11 w-11 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center group-hover:bg-emerald-50 group-hover:border-emerald-200 transition-all">
+                <div 
+                  aria-label="Notifications"
+                  className="relative h-11 w-11 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center group-hover:bg-emerald-50 group-hover:border-emerald-200 transition-all"
+                >
                   <Bell className="h-5 w-5 text-emerald-950" />
                 </div>
               </Link>
             )}
 
 
-            <button onClick={() => setIsOpen(true)} className="group flex items-center">
+            <button 
+              onClick={() => setIsOpen(true)} 
+              aria-label={`Shopping cart with ${cart.length} items`}
+              className="group flex items-center"
+            >
               <div className="relative h-11 w-11 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center group-hover:bg-emerald-50 group-hover:border-emerald-200 transition-all">
                 <ShoppingCart className="h-5 w-5 text-emerald-950" />
                 <div className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-amber-500 text-[10px] font-black text-emerald-950 border-2 border-white shadow-sm">
@@ -231,7 +257,7 @@ const Navbar = () => {
               >
                 {item.name}
                 {item.badge && (
-                  <div className={`px-1.5 py-0.5 text-[7px] rounded-sm text-white font-bold uppercase leading-none ${item.badge === 'Hot' ? 'bg-amber-400' : 'bg-emerald-600'}`}>
+                  <div className={`px-1.5 py-0.5 text-[7px] rounded-sm font-black uppercase leading-none ${item.badge === 'Hot' ? 'bg-amber-400 text-emerald-950' : 'bg-emerald-600 text-white'}`}>
                     {item.badge}
                   </div>
                 )}
@@ -295,7 +321,7 @@ const Navbar = () => {
             {user ? (
               <div className="flex flex-col gap-3">
                 {/* User Card */}
-                <Link 
+                <Link
                   href="/account/profile"
                   onClick={() => setIsMenuOpen(false)}
                   className="flex items-center gap-4 px-6 py-4 rounded-[2rem] bg-emerald-950 shadow-premium active:scale-95 transition-all"

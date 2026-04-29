@@ -142,13 +142,15 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           <div className="grid grid-cols-2 gap-1.5 mt-2">
             <button
               onClick={handleAddToCart}
+              aria-label={`Add ${product.name} to cart`}
               className="h-10 md:h-12 rounded-xl bg-slate-100 text-emerald-950 text-[9px] md:text-[10px] font-black uppercase tracking-widest hover:bg-emerald-50 transition-all flex items-center justify-center gap-1.5"
             >
-              <ShoppingCart size={12} className="md:w-[14px]" />
+              <ShoppingCart size={12} className="md:w-[14px]" aria-hidden="true" />
               <span className="hidden xs:inline">Add</span>
             </button>
             <button
               onClick={handleBuyNow}
+              aria-label={`Buy ${product.name} now`}
               className="h-10 md:h-12 rounded-xl bg-emerald-950 text-white text-[9px] md:text-[10px] font-black uppercase tracking-widest hover:bg-emerald-900 transition-all shadow-lg active:scale-95 flex items-center justify-center gap-1.5"
             >
               Buy
