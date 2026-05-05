@@ -1,14 +1,14 @@
 'use client';
 
 import React, { useState } from 'react';
-import { 
-  Plus, 
-  Search, 
-  Edit2, 
-  Trash2, 
-  Filter,
-  Package,
-  Download
+import {
+   Plus,
+   Search,
+   Edit2,
+   Trash2,
+   Filter,
+   Package,
+   Download
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
@@ -19,12 +19,13 @@ import OptimizedImage from '@/components/ui/OptimizedImage';
 import { API_URL } from '@/lib/api';
 
 interface Product {
-  id: number;
-  name: string;
-  price: number;
-  category?: { name: string };
-  image?: string;
-  stock?: number;
+   id: number;
+   name: string;
+   price: number;
+   category?: { name: string };
+   image?: string;
+   stock?: number;
+   status?: 'PENDING' | 'APPROVED' | 'REJECTED' | 'DRAFT';
 }
 
 const fetcher = (url: string) => fetch(url).then(res => res.json());
@@ -35,8 +36,8 @@ export default function VendorProducts() {
    const [searchTerm, setSearchTerm] = useState('');
 
    const { data: products, error, mutate, isLoading } = useSWR<Product[]>(
-     user?.brandId ? `${API_URL}/api/products?brandId=${user.brandId}` : null,
-     fetcher
+      user?.brandId ? `${API_URL}/api/products?brandId=${user.brandId}&status=all` : null,
+      fetcher
    );
 
    const loading = user?.brandId ? isLoading : false;
@@ -67,8 +68,8 @@ export default function VendorProducts() {
          p.stock || 0
       ]);
 
-      const csvContent = "data:text/csv;charset=utf-8," 
-         + headers.join(",") + "\n" 
+      const csvContent = "data:text/csv;charset=utf-8,"
+         + headers.join(",") + "\n"
          + rows.map(e => e.join(",")).join("\n");
 
       const encodedUri = encodeURI(csvContent);
@@ -115,7 +116,7 @@ export default function VendorProducts() {
                   className="h-16 px-10 rounded-2xl bg-emerald-950 dark:bg-emerald-600 text-white text-[11px] font-black uppercase tracking-widest flex items-center justify-center gap-3 hover:bg-emerald-800 transition-all shadow-xl shadow-emerald-900/20"
                >
                   <Plus size={24} className="text-amber-400" />
-                  New Harvest
+                  New Product
                </motion.button>
             </div>
          </div>
@@ -124,8 +125,8 @@ export default function VendorProducts() {
          <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1 relative">
                <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-300" size={20} />
-               <input 
-                  type="text" 
+               <input
+                  type="text"
                   placeholder="Search your inventory by name or category..."
                   className="w-full h-16 pl-16 pr-6 rounded-[1.5rem] bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 focus:border-emerald-100 focus:ring-4 focus:ring-emerald-50 dark:focus:ring-emerald-900/10 transition-all outline-none font-bold text-emerald-950 dark:text-white placeholder:text-slate-300"
                   value={searchTerm}
@@ -156,7 +157,7 @@ export default function VendorProducts() {
                   ) : (
                      <AnimatePresence>
                         {filteredProducts.map((product) => (
-                           <motion.tr 
+                           <motion.tr
                               key={product.id}
                               initial={{ opacity: 0, x: -10 }}
                               animate={{ opacity: 1, x: 0 }}
@@ -166,12 +167,12 @@ export default function VendorProducts() {
                               <td className="px-10 py-8">
                                  <div className="flex items-center gap-6">
                                     <div className="h-16 w-16 rounded-2xl bg-slate-100 dark:bg-slate-800 overflow-hidden border border-slate-100 dark:border-slate-800 shrink-0">
-                                       <OptimizedImage 
-                                          src={product.image || '/placeholder-harvest.jpg'} 
-                                          alt={product.name} 
-                                          width={64} 
-                                          height={64} 
-                                          className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-700" 
+                                       <OptimizedImage
+                                          src={product.image || '/placeholder-harvest.jpg'}
+                                          alt={product.name}
+                                          width={64}
+                                          height={64}
+                                          className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-700"
                                        />
                                     </div>
                                     <div>
@@ -187,9 +188,17 @@ export default function VendorProducts() {
                               </td>
                               <td className="px-10 py-8">
                                  <div className="flex items-center gap-2.5">
-                                    <div className={`h-2 w-2 rounded-full ${(product.stock || 0) > 0 ? 'bg-emerald-500' : 'bg-red-500'} animate-pulse`} />
-                                    <span className="text-[10px] font-black text-emerald-950 dark:text-emerald-100 uppercase tracking-widest">
-                                       {(product.stock || 0) > 0 ? 'Live' : 'Out of Stock'}
+                                    <div className={`h-2 w-2 rounded-full ${
+                                       product.status === 'APPROVED' ? 'bg-emerald-500' : 
+                                       product.status === 'PENDING' ? 'bg-amber-500' : 
+                                       product.status === 'REJECTED' ? 'bg-red-500' : 'bg-slate-400'
+                                    } animate-pulse`} />
+                                    <span className={`text-[10px] font-black uppercase tracking-widest ${
+                                       product.status === 'APPROVED' ? 'text-emerald-950 dark:text-emerald-100' :
+                                       product.status === 'PENDING' ? 'text-amber-700 dark:text-amber-400' :
+                                       product.status === 'REJECTED' ? 'text-red-700 dark:text-red-400' : 'text-slate-500'
+                                    }`}>
+                                       {product.status || 'DRAFT'}
                                     </span>
                                  </div>
                               </td>
@@ -198,14 +207,14 @@ export default function VendorProducts() {
                               </td>
                               <td className="px-10 py-8 text-right">
                                  <div className="flex items-center justify-end gap-3 transition-all">
-                                    <motion.button 
+                                    <motion.button
                                        whileHover={{ scale: 1.1, backgroundColor: '#064e3b', color: '#fff' }}
                                        onClick={() => router.push(`/vendor/products/edit?id=${product.id}`)}
                                        className="h-12 w-12 flex items-center justify-center rounded-xl bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-800 text-slate-400 transition-all shadow-sm"
                                     >
                                        <Edit2 size={18} />
                                     </motion.button>
-                                    <motion.button 
+                                    <motion.button
                                        whileHover={{ scale: 1.1, backgroundColor: '#ef4444', color: '#fff' }}
                                        onClick={() => handleDelete(product.id)}
                                        className="h-12 w-12 flex items-center justify-center rounded-xl bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-800 text-red-300 transition-all shadow-sm"

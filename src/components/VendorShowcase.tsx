@@ -1,70 +1,116 @@
 'use client';
 
-import React from 'react';
+import React, { useRef, useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
-import { ArrowRight, BadgeCheck } from 'lucide-react';
+import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
 import useSWR from 'swr';
 
 import { API_URL } from '@/lib/api';
-
 import OptimizedImage from './ui/OptimizedImage';
 
 const fetcher = (url: string) => fetch(url).then(res => res.json());
 
 export default function VendorShowcase() {
-  const { data: brands, error } = useSWR(`${API_URL}/api/brands`, fetcher);
+  const { data: responseData, error } = useSWR(`${API_URL}/api/brands`, fetcher);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [isPaused, setIsPaused] = useState(false);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const brandsList = responseData?.brands || [];
+
+  const scrollRight = useCallback(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+
+    const isMobile = window.innerWidth < 768;
+    const scrollAmount = isMobile ? 120 : 240;
+
+    if (el.scrollLeft + el.clientWidth >= el.scrollWidth - 10) {
+      el.scrollTo({ left: 0, behavior: 'smooth' });
+    } else {
+      el.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+    }
+  }, []);
+
+  const scrollLeft = () => {
+    const isMobile = window.innerWidth < 768;
+    const scrollAmount = isMobile ? 120 : 240;
+    scrollRef.current?.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
+  };
+
+  useEffect(() => {
+    if (isPaused || brandsList.length <= 3) return;
+    timerRef.current = setInterval(scrollRight, 3000);
+    return () => { if (timerRef.current) clearInterval(timerRef.current); };
+  }, [scrollRight, isPaused, brandsList.length]);
 
   if (error) return null;
-  if (!brands) return <div className="h-40 animate-pulse bg-slate-50 rounded-[3rem]" />;
+  if (!responseData) return <div className="h-40 animate-pulse bg-slate-50 rounded-[3rem]" />;
 
   return (
-    <section className="py-12 md:py-20 bg-slate-50/50 flex justify-center w-full">
+    <section className="w-full pt-8 pb-8 bg-white overflow-hidden">
       <div className="standard-container">
-        <div className="flex flex-col gap-8 md:gap-14">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
-            <div className="max-w-2xl">
-              <span className="text-[11px] font-black uppercase tracking-[0.4em] text-emerald-800/60 mb-6 inline-block">Official Partner Registry</span>
-              <h2 className="text-emerald-950 font-black tracking-tight text-3xl md:text-5xl lg:text-7xl leading-tight">
-                Shop by your <br />
-                <span className="text-amber-500 italic">Favorite Brands</span>
-              </h2>
-            </div>
-            <Link href="/brands" className="group flex items-center gap-4 text-emerald-900 font-black text-[11px] uppercase tracking-[0.3em] hover:text-amber-600 transition-colors">
-              View All Partners <ArrowRight className="group-hover:translate-x-2 transition-transform" />
-            </Link>
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 md:mb-12 gap-4">
+          <div className="flex flex-col">
+            <span className="text-[10px] md:text-xs font-black text-amber-500 uppercase tracking-[0.4em] mb-3">Premium Selection</span>
+            <h2 className="text-3xl md:text-5xl font-black text-emerald-950 tracking-tighter uppercase leading-[0.9]">
+              Brands <span className="text-amber-500 italic lowercase font-serif">You Love</span>
+            </h2>
           </div>
+          <Link href="/brands" className="text-[10px] font-black text-emerald-950 uppercase tracking-widest hover:text-amber-500 transition-colors border-b-2 border-emerald-950/10 pb-1 flex items-center gap-2 group shrink-0 self-start md:self-auto">
+            Explore All Partners <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+          </Link>
+        </div>
 
-          <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 md:gap-10">
-            {brands.slice(0, 5).map((brand: any, idx: number) => (
+        <div className="relative group">
+          <div
+            ref={scrollRef}
+            onMouseEnter={() => setIsPaused(true)}
+            onMouseLeave={() => setIsPaused(false)}
+            className="flex overflow-x-auto no-scrollbar gap-6 md:gap-10 pb-6 scroll-smooth items-start"
+          >
+            {brandsList.map((brand: any) => (
               <Link
                 key={brand.id}
                 href={`/brands/${brand.id}`}
-                className="group relative flex flex-col items-center bg-white p-4 md:p-10 rounded-2xl md:rounded-[3.5rem] border border-slate-100/80 shadow-md hover:shadow-premium transition-all duration-700 hover:-translate-y-2 overflow-hidden"
+                className="group flex flex-col items-center gap-4 shrink-0 transition-all hover:-translate-y-2"
               >
-                <div className="absolute inset-0 bg-gradient-to-br from-emerald-50/0 to-amber-50/0 group-hover:from-emerald-50/20 group-hover:to-amber-50/20 transition-colors duration-700" />
-
-                <div className="relative h-20 w-20 sm:h-28 sm:w-28 md:h-44 md:w-44 rounded-full overflow-hidden border-4 md:border-8 border-white shadow-xl mb-4 md:mb-8 group-hover:scale-110 transition-transform duration-1000">
+                <div
+                  className="relative overflow-hidden transition-all duration-500 group-hover:shadow-2xl border-4 border-slate-50 bg-white"
+                  style={{
+                    width: 'clamp(90px, 12vw, 140px)',
+                    height: 'clamp(90px, 12vw, 140px)',
+                    borderRadius: '50%',
+                  }}
+                >
                   <OptimizedImage
-                    src={brand.logo}
+                    src={brand.logo || '/ai_images/placeholder_brand.png'}
                     alt={brand.name}
                     fill
-                    className="object-cover"
+                    className="object-contain p-4 transition-transform duration-500 group-hover:scale-110"
                   />
+                  <div className="absolute inset-0 bg-emerald-950/0 group-hover:bg-emerald-950/5 transition-colors" />
                 </div>
-
-                <div className="text-center relative z-10 w-full px-2">
-                  <div className="hidden md:flex items-center justify-center gap-2 text-emerald-600 mb-2 opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-500">
-                    <BadgeCheck size={14} fill="currentColor" className="text-emerald-500/20" />
-                    <span className="text-[9px] font-black uppercase tracking-[0.2em]">Verified</span>
-                  </div>
-                  <h3 className="text-[12px] md:text-2xl font-bold md:font-black text-emerald-950 tracking-tight leading-tight md:leading-none group-hover:text-emerald-700 transition-colors uppercase break-words">
-                    {brand.name}
-                  </h3>
-                  <div className="mt-2 md:mt-4 h-0.5 md:h-1 w-8 md:w-12 bg-amber-400 mx-auto rounded-full scale-x-0 group-hover:scale-x-100 transition-transform duration-700" />
-                </div>
+                <span className="text-[10px] md:text-[11px] font-black uppercase tracking-widest text-center leading-tight text-slate-400 group-hover:text-emerald-950 transition-colors">
+                  {brand.name}
+                </span>
               </Link>
             ))}
           </div>
+
+          {/* Navigation Arrows (Desktop) */}
+          <button 
+            onClick={scrollLeft}
+            className="hidden md:flex absolute left-0 top-1/2 -translate-y-1/2 -translate-x-6 h-12 w-12 rounded-full bg-white shadow-xl items-center justify-center text-emerald-950 opacity-0 group-hover:opacity-100 group-hover:translate-x-0 transition-all z-20 hover:bg-emerald-950 hover:text-white"
+          >
+            <ChevronLeft size={24} />
+          </button>
+          <button 
+            onClick={scrollRight}
+            className="hidden md:flex absolute right-0 top-1/2 -translate-y-1/2 translate-x-6 h-12 w-12 rounded-full bg-white shadow-xl items-center justify-center text-emerald-950 opacity-0 group-hover:opacity-100 group-hover:translate-x-0 transition-all z-20 hover:bg-emerald-950 hover:text-white"
+          >
+            <ChevronRight size={24} />
+          </button>
         </div>
       </div>
     </section>

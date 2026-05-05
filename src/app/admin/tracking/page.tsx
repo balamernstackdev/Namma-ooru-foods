@@ -4,16 +4,20 @@ import { useState, useEffect } from 'react';
 import { Truck, Save, Package, CheckCircle, ExternalLink } from 'lucide-react';
 import useSWR from 'swr';
 import { API_URL } from '@/lib/api';
+import AdminPagination from '@/components/admin/AdminPagination';
 
 const fetcher = (url: string) => fetch(url).then(r => r.json());
 
 export default function AdminTrackingPage() {
-  const { data: orders = [], isLoading } = useSWR(`${API_URL}/api/orders`, fetcher);
+  const [currentPage, setCurrentPage] = useState(1);
+  const { data, isLoading } = useSWR(`${API_URL}/api/orders?page=${currentPage}&limit=10`, fetcher);
   const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
   const [form, setForm] = useState({ carrierName: '', trackingNumber: '', trackingUrl: '', estimatedDelivery: '' });
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+
+  const { orders = [], totalPages = 1 } = data || {};
 
   const shippableOrders = orders.filter((o: any) => ['PROCESSING', 'PENDING', 'SHIPPED'].includes(o.status));
   const filtered = shippableOrders.filter((o: any) => String(o.id).includes(searchTerm) || o.user?.name?.toLowerCase().includes(searchTerm.toLowerCase()));
@@ -81,6 +85,13 @@ export default function AdminTrackingPage() {
           {!isLoading && filtered.length === 0 && (
             <div className="bg-white rounded-2xl border border-slate-100 p-8 text-center text-slate-300 font-bold text-sm">No orders available for tracking</div>
           )}
+          <div className="pt-4">
+            <AdminPagination 
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={setCurrentPage}
+            />
+          </div>
         </div>
 
         {/* Tracking Form */}

@@ -15,14 +15,14 @@ interface Notification {
 export default function NotificationCenter() {
   const [isOpen, setIsOpen] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([
-    { id: 1, title: 'New Harvest Ordered', message: 'Anita Sharma purchased Organic Foxtail Millet.', type: 'order', time: '2m ago' },
+    { id: 1, title: 'New Product Ordered', message: 'Anita Sharma purchased Organic Foxtail Millet.', type: 'order', time: '2m ago' },
     { id: 2, title: 'Stock Alert', message: 'Mango Pickle is running low on stock.', type: 'alert', time: '1h ago' },
     { id: 3, title: 'System Update', message: 'Platform version 2.4 is now live.', type: 'system', time: '5h ago' }
   ]);
 
   return (
     <div className="relative">
-      <button 
+      <button
         onClick={() => setIsOpen(!isOpen)}
         className="h-12 w-12 rounded-full border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center justify-center text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all relative"
       >
@@ -35,14 +35,14 @@ export default function NotificationCenter() {
       <AnimatePresence>
         {isOpen && (
           <>
-            <motion.div 
-              initial={{ opacity: 0 }} 
-              animate={{ opacity: 1 }} 
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsOpen(false)}
               className="fixed inset-0 z-40 bg-black/5 backdrop-blur-[2px]"
             />
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, y: 10, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 10, scale: 0.95 }}
@@ -57,14 +57,13 @@ export default function NotificationCenter() {
                 {notifications.map((n) => (
                   <div key={n.id} className="p-6 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors border-b border-slate-50 dark:border-slate-800 last:border-0 group">
                     <div className="flex gap-4">
-                      <div className={`h-10 w-10 rounded-xl flex items-center justify-center shrink-0 ${
-                         n.type === 'order' ? 'bg-emerald-50 text-emerald-600' :
-                         n.type === 'alert' ? 'bg-amber-50 text-amber-600' :
-                         'bg-blue-50 text-blue-600'
-                      }`}>
-                         {n.type === 'order' ? <ShoppingBag size={18} /> : 
-                          n.type === 'alert' ? <AlertCircle size={18} /> : 
-                          <CheckCircle size={18} />}
+                      <div className={`h-10 w-10 rounded-xl flex items-center justify-center shrink-0 ${n.type === 'order' ? 'bg-emerald-50 text-emerald-600' :
+                        n.type === 'alert' ? 'bg-amber-50 text-amber-600' :
+                          'bg-blue-50 text-blue-600'
+                        }`}>
+                        {n.type === 'order' ? <ShoppingBag size={18} /> :
+                          n.type === 'alert' ? <AlertCircle size={18} /> :
+                            <CheckCircle size={18} />}
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-[13px] font-black text-emerald-950 dark:text-white leading-tight">{n.title}</p>

@@ -1,63 +1,113 @@
 'use client';
 
 import React from 'react';
-import { Bell, Send, Trash2, CheckCircle } from 'lucide-react';
+import { Bell, Trash2, CheckCircle, Clock } from 'lucide-react';
+import useSWR from 'swr';
+import { API_URL } from '@/lib/api';
+import { formatDistanceToNow } from 'date-fns';
+
+interface Notification {
+   id: number;
+   title: string;
+   message: string;
+   type: string;
+   isRead: boolean;
+   createdAt: string;
+}
+
+const fetcher = (url: string) => fetch(url).then(res => res.json());
 
 const NotificationsPage = () => {
+   const { data: notifications, mutate } = useSWR<Notification[]>(`${API_URL}/api/notifications`, fetcher);
+
+   const markAsRead = async (id: number) => {
+      await fetch(`${API_URL}/api/notifications/${id}/read`, { method: 'PATCH' });
+      mutate();
+   };
+
+   const deleteNotification = async (id: number) => {
+      await fetch(`${API_URL}/api/notifications/${id}`, { method: 'DELETE' });
+      mutate();
+   };
+
    return (
-      <div className="flex flex-col gap-8">
+      <div className="flex flex-col gap-8 animate-in fade-in duration-700">
          <div className="flex items-center justify-between">
             <div>
-               <h1 className="text-3xl font-bold">Notification Control</h1>
-               <p className="text-[var(--muted-foreground)]">Send alerts for offers, discounts, and order updates to your users.</p>
+               <h1 className="text-4xl font-black text-slate-900 tracking-tight">System Alerts</h1>
+               <p className="text-slate-500 font-medium">Real-time feed of product approvals, vendor submissions, and system events.</p>
             </div>
-            <button className="flex items-center gap-2 rounded-xl bg-[var(--primary)] px-6 py-3 font-bold text-white shadow-lg shadow-[var(--primary)]/20 transition-all hover:bg-[var(--primary-dark)] active:scale-95">
-               <Send className="h-5 w-5" /> Send New Notification
-            </button>
          </div>
 
          <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
             {/* History */}
-            <div className="lg:col-span-2 rounded-2xl border border-[var(--border)] bg-[var(--card)] overflow-hidden">
-               <div className="border-b border-[var(--border)] p-6 bg-[var(--muted)]/30">
-                  <h2 className="font-bold flex items-center gap-2">
-                     <Bell className="h-5 w-5 text-[var(--primary)]" /> Recent Notifications
+            <div className="lg:col-span-2 rounded-[2rem] border border-slate-100 bg-white shadow-sm overflow-hidden">
+               <div className="border-b border-slate-50 p-8 bg-slate-50/50">
+                  <h2 className="font-black text-slate-900 flex items-center gap-3 uppercase text-xs tracking-widest">
+                     <Bell className="h-4 w-4 text-emerald-600" /> Recent Activity
                   </h2>
                </div>
-               <div className="divide-y divide-[var(--border)]">
-                  {[
-                     { title: 'Flash Sale Live!', message: 'Our Summer Sale is now live. Get 20% off on all grains.', date: '10 mins ago', status: 'Sent' },
-                     { title: 'Order Shipped', message: 'Hi Rahul, your order #ORD-7809 has been shipped.', date: '2 hours ago', status: 'Read' },
-                     { title: 'New Product Alert', message: 'Try our new Cold Pressed Coconut Oil, now in stock!', date: 'Yesterday', status: 'Sent' },
-                  ].map((n, i) => (
-                     <div key={i} className="p-6 hover:bg-[var(--muted)]/20 transition-colors">
+               <div className="divide-y divide-slate-50">
+                  {notifications?.length === 0 && (
+                     <div className="p-20 text-center">
+                        <div className="inline-flex h-20 w-20 items-center justify-center rounded-full bg-slate-50 text-slate-300 mb-6">
+                           <Bell size={40} />
+                        </div>
+                        <p className="text-slate-400 font-bold uppercase tracking-widest text-[10px]">No recent alerts</p>
+                     </div>
+                  )}
+                  {notifications?.map((n) => (
+                     <div key={n.id} className={`p-8 hover:bg-slate-50/50 transition-colors ${!n.isRead ? 'border-l-4 border-emerald-500' : ''}`}>
                         <div className="flex items-start justify-between">
-                           <h3 className="font-bold">{n.title}</h3>
-                           <span className="text-xs font-semibold text-[var(--muted-foreground)]">{n.date}</span>
+                           <div className="space-y-1">
+                              <h3 className={`font-black text-lg ${!n.isRead ? 'text-slate-900' : 'text-slate-500'}`}>{n.title}</h3>
+                              <div className="flex items-center gap-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                                 <span className="px-2 py-0.5 rounded bg-slate-100">{n.type}</span>
+                                 <span className="flex items-center gap-1"><Clock size={12} /> {formatDistanceToNow(new Date(n.createdAt), { addSuffix: true })}</span>
+                              </div>
+                           </div>
+                           <div className="flex items-center gap-2">
+                              {!n.isRead && (
+                                 <button 
+                                    onClick={() => markAsRead(n.id)}
+                                    className="p-2 rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-100 transition-all"
+                                    title="Mark as Read"
+                                 >
+                                    <CheckCircle size={18} />
+                                 </button>
+                              )}
+                              <button 
+                                 onClick={() => deleteNotification(n.id)}
+                                 className="p-2 rounded-lg bg-red-50 text-red-300 hover:bg-red-100 hover:text-red-500 transition-all"
+                                 title="Delete"
+                              >
+                                 <Trash2 size={18} />
+                              </button>
+                           </div>
                         </div>
-                        <p className="mt-2 text-sm text-[var(--muted-foreground)]">{n.message}</p>
-                        <div className="mt-4 flex items-center justify-between">
-                           <span className={`flex items-center gap-1 text-xs font-bold ${n.status === 'Read' ? 'text-green-600' : 'text-blue-600'}`}>
-                              <CheckCircle className="h-3 w-3" /> {n.status}
-                           </span>
-                           <button className="text-[var(--muted-foreground)] hover:text-red-500"><Trash2 className="h-4 w-4" /></button>
-                        </div>
+                        <p className="mt-4 text-slate-600 font-medium leading-relaxed">{n.message}</p>
                      </div>
                   ))}
                </div>
             </div>
 
-            {/* Stats/Quick Info */}
+            {/* Quick Stats */}
             <div className="flex flex-col gap-6">
-               <div className="rounded-2xl border border-[var(--border)] bg-[var(--primary)]/5 p-6">
-                  <h3 className="font-bold text-[var(--primary)] mb-4 uppercase text-xs tracking-widest">Active Audience</h3>
-                  <p className="text-4xl font-black">8,452</p>
-                  <p className="mt-2 text-sm text-[var(--muted-foreground)]">Users subscribed to push notifications.</p>
+               <div className="rounded-[2rem] border border-slate-100 bg-[var(--admin-sidebar)] p-8 text-white">
+                  <h3 className="font-black text-[var(--admin-accent)] mb-6 uppercase text-[10px] tracking-widest opacity-80">Pending Tasks</h3>
+                  <p className="text-5xl font-black tracking-tighter">
+                     {notifications?.filter(n => !n.isRead).length || 0}
+                  </p>
+                  <p className="mt-4 text-slate-400 text-xs font-bold uppercase tracking-widest">Unread Alerts</p>
                </div>
-               <div className="rounded-2xl border border-[var(--border)] bg-[var(--secondary)]/5 p-6">
-                  <h3 className="font-bold text-[var(--secondary)] mb-4 uppercase text-xs tracking-widest">Open Rate</h3>
-                  <p className="text-4xl font-black">24.5%</p>
-                  <p className="mt-2 text-sm text-[var(--muted-foreground)]">Avg. engagement over the last 30 days.</p>
+               
+               <div className="rounded-[2rem] border border-slate-100 bg-white p-8">
+                  <h3 className="font-black text-slate-400 mb-6 uppercase text-[10px] tracking-widest">System Health</h3>
+                  <div className="flex items-center gap-4">
+                     <div className="h-3 w-3 rounded-full bg-emerald-500 animate-pulse" />
+                     <span className="font-black text-slate-900 text-sm">Monitoring Active</span>
+                  </div>
+                  <p className="mt-4 text-slate-500 text-xs font-medium">All approval triggers are operating within normal latency parameters.</p>
                </div>
             </div>
          </div>

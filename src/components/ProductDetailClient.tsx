@@ -44,10 +44,19 @@ export default function ProductDetailClient({ product: initialProduct, allProduc
          ? product.variants[0] 
          : { name: 'Standard', price: product.price }
    );
-   const [quantity, setQuantity] = useState(1);
-   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-   const { addToCart } = useCartStore();
-   const { addToast } = useToast();
+    const [activeTab, setActiveTab] = useState<'what' | 'benefits' | 'usage' | 'why'>('what');
+    const [openFaqIndex, setOpenFaqIndex] = useState(-1);
+    const [quantity, setQuantity] = useState(1);
+    const [currentImageIndex, setCurrentImageIndex] = useState(0);
+    const { addToCart } = useCartStore();
+    const { addToast } = useToast();
+
+    // FAQ items (can be expanded via DB)
+    const faqs = product.faqs || [
+       { q: "Is this product 100% organic?", a: "Yes, all Namma Orru products are certified organic and sourced directly from verified agrarian clusters." },
+       { q: "How should I store this?", a: "We recommend storing in a cool, dry place away from direct sunlight to maintain peak nutritional value." },
+       { q: "Are there any synthetic additives?", a: "Absolutely not. Our heritage recipes rely solely on natural preservation techniques." }
+    ];
 
    const currentPrice = Number(selectedVariant?.price || product.price || 0);
    const originalPrice = currentPrice + (product.originalPrice ? Number(product.originalPrice) - Number(product.price || 0) : 99);
@@ -116,8 +125,8 @@ export default function ProductDetailClient({ product: initialProduct, allProduc
             <div className="standard-container grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-start">
                
                {/* LEFT: MEDIA GALLERY (6 Cols) */}
-               <div className="lg:col-span-6 flex flex-col gap-4 md:gap-6 lg:max-w-[600px] mx-auto w-full">
-                  <div className="bg-white md:rounded-[2.5rem] md:border border-slate-100 md:shadow-md overflow-hidden relative group aspect-square md:aspect-[4/3] max-h-[400px] md:max-h-[600px] w-full max-w-[400px] md:max-w-none mx-auto rounded-[2rem]">
+               <div className="lg:col-span-6 flex flex-col gap-4 md:gap-6 w-full">
+                  <div className="bg-white md:rounded-[2.5rem] md:border border-slate-100 md:shadow-md overflow-hidden relative group aspect-[4/5] md:aspect-[4/3] w-full mx-auto md:max-w-none rounded-[2rem]">
                      <AnimatePresence mode="wait">
                         <motion.img
                            key={currentImageIndex}
@@ -308,6 +317,160 @@ export default function ProductDetailClient({ product: initialProduct, allProduc
             </div>
          </section>
 
+         {/* PRODUCT ENCYCLOPEDIA SECTION */}
+         <section className="py-24 bg-white">
+            <div className="standard-container">
+               <div className="max-w-4xl mx-auto">
+                  <div className="flex flex-col items-center text-center mb-16">
+                     <span className="text-[11px] font-black uppercase tracking-[0.5em] text-amber-500 mb-4">Deep Dive</span>
+                     <h2 className="text-4xl md:text-6xl font-black text-emerald-950 tracking-tighter">Artisanal Encyclopedia</h2>
+                  </div>
+
+                  {/* Desktop Tabs UI */}
+                  <div className="hidden md:flex items-center justify-center gap-4 mb-12">
+                     {[
+                        { id: 'what', label: 'The Story', icon: Zap },
+                        { id: 'benefits', label: 'Wellness', icon: Star },
+                        { id: 'usage', label: 'Usage Guide', icon: Timer },
+                        { id: 'why', label: 'The Promise', icon: ShieldCheck }
+                     ].map((tab) => (
+                        <button
+                           key={tab.id}
+                           onClick={() => setActiveTab(tab.id as any)}
+                           className={`px-8 py-4 rounded-2xl flex items-center gap-3 transition-all ${
+                              activeTab === tab.id 
+                                 ? 'bg-emerald-950 text-white shadow-xl scale-105' 
+                                 : 'bg-slate-50 text-slate-400 hover:bg-slate-100'
+                           }`}
+                        >
+                           <tab.icon size={18} className={activeTab === tab.id ? 'text-amber-400' : ''} />
+                           <span className="text-[10px] font-black uppercase tracking-widest">{tab.label}</span>
+                        </button>
+                     ))}
+                  </div>
+
+                  {/* Mobile Tabs Select */}
+                  <div className="md:hidden mb-10">
+                     <select 
+                        className="w-full h-14 bg-slate-50 border border-slate-100 rounded-2xl px-6 text-[10px] font-black uppercase tracking-widest outline-none"
+                        value={activeTab}
+                        onChange={(e) => setActiveTab(e.target.value as any)}
+                     >
+                        <option value="what">The Story</option>
+                        <option value="benefits">Wellness Benefits</option>
+                        <option value="usage">Usage Guide</option>
+                        <option value="why">The Promise</option>
+                     </select>
+                  </div>
+
+                  <div className="bg-slate-50 rounded-[3rem] p-8 md:p-16 relative overflow-hidden">
+                     <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-100/30 rounded-full blur-[80px] -mr-32 -mt-32" />
+                     
+                     <AnimatePresence mode="wait">
+                        <motion.div
+                           key={activeTab}
+                           initial={{ opacity: 0, y: 20 }}
+                           animate={{ opacity: 1, y: 0 }}
+                           exit={{ opacity: 0, y: -20 }}
+                           transition={{ duration: 0.4 }}
+                           className="relative z-10"
+                        >
+                           {activeTab === 'what' && (
+                              <div className="space-y-8">
+                                 <h3 className="text-2xl md:text-4xl font-black text-emerald-950">What is {product.name}?</h3>
+                                 <p className="text-lg text-slate-600 leading-loose whitespace-pre-wrap">
+                                    {product.whatIsProduct || "This heritage product is sourced from the heart of our agrarian clusters, maintaining the highest standards of organic purity and traditional craftsmanship."}
+                                 </p>
+                              </div>
+                           )}
+                           {activeTab === 'benefits' && (
+                              <div className="space-y-8">
+                                 <h3 className="text-2xl md:text-4xl font-black text-emerald-950">Nutritional Wellness</h3>
+                                 <p className="text-lg text-slate-600 leading-loose whitespace-pre-wrap">
+                                    {product.healthBenefits || "Rich in natural antioxidants and essential minerals, this product supports holistic wellness and provides a pure energy source for your daily routine."}
+                                 </p>
+                              </div>
+                           )}
+                           {activeTab === 'usage' && (
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+                                 <div className="space-y-6">
+                                    <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-amber-600">Who Should Eat</h4>
+                                    <p className="text-base text-slate-600 leading-relaxed font-medium">
+                                       {product.whoShouldEat || "Perfect for health-conscious families and those seeking authentic, farm-fresh heritage nutrition."}
+                                    </p>
+                                 </div>
+                                 <div className="space-y-6">
+                                    <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-emerald-600">How to Eat</h4>
+                                    <p className="text-base text-slate-600 leading-relaxed font-medium">
+                                       {product.howToEat || "Can be consumed directly or integrated into traditional recipes for enhanced flavor and nutrition."}
+                                    </p>
+                                 </div>
+                              </div>
+                           )}
+                           {activeTab === 'why' && (
+                              <div className="space-y-8">
+                                 <h3 className="text-2xl md:text-4xl font-black text-emerald-950">The Namma Orru Promise</h3>
+                                 <p className="text-lg text-slate-600 leading-loose whitespace-pre-wrap">
+                                    {product.whyChoose || "We stand by our 100% organic guarantee, ensuring zero chemical additives and direct fair-trade support for our local farming communities."}
+                                 </p>
+                              </div>
+                           )}
+                        </motion.div>
+                     </AnimatePresence>
+                  </div>
+               </div>
+            </div>
+         </section>
+
+         {/* FAQ SECTION */}
+         <section className="py-24 bg-slate-50">
+            <div className="standard-container">
+               <div className="max-w-3xl mx-auto space-y-12">
+                  <div className="text-center">
+                     <span className="text-[11px] font-black uppercase tracking-[0.4em] text-emerald-600 block mb-4">Customer Support</span>
+                     <h2 className="text-4xl font-black text-emerald-950 tracking-tighter">Frequently Asked Questions</h2>
+                  </div>
+                  <div className="space-y-4">
+                     {faqs.map((faq: any, i: number) => {
+                        const isOpen = openFaqIndex === i;
+                        return (
+                           <div key={i} className="bg-white rounded-[2rem] border border-slate-100 shadow-sm overflow-hidden transition-all">
+                              <button 
+                                 onClick={() => setOpenFaqIndex(isOpen ? -1 : i)}
+                                 className="w-full px-8 py-6 flex items-center justify-between text-left group"
+                              >
+                                 <h4 className={`text-lg font-black transition-colors ${isOpen ? 'text-emerald-600' : 'text-emerald-950 group-hover:text-emerald-600'}`}>
+                                    {faq.q}
+                                 </h4>
+                                 <div className={`h-8 w-8 rounded-full flex items-center justify-center transition-all ${isOpen ? 'bg-emerald-950 text-white rotate-180' : 'bg-slate-50 text-slate-400 group-hover:bg-emerald-50'}`}>
+                                    <ChevronRight size={16} className="rotate-90" />
+                                 </div>
+                              </button>
+                              <AnimatePresence>
+                                 {isOpen && (
+                                    <motion.div
+                                       initial={{ height: 0, opacity: 0 }}
+                                       animate={{ height: 'auto', opacity: 1 }}
+                                       exit={{ height: 0, opacity: 0 }}
+                                       transition={{ duration: 0.3 }}
+                                    >
+                                       <div className="px-8 pb-8">
+                                          <div className="h-[1px] w-full bg-slate-50 mb-6" />
+                                          <p className="text-slate-500 font-medium leading-relaxed">
+                                             {faq.a}
+                                          </p>
+                                       </div>
+                                    </motion.div>
+                                 )}
+                              </AnimatePresence>
+                           </div>
+                        );
+                     })}
+                  </div>
+               </div>
+            </div>
+         </section>
+
          {/* RECOMMENDED PRODUCTS */}
          <section className="py-24">
             <div className="standard-container">
@@ -320,7 +483,7 @@ export default function ProductDetailClient({ product: initialProduct, allProduc
                      Explore All <ChevronRight size={14} />
                   </Link>
                </div>
-               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+               <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-8">
                   {allProducts.filter((p: any) => p.id !== product.id).slice(0, 4).map((p: any) => (
                      <ProductCard key={p.id} product={p} />
                   ))}

@@ -9,6 +9,7 @@ import Image from 'next/image';
 
 export default function AccountPage() {
   const [isLogin, setIsLogin] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const { user, login, signup, logout, isLoading } = useAuth();
   const router = useRouter();
 
@@ -51,10 +52,15 @@ export default function AccountPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (isLogin) {
-      await login(email, password);
-    } else {
-      await signup(name, email, password);
+    setError(null);
+    try {
+      if (isLogin) {
+        await login(email, password);
+      } else {
+        await signup(name, email, password);
+      }
+    } catch (err: any) {
+      setError(err.message || 'Authentication failed');
     }
   };
 
@@ -178,6 +184,15 @@ export default function AccountPage() {
                 Authentication Required
               </p>
             </div>
+
+            {error && (
+              <div className="w-full p-4 mb-6 bg-red-50 border-2 border-red-100 rounded-xl flex items-center gap-3 animate-shake">
+                <div className="h-8 w-8 rounded-full bg-red-500 flex items-center justify-center shrink-0">
+                  <Lock className="text-white h-4 w-4" />
+                </div>
+                <p className="text-[10px] font-black text-red-500 uppercase tracking-widest leading-snug">{error}</p>
+              </div>
+            )}
 
             <form onSubmit={handleSubmit} className="w-full flex flex-col gap-5">
               {!isLogin && (

@@ -1,5 +1,13 @@
 @import "tailwindcss";
 
+@theme {
+  --color-primary: #065f46;
+  --color-primary-hover: #064e3b;
+  --color-primary-light: #f0fdf4;
+  --color-secondary: #991b1b;
+  --color-accent: #f59e0b;
+  --color-accent-hover: #d97706;
+}
 
 
 
@@ -9,15 +17,15 @@
    * A premium, organic-focused high-fidelity architecture.
    */
 
-  /* 01. Color Palette - Sunset Harvest */
-  --primary: #c2410c;
-  /* Burnt Orange */
-  --primary-hover: #9a3412;
-  --primary-light: #fff7ed;
-  --secondary: #d97706;
-  /* Warm Amber */
-  --accent: #ea580c;
-  /* Vibrant Orange */
+  /* 01. Color Palette - Forest & Gold Harvest */
+  --primary: #065f46;
+  /* Forest Green */
+  --primary-hover: #064e3b;
+  --primary-light: #f0fdf4;
+  --secondary: #991b1b;
+  /* Premium Maroon/Red */
+  --accent: #f59e0b;
+  /* Vibrant Gold/Amber */
 
   --background: #fafaf9;
   --foreground: #1c1917;
@@ -177,17 +185,17 @@ body {
 /* 08. Global Layout System */
 .standard-container {
   width: 100%;
-  max-width: 1400px;
+  max-width: 1800px;
   margin-left: auto;
   margin-right: auto;
-  padding-left: 1.5rem;
-  padding-right: 1.5rem;
+  padding-left: 3rem !important;
+  padding-right: 3rem !important;
 }
 
 @media (min-width: 768px) {
   .standard-container {
-    padding-left: 2rem;
-    padding-right: 2rem;
+    padding-left: 5rem !important;
+    padding-right: 5rem !important;
   }
 }
 
@@ -227,14 +235,12 @@ section,
 }
 
 .section-spacing {
-  padding-block: 2rem;
-  /* Reduced from 2.5rem */
+  padding-block: 4rem;
 }
 
 @media (min-width: 1024px) {
   .section-spacing {
-    padding-block: 3rem;
-    /* Reduced from 3.5rem */
+    padding-block: 6rem;
   }
 }
 
@@ -260,13 +266,20 @@ section,
   0% {
     transform: translateX(-100%);
   }
-
   50% {
     transform: translateX(200%);
   }
-
   100% {
     transform: translateX(-100%);
+  }
+}
+
+@keyframes loading {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(200%);
   }
 }
 
@@ -308,6 +321,30 @@ section,
   border-radius: 9999px;
   border: 2px solid transparent;
   background-clip: padding-box;
+}
+
+/* Custom Premium Scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #065f46;
+  border-radius: 10px;
+  opacity: 0.2;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #064e3b;
+}
+
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #065f46 transparent;
 }
 
 .admin-sidebar-nav::-webkit-scrollbar-thumb:hover {

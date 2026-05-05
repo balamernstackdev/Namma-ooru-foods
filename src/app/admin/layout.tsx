@@ -258,7 +258,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </header>
 
         {/* Dynamic Content */}
-        <div className="p-10">
+        <div className="p-6">
           {children}
         </div>
       </main>

@@ -23,7 +23,7 @@ async function getPost(slug: string): Promise<BlogPost | null> {
   } catch { return null; }
 }
 
-export const dynamicParams = false;
+export const dynamicParams = true;
 
 export async function generateStaticParams() {
   let posts: BlogPost[] = [];

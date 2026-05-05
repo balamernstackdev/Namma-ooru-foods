@@ -19,22 +19,13 @@ export default function CategoryDetailClient({ categoryId, categoryProducts }: C
   
   return (
     <div className="flex flex-col bg-white w-full min-h-screen">
-      <div className="w-full bg-[#f9fafb] border-b border-slate-100 py-10 md:py-16">
+      <div className="w-full bg-[#f9fafb] border-b border-slate-100 py-6">
         <div className="standard-container">
-          <Link href="/categories" className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 hover:text-emerald-600 mb-8 transition-colors">
-            <ArrowLeft size={14} /> Back to Categories
+          <Link href="/categories" className="inline-flex items-center gap-2 text-[9px] font-black uppercase tracking-[0.2em] text-slate-400 hover:text-emerald-600 mb-4 transition-colors">
+            <ArrowLeft size={12} /> Back to Catalog
           </Link>
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
-            <div className="space-y-4">
-              <span className="text-[11px] font-black uppercase tracking-[0.5em] text-amber-500">Collection Showcase</span>
-              <h1 className="text-5xl md:text-7xl font-black text-emerald-950 tracking-tighter leading-none">{categoryName}</h1>
-              <div className="flex items-center gap-3">
-                 <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                 <p className="text-[11px] font-black uppercase tracking-widest text-slate-400">
-                   {categoryProducts.length} Artisan {categoryProducts.length === 1 ? 'Product' : 'Products'} Synchronized
-                 </p>
-              </div>
-            </div>
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div />
             <button className="flex items-center gap-3 rounded-2xl border border-slate-100 bg-white px-8 py-4 text-[10px] font-black uppercase tracking-widest text-emerald-950 hover:border-emerald-600 hover:text-emerald-600 transition-all shadow-sm">
               <Filter className="h-4 w-4" /> Filter Selection
             </button>
@@ -42,7 +33,7 @@ export default function CategoryDetailClient({ categoryId, categoryProducts }: C
         </div>
       </div>
 
-      <div className="w-full py-12 md:py-20">
+      <div className="w-full py-8 md:py-12">
         <div className="standard-container">
           {categoryProducts.length > 0 ? (
             <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-10">

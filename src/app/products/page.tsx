@@ -2,9 +2,12 @@
 
 import React, { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
+import Image from 'next/image';
 import ProductCard from '@/components/ProductCard';
-import { ArrowRight, TrendingUp, Flame, Star, Filter, SlidersHorizontal, ShoppingBag, Droplets, Utensils, Zap, X } from 'lucide-react';
+import { ArrowRight, TrendingUp, Flame, Star, Filter, SlidersHorizontal, ShoppingBag, Droplets, Utensils, Zap, X, ChevronDown, Sparkles } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import HeroCarousel from '@/components/HeroCarousel';
+import PremiumLoader from '@/components/ui/PremiumLoader';
 
 const categories = ['All', 'Grains & Pulses', 'Organic Oils', 'Authentic Spices', 'Dairy Products', 'Indian Snacks', 'Local Sweets'];
 
@@ -28,6 +31,7 @@ const ProductsContent = () => {
   const [activeCategory, setActiveCategory] = useState('All');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [sortOrder, setSortOrder] = useState<'rating' | 'price_asc' | 'price_desc'>('rating');
   const itemsPerPage = 9;
 
   // Fetch live products
@@ -38,6 +42,10 @@ const ProductsContent = () => {
   const dynamicCategories = apiCategories ? ['All', ...apiCategories.map((c: any) => c.name)] : categories;
 
   useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
+  useEffect(() => {
     if (categoryParam && dynamicCategories.includes(categoryParam)) {
       setActiveCategory(categoryParam);
     } else {
@@ -45,15 +53,22 @@ const ProductsContent = () => {
     }
   }, [categoryParam, apiCategories]);
 
-  const filteredProducts = products ? (
-    activeCategory === 'All'
-      ? products
-      : products.filter((p: any) => 
+   // All products — sorted by selected order
+   const allProducts: any[] = Array.isArray(products) ? products : [];
+   const sortedProducts = [...allProducts].sort((a, b) => {
+      if (sortOrder === 'rating') return (b.avgRating ?? 0) - (a.avgRating ?? 0);
+      if (sortOrder === 'price_asc') return parseFloat(a.price) - parseFloat(b.price);
+      if (sortOrder === 'price_desc') return parseFloat(b.price) - parseFloat(a.price);
+      return 0;
+   });
+
+   const filteredProducts = activeCategory === 'All'
+      ? sortedProducts
+      : sortedProducts.filter((p: any) => 
           (p.category?.name === activeCategory) || 
           (p.category === activeCategory) ||
           (Array.isArray(p.tags) && p.tags.includes(activeCategory))
-        )
-  ) : [];
+        );
 
   useEffect(() => {
     setCurrentPage(1);
@@ -65,13 +80,12 @@ const ProductsContent = () => {
     currentPage * itemsPerPage
   );
 
+  // Find sub-categories of active category
+  const activeCategoryObj = apiCategories?.find((c: any) => c.name === activeCategory);
+  const subCategories = apiCategories?.filter((c: any) => c.parentId === activeCategoryObj?.id) || [];
+
   if (!products && !productsError) {
-     return (
-        <div className="w-full h-[60vh] flex flex-col items-center justify-center bg-white gap-6">
-           <div className="h-14 w-14 border-4 border-emerald-950 border-t-amber-400 rounded-full animate-spin" />
-           <p className="text-[10px] font-black uppercase tracking-widest text-[#022c22]">Synchronizing Supply Chain...</p>
-        </div>
-     );
+     return <PremiumLoader fullScreen={false} />;
   }
 
   const collectionSchema = {
@@ -128,7 +142,7 @@ const ProductsContent = () => {
           {/* SIDEBAR */}
           <div className={`fixed inset-0 z-[100] bg-emerald-950/40 backdrop-blur-md lg:hidden transition-opacity duration-300 ${isSidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} onClick={() => setIsSidebarOpen(false)} />
 
-          <aside className={`fixed lg:sticky top-0 lg:top-[120px] left-0 h-full lg:h-fit w-72 bg-white lg:bg-transparent z-[201] lg:z-10 p-8 lg:p-0 transition-transform duration-300 lg:translate-x-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'} shrink-0 overflow-y-auto lg:overflow-visible`}>
+          <aside className={`fixed lg:static lg:sticky top-0 lg:top-[120px] lg:h-[calc(100vh-140px)] left-0 w-80 bg-white lg:bg-transparent z-[201] lg:z-10 transition-transform duration-300 lg:translate-x-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'} shrink-0 overflow-y-auto no-scrollbar`}>
             <div className="flex flex-col h-full">
               <div className="flex items-center justify-between mb-10 lg:hidden mt-20">
                 <span className="text-[10px] font-black uppercase tracking-widest text-emerald-950">Refine Your Search</span>
@@ -161,7 +175,7 @@ const ProductsContent = () => {
                         >
                           <div className="flex items-center gap-4">
                             <Icon className={`h-4 w-4 ${isActive ? 'text-amber-400' : 'text-slate-300 group-hover:text-emerald-950'}`} />
-                            <span className="text-[11px] font-bold uppercase tracking-widest">{cat}</span>
+                            <span className="text-[11px] font-black uppercase tracking-wider text-left leading-tight">{cat}</span>
                           </div>
                           <ArrowRight className={`h-3.5 w-3.5 transition-all duration-500 ${isActive ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-4 ml-2'}`} />
                         </button>
@@ -176,37 +190,59 @@ const ProductsContent = () => {
           </aside>
 
           {/* MAIN GRID AREA */}
-          <main className="flex-1 bg-slate-50/10 px-0 md:px-4 lg:px-6 pt-4 lg:pt-6 pb-6">
-            <div className="flex flex-col md:flex-row items-end justify-between mb-4 md:mb-8 gap-6 px-4 md:px-0">
-              <div className="flex flex-col gap-5 text-left w-full md:w-auto">
-                <div className="flex items-center gap-4">
-                  <span className="text-[11px] font-black text-amber-500 uppercase tracking-[0.4rem]">Our Products</span>
-                </div>
-                <h1 className="text-[#022c22] font-black tracking-tighter text-5xl md:text-6xl lg:text-[5.5rem] leading-[0.9]">
-                  {activeCategory === 'All' ? 'Our Collection' : activeCategory}
-                </h1>
-              </div>
+          <main className="flex-1 bg-slate-50/10 px-4 md:px-10 lg:px-12 pt-4 md:pt-10 pb-20">
+            <div className="flex flex-col lg:flex-row lg:items-end justify-between mb-12 pb-8 border-b border-slate-100 gap-8">
+               <div className="flex flex-col text-left">
+                  <div className="flex items-center gap-3 mb-4">
+                     <div className="h-[2px] w-8 bg-amber-500" />
+                     <span className="text-[10px] font-black text-amber-600 uppercase tracking-[0.4em]">Our Harvests</span>
+                  </div>
+                  <h1 className="text-[#022c22] font-black tracking-tighter text-4xl md:text-5xl lg:text-7xl leading-none mb-4 uppercase">
+                     {activeCategory === 'All' ? 'Collection' : activeCategory}
+                  </h1>
+                  <p className="text-[12px] font-medium text-slate-400 flex items-center gap-2">
+                     Showing <span className="text-[#022c22] font-black">{filteredProducts.length}</span> artisanal items
+                  </p>
+               </div>
 
-              <div className="flex items-center justify-between md:justify-end w-full md:w-auto gap-8 border-b border-slate-100 pb-8">
-                <div className="flex flex-col items-end">
-                  <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">Total Finds</span>
-                  <span className="text-[12px] font-black text-[#022c22] tracking-tighter">{filteredProducts.length} Items Found</span>
-                </div>
-                <button className="flex items-center gap-3 h-14 px-8 rounded-full bg-emerald-50 border border-emerald-100/50 text-[11px] font-bold uppercase tracking-widest text-[#022c22] hover:bg-[#022c22] hover:text-white transition-all shadow-sm">
-                  Refine <SlidersHorizontal className="h-4 w-4" />
-                </button>
-              </div>
+               <div className="flex items-center gap-4">
+                  <div className="relative group">
+                     <select
+                        value={sortOrder}
+                        onChange={e => { setSortOrder(e.target.value as typeof sortOrder); setCurrentPage(1); }}
+                        className="appearance-none text-[11px] font-black text-[#022c22] uppercase tracking-[0.15em] bg-white pl-8 pr-12 py-4 rounded-2xl shadow-sm border border-slate-100 hover:border-emerald-500 transition-all cursor-pointer outline-none min-w-[220px]"
+                     >
+                        <option value="rating">Top Rated First</option>
+                        <option value="price_asc">Price: Low to High</option>
+                        <option value="price_desc">Price: High to Low</option>
+                     </select>
+                     <ChevronDown className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400" size={14} />
+                  </div>
+               </div>
             </div>
 
 
-
             {paginatedProducts.length > 0 ? (
-              <>
-                <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-4 md:gap-10">
-                  {paginatedProducts.map((product: any) => (
-                    <ProductCard key={product.id} product={product} />
-                  ))}
-                </div>
+               <>
+                 <motion.div 
+                  layout
+                  className="grid grid-cols-2 md:grid-cols-2 xl:grid-cols-3 gap-6 md:gap-8 lg:gap-10"
+               >
+                  <AnimatePresence mode='popLayout'>
+                     {paginatedProducts.map((product: any, idx: number) => (
+                        <motion.div
+                           layout
+                           key={product.id}
+                           initial={{ opacity: 0, scale: 0.9 }}
+                           animate={{ opacity: 1, scale: 1 }}
+                           exit={{ opacity: 0, scale: 0.9 }}
+                           transition={{ duration: 0.4, delay: idx * 0.05 }}
+                        >
+                           <ProductCard product={product} />
+                        </motion.div>
+                     ))}
+                  </AnimatePresence>
+               </motion.div>
 
                 {/* Pagination */}
                 {totalPages > 1 && (
@@ -215,7 +251,7 @@ const ProductsContent = () => {
                       disabled={currentPage === 1}
                       onClick={() => {
                         setCurrentPage(prev => Math.max(1, prev - 1));
-                        window.scrollTo({ top: 400, behavior: 'smooth' });
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
                       }}
                       className="h-12 w-12 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-emerald-950 disabled:opacity-30 transition-all hover:bg-emerald-50 active:scale-90"
                     >
@@ -226,7 +262,7 @@ const ProductsContent = () => {
                         key={i + 1}
                         onClick={() => {
                           setCurrentPage(i + 1);
-                          window.scrollTo({ top: 400, behavior: 'smooth' });
+                          window.scrollTo({ top: 0, behavior: 'smooth' });
                         }}
                         className={`h-12 w-12 rounded-xl text-[11px] font-bold transition-all ${currentPage === i + 1
                           ? 'bg-emerald-950 text-white shadow-lg'
@@ -240,7 +276,7 @@ const ProductsContent = () => {
                       disabled={currentPage === totalPages}
                       onClick={() => {
                         setCurrentPage(prev => Math.min(totalPages, prev + 1));
-                        window.scrollTo({ top: 400, behavior: 'smooth' });
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
                       }}
                       className="h-12 w-12 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-emerald-950 disabled:opacity-30 transition-all hover:bg-emerald-50 active:scale-90"
                     >
@@ -248,7 +284,7 @@ const ProductsContent = () => {
                     </button>
                   </div>
                 )}
-              </>
+               </>
             ) : (
               <div className="h-[40vh] w-full rounded-[2rem] bg-slate-50 flex flex-col items-center justify-center text-center p-12 border border-slate-100">
                 <ShoppingBag className="h-10 w-10 text-slate-200 mb-6" />
@@ -267,14 +303,7 @@ const ProductsContent = () => {
 
 export default function ProductsPage() {
   return (
-    <Suspense fallback={
-      <div className="w-full h-screen flex items-center justify-center bg-white">
-        <div className="flex flex-col items-center gap-4">
-          <div className="h-12 w-12 border-4 border-emerald-950 border-t-amber-400 rounded-full animate-spin" />
-          <p className="text-[10px] font-black uppercase tracking-widest text-emerald-950">Preparing Harvest...</p>
-        </div>
-      </div>
-    }>
+    <Suspense fallback={<PremiumLoader fullScreen={true} />}>
       <ProductsContent />
     </Suspense>
   );

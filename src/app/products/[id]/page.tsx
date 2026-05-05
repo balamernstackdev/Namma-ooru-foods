@@ -15,6 +15,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
     return {
       title: product.metaTitle || product.name,
       description: product.metaDescription || product.description,
+      keywords: product.metaKeywords || undefined,
       openGraph: {
         title: product.metaTitle || product.name,
         description: product.metaDescription || product.description,

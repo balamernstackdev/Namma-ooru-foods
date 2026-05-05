@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { RotateCcw, CheckCircle, XCircle, Clock, Eye } from 'lucide-react';
 import { API_URL } from '@/lib/api';
+import AdminPagination from '@/components/admin/AdminPagination';
 
 interface RefundOrder {
   id: number; invoiceNumber?: string; refundStatus: string; refundAmount?: number;
@@ -22,11 +23,24 @@ export default function AdminRefundsPage() {
   const [orders, setOrders] = useState<RefundOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState<number | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const itemsPerPage = 10;
 
   useEffect(() => {
-    fetch(`${API_URL}/api/refunds/admin/requests`)
-      .then(r => r.json()).then(setOrders).finally(() => setLoading(false));
-  }, []);
+    fetchRefunds(currentPage);
+  }, [currentPage]);
+
+  const fetchRefunds = (page: number) => {
+    setLoading(true);
+    fetch(`${API_URL}/api/refunds/admin/requests?page=${page}&limit=${itemsPerPage}`)
+      .then(r => r.json())
+      .then(data => {
+        setOrders(data.orders || []);
+        setTotalPages(data.totalPages || 1);
+      })
+      .finally(() => setLoading(false));
+  };
 
   const updateStatus = async (orderId: number, refundStatus: string) => {
     setUpdating(orderId);
@@ -42,7 +56,7 @@ export default function AdminRefundsPage() {
     <div className="space-y-8 animate-in fade-in duration-700">
       <div>
         <h2 className="text-4xl font-black text-[var(--admin-sidebar)] tracking-tighter">Refund Requests</h2>
-        <p className="text-slate-400 font-medium text-sm mt-1">{orders.length} refund requests — {orders.filter(o => o.refundStatus === 'REQUESTED').length} pending review</p>
+        <p className="text-slate-400 font-medium text-sm mt-1">{orders.length} refund requests on this page</p>
       </div>
 
       <div className="bg-white rounded-[3.5rem] border border-slate-100 shadow-sm overflow-hidden">
@@ -123,6 +137,11 @@ export default function AdminRefundsPage() {
             </tbody>
           </table>
         </div>
+        <AdminPagination 
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+        />
       </div>
     </div>
   );

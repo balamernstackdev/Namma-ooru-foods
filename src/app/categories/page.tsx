@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ArrowRight, LayoutGrid } from 'lucide-react';
+import { ArrowRight, LayoutGrid, ChevronLeft, ChevronRight } from 'lucide-react';
 import { API_URL } from '@/lib/api';
 import HeroCarousel from '@/components/HeroCarousel';
 import useSWR from 'swr';
@@ -12,6 +12,15 @@ const fetcher = (url: string) => fetch(url).then(res => res.json());
 
 const CategoriesPage = () => {
   const { data: categoriesList, error } = useSWR(`${API_URL}/api/categories`, fetcher);
+  
+  // Pagination State
+  const [currentPage, setCurrentPage] = React.useState(1);
+  const itemsPerPage = 12;
+
+  const categories = categoriesList || [];
+  const totalPages = Math.ceil(categories.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedCategories = categories.slice(startIndex, startIndex + itemsPerPage);
 
   if (!categoriesList && !error) {
     return (
@@ -40,16 +49,16 @@ const CategoriesPage = () => {
         }
       />
 
-      <div className="w-full section-spacing section-no-bottom flex justify-center">
+      <div className="w-full py-12 md:py-16 flex justify-center">
         <div className="standard-container">
 
-          <div className="flex flex-col md:flex-row items-center md:justify-between mb-20 md:mb-32 border-b border-slate-50 pb-12 gap-10">
-            <h2 className="text-emerald-950 tracking-tight">Browse By Genre</h2>
+          <div className="flex flex-col md:flex-row items-center md:justify-between mb-10 md:mb-16 border-b border-slate-50 pb-8 gap-10">
+            <h2 className="text-emerald-950 tracking-tight font-black text-2xl md:text-4xl">Browse By Genre</h2>
             <div className="h-2 w-24 bg-amber-400 rounded-full" />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 md:gap-8">
-            {(categoriesList || []).map((cat: any) => (
+            {paginatedCategories.map((cat: any) => (
               <Link
                 href={`/products?category=${cat.name}`}
                 key={cat.id}
@@ -67,22 +76,59 @@ const CategoriesPage = () => {
                   </div>
                 </div>
 
-                <div className="flex flex-col flex-1 p-5 md:p-12">
-                  <h3 className="text-emerald-950 tracking-tight group-hover:text-amber-600 transition-colors mb-3 uppercase text-sm md:text-base">{cat.name}</h3>
-                  <p className="text-slate-500 text-[10px] md:text-sm font-medium leading-relaxed mb-6 md:mb-10 line-clamp-2">{cat.description}</p>
+                <div className="flex flex-col flex-1 p-6 md:p-8">
+                  <h3 className="text-emerald-950 tracking-tight font-black group-hover:text-amber-600 transition-colors mb-2 uppercase text-sm md:text-lg leading-tight">{cat.name}</h3>
+                  <p className="text-slate-500 text-[10px] md:text-xs font-medium leading-relaxed mb-4 line-clamp-2">{cat.description}</p>
 
-                  <div className="mt-auto pt-6 md:pt-8 flex items-center justify-between border-t border-slate-100">
-                    <span className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-emerald-950/60 group-hover:text-amber-600 transition-colors">
+                  <div className="mt-auto pt-4 flex items-center justify-between border-t border-slate-100/50">
+                    <span className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-emerald-950/40 group-hover:text-amber-600 transition-colors">
                       Enter Products
                     </span>
-                    <div className="h-9 w-9 md:h-12 md:w-12 rounded-full bg-white border border-slate-100 flex items-center justify-center text-emerald-950 group-hover:bg-emerald-950 group-hover:text-white transition-all shadow-premium">
-                      <ArrowRight className="h-4 w-4 md:h-5 md:w-5" />
+                    <div className="h-8 w-8 md:h-10 md:w-10 rounded-full bg-white border border-slate-100 flex items-center justify-center text-emerald-950 group-hover:bg-emerald-950 group-hover:text-white transition-all shadow-sm">
+                      <ArrowRight className="h-3 w-3 md:h-4 md:w-4" />
                     </div>
                   </div>
                 </div>
               </Link>
             ))}
           </div>
+
+          {/* Pagination Control */}
+          {totalPages > 1 && (
+            <div className="mt-20 flex items-center justify-center gap-4">
+              <button
+                disabled={currentPage === 1}
+                onClick={() => { setCurrentPage(currentPage - 1); window.scrollTo({ top: 400, behavior: 'smooth' }); }}
+                className="h-14 px-8 rounded-2xl border border-slate-100 flex items-center gap-3 text-[10px] font-black uppercase tracking-widest text-emerald-950 disabled:opacity-20 hover:bg-slate-50 transition-all"
+              >
+                <ChevronLeft size={16} /> Prev
+              </button>
+              
+              <div className="flex items-center gap-2">
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                  <button
+                    key={page}
+                    onClick={() => { setCurrentPage(page); window.scrollTo({ top: 400, behavior: 'smooth' }); }}
+                    className={`h-14 w-14 rounded-2xl text-[11px] font-black transition-all ${
+                      currentPage === page 
+                      ? 'bg-emerald-950 text-white shadow-xl shadow-emerald-900/20' 
+                      : 'text-slate-400 hover:bg-slate-50'
+                    }`}
+                  >
+                    {page}
+                  </button>
+                ))}
+              </div>
+
+              <button
+                disabled={currentPage === totalPages}
+                onClick={() => { setCurrentPage(currentPage + 1); window.scrollTo({ top: 400, behavior: 'smooth' }); }}
+                className="h-14 px-8 rounded-2xl border border-slate-100 flex items-center gap-3 text-[10px] font-black uppercase tracking-widest text-emerald-950 disabled:opacity-20 hover:bg-slate-50 transition-all"
+              >
+                Next <ChevronRight size={16} />
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>

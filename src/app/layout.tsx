@@ -6,11 +6,7 @@ import Footer from "@/components/Footer";
 import CartDrawer from "@/components/CartDrawer";
 import StickyAssistant from "@/components/StickyAssistant";
 
-import { AuthProvider } from "@/context/AuthContext";
-import { ToastProvider } from "@/context/ToastContext";
-import { ThemeProvider } from "@/context/ThemeContext";
-import SmoothScroll from "@/components/SmoothScroll";
-import CustomCursor from "@/components/CustomCursor";
+import { Providers } from "@/components/Providers";
 import ClientLayout from "@/components/ClientLayout";
 
 const inter = Inter({
@@ -67,18 +63,12 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} ${jost.variable}`}>
       <body className={`antialiased font-sans transition-colors duration-500`}>
-        <ThemeProvider>
-          <AuthProvider>
-            <ToastProvider>
-              <SmoothScroll>
-                <ClientLayout>
-                  {children}
-                </ClientLayout>
-              </SmoothScroll>
-              <CartDrawer />
-            </ToastProvider>
-          </AuthProvider>
-        </ThemeProvider>
+        <Providers>
+          <ClientLayout>
+            {children}
+          </ClientLayout>
+          <CartDrawer />
+        </Providers>
       </body>
     </html>
   );

@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { Plus, Search, Filter, Edit2, Trash2, ExternalLink } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
+import AdminPagination from '@/components/admin/AdminPagination';
 import useSWR from 'swr';
 import { API_URL } from '@/lib/api';
 
@@ -20,26 +21,28 @@ interface Product {
    description: string;
    variants: { id: number; name: string; price: number }[];
    highlights: string[];
+   status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'DRAFT';
 }
 
 export default function AdminProducts() {
    const router = useRouter();
    const { user } = useAuth();
-   const [products, setProducts] = useState<Product[]>([]);
    const [searchTerm, setSearchTerm] = useState('');
+   const [statusFilter, setStatusFilter] = useState('all');
+   const [currentPage, setCurrentPage] = useState(1);
+   const itemsPerPage = 10;
 
    const isVendor = user?.role?.toLowerCase() === 'vendor';
    const fetchUrl = isVendor && user?.brandId
-      ? `${API_URL}/api/products?brandId=${user?.brandId}`
-      : `${API_URL}/api/products`;
+      ? `${API_URL}/api/products?brandId=${user?.brandId}&page=${currentPage}&limit=${itemsPerPage}&status=all`
+      : `${API_URL}/api/products?page=${currentPage}&limit=${itemsPerPage}&status=${statusFilter}`;
 
-   const { data: swrProducts, error, mutate } = useSWR(user ? fetchUrl : null, (url: string) => fetch(url).then(res => res.json()));
-   const isLoading = !swrProducts && !error && !!user;
+   const { data, error, mutate } = useSWR(user ? fetchUrl : null, (url: string) => fetch(url).then(res => res.json()));
+   const isLoading = !data && !error && !!user;
 
-   // Manage local state for immediate deletion optimistics, initialize from SWR when available
-   React.useEffect(() => {
-      if (swrProducts) setProducts(swrProducts);
-   }, [swrProducts]);
+   const products: Product[] = data?.products || [];
+   const totalPages = data?.totalPages || 1;
+
    const filteredProducts = products.filter(p =>
       p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       p.category?.name?.toLowerCase().includes(searchTerm.toLowerCase())
@@ -52,7 +55,7 @@ export default function AdminProducts() {
                method: 'DELETE'
             });
             if (response.ok) {
-               setProducts(products.filter(p => p.id !== id));
+               mutate();
             }
          } catch (error) {
             console.error('Error deleting product:', error);
@@ -60,8 +63,23 @@ export default function AdminProducts() {
       }
    };
 
+   const handleStatusChange = async (id: number, status: string) => {
+      try {
+         const response = await fetch(`${API_URL}/api/products/${id}/status`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status })
+         });
+         if (response.ok) {
+            mutate();
+         }
+      } catch (error) {
+         console.error('Error updating status:', error);
+      }
+   };
+
    return (
-      <div className="space-y-8 animate-in fade-in duration-700">
+      <div className="space-y-8 animate-in fade-in duration-700 pb-20">
          {/* Page Header */}
          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div className="space-y-1">
@@ -93,10 +111,17 @@ export default function AdminProducts() {
                   onChange={(e) => setSearchTerm(e.target.value)}
                />
             </div>
-            <button className="h-14 px-8 rounded-2xl border border-slate-100 text-[var(--admin-sidebar)] text-[11px] font-black uppercase tracking-widest flex items-center gap-3 hover:bg-slate-50 transition-all">
-               <Filter size={18} />
-               Filter Stream
-            </button>
+            <select 
+               value={statusFilter}
+               onChange={(e) => setStatusFilter(e.target.value)}
+               className="h-14 px-8 rounded-2xl border border-slate-100 text-[var(--admin-sidebar)] text-[11px] font-black uppercase tracking-widest bg-white outline-none focus:ring-2 focus:ring-[var(--admin-accent)] transition-all"
+            >
+               <option value="all">All Products</option>
+               <option value="PENDING">Pending Review</option>
+               <option value="APPROVED">Published</option>
+               <option value="REJECTED">Rejected</option>
+               <option value="DRAFT">Drafts</option>
+            </select>
          </div>
 
          {/* Live Ledger Table */}
@@ -132,10 +157,17 @@ export default function AdminProducts() {
                                     </div>
                                     <div className="flex flex-col">
                                        <span className="text-base font-black text-[var(--admin-sidebar)] tracking-tight">{product.name}</span>
-                                       <span className="text-[10px] text-slate-400 font-bold uppercase tracking-[0.2em] mt-1.5 flex items-center gap-2">
-                                          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
-                                          ID-NM-{1000 + product.id}
-                                       </span>
+                                       <div className="flex items-center gap-3 mt-1.5">
+                                          <span className={`px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest border ${
+                                             product.status === 'APPROVED' ? 'bg-emerald-50 border-emerald-100 text-emerald-600' :
+                                             product.status === 'PENDING' ? 'bg-amber-50 border-amber-100 text-amber-600' :
+                                             product.status === 'REJECTED' ? 'bg-red-50 border-red-100 text-red-600' :
+                                             'bg-slate-50 border-slate-100 text-slate-400'
+                                          }`}>
+                                             {product.status || 'APPROVED'}
+                                          </span>
+                                          <span className="text-[10px] text-slate-300 font-bold uppercase tracking-[0.2em]">ID-NM-{1000 + product.id}</span>
+                                       </div>
                                     </div>
                                  </div>
                               </td>
@@ -160,6 +192,27 @@ export default function AdminProducts() {
                               </td>
                               <td className="px-10 py-8 text-right">
                                  <div className="flex items-center justify-end gap-3 transition-all duration-300">
+                                    {product.status === 'PENDING' && !isVendor && (
+                                       <>
+                                          <button
+                                             onClick={() => handleStatusChange(product.id, 'APPROVED')}
+                                             className="h-12 px-4 flex items-center justify-center rounded-xl bg-emerald-600 text-white text-[10px] font-black uppercase tracking-widest hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-600/20"
+                                             title="Approve"
+                                          >
+                                             Approve
+                                          </button>
+                                          <button
+                                             onClick={() => {
+                                                const note = prompt('Reason for rejection?');
+                                                if (note) handleStatusChange(product.id, 'REJECTED');
+                                             }}
+                                             className="h-12 px-4 flex items-center justify-center rounded-xl bg-red-50 text-red-600 border border-red-100 text-[10px] font-black uppercase tracking-widest hover:bg-red-100 transition-all"
+                                             title="Reject"
+                                          >
+                                             Reject
+                                          </button>
+                                       </>
+                                    )}
                                     <button
                                        onClick={() => router.push(`/admin/products/edit/${product.id}`)}
                                        className="h-12 w-12 flex items-center justify-center rounded-xl bg-white border border-slate-100 text-slate-400 hover:bg-[var(--admin-sidebar)] hover:text-white hover:border-[var(--admin-sidebar)] transition-all shadow-sm"
@@ -174,13 +227,6 @@ export default function AdminProducts() {
                                     >
                                        <Trash2 size={18} />
                                     </button>
-                                    <button
-                                       onClick={() => window.open(`/product/${product.id}`, '_blank')}
-                                       className="h-12 w-12 flex items-center justify-center rounded-xl bg-white border border-slate-100 text-slate-400 hover:bg-emerald-600 hover:text-white transition-all shadow-sm"
-                                       title="View Live"
-                                    >
-                                       <ExternalLink size={18} />
-                                    </button>
                                  </div>
                               </td>
                            </tr>
@@ -189,6 +235,11 @@ export default function AdminProducts() {
                   </tbody>
                </table>
             </div>
+            <AdminPagination 
+               currentPage={currentPage}
+               totalPages={totalPages}
+               onPageChange={setCurrentPage}
+            />
          </div>
       </div>
    );

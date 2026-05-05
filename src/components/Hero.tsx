@@ -1,127 +1,157 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowRight, Star, Leaf, ShieldCheck, ChevronRight, ChevronLeft, Sparkles } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { API_URL } from '@/lib/api';
+import { HOME_BANNERS } from '@/lib/staticData';
 
-const HERO_SLIDES = [
-  {
-    id: 1,
-    image: "/banners/home_1.png",
-    title: "Taste the <span class=\"text-amber-400\">Purity</span> <br /> of Namma Orru",
-    subtitle: "We bring you the finest Products directly from sustainable local farms. No middlemen, no chemicals — just pure, authentic goodness delivered to your doorstep.",
-    tagline: "Fresh from Local Farms",
-    link: "/products"
-  },
-  {
-    id: 2,
-    image: "/banners/home_2.png",
-    title: "Real <span class=\"text-amber-400\">Organic</span> <br /> Everyday Food",
-    subtitle: "Our cold-pressed oils and millets retain their complete nutritional profiles. Start your healthy journey with ancestral farming wisdom.",
-    tagline: "Quality You Can Trust",
-    link: "/products"
-  }
-];
+import useSWR from 'swr';
+
+const fetcher = (url: string) => fetch(url).then(res => res.json());
 
 const Hero = () => {
-  const [currentSlide, setCurrentSlide] = useState(0);
-  const [slides, setSlides] = useState<any[]>(HERO_SLIDES);
+  const [current, setCurrent] = useState(0);
+  const { data: apiBanners } = useSWR(`${API_URL}/api/banners`, fetcher);
+
+  const slides = apiBanners && Array.isArray(apiBanners) && apiBanners.length > 0
+    ? apiBanners.map((b: any) => ({
+        id: b.id,
+        title: b.title,
+        subtitle: b.tagline, // Mapping tagline to subtitle for the badge
+        highlight: b.subtitle, // Mapping subtitle to highlight
+        image: b.desktopImage,
+        link: b.link || '/products',
+        cta: b.buttonText || 'Shop Now'
+      }))
+    : HOME_BANNERS;
+
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const next = useCallback(() => setCurrent(c => (c + 1) % slides.length), [slides.length]);
+  const prev = useCallback(() => setCurrent(c => (c - 1 + slides.length) % slides.length), [slides.length]);
+
+  const resetTimer = useCallback(() => {
+    if (timerRef.current) clearInterval(timerRef.current);
+    timerRef.current = setInterval(next, 5000);
+  }, [next]);
 
   useEffect(() => {
-    // Fetch dynamic banners from admin
-    fetch(`${API_URL}/api/admin-ops/banners/active`)
-      .then(r => r.json())
-      .then(data => {
-        if (Array.isArray(data) && data.length > 0) {
-          const dynamicSlides = data.map((b: any) => ({
-            id: b.id,
-            image: b.image,
-            title: b.title,
-            subtitle: b.subtitle || "Exclusive platform campaign. Shop the collection now for premium harvests.",
-            tagline: b.tagline || "Special Promotion",
-            link: b.link || "/products"
-          }));
-          setSlides(dynamicSlides);
-        }
-      })
-      .catch(err => console.error('Hero banner fetch failed:', err));
-  }, []);
+    resetTimer();
+    return () => { if (timerRef.current) clearInterval(timerRef.current); };
+  }, [resetTimer]);
 
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % slides.length);
-    }, 6000);
-    return () => clearInterval(timer);
-  }, [slides]);
-
-  const slide = slides[currentSlide];
+  const slide = slides[current];
 
   return (
-    <section className="relative w-full overflow-hidden bg-[#030712] flex items-center min-h-[300px] md:min-h-[500px] lg:min-h-[550px] xl:min-h-[600px]">
-      {/* Background Slides */}
-      {slides.map((s, idx) => (
-        <div key={s.id} className={`absolute inset-0 z-0 transition-opacity duration-[2000ms] ease-in-out ${currentSlide === idx ? 'opacity-100 scale-105' : 'opacity-0 scale-110'}`}>
-          <Image
-            src={s.image}
-            alt={s.tagline || 'Hero Banner'}
-            fill
-            className="object-cover"
-            priority={idx === 0}
-            fetchPriority={idx === 0 ? "high" : "auto"}
-            sizes="(max-width: 1920) 100vw, 1920px"
-            quality={90}
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent z-10" />
-          <div className="absolute bottom-0 left-0 right-0 h-48 bg-gradient-to-t from-[#030712]/40 to-transparent z-10" />
+    <section className="relative w-full overflow-hidden bg-emerald-950" style={{ height: 'auto' }}>
+      {/* Responsive container with proper aspect ratio */}
+      <div className="relative w-full h-[260px] sm:h-[340px] md:h-[420px] lg:h-[520px] xl:h-[580px]">
+        
+        {/* Full-bleed background slides */}
+        {slides.map((s, idx) => (
+          <div
+            key={s.id ?? idx}
+            className="absolute inset-0 transition-all duration-[1200ms] ease-in-out"
+            style={{ 
+              opacity: current === idx ? 1 : 0, 
+              transform: current === idx ? 'scale(1)' : 'scale(1.05)',
+              zIndex: current === idx ? 1 : 0 
+            }}
+          >
+            <Image
+              src={s.image}
+              alt={s.title || 'Banner'}
+              fill
+              className="object-cover"
+              priority={idx === 0}
+              sizes="100vw"
+              unoptimized={s.image?.startsWith('http')}
+            />
+            {/* Gradient overlays for text readability */}
+            <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/30" />
+          </div>
+        ))}
+
+        {/* CENTER text overlay */}
+        <div className="relative z-10 w-full h-full flex flex-col items-center justify-center text-center px-6">
+          <div key={current} className="max-w-4xl">
+            {slide?.subtitle && (
+              <span
+                className="inline-block text-[10px] sm:text-[11px] md:text-xs font-black uppercase tracking-[0.35em] mb-3 md:mb-5"
+                style={{ color: '#f59e0b', animation: 'heroFadeUp 0.6s ease both' }}
+              >
+                {slide.subtitle}
+              </span>
+            )}
+            {slide?.title && (
+              <h1
+                className="text-white font-black leading-[1.05] mb-4 md:mb-8 drop-shadow-2xl text-2xl sm:text-3xl md:text-5xl lg:text-6xl xl:text-7xl"
+                style={{ animation: 'heroFadeUp 0.7s 0.1s ease both' }}
+              >
+                {slide.title}
+              </h1>
+            )}
+            <div style={{ animation: 'heroFadeUp 0.8s 0.2s ease both', opacity: 0 }} className="animate-fill-forwards">
+              <Link
+                href={slide?.link || '/products'}
+                className="inline-flex items-center h-11 md:h-14 px-8 md:px-12 rounded-full text-[10px] md:text-[11px] font-black uppercase tracking-widest shadow-2xl transition-all hover:scale-105 active:scale-95"
+                style={{ backgroundColor: '#f59e0b', color: '#1c1917' }}
+                onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#d97706')}
+                onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#f59e0b')}
+              >
+                {slide?.cta || 'Shop Now'} &nbsp;→
+              </Link>
+            </div>
+          </div>
         </div>
-      ))}
 
-      {/* Content Overlay */}
-      <div className="relative z-20 w-full flex flex-col justify-center py-16 md:py-24 pb-20 md:pb-32 standard-container mx-auto">
-        <div className="max-w-4xl text-left" key={currentSlide}>
-          <div className="inline-flex items-center gap-4 rounded-full bg-amber-400/10 backdrop-blur-xl border border-amber-400/20 px-6 py-2.5 md:px-8 md:py-3 mb-8 md:mb-12 animate-fade-in group cursor-default">
-            <Sparkles className="h-3.5 w-3.5 md:h-4 md:w-4 text-amber-400 group-hover:rotate-12 transition-transform" />
-            <span className="text-[9px] md:text-[10px] font-black tracking-[0.3em] md:tracking-[0.4em] text-amber-400 uppercase">{slide.tagline}</span>
-          </div>
+        {/* Navigation arrows — visible on hover */}
+        <button
+          onClick={() => { prev(); resetTimer(); }}
+          aria-label="Previous slide"
+          className="absolute left-3 md:left-8 top-1/2 -translate-y-1/2 z-20 h-10 w-10 md:h-12 md:w-12 rounded-full flex items-center justify-center transition-all opacity-0 hover:opacity-100 focus:opacity-100 shadow-xl"
+          style={{ backgroundColor: 'rgba(255,255,255,0.85)', color: '#1c1917' }}
+        >
+          <ChevronLeft size={22} strokeWidth={2.5} />
+        </button>
+        <button
+          onClick={() => { next(); resetTimer(); }}
+          aria-label="Next slide"
+          className="absolute right-3 md:right-8 top-1/2 -translate-y-1/2 z-20 h-10 w-10 md:h-12 md:w-12 rounded-full flex items-center justify-center transition-all opacity-0 hover:opacity-100 focus:opacity-100 shadow-xl"
+          style={{ backgroundColor: '#065f46', color: '#ffffff' }}
+        >
+          <ChevronRight size={22} strokeWidth={2.5} />
+        </button>
 
-          <h1 className="text-white tracking-tight mb-6 md:mb-10 animate-slide-up text-[2rem] sm:text-5xl md:text-7xl lg:text-8xl leading-tight drop-shadow-[0_4px_4px_rgba(0,0,0,0.25)]" dangerouslySetInnerHTML={{ __html: slide.title }} />
-
-          <p className="max-w-2xl text-sm md:text-lg lg:text-2xl text-white font-medium leading-relaxed mb-10 md:mb-16 animate-slide-up delay-100 drop-shadow-[0_2px_2px_rgba(0,0,0,0.5)]">
-            {slide.subtitle}
-          </p>
-
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-start gap-4 md:gap-6 animate-slide-up delay-200">
-            <Link
-              href={slide.link}
-              aria-label={`Start shopping for ${slide.tagline}`}
-              className="w-full sm:w-auto sm:min-w-[180px] h-11 md:h-14 px-8 md:px-12 rounded-full bg-amber-500 !text-white font-black uppercase tracking-[0.2em] text-[10px] md:text-[11px] hover:bg-white hover:!text-emerald-950 transition-all flex items-center justify-center shadow-2xl group whitespace-nowrap"
-            >
-              Start Shopping <ArrowRight className="ml-3 h-4 w-4 md:h-5 md:w-5 group-hover:translate-x-3 transition-all" />
-            </Link>
-            <Link
-              href="/about"
-              aria-label="Learn more about our story"
-              className="w-full sm:w-auto sm:min-w-[180px] h-11 md:h-14 px-8 md:px-12 rounded-full bg-white/10 border-2 border-white/30 backdrop-blur-xl !text-white font-black uppercase tracking-[0.2em] text-[10px] md:text-[11px] hover:bg-white/20 transition-all flex items-center justify-center whitespace-nowrap"
-            >
-              Our Story
-            </Link>
-          </div>
+        {/* Dot indicators */}
+        <div className="absolute bottom-4 md:bottom-8 left-1/2 -translate-x-1/2 z-20 flex gap-2.5 items-center">
+          {slides.map((_, idx) => (
+            <button
+              key={idx}
+              onClick={() => { setCurrent(idx); resetTimer(); }}
+              aria-label={`Slide ${idx + 1}`}
+              className="rounded-full transition-all duration-400"
+              style={{
+                width: idx === current ? 32 : 8,
+                height: 8,
+                backgroundColor: idx === current ? '#f59e0b' : 'rgba(255,255,255,0.45)',
+              }}
+            />
+          ))}
         </div>
       </div>
 
-
-
-      <style dangerouslySetInnerHTML={{
-        __html: `
-        .animate-fade-in { animation: fadeIn 1s ease-out forwards; will-change: opacity; }
-        .animate-slide-up { animation: slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; will-change: transform, opacity; }
-        .delay-100 { animation-delay: 0.1s; opacity: 0; }
-        .delay-200 { animation-delay: 0.2s; opacity: 0; }
-        
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+      <style dangerouslySetInnerHTML={{ __html: `
+        @keyframes heroFadeUp {
+          from { opacity: 0; transform: translateY(24px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fill-forwards { animation-fill-mode: forwards; }
+        section:hover button[aria-label="Previous slide"],
+        section:hover button[aria-label="Next slide"] { opacity: 0.85; }
       `}} />
     </section>
   );

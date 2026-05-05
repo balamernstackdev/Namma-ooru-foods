@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Star, CheckCircle, Trash2, Shield, ShieldOff } from 'lucide-react';
 import { API_URL } from '@/lib/api';
+import AdminPagination from '@/components/admin/AdminPagination';
 
 interface Review {
   id: number; rating: number; title?: string; body: string;
@@ -22,11 +23,24 @@ export default function AdminReviewsPage() {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'approved' | 'pending'>('all');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const itemsPerPage = 10;
 
   useEffect(() => {
-    fetch(`${API_URL}/api/reviews/admin/all`)
-      .then(r => r.json()).then(setReviews).finally(() => setLoading(false));
-  }, []);
+    fetchReviews(currentPage);
+  }, [currentPage]);
+
+  const fetchReviews = (page: number) => {
+    setLoading(true);
+    fetch(`${API_URL}/api/reviews/admin/all?page=${page}&limit=${itemsPerPage}`)
+      .then(r => r.json())
+      .then(data => {
+        setReviews(data.reviews || []);
+        setTotalPages(data.totalPages || 1);
+      })
+      .finally(() => setLoading(false));
+  };
 
   const moderate = async (id: number, isApproved: boolean) => {
     await fetch(`${API_URL}/api/reviews/admin/${id}/moderate`, {
@@ -45,11 +59,11 @@ export default function AdminReviewsPage() {
   const filtered = reviews.filter(r => filter === 'all' ? true : filter === 'approved' ? r.isApproved : !r.isApproved);
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-700">
+    <div className="space-y-8 animate-in fade-in duration-700 pb-20">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
           <h2 className="text-4xl font-black text-[var(--admin-sidebar)] tracking-tighter">Review Moderation</h2>
-          <p className="text-slate-400 font-medium text-sm mt-1">{reviews.length} total reviews — {reviews.filter(r => r.isApproved).length} approved</p>
+          <p className="text-slate-400 font-medium text-sm mt-1">{reviews.length} reviews on this page</p>
         </div>
         <div className="flex gap-2">
           {(['all', 'approved', 'pending'] as const).map(f => (
@@ -119,6 +133,11 @@ export default function AdminReviewsPage() {
             </tbody>
           </table>
         </div>
+        <AdminPagination 
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+        />
       </div>
     </div>
   );

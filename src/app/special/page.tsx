@@ -70,7 +70,7 @@ export default function OrganicSpecialPage() {
             <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">{filteredProducts.length} Results Found</span>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 md:gap-8">
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-8">
             {filteredProducts.map((product: any) => (
               <ProductCard key={product.id} product={product} />
             ))}

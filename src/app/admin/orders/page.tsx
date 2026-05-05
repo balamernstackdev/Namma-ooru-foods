@@ -5,37 +5,30 @@ import { Search, Truck, CheckCircle2, XCircle, Clock, ChevronDown, Package, Stor
 import useSWR from 'swr';
 import { API_URL } from '@/lib/api';
 import { useState } from 'react';
+import AdminPagination from '@/components/admin/AdminPagination';
 
 const fetcher = (url: string) => fetch(url).then(res => res.json());
 
 export default function AdminOrders() {
-  const { data, error } = useSWR(`${API_URL}/api/admin/orders`, fetcher);
+  const [currentPage, setCurrentPage] = useState(1);
+  const { data, error } = useSWR(`${API_URL}/api/admin/orders?page=${currentPage}&limit=10`, fetcher);
   const [expandedOrder, setExpandedOrder] = useState<number | null>(null);
 
-  const { orders = [], statusCounts = [] } = data || {};
+  const { orders = [], statusCounts = [], totalPages = 1 } = data || {};
 
   const getStatusCount = (status: string) => {
     return statusCounts.find((s: any) => s.status === status)?._count || 0;
   };
 
-  // Extract unique vendors from order items, distinguishing between official and resellers
   const getOrderVendors = (order: any) => {
     const vendorMap = new Map();
     let hasOfficial = false;
-    
     order.items?.forEach((item: any) => {
       const brand = item.product?.brand;
-      if (brand && brand.userId) {
-        vendorMap.set(brand.id, brand);
-      } else {
-        hasOfficial = true;
-      }
+      if (brand && brand.userId) vendorMap.set(brand.id, brand);
+      else hasOfficial = true;
     });
-
-    return { 
-      resellers: Array.from(vendorMap.values()), 
-      hasOfficial 
-    };
+    return { resellers: Array.from(vendorMap.values()), hasOfficial };
   };
 
   if (!data && !error) {
@@ -230,6 +223,11 @@ export default function AdminOrders() {
               </tbody>
            </table>
         </div>
+        <AdminPagination 
+           currentPage={currentPage}
+           totalPages={totalPages}
+           onPageChange={setCurrentPage}
+        />
       </div>
     </div>
   );

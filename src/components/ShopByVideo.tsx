@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import { useState, useRef, useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Play, ShoppingCart, X, Maximize2, Pause, Volume2, VolumeX } from 'lucide-react';
+import { Play, ShoppingCart, X, Maximize2, Pause, Volume2, VolumeX, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import useSWR from 'swr';
 import { API_URL } from '@/lib/api';
@@ -58,27 +58,27 @@ const ShopByVideo = () => {
     return null; // Don't show anything while loading to prevent layout shift
   }
 
-  if (displayVideos.length === 0) {
-    return null; // Hide the section if there are no active videos in the database
-  }
-
   return (
-    <div className={`w-full relative overflow-hidden pt-4 md:pt-10 pb-6 md:pb-12 bg-white ${activeVideo ? 'z-[9999]' : 'z-10'}`}>
-      <div className="standard-container">
-        <div className="flex flex-col md:flex-row md:items-end md:justify-between mb-4 md:mb-8 gap-6 text-center md:text-left">
-          <div className="flex flex-col">
-            <span className="text-[10px] font-black uppercase tracking-[0.5em] text-[var(--primary)] mb-3 inline-block">Visual Shopping</span>
-            <h2 className="text-3xl md:text-5xl font-black text-[#1a1a1a] tracking-tight">
-              Shop by <span className="italic text-[var(--primary)] text-stroke">Video</span>
-            </h2>
-          </div>
-          <Link href="/videos" className="group flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-[var(--primary)] transition-colors">
-            View all stories <div className="h-0.5 w-6 bg-gray-200 group-hover:bg-[var(--primary)] group-hover:w-10 transition-all duration-300" />
-          </Link>
+    <section className={`w-full relative overflow-hidden py-2 md:py-6 bg-slate-50 ${activeVideo ? 'z-[9999]' : 'z-10'}`}>
+      {/* Background Decorative Elements */}
+      <div className="absolute top-0 left-0 w-full h-full pointer-events-none opacity-40 overflow-hidden">
+        <div className="absolute -top-24 -left-24 w-96 h-96 bg-emerald-100 rounded-full blur-3xl" />
+        <div className="absolute top-1/2 -right-24 w-64 h-64 bg-amber-100 rounded-full blur-3xl" />
+      </div>
+
+      <div className="standard-container relative z-10">
+        <div className="flex flex-col items-center text-center mb-3 md:mb-8">
+          <span className="text-[10px] font-black uppercase tracking-[0.5em] text-emerald-600 mb-4 inline-block">Visual Commerce</span>
+          <h2 className="text-4xl md:text-6xl font-black text-slate-900 tracking-tight mb-6">
+            Shop by <span className="text-emerald-600 italic">Video</span>
+          </h2>
+          <div className="w-24 h-1.5 bg-amber-400 rounded-full" />
         </div>
 
-
-        <div className="flex gap-6 md:gap-8 overflow-x-auto pb-6 snap-x no-scrollbar">
+        <div className="flex gap-6 md:gap-10 overflow-x-auto pb-6 no-scrollbar snap-x snap-mandatory">
+          {/* Spacer for centering if few items */}
+          {displayVideos.length < 3 && <div className="hidden lg:block lg:flex-1" />}
+          
           {displayVideos.map((video: any) => (
             <div
               key={video.id}
@@ -86,60 +86,74 @@ const ShopByVideo = () => {
                 setActiveVideo(video);
                 setVideoError(false);
               }}
-              className="relative flex-shrink-0 w-60 md:w-76 h-[400px] md:h-[520px] rounded-[2rem] md:rounded-[3rem] overflow-hidden snap-start shadow-2xl group cursor-pointer border-[5px] border-white ring-1 ring-slate-100"
+              className="relative flex-shrink-0 w-[210px] md:w-[320px] aspect-[9/16] rounded-[2rem] md:rounded-[2.5rem] overflow-hidden snap-start shadow-2xl group cursor-pointer border-4 border-white transition-all duration-500 hover:-translate-y-2 hover:shadow-emerald-900/10"
             >
+              {/* Thumbnail / Preview Video */}
+              <div className="absolute inset-0 z-0">
+                {video.thumbnail ? (
+                  <Image
+                    src={video.thumbnail}
+                    alt={video.title}
+                    fill
+                    className="object-cover transition-transform duration-[1500ms] group-hover:scale-110"
+                  />
+                ) : (
+                  <video
+                    src={video.videoUrl}
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                    className="w-full h-full object-cover transition-transform duration-[1500ms] group-hover:scale-110"
+                  />
+                )}
+              </div>
 
-              {video.thumbnail ? (
-                <Image
-                  src={video.thumbnail}
-                  alt={video.title}
-                  fill
-                  sizes="(max-width: 768px) 100vw, 320px"
-                  className="object-cover transition-transform duration-1000 group-hover:scale-110"
-                />
-              ) : (
-                <video
-                  src={video.videoUrl}
-                  autoPlay
-                  muted
-                  loop
-                  playsInline
-                  className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
-                />
-              )}
-
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity" />
-
+              {/* Overlays */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity" />
+              
               <div className="absolute inset-0 flex items-center justify-center">
-                <div className="h-20 w-20 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/40 text-white scale-90 group-hover:scale-110 transition-all duration-500 shadow-xl">
-                  <Play className="h-10 w-10 fill-white ml-1" />
+                <div className="h-16 w-16 md:h-20 md:w-20 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/30 text-white scale-90 group-hover:scale-110 transition-all duration-500">
+                  <Play className="h-8 w-8 fill-white ml-1" />
                 </div>
               </div>
 
-              <div className="absolute top-6 left-6 flex items-center gap-2">
+              {/* Status Badge */}
+              <div className="absolute top-6 left-6 flex items-center gap-2 bg-black/20 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/20">
                 <div className="h-2 w-2 rounded-full bg-red-500 animate-pulse" />
-                <span className="text-[10px] font-black text-white uppercase tracking-widest text-shadow">Story</span>
+                <span className="text-[9px] font-black text-white uppercase tracking-widest">Story</span>
               </div>
 
-              <div className="absolute bottom-0 left-0 right-0 p-8 flex flex-col gap-4 translate-y-2 group-hover:translate-y-0 transition-transform duration-500">
-                <h3 className="text-white font-black text-xl md:text-2xl leading-tight drop-shadow-lg">{video.title}</h3>
-                <div className="flex items-center justify-between">
-                  {video.price && <span className="text-white font-black text-2xl drop-shadow-lg">₹{video.price}</span>}
-                  {video.productId && (
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        // Handle cart logic or redirect
-                      }}
-                      className="h-14 w-14 rounded-2xl bg-white text-emerald-950 flex items-center justify-center shadow-2xl transition-all hover:bg-amber-400 hover:scale-110 transform group-hover:rotate-[360deg] duration-700"
-                    >
-                      <ShoppingCart className="h-6 w-6" />
-                    </button>
+              {/* Product Info Overlay */}
+              <div className="absolute bottom-0 left-0 right-0 p-8 flex flex-col gap-4">
+                <div>
+                  <h3 className="text-white font-bold text-xl md:text-2xl leading-tight mb-1">{video.title}</h3>
+                  <p className="text-white/60 text-xs font-medium uppercase tracking-widest">Tap to watch</p>
+                </div>
+                
+                <div className="flex items-center justify-between mt-2 pt-4 border-t border-white/10">
+                  {video.price && (
+                    <div className="flex flex-col">
+                      <span className="text-white/50 text-[9px] font-black uppercase tracking-widest">Starting at</span>
+                      <span className="text-white font-black text-2xl">₹{video.price}</span>
+                    </div>
                   )}
+                  <div className="h-12 w-12 rounded-xl bg-white text-emerald-950 flex items-center justify-center shadow-xl group-hover:bg-amber-400 transition-colors duration-300">
+                    <ShoppingCart className="h-5 w-5" />
+                  </div>
                 </div>
               </div>
             </div>
           ))}
+
+          {/* Spacer for centering */}
+          {displayVideos.length < 3 && <div className="hidden lg:block lg:flex-1" />}
+        </div>
+
+        <div className="flex justify-center mt-2">
+          <Link href="/videos" className="h-14 px-10 rounded-full border border-slate-200 bg-white text-slate-500 font-black text-[10px] uppercase tracking-widest hover:bg-emerald-600 hover:text-white hover:border-emerald-600 transition-all flex items-center gap-3">
+            Explore All Stories <ArrowRight size={14} />
+          </Link>
         </div>
 
         {/* Video Player Modal - Pro Cinema Edition */}
@@ -313,7 +327,7 @@ const ShopByVideo = () => {
           )}
         </AnimatePresence>
       </div>
-    </div>
+    </section>
   );
 };
 
