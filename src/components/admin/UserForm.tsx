@@ -48,8 +48,8 @@ const InputWrapper = ({ label, children, helpText }: any) => (
 
 const SectionHeader = ({ title, icon: Icon, colorClass = "text-blue-600" }: any) => (
   <div className="px-8 py-3.5 border-b border-slate-100 bg-slate-50/50 flex items-center gap-3">
-    <Icon size={16} className={colorClass} />
-    <h2 className="text-[10px] font-black text-slate-900 uppercase tracking-[0.2em]">{title}</h2>
+    <Icon size={14} className={colorClass} />
+    <h2 className="text-[9px] font-black text-slate-900 uppercase tracking-[0.3em]">{title}</h2>
   </div>
 );
 
@@ -58,8 +58,6 @@ export default function UserForm({ initialData, mode }: UserFormProps) {
   const { addToast } = useToast();
   const [submitting, setSubmitting] = useState(false);
   const [roles, setRoles] = useState<any[]>([]);
-  const [groups, setGroups] = useState<any[]>([]);
-  const [segments, setSegments] = useState<any[]>([]);
 
   const [formData, setFormData] = useState({
     id: initialData?.id || '',
@@ -78,15 +76,11 @@ export default function UserForm({ initialData, mode }: UserFormProps) {
   useEffect(() => {
     // Fetch dependencies (Roles, Groups, Segments)
     // In a real app, these would be separate endpoints
-    Promise.all([
-      fetch(`${API_URL}/api/admin-ops/roles`).then(r => r.json().catch(() => [])),
-      fetch(`${API_URL}/api/admin-ops/customer-groups`).then(r => r.json().catch(() => [])),
-      fetch(`${API_URL}/api/admin-ops/segments`).then(r => r.json().catch(() => []))
-    ]).then(([r, g, s]) => {
-      setRoles(r || []);
-      setGroups(g || []);
-      setSegments(s || []);
-    });
+    fetch(`${API_URL}/api/admin-ops/roles`)
+      .then(r => r.json().catch(() => []))
+      .then(r => {
+        setRoles(r || []);
+      });
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -128,7 +122,7 @@ export default function UserForm({ initialData, mode }: UserFormProps) {
             >
               <ArrowLeft size={18} />
             </button>
-            <h1 className="text-3xl font-black text-slate-900 tracking-tight">
+            <h1 className="text-[18px] font-black text-slate-900 tracking-tight">
               {mode === 'edit' ? 'Calibrate Identity' : 'Onboard New User'}
             </h1>
           </div>
@@ -149,12 +143,30 @@ export default function UserForm({ initialData, mode }: UserFormProps) {
 
       <div className="px-2">
         <form id="user-form" onSubmit={handleSubmit} className="max-w-full mx-auto space-y-10 px-4">
-          <div className="grid grid-cols-12 gap-8">
+          <div className="grid grid-cols-1 gap-8">
             {/* Core Identity */}
-            <div className="col-span-12 lg:col-span-8 space-y-8">
+            <div className="col-span-1 space-y-8">
               <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                <SectionHeader title="Core Credentials" icon={Shield} colorClass="text-blue-600" />
+                <SectionHeader title="User Details" icon={Shield} colorClass="text-blue-600" />
                 <div className="p-8 space-y-8">
+                  <div className="grid grid-cols-1 gap-8">
+                    <InputWrapper label="Internal Role Type" helpText="Broad classification for analytics.">
+                      <div className="relative">
+                        <Users size={16} className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400" />
+                        <select
+                          value={formData.role}
+                          onChange={e => setFormData({ ...formData, role: e.target.value })}
+                          className="w-full h-14 pl-14 pr-12 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-4 ring-blue-500/5 outline-none font-bold text-slate-900 text-sm appearance-none bg-white transition-all cursor-pointer"
+                        >
+                          <option value="USER">Customer / Consumer</option>
+                          <option value="ADMIN">System Administrator</option>
+                          <option value="VENDOR">Partner Vendor / Reseller</option>
+                        </select>
+                        <ChevronDown size={14} className="absolute right-6 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                      </div>
+                    </InputWrapper>
+                  </div>
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <InputWrapper label="Full Name" helpText="User's primary display name.">
                       <div className="relative">
@@ -214,115 +226,6 @@ export default function UserForm({ initialData, mode }: UserFormProps) {
                     )}
                   </div>
                 </div>
-              </div>
-
-              {/* Advanced Classification */}
-              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                <SectionHeader title="Segmentation & Metadata" icon={Database} colorClass="text-emerald-600" />
-                <div className="p-8 space-y-8">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    <InputWrapper label="Customer Group" helpText="Pricing rules or loyalty tiers.">
-                       <div className="relative">
-                        <select
-                          value={formData.groupId}
-                          onChange={e => setFormData({ ...formData, groupId: e.target.value })}
-                          className="w-full h-14 px-6 rounded-xl border border-slate-200 focus:border-blue-500 outline-none font-bold text-sm appearance-none bg-white"
-                        >
-                          <option value="">No Group</option>
-                          {groups.map(g => <option key={g.id} value={g.id}>{g.name}</option>)}
-                        </select>
-                        <ChevronDown size={14} className="absolute right-6 top-1/2 -translate-y-1/2 text-slate-400" />
-                      </div>
-                    </InputWrapper>
-
-                    <InputWrapper label="Marketing Segment" helpText="Behavioral targeting for campaigns.">
-                       <div className="relative">
-                        <select
-                          value={formData.segmentId}
-                          onChange={e => setFormData({ ...formData, segmentId: e.target.value })}
-                          className="w-full h-14 px-6 rounded-xl border border-slate-200 focus:border-blue-500 outline-none font-bold text-sm appearance-none bg-white"
-                        >
-                          <option value="">Unassigned</option>
-                          {segments.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-                        </select>
-                        <ChevronDown size={14} className="absolute right-6 top-1/2 -translate-y-1/2 text-slate-400" />
-                      </div>
-                    </InputWrapper>
-
-                    <InputWrapper label="Internal Role Type" helpText="Broad classification for analytics.">
-                      <div className="relative">
-                        <select
-                          value={formData.role}
-                          onChange={e => setFormData({ ...formData, role: e.target.value })}
-                          className="w-full h-14 px-6 rounded-xl border border-slate-200 focus:border-blue-500 outline-none font-bold text-sm appearance-none bg-white"
-                        >
-                          <option value="USER">Customer</option>
-                          <option value="ADMIN">Staff / Admin</option>
-                          <option value="VENDOR">Partner Vendor</option>
-                        </select>
-                        <ChevronDown size={14} className="absolute right-6 top-1/2 -translate-y-1/2 text-slate-400" />
-                      </div>
-                    </InputWrapper>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Security & Lifecycle */}
-            <div className="col-span-12 lg:col-span-4 space-y-8">
-              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                <SectionHeader title="Access Protocol" icon={ShieldCheck} colorClass="text-purple-600" />
-                <div className="p-8 space-y-6">
-                   <InputWrapper label="Granular Permission Role" helpText="Linked to specific Admin Role resource table.">
-                      <div className="relative">
-                        <select
-                          value={formData.roleId}
-                          onChange={e => setFormData({ ...formData, roleId: e.target.value })}
-                          className="w-full h-14 px-6 rounded-xl border border-slate-200 focus:border-blue-500 outline-none font-bold text-sm appearance-none bg-white"
-                        >
-                          <option value="">Default Access</option>
-                          {roles.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
-                        </select>
-                        <ChevronDown size={14} className="absolute right-6 top-1/2 -translate-y-1/2 text-slate-400" />
-                      </div>
-                   </InputWrapper>
-
-                   {mode === 'edit' && (
-                     <>
-                      <InputWrapper label="Lockout Until" helpText="Temporary suspension for security violations.">
-                        <div className="relative">
-                          <History size={16} className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400" />
-                          <input
-                            type="datetime-local"
-                            value={formData.lockoutUntil}
-                            onChange={e => setFormData({ ...formData, lockoutUntil: e.target.value })}
-                            className="w-full h-14 pl-14 pr-6 rounded-xl border border-slate-200 focus:border-blue-500 outline-none font-bold text-slate-900 text-sm"
-                          />
-                        </div>
-                      </InputWrapper>
-
-                      <div className="p-4 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-between">
-                         <div>
-                            <p className="text-[11px] font-black text-slate-900 uppercase">Failed Attempts</p>
-                            <p className="text-[10px] font-bold text-slate-400">Security audit metric</p>
-                         </div>
-                         <span className={`text-sm font-black ${formData.failedLoginAttempts > 3 ? 'text-red-500' : 'text-slate-400'}`}>
-                           {formData.failedLoginAttempts}
-                         </span>
-                      </div>
-                     </>
-                   )}
-                </div>
-              </div>
-
-              <div className="bg-blue-600 rounded-3xl p-8 text-white shadow-xl shadow-blue-500/20 relative overflow-hidden">
-                <div className="relative z-10">
-                  <h3 className="text-xl font-black tracking-tight mb-2 uppercase">Onboarding Audit</h3>
-                  <p className="text-blue-100 text-xs font-bold leading-relaxed">
-                    Identity calibration ensures proper resource allocation across the Namma Orru ecosystem. Ensure email verification is completed for transactional emails.
-                  </p>
-                </div>
-                <UserPlus className="absolute -bottom-10 -right-10 h-40 w-40 text-white/5 rotate-12" />
               </div>
             </div>
           </div>

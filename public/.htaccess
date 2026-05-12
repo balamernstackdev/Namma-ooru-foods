@@ -1,0 +1,13 @@
+RewriteEngine On
+
+# 1. Fix Apache rewrite conflicts (Remove the //)
+# The original rule creates an extra slash: /products//__next... which causes 404s
+RewriteCond %{REQUEST_FILENAME} !-f
+# Corrected: Removed leading slash from $1 to avoid //
+RewriteRule ^__next\.([^.]+)\.__PAGE__\.txt$ __next.$1/__PAGE__.txt [L]
+
+# 2. Support clean URLs (removing .html extension in case client requests it)
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{DOCUMENT_ROOT}/$1.html -f
+RewriteRule ^([^/]+)/?$ $1.html [L]

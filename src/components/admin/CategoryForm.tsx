@@ -75,9 +75,11 @@ export default function CategoryForm({ initialData, mode }: CategoryFormProps) {
   });
 
   useEffect(() => {
-    fetch(`${API_URL}/api/admin-ops/categories`)
+    fetch(`${API_URL}/api/admin-ops/categories?all=true&limit=1000`)
       .then(r => r.json())
-      .then(setCategories);
+      .then(data => {
+        setCategories(data.categories || []);
+      });
   }, []);
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {

@@ -8,9 +8,13 @@ import { useCartStore } from '@/store/useCartStore';
 import { useAuth } from '@/context/AuthContext';
 import useSWR from 'swr';
 import { API_URL } from '@/lib/api';
+import { useWishlistStore } from '@/store/useWishlistStore';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const fetcher = (url: string) => fetch(url).then(res => res.json());
+
+import SearchBar from './search/SearchBar';
+import HeaderLocation from './location/HeaderLocation';
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -29,15 +33,26 @@ const Navbar = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  const { fetchWishlist } = useWishlistStore();
+  React.useEffect(() => {
+    if (user?.id) {
+      fetchWishlist(user.id);
+    }
+  }, [user?.id]);
+
   const { data: apiCategories } = useSWR(`${API_URL}/api/categories`, fetcher);
 
-  const dynamicCategoriesMenu = Array.isArray(apiCategories) ? apiCategories
+  const categoriesList = Array.isArray(apiCategories) 
+    ? apiCategories 
+    : (apiCategories && Array.isArray((apiCategories as any).categories) ? (apiCategories as any).categories : []);
+
+  const dynamicCategoriesMenu = categoriesList
     .filter((cat: any) => cat.parentId === null)
     .slice(0, 8)
     .map((cat: any) => ({
       name: cat.name,
       sub: cat.children ? cat.children.map((c: any) => c.name) : []
-    })) : [];
+    }));
 
   const accountMenuItems = [
     { label: 'My Profile', href: '/account/profile', icon: User, desc: 'Personal details & settings' },
@@ -49,42 +64,6 @@ const Navbar = () => {
     { label: 'Settings', href: '/account/settings', icon: Settings, desc: 'Privacy & preferences' },
   ];
 
-  const [location, setLocation] = useState('Chennai 600001');
-  const [isLocating, setIsLocating] = useState(false);
-
-  const handleLocationFetch = async () => {
-    setIsLocating(true);
-    if (!navigator.geolocation) {
-      setLocation('Not Supported');
-      setIsLocating(false);
-      return;
-    }
-
-    navigator.geolocation.getCurrentPosition(
-      async (position) => {
-        const { latitude, longitude } = position.coords;
-        try {
-          // Using OpenStreetMap's Nominatim (free, no key required for low volume)
-          const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=10`);
-          const data = await res.json();
-          const city = data.address?.city || data.address?.town || data.address?.village || data.address?.state_district || 'Detected';
-          const postcode = data.address?.postcode || '';
-          setLocation(`${city} ${postcode}`.trim());
-        } catch (e) {
-          setLocation('Detected Location');
-        } finally {
-          setIsLocating(false);
-        }
-      },
-      (error) => {
-        console.error('Location error:', error);
-        setLocation('Select Location');
-        setIsLocating(false);
-      },
-      { enableHighAccuracy: true }
-    );
-  };
-
   return (
     <>
       <nav className="sticky top-0 left-0 right-0 z-[500] w-full flex flex-col bg-white/95 backdrop-blur-md border-b border-slate-100 shadow-sm">
@@ -93,7 +72,7 @@ const Navbar = () => {
           <div className={`transition-all duration-500 ${scrolled ? 'h-16 md:h-20' : 'h-20 md:h-24'} flex items-center justify-between gap-4 md:gap-10`}>
             {/* LOGO & LOCATION */}
             <div className="flex items-center gap-4 md:gap-10">
-              <Link href="/" className="shrink-0 flex items-center transition-transform hover:scale-105">
+              <Link href="/" prefetch={false} className="shrink-0 flex items-center transition-transform hover:scale-105">
                 <Image
                   src="/logo.webp"
                   alt="Namma Orru Foods"
@@ -104,44 +83,20 @@ const Navbar = () => {
                 />
               </Link>
 
-              <div
-                onClick={handleLocationFetch}
-                className="hidden xl:flex items-center gap-2 px-4 py-2 bg-slate-50 rounded-full border border-slate-100 cursor-pointer hover:bg-slate-100 transition-all group"
-              >
-                <MapPin size={14} className={`text-primary transition-transform ${isLocating ? 'animate-bounce' : 'group-hover:scale-110'}`} />
-                <div className="flex flex-col">
-                  <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none">Deliver to</span>
-                  <span className="text-[11px] font-bold text-slate-700 leading-none">{isLocating ? 'Locating...' : location}</span>
-                </div>
+              <div className="hidden xl:block">
+                <HeaderLocation />
               </div>
             </div>
 
-            {/* SEARCH BAR (DESKTOP) */}
-            <div className="hidden lg:flex flex-1 max-w-2xl relative group">
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  const query = (e.target as any).search.value;
-                  if (query) window.location.href = `/products?search=${encodeURIComponent(query)}`;
-                }}
-                className="flex h-12 w-full items-center rounded-2xl border-2 border-slate-100 focus-within:border-primary focus-within:ring-4 focus-within:ring-primary/5 transition-all overflow-hidden bg-slate-50/50"
-              >
-                <input
-                  name="search"
-                  type="text"
-                  placeholder="Search for authentic foods..."
-                  className="flex-1 h-full px-6 bg-transparent text-[14px] font-bold outline-none placeholder:text-slate-400 text-slate-700"
-                />
-                <button type="submit" className="h-full px-8 bg-primary text-white hover:bg-primary-hover transition-colors">
-                  <Search className="h-4 w-4" strokeWidth={3} />
-                </button>
-              </form>
+            {/* DYNAMIC SEARCH (DESKTOP) */}
+            <div className="hidden lg:flex flex-1 max-w-2xl">
+               <SearchBar />
             </div>
 
             {/* UTILITIES */}
             <div className="flex items-center gap-2 md:gap-6 shrink-0">
-              {user ? (
-                <Link href="/account/profile" className="hidden sm:flex items-center gap-3 group">
+               {user ? (
+                <Link href="/account/profile" prefetch={false} className="hidden sm:flex items-center gap-3 group">
                   <div className="h-9 w-9 rounded-full border-2 border-slate-100 overflow-hidden">
                     {user.avatar ? <img src={user.avatar} alt="" className="h-full w-full object-cover" /> : <div className="h-full w-full bg-emerald-950 text-white flex items-center justify-center text-xs font-black">{user.name[0]}</div>}
                   </div>
@@ -151,7 +106,7 @@ const Navbar = () => {
                   </div>
                 </Link>
               ) : (
-                <Link href="/account" className="hidden sm:flex items-center gap-3 group">
+                <Link href="/account" prefetch={false} className="hidden sm:flex items-center gap-3 group">
                   <div className="h-9 w-9 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center group-hover:bg-emerald-50 transition-all">
                     <User size={18} className="text-emerald-950" />
                   </div>
@@ -176,6 +131,15 @@ const Navbar = () => {
           </div>
         </div>
 
+        {/* MOBILE LOCATION & SEARCH */}
+        <div className="lg:hidden w-full px-4 pb-4 bg-white space-y-3">
+           <div className="flex justify-start">
+             <HeaderLocation />
+           </div>
+           <SearchBar isMobile={true} />
+        </div>
+
+
         {/* SECONDARY TIER (DESKTOP) */}
         <div className="hidden md:flex h-12 bg-slate-50/50 border-t border-slate-100 items-center">
           <div className="standard-container flex items-center gap-10">
@@ -184,7 +148,7 @@ const Navbar = () => {
               onMouseEnter={() => setIsCategoryOpen(true)}
               onMouseLeave={() => setIsCategoryOpen(false)}
             >
-              <Link href="/products" className="text-[11px] font-black uppercase tracking-widest text-emerald-950 hover:text-emerald-600 transition-colors flex items-center gap-2 h-full">
+              <Link href="/products" prefetch={false} className="text-[11px] font-black uppercase tracking-widest text-emerald-950 hover:text-emerald-600 transition-colors flex items-center gap-2 h-full">
                 <LayoutGrid size={14} /> Categories
               </Link>
 
@@ -252,9 +216,9 @@ const Navbar = () => {
               </AnimatePresence>
             </div>
 
-            <Link href="/best-selling" className="text-[11px] font-black uppercase tracking-widest text-emerald-950 hover:text-emerald-600 transition-colors">Best Sellers</Link>
-            <Link href="/promotions" className="text-[11px] font-black uppercase tracking-widest text-emerald-950 hover:text-emerald-600 transition-colors">Combo Deals</Link>
-            <Link href="/about" className="text-[11px] font-black uppercase tracking-widest text-emerald-950 hover:text-emerald-600 transition-colors">Our Vision</Link>
+            <Link href="/best-selling" prefetch={false} className="text-[11px] font-black uppercase tracking-widest text-emerald-950 hover:text-emerald-600 transition-colors">Best Sellers</Link>
+            <Link href="/promotions" prefetch={false} className="text-[11px] font-black uppercase tracking-widest text-emerald-950 hover:text-emerald-600 transition-colors">Combo Deals</Link>
+            <Link href="/about" prefetch={false} className="text-[11px] font-black uppercase tracking-widest text-emerald-950 hover:text-emerald-600 transition-colors">Our Vision</Link>
           </div>
         </div>
 
@@ -271,39 +235,42 @@ const Navbar = () => {
             className="lg:hidden fixed inset-0 z-[9999] bg-emerald-950 flex flex-col p-8 overflow-y-auto"
             style={{ height: '100vh', width: '100vw' }}
           >
-            <div className="flex justify-between items-center mb-16">
+            <div className="flex justify-between items-center mb-12">
               <Image
                 src="/logo.webp"
                 alt="Logo"
-                width={110}
-                height={32}
+                width={120}
+                height={40}
                 className="brightness-0 invert h-auto w-auto opacity-90"
               />
               <button
                 onClick={() => setIsMenuOpen(false)}
-                className="h-12 w-12 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-all"
+                className="h-10 w-10 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-all"
               >
-                <X size={24} />
+                <X size={20} />
               </button>
             </div>
 
-            <div className="flex flex-col gap-5">
+            <div className="flex flex-col gap-4">
               {[
-                { label: 'Home', href: '/' },
-                { label: 'All Products', href: '/products' },
-                { label: 'Best Sellers', href: '/best-selling' },
-                { label: 'My Account', href: '/account' },
-                { label: 'About Us', href: '/about' }
+                { label: 'Home', href: '/', icon: Home },
+                { label: 'All Products', href: '/products', icon: LayoutGrid },
+                { label: 'Best Sellers', href: '/best-selling', icon: TrendingUp },
+                { label: 'My Account', href: '/account', icon: User },
+                { label: 'About Us', href: '/about', icon: Star }
               ].map((item) => (
                 <Link
                   key={item.label}
                   href={item.href}
                   onClick={() => setIsMenuOpen(false)}
-                  className="text-xl sm:text-3xl font-black uppercase tracking-widest hover:text-amber-400 transition-colors flex items-center justify-between group"
+                  className="text-xl sm:text-2xl font-black uppercase tracking-widest hover:text-amber-400 transition-colors flex items-center justify-between group py-3 border-b border-white/5"
                   style={{ color: '#ffffff' }}
                 >
-                  <span>{item.label}</span>
-                  <ChevronRight className="opacity-0 -translate-x-4 group-hover:opacity-100 group-hover:translate-x-0 transition-all text-amber-400" size={32} />
+                  <div className="flex items-center gap-4">
+                    <item.icon size={20} className="text-emerald-400" />
+                    <span>{item.label}</span>
+                  </div>
+                  <ChevronRight className="text-white/20 group-hover:text-amber-400 transition-all" size={20} />
                 </Link>
               ))}
             </div>

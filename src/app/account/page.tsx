@@ -7,22 +7,42 @@ import { Mail, Lock, User, ArrowRight, ShieldCheck, Leaf, Globe, ShoppingBag, Ch
 import Link from 'next/link';
 import Image from 'next/image';
 
+import { useToast } from '@/context/ToastContext';
+import { ShieldAlert, Timer } from 'lucide-react';
+
 export default function AccountPage() {
   const [isLogin, setIsLogin] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { user, login, signup, logout, isLoading } = useAuth();
+  const { user, login, requestSignupOTP, verifySignupOTP, logout, isLoading } = useAuth();
+  const { toast } = useToast();
   const router = useRouter();
 
-  // Redirect to Command Center or Profile after login
+  // STEP MANAGEMENT: 1 for Details, 2 for Registration OTP Validation
+  const [step, setStep] = useState(1);
+  const [otp, setOtp] = useState('');
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [resendTimer, setResendTimer] = useState(0);
+
   React.useEffect(() => {
-    if (user && window.innerWidth >= 768) {
+    let interval: any;
+    if (step === 2 && resendTimer > 0) {
+      interval = setInterval(() => setResendTimer((p) => p - 1), 1000);
+    }
+    return () => clearInterval(interval);
+  }, [step, resendTimer]);
+
+  // Redirect logic unchanged
+  React.useEffect(() => {
+    if (user && typeof window !== 'undefined') {
       const role = user.role?.toLowerCase();
       if (role === 'admin') {
         router.push('/admin');
       } else if (role === 'vendor') {
         router.push('/vendor');
+      } else if (window.innerWidth < 768) {
+        // Stay on mobile dash
       } else {
-        router.push('/account/profile');
+        router.push('/');
       }
     }
   }, [user, router]);
@@ -33,7 +53,6 @@ export default function AccountPage() {
 
   const menuItems = [
     { label: 'My Profile',       href: '/account/profile',      icon: User,        desc: 'Personal details & settings' },
-    // Inject Admin Link for privileged roles on mobile
     ...((user?.role?.toLowerCase() === 'admin' || user?.role?.toLowerCase() === 'vendor') ? [
       { 
         label: 'Admin Panel', 
@@ -50,18 +69,51 @@ export default function AccountPage() {
     { label: 'Settings',         href: '/account/settings',     icon: Settings,    desc: 'Privacy & preferences' },
   ];
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleInitialSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     try {
       if (isLogin) {
         await login(email, password);
+        toast.success('Signed in successfully.');
       } else {
-        await signup(name, email, password);
+        // Step 1: Request registration OTP
+        await requestSignupOTP(name, email, password);
+        toast.success('Security token dispatched to your email.');
+        setResendTimer(30);
+        setStep(2);
       }
     } catch (err: any) {
-      setError(err.message || 'Authentication failed');
+      setError(err.message || 'Handshake initialization failed.');
+      toast.error(err.message || 'Authentication failed.');
     }
+  };
+
+  const handleVerifyOTP = async (e: React.FormEvent) => {
+     e.preventDefault();
+     setError(null);
+     setIsVerifying(true);
+     try {
+        await verifySignupOTP(email, otp);
+        toast.success('Identity validated & Provisioned!');
+     } catch (err: any) {
+        setError(err.message || 'Validation sequence invalid.');
+        toast.error(err.message || 'OTP Failed.');
+     } finally {
+        setIsVerifying(false);
+     }
+  };
+
+  const handleResendOTP = async () => {
+     if (resendTimer > 0) return;
+     setError(null);
+     try {
+        await requestSignupOTP(name, email, password);
+        toast.success('Payload redelivered successfully.');
+        setResendTimer(60);
+     } catch (err: any) {
+        setError(err.message);
+     }
   };
 
   if (user) {
@@ -194,56 +246,109 @@ export default function AccountPage() {
               </div>
             )}
 
-            <form onSubmit={handleSubmit} className="w-full flex flex-col gap-5">
-              {!isLogin && (
+            {/* CONDITIONAL VIEW RENDERING */}
+            {step === 1 ? (
+              <form onSubmit={handleInitialSubmit} className="w-full flex flex-col gap-5">
+                {!isLogin && (
+                  <div className="flex flex-col gap-3">
+                    <label className="text-[10px] font-black uppercase tracking-[0.4em] text-[var(--admin-sidebar)] ml-2">Member Name</label>
+                    <input
+                      type="text"
+                      placeholder="Member Name"
+                      className="w-full h-14 px-6 bg-slate-50 border-2 border-slate-50 rounded-xl outline-none font-bold text-sm text-[var(--admin-sidebar)] placeholder:text-slate-300 focus:border-amber-400 focus:bg-white transition-all shadow-sm"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      required={!isLogin}
+                    />
+                  </div>
+                )}
+
                 <div className="flex flex-col gap-3">
-                  <label className="text-[10px] font-black uppercase tracking-[0.4em] text-[var(--admin-sidebar)] ml-2">Member Name</label>
+                  <label className="text-[10px] font-black uppercase tracking-[0.4em] text-[var(--admin-sidebar)] ml-2">Email Identity</label>
                   <input
-                    type="text"
-                    placeholder="Member Name"
+                    type="email"
+                    placeholder="identity@nammaoru.com"
                     className="w-full h-14 px-6 bg-slate-50 border-2 border-slate-50 rounded-xl outline-none font-bold text-sm text-[var(--admin-sidebar)] placeholder:text-slate-300 focus:border-amber-400 focus:bg-white transition-all shadow-sm"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    required={!isLogin}
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
                   />
                 </div>
-              )}
 
-              <div className="flex flex-col gap-3">
-                <label className="text-[10px] font-black uppercase tracking-[0.4em] text-[var(--admin-sidebar)] ml-2">Email Identity</label>
-                <input
-                  type="email"
-                  placeholder="identity@nammaoru.com"
-                  className="w-full h-14 px-6 bg-slate-50 border-2 border-slate-50 rounded-xl outline-none font-bold text-sm text-[var(--admin-sidebar)] placeholder:text-slate-300 focus:border-amber-400 focus:bg-white transition-all shadow-sm"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
-              </div>
-
-              <div className="flex flex-col gap-3">
-                <div className="flex justify-between items-center ml-2">
-                  <label className="text-[10px] font-black uppercase tracking-[0.4em] text-[var(--admin-sidebar)]">Password</label>
-                  {isLogin && <button type="button" className="text-[10px] font-black text-amber-600 uppercase tracking-widest hover:underline">Forgot Access?</button>}
+                <div className="flex flex-col gap-3">
+                  <div className="flex justify-between items-center ml-2">
+                    <label className="text-[10px] font-black uppercase tracking-[0.4em] text-[var(--admin-sidebar)]">Password</label>
+                    {isLogin && (
+                      <Link href="/forgot-password" className="text-[10px] font-black text-amber-600 uppercase tracking-widest hover:underline cursor-pointer">
+                        Forgot Access?
+                      </Link>
+                    )}
+                  </div>
+                  <input
+                    type="password"
+                    placeholder="••••••••"
+                    className="w-full h-14 px-6 bg-slate-50 border-2 border-slate-50 rounded-xl outline-none font-bold text-sm text-[var(--admin-sidebar)] placeholder:text-slate-300 focus:border-amber-400 focus:bg-white transition-all overflow-hidden tracking-[0.5em] shadow-sm"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
                 </div>
-                <input
-                  type="password"
-                  placeholder="••••••••"
-                  className="w-full h-14 px-6 bg-slate-50 border-2 border-slate-50 rounded-xl outline-none font-bold text-sm text-[var(--admin-sidebar)] placeholder:text-slate-300 focus:border-amber-400 focus:bg-white transition-all overflow-hidden tracking-[0.5em] shadow-sm"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
-              </div>
 
-              <button
-                disabled={isLoading}
-                className="w-full h-14 bg-[var(--admin-sidebar)] mt-4 rounded-xl text-white font-black uppercase tracking-[0.4em] text-[10px] hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3 shadow-premium"
-              >
-                {isLoading ? 'Confirming Identity...' : (isLogin ? 'Log In' : 'Create Account')}
-                {!isLoading && <ArrowRight size={18} />}
-              </button>
-            </form>
+                <button
+                  disabled={isLoading}
+                  className="w-full h-14 bg-[var(--admin-sidebar)] mt-4 rounded-xl text-white font-black uppercase tracking-[0.4em] text-[10px] hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3 shadow-premium disabled:opacity-70"
+                >
+                  {isLoading ? 'Establishing Connection...' : (isLogin ? 'Log In' : 'Generate OTP')}
+                  {!isLoading && <ArrowRight size={18} />}
+                </button>
+              </form>
+            ) : (
+              <form onSubmit={handleVerifyOTP} className="w-full flex flex-col gap-6 animate-in zoom-in-95 duration-500">
+                 <div className="flex flex-col gap-3 text-center mb-2">
+                    <div className="w-12 h-12 bg-amber-50 rounded-full flex items-center justify-center mx-auto text-amber-600 mb-2">
+                       <ShieldCheck size={24} />
+                    </div>
+                    <h3 className="text-lg font-black text-[var(--admin-sidebar)] tracking-tight">Verify Sequence</h3>
+                    <p className="text-[11px] font-bold text-slate-400 px-6">
+                       Insert verification node sent to <strong className="text-amber-600">{email}</strong>
+                    </p>
+                 </div>
+
+                 <div className="flex flex-col gap-4">
+                    <input 
+                      type="text"
+                      maxLength={6}
+                      required
+                      placeholder="••••••"
+                      value={otp}
+                      onChange={(e) => setOtp(e.target.value.replace(/\D/g,''))}
+                      className="w-full h-16 text-center bg-slate-50 border-2 border-amber-200/50 rounded-2xl outline-none font-black text-3xl text-[var(--admin-sidebar)] placeholder:text-slate-200 focus:border-amber-400 tracking-[0.4em] shadow-inner"
+                    />
+                    <div className="flex items-center justify-between px-2">
+                       <div className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                          <Timer size={12} /> {resendTimer > 0 ? `Wait ${resendTimer}s` : 'System Ready'}
+                       </div>
+                       {resendTimer === 0 && (
+                          <button type="button" onClick={handleResendOTP} className="text-[10px] font-black text-amber-600 uppercase tracking-widest border-b-2 border-amber-600/30 hover:border-amber-600 transition-all">
+                             Resend Cipher
+                          </button>
+                       )}
+                    </div>
+                 </div>
+
+                 <button
+                    disabled={isVerifying}
+                    type="submit"
+                    className="w-full h-14 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-black uppercase tracking-[0.4em] text-[10px] flex items-center justify-center gap-3 shadow-xl active:scale-95 transition-all"
+                 >
+                    {isVerifying ? 'Finalizing Commit...' : 'Authorize & Create'}
+                 </button>
+
+                 <button type="button" onClick={() => setStep(1)} className="text-[9px] font-black uppercase tracking-widest text-slate-300 hover:text-slate-500 text-center mt-2 transition-all">
+                    &larr; Return to parameters
+                 </button>
+              </form>
+            )}
 
 
 

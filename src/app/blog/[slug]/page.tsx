@@ -23,27 +23,19 @@ async function getPost(slug: string): Promise<BlogPost | null> {
   } catch { return null; }
 }
 
-export const dynamicParams = true;
+export const dynamicParams = false;
 
 export async function generateStaticParams() {
-  let posts: BlogPost[] = [];
   try {
     const res = await fetch(`${API_URL}/api/blog`);
-    if (res.ok) {
-      posts = await res.json();
-    }
-  } catch (error) {
-    console.error("[Blog Static] Fetch Error:", error);
+    if (!res.ok) return [{ slug: 'ecommerce-blog' }];
+    const posts = await res.json();
+    return posts.map((post: any) => ({
+      slug: post.slug,
+    }));
+  } catch {
+    return [{ slug: 'ecommerce-blog' }];
   }
-
-  const paths = (posts || []).map((p: BlogPost) => ({ slug: p.slug }));
-  
-  // Safety paths
-  if (!paths.some(p => p.slug === 'harvest-journal')) paths.push({ slug: 'harvest-journal' });
-  if (!paths.some(p => p.slug === 'test-blog')) paths.push({ slug: 'test-blog' });
-
-  console.log(`[INIT] BLOG SLUGS:`, paths.map(p => p.slug).join(', '));
-  return paths;
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {

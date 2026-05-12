@@ -2,7 +2,7 @@
 
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
-import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ArrowRight, ChevronLeft, ChevronRight, ShieldCheck, Sparkles } from 'lucide-react';
 import useSWR from 'swr';
 
 import { API_URL } from '@/lib/api';
@@ -23,7 +23,7 @@ export default function VendorShowcase() {
     if (!el) return;
 
     const isMobile = window.innerWidth < 768;
-    const scrollAmount = isMobile ? 120 : 240;
+    const scrollAmount = isMobile ? 300 : 400;
 
     if (el.scrollLeft + el.clientWidth >= el.scrollWidth - 10) {
       el.scrollTo({ left: 0, behavior: 'smooth' });
@@ -34,32 +34,44 @@ export default function VendorShowcase() {
 
   const scrollLeft = () => {
     const isMobile = window.innerWidth < 768;
-    const scrollAmount = isMobile ? 120 : 240;
+    const scrollAmount = isMobile ? 300 : 400;
     scrollRef.current?.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
   };
 
   useEffect(() => {
-    if (isPaused || brandsList.length <= 3) return;
-    timerRef.current = setInterval(scrollRight, 3000);
+    if (isPaused || brandsList.length <= 4) return;
+    timerRef.current = setInterval(scrollRight, 4000);
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, [scrollRight, isPaused, brandsList.length]);
 
   if (error) return null;
-  if (!responseData) return <div className="h-40 animate-pulse bg-slate-50 rounded-[3rem]" />;
+  if (!responseData) return (
+    <div className="standard-container py-20">
+      <div className="h-64 animate-pulse bg-slate-50 rounded-[3rem]" />
+    </div>
+  );
 
   return (
-    <section className="w-full pt-8 pb-8 bg-white overflow-hidden">
+    <section className="w-full py-4 md:py-8 bg-white relative overflow-hidden">
+      {/* Decorative background elements */}
+      <div className="absolute top-0 left-0 w-full h-full pointer-events-none opacity-[0.03]">
+        <div className="absolute top-10 left-10 w-64 h-64 rounded-full border-[40px] border-emerald-900" />
+        <div className="absolute bottom-20 right-10 w-96 h-96 rounded-full border-[60px] border-amber-500" />
+      </div>
+
       <div className="standard-container">
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 md:mb-12 gap-4">
-          <div className="flex flex-col">
-            <span className="text-[10px] md:text-xs font-black text-amber-500 uppercase tracking-[0.4em] mb-3">Premium Selection</span>
-            <h2 className="text-3xl md:text-5xl font-black text-emerald-950 tracking-tighter uppercase leading-[0.9]">
-              Brands <span className="text-amber-500 italic lowercase font-serif">You Love</span>
+        <div className="flex flex-col lg:flex-row lg:items-end justify-between mb-6 md:mb-12 gap-8">
+          <div className="flex flex-col space-y-6 md:space-y-8">
+            <div className="flex items-center gap-2">
+              <Sparkles size={14} className="text-amber-500" />
+              <span className="text-[10px] md:text-xs font-black text-amber-500 uppercase tracking-[0.4em]">Our Vendors</span>
+            </div>
+            <h2 className="text-4xl md:text-5xl lg:text-7xl font-black text-emerald-950 tracking-tighter uppercase leading-[1.3] md:leading-[1.2] flex flex-col">
+              <span>Curated</span>
+              <span className="text-amber-500 italic lowercase font-serif font-normal">Artisan Clusters</span>
             </h2>
           </div>
-          <Link href="/brands" className="text-[10px] font-black text-emerald-950 uppercase tracking-widest hover:text-amber-500 transition-colors border-b-2 border-emerald-950/10 pb-1 flex items-center gap-2 group shrink-0 self-start md:self-auto">
-            Explore All Partners <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
-          </Link>
+
         </div>
 
         <div className="relative group">
@@ -67,52 +79,52 @@ export default function VendorShowcase() {
             ref={scrollRef}
             onMouseEnter={() => setIsPaused(true)}
             onMouseLeave={() => setIsPaused(false)}
-            className="flex overflow-x-auto no-scrollbar gap-6 md:gap-10 pb-6 scroll-smooth items-start"
+            className="flex overflow-x-auto no-scrollbar gap-6 md:gap-8 pb-12 scroll-smooth items-stretch px-4 -mx-4 snap-x snap-mandatory"
           >
             {brandsList.map((brand: any) => (
               <Link
                 key={brand.id}
                 href={`/brands/${brand.id}`}
-                className="group flex flex-col items-center gap-4 shrink-0 transition-all hover:-translate-y-2"
+                className="group flex flex-col shrink-0 w-[280px] md:w-[320px] bg-white rounded-[2.5rem] p-4 transition-all duration-500 hover:-translate-y-3 hover:shadow-[0_40px_80px_-20px_rgba(6,78,59,0.12)] border border-slate-100 relative overflow-hidden snap-start"
               >
-                <div
-                  className="relative overflow-hidden transition-all duration-500 group-hover:shadow-2xl border-4 border-slate-50 bg-white"
-                  style={{
-                    width: 'clamp(90px, 12vw, 140px)',
-                    height: 'clamp(90px, 12vw, 140px)',
-                    borderRadius: '50%',
-                  }}
-                >
+                {/* Brand Visual Card */}
+                <div className="relative h-48 md:h-56 w-full rounded-[2rem] overflow-hidden mb-6">
                   <OptimizedImage
                     src={brand.logo || '/ai_images/placeholder_brand.png'}
                     alt={brand.name}
                     fill
-                    className="object-contain p-4 transition-transform duration-500 group-hover:scale-110"
+                    className="object-cover transition-transform duration-[2000ms] group-hover:scale-110"
                   />
-                  <div className="absolute inset-0 bg-emerald-950/0 group-hover:bg-emerald-950/5 transition-colors" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-emerald-950/80 via-transparent to-transparent opacity-60" />
+
+                  {/* Verification Badge */}
+                  <div className="absolute top-4 right-4 h-8 px-3 rounded-full bg-white/20 backdrop-blur-md border border-white/30 flex items-center gap-1.5">
+                    <ShieldCheck size={12} className="text-emerald-400" />
+                    <span className="text-[8px] font-black text-white uppercase tracking-widest">Verified Artisan</span>
+                  </div>
+
+                  <div className="absolute bottom-4 left-4">
+                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/10 backdrop-blur-md border border-white/10">
+                      <Sparkles size={10} className="text-amber-400" />
+                      <span className="text-[7px] font-black text-white uppercase tracking-[0.2em]">Curated Partner</span>
+                    </div>
+                  </div>
                 </div>
-                <span className="text-[10px] md:text-[11px] font-black uppercase tracking-widest text-center leading-tight text-slate-400 group-hover:text-emerald-950 transition-colors">
-                  {brand.name}
-                </span>
+
+                <div className="px-2 pb-2">
+                  <h3 className="text-emerald-950 font-black text-xl md:text-2xl tracking-tight mb-2 group-hover:text-emerald-700 transition-colors">
+                    {brand.name}
+                  </h3>
+                  <p className="text-slate-400 text-[11px] md:text-xs font-medium leading-relaxed line-clamp-2">
+                    {brand.description || 'Authentic artisan products sourced directly from local heritage clusters.'}
+                  </p>
+                </div>
               </Link>
             ))}
           </div>
-
-          {/* Navigation Arrows (Desktop) */}
-          <button 
-            onClick={scrollLeft}
-            className="hidden md:flex absolute left-0 top-1/2 -translate-y-1/2 -translate-x-6 h-12 w-12 rounded-full bg-white shadow-xl items-center justify-center text-emerald-950 opacity-0 group-hover:opacity-100 group-hover:translate-x-0 transition-all z-20 hover:bg-emerald-950 hover:text-white"
-          >
-            <ChevronLeft size={24} />
-          </button>
-          <button 
-            onClick={scrollRight}
-            className="hidden md:flex absolute right-0 top-1/2 -translate-y-1/2 translate-x-6 h-12 w-12 rounded-full bg-white shadow-xl items-center justify-center text-emerald-950 opacity-0 group-hover:opacity-100 group-hover:translate-x-0 transition-all z-20 hover:bg-emerald-950 hover:text-white"
-          >
-            <ChevronRight size={24} />
-          </button>
         </div>
       </div>
     </section>
   );
 }
+

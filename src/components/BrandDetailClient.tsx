@@ -105,7 +105,7 @@ export default function BrandDetailClient({ brand }: { brand: any }) {
                  <span className="px-6 py-2 rounded-full bg-emerald-50 text-emerald-600 font-black text-[10px] uppercase tracking-[0.2em]">{filteredProducts.length} Items Found</span>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-10">
+              <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-[12px] md:gap-[28px]">
                  {filteredProducts.map((product: any) => (
                     <ProductCard key={product.id} product={product} />
                  ))}

@@ -5,6 +5,7 @@ import { Search, AlertCircle, Loader2, Plus, Edit2, Trash2, ShoppingBag } from '
 import { API_URL } from '@/lib/api';
 import { useToast } from '@/context/ToastContext';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import AdminPagination from '@/components/admin/AdminPagination';
 
 interface Variant {
@@ -26,6 +27,7 @@ export default function AdminVariantsPage() {
   const [updating, setUpdating] = useState<number | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const itemsPerPage = 10;
 
   useEffect(() => {
     fetchData();
@@ -34,7 +36,7 @@ export default function AdminVariantsPage() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const vRes = await fetch(`${API_URL}/api/variants?page=${currentPage}&limit=19`);
+      const vRes = await fetch(`${API_URL}/api/variants?page=${currentPage}&limit=${itemsPerPage}`);
       const data = await vRes.json();
       setVariants(data.variants);
       setTotalPages(data.pages);
@@ -84,15 +86,15 @@ export default function AdminVariantsPage() {
     <div className="space-y-8 animate-in fade-in duration-700 relative min-h-[70vh]">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-          <h2 className="text-4xl font-black text-[var(--admin-sidebar)] tracking-tighter">Inventory Console</h2>
+          <h2 className="text-4xl font-black text-[var(--admin-sidebar)] tracking-tighter uppercase">VARIANTS MANAGEMENT</h2>
           <p className="text-slate-400 font-medium text-sm mt-1">Directly manage stock and SKUs for all product variations.</p>
         </div>
-        <button
-          onClick={() => router.push('/admin/variants/new')}
-          className="h-16 px-10 rounded-2xl bg-blue-600 text-white text-[11px] font-black uppercase tracking-widest flex items-center gap-3 hover:bg-blue-700 transition-all shadow-xl shadow-blue-500/20 active:scale-95"
+        <Link
+          href="/admin/variants/new"
+          className="h-14 px-8 rounded-2xl bg-emerald-600 !text-white text-[11px] font-black uppercase tracking-widest flex items-center gap-3 hover:bg-emerald-700 transition-all shadow-xl shadow-emerald-500/20 active:scale-95 no-underline"
         >
-          <Plus size={20} /> New SKU Variant
-        </button>
+          <Plus size={18} className="!text-white" /> New SKU Variant
+        </Link>
       </div>
 
       <div className="bg-white rounded-[3.5rem] border border-slate-100 shadow-sm overflow-hidden">
@@ -177,14 +179,14 @@ export default function AdminVariantsPage() {
                   </td>
                   <td className="px-8 py-5 text-right">
                     <div className="flex items-center justify-end gap-2">
-                      <button 
-                        onClick={() => router.push(`/admin/variants/edit/${variant.id}`)} 
-                        className="h-9 w-9 flex items-center justify-center rounded-xl bg-slate-50 text-slate-400 hover:bg-blue-600 hover:text-white transition-all shadow-sm"
+                      <Link
+                        href={`/admin/variants/edit/${variant.id}`}
+                        className="h-10 w-10 flex items-center justify-center rounded-xl bg-slate-50 text-slate-400 hover:bg-blue-600 hover:text-white transition-all no-underline"
                       >
-                        <Edit2 size={14} />
-                      </button>
-                      <button 
-                        onClick={() => deleteVariant(variant.id)} 
+                        <Edit2 size={16} />
+                      </Link>
+                      <button
+                        onClick={() => deleteVariant(variant.id)}
                         className="h-9 w-9 flex items-center justify-center rounded-xl bg-slate-50 text-red-300 hover:bg-red-500 hover:text-white transition-all shadow-sm"
                       >
                         <Trash2 size={14} />
@@ -199,10 +201,10 @@ export default function AdminVariantsPage() {
             </tbody>
           </table>
         </div>
-        <AdminPagination 
-          currentPage={currentPage} 
-          totalPages={totalPages} 
-          onPageChange={setCurrentPage} 
+        <AdminPagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
         />
       </div>
     </div>

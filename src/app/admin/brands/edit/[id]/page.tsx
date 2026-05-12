@@ -1,34 +1,12 @@
-'use client';
+import React from 'react';
+import EditBrandClient from './EditBrandClient';
 
-import React, { useEffect, useState } from 'react';
-import BrandForm from '@/components/admin/BrandForm';
-import { useParams } from 'next/navigation';
-import { API_URL } from '@/lib/api';
-import { Loader2 } from 'lucide-react';
+// This satisfies the 'output: export' requirement for dynamic routes
+export function generateStaticParams() {
+  return [{ id: '1' }]; 
+}
 
-export default function EditBrandPage() {
-  const params = useParams();
-  const [initialData, setInitialData] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    if (params.id) {
-      fetch(`${API_URL}/api/admin-ops/brands/${params.id}`)
-        .then(r => r.json())
-        .then(data => {
-          setInitialData(data);
-          setLoading(false);
-        });
-    }
-  }, [params.id]);
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <Loader2 className="h-10 w-10 animate-spin text-blue-600" />
-      </div>
-    );
-  }
-
-  return <BrandForm mode="edit" initialData={initialData} />;
+export default async function Page({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  return <EditBrandClient id={id} />;
 }

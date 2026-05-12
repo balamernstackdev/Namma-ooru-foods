@@ -20,10 +20,14 @@ const fetcher = (url: string) => fetch(url).then(res => res.json());
 
 const VendorNotificationsPage = () => {
    const { user } = useAuth();
-   const { data: notifications, mutate } = useSWR<Notification[]>(
+   const { data: rawData, mutate } = useSWR<any>(
       user?.id ? `${API_URL}/api/notifications?userId=${user.id}` : null, 
       fetcher
    );
+
+   const notificationsList: Notification[] = Array.isArray(rawData) 
+      ? rawData 
+      : (rawData && Array.isArray(rawData.notifications) ? rawData.notifications : []);
 
    const markAsRead = async (id: number) => {
       await fetch(`${API_URL}/api/notifications/${id}/read`, { method: 'PATCH' });
@@ -53,7 +57,7 @@ const VendorNotificationsPage = () => {
                   </h2>
                </div>
                <div className="divide-y divide-slate-50">
-                  {!notifications || notifications.length === 0 ? (
+                  {!notificationsList || notificationsList.length === 0 ? (
                      <div className="p-20 text-center">
                         <div className="inline-flex h-20 w-20 items-center justify-center rounded-full bg-slate-50 text-slate-300 mb-6">
                            <Bell size={40} />
@@ -61,7 +65,7 @@ const VendorNotificationsPage = () => {
                         <p className="text-slate-400 font-bold uppercase tracking-widest text-[10px]">No recent notifications</p>
                      </div>
                   ) : (
-                     notifications.map((n) => (
+                     notificationsList.map((n) => (
                         <div key={n.id} className={`p-8 hover:bg-slate-50/50 transition-colors ${!n.isRead ? 'border-l-4 border-amber-500' : ''}`}>
                            <div className="flex items-start justify-between">
                               <div className="space-y-1">
@@ -111,7 +115,7 @@ const VendorNotificationsPage = () => {
                <div className="rounded-[2rem] border border-slate-100 bg-white p-8">
                   <h3 className="font-black text-slate-400 mb-6 uppercase text-[10px] tracking-widest">Unread Alerts</h3>
                   <p className="text-5xl font-black tracking-tighter text-slate-900">
-                     {notifications?.filter(n => !n.isRead).length || 0}
+                     {notificationsList.filter(n => !n.isRead).length || 0}
                   </p>
                   <p className="mt-4 text-slate-500 text-xs font-medium italic">Check your pending approvals regularly.</p>
                </div>

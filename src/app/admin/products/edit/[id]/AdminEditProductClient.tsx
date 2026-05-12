@@ -24,13 +24,13 @@ import { API_URL } from '@/lib/api';
 
 const fetcher = (url: string) => fetch(url).then(res => res.json());
 
-export default function AdminEditProductClient() {
+export default function AdminEditProductClient({ id }: { id?: string }) {
    const router = useRouter();
    const params = useParams();
    const { user } = useAuth();
    const { addToast } = useToast();
    const [isLoading, setIsLoading] = useState(false);
-   const productId = params.id;
+   const productId = id || params.id;
    const fileInputRef = React.useRef<HTMLInputElement>(null);
    const [uploading, setUploading] = useState(false);
 
@@ -274,7 +274,7 @@ export default function AdminEditProductClient() {
                               onChange={e => setFormData({ ...formData, categoryId: e.target.value })}
                            >
                               <option value="">Select Cluster</option>
-                              {categories?.map((cat: any) => (
+                              {((Array.isArray(categories) ? categories : (categories as any)?.categories) || [])?.map((cat: any) => (
                                  <option key={cat.id} value={cat.id}>{cat.name}</option>
                               ))}
                            </select>

@@ -59,17 +59,22 @@ export default function HomeBanner({ apiUrl }: HomeBannerProps) {
 
   const { data: apiBanners, error } = useSWR(`${apiUrl}/api/banners`, fetcher);
 
-  const displayBanners = apiBanners && Array.isArray(apiBanners) && apiBanners.length > 0
-    ? apiBanners.map((b: BannerData) => ({
-        id: b.id,
-        title: b.title || "Namma Orru",
-        highlight: b.tagline || "Special Offer",
-        subtitle: b.subtitle || "Premium quality products",
-        image: b.desktopImage,
-        link: b.link || '/products',
-        accentColor: b.accentColor || '#5cb338' // Default green
-      }))
+  const banners = apiBanners && Array.isArray(apiBanners) && apiBanners.length > 0
+    ? apiBanners
+        .filter((b: any) => b.desktopImage && typeof b.desktopImage === 'string' && b.desktopImage.trim() !== '')
+        .map((b: BannerData) => ({
+          id: b.id,
+          title: b.title || "Namma Orru",
+          highlight: b.tagline || "Special Offer",
+          subtitle: b.subtitle || "Premium quality products",
+          image: b.desktopImage,
+          link: b.link || '/products',
+          accentColor: b.accentColor || '#5cb338' // Default green
+        }))
     : STATIC_BANNERS;
+
+  // Final fallback if filtered API list is empty
+  const displayBanners = banners.length > 0 ? banners : STATIC_BANNERS;
 
   const next = useCallback(() => {
     setCurrent(c => (c + 1) % displayBanners.length);

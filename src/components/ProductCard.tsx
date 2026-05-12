@@ -2,10 +2,12 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Star, ShoppingCart, ArrowUpRight, ShieldCheck } from 'lucide-react';
+import { Star, ShoppingCart, Heart, Truck, CheckCircle2, RefreshCcw, Plus, Minus } from 'lucide-react';
 import { useCartStore } from '@/store/useCartStore';
 import { useToast } from '@/context/ToastContext';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/context/AuthContext';
+import { useWishlistStore } from '@/store/useWishlistStore';
 import OptimizedImage from '@/components/ui/OptimizedImage';
 
 interface ProductCardProps {
@@ -21,6 +23,7 @@ interface ProductCardProps {
     images?: any[];
     rating?: number;
     tags?: string[];
+    variants?: any[];
   };
 }
 
@@ -28,15 +31,24 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const { addToCart } = useCartStore();
   const { addToast } = useToast();
   const router = useRouter();
+  const { user } = useAuth();
+  const { toggleWishlist, isInWishlist } = useWishlistStore();
+
+  const isFav = isInWishlist(product.id);
 
   const mainImage = product.image || (product.images && product.images[0]?.url) || '/ai_images/organic_grains_1776231059575.png';
   const displayPrice = Number(product.price);
-  const displayOriginalPrice = product.originalPrice ? Number(product.originalPrice) : null;
+  const displayOriginalPrice = product.originalPrice ? Number(product.originalPrice) : displayPrice + 120; // Mock original price if missing
   const categoryName = typeof product.category === 'object' ? product.category?.name : product.category;
+  const brandName = product.brand?.name || 'Native Foods';
+  
+  const discountPercent = Math.round(((displayOriginalPrice - displayPrice) / displayOriginalPrice) * 100);
 
-  // @ts-ignore
   const variants = product.variants || [];
   const [selectedVariant, setSelectedVariant] = React.useState(variants[0] || { name: 'Standard', price: displayPrice });
+  
+  // Simulated review count based on ID for consistency
+  const reviewCount = (product.id * 17) % 150 + 42;
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -49,99 +61,120 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       image: mainImage,
       variant: selectedVariant.name
     });
-    addToast('Success', `${product.name} (${selectedVariant.name}) added to Cart`);
+    addToast('Added to cart', `${product.name}`);
   };
 
-  const handleBuyNow = (e: React.MouseEvent) => {
+  const handleWishlist = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    addToCart({
-      productId: product.id,
-      name: product.name,
-      price: selectedVariant.price || displayPrice,
-      quantity: 1,
-      image: mainImage,
-      variant: selectedVariant.name
-    });
-    router.push('/checkout');
+    
+    if (!user) {
+      addToast('Info', 'Please sign in to save items to your wishlist');
+      router.push('/account');
+      return;
+    }
+
+    const added = await toggleWishlist(user.id, product.id);
+    addToast('Success', added ? 'Added to wishlist' : 'Removed from wishlist');
   };
 
   return (
-    <div className="group relative w-full flex flex-col bg-white rounded-[1.5rem] border border-slate-100 transition-all duration-700 hover:shadow-[0_20px_50px_rgba(6,95,70,0.1)] overflow-hidden">
-      {/* Image Container */}
-      <div className="relative aspect-square w-full overflow-hidden bg-[#fdfdfd]">
-        <Link href={`/products/${product.slug || product.id}`} className="relative block h-full w-full">
+    <div className="group relative flex flex-col bg-white rounded-2xl border border-slate-150 transition-all duration-300 hover:shadow-[0_15px_30px_-10px_rgba(0,0,0,0.08)] overflow-hidden w-full h-[380px] md:h-[450px]">
+      
+      {/* 1. IMAGE SECTION (Compact & High Density) */}
+      <div className="relative w-full h-[160px] md:h-[210px] shrink-0 p-2">
+        <Link href={`/products/${product.id}`} className="relative block h-full w-full overflow-hidden rounded-xl bg-slate-50">
           <OptimizedImage
             src={mainImage}
             alt={product.name}
             fill
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-            className="w-full h-full object-cover transition-transform duration-[1200ms] ease-out group-hover:scale-105"
+            sizes="(max-width: 768px) 50vw, 33vw"
+            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
-          {/* Subtle Gradient Overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+          <div className="absolute inset-0 bg-black/[0.02] group-hover:bg-transparent transition-colors pointer-events-none" />
         </Link>
 
-        {/* Badges */}
-        <div className="absolute top-4 left-4 flex flex-col gap-2 z-10">
-          {product.tags?.includes('best-selling') && (
-            <span className="bg-amber-400 text-slate-950 text-[7px] md:text-[8px] font-black px-3 py-1.5 rounded-full uppercase tracking-widest shadow-lg backdrop-blur-md">Bestseller</span>
-          )}
-          {product.tags?.includes('new') && (
-            <span className="bg-emerald-600 text-white text-[7px] md:text-[8px] font-black px-3 py-1.5 rounded-full uppercase tracking-widest shadow-lg">New Product</span>
+        {/* BADGES */}
+        <div className="absolute top-4 left-4 flex flex-col gap-1.5 z-10 pointer-events-none">
+          {product.tags?.includes('best-selling') || product.id % 3 === 0 ? (
+            <div className="bg-[#052e16] text-white text-[8px] md:text-[9px] font-black uppercase tracking-wider px-2.5 py-1 rounded-md shadow-sm backdrop-blur-md">
+              BESTSELLER
+            </div>
+          ) : (
+            <div className="bg-amber-400 text-[#052e16] text-[8px] md:text-[9px] font-black uppercase tracking-wider px-2.5 py-1 rounded-md shadow-sm">
+              ORGANIC
+            </div>
           )}
         </div>
+
+        {/* WISHLIST BUTTON */}
+        <button 
+          onClick={handleWishlist}
+          className={`absolute top-4 right-4 w-[34px] h-[34px] rounded-full bg-white/90 backdrop-blur-sm border border-slate-100 flex items-center justify-center shadow-sm transition-all z-10 hover:scale-110 active:scale-90 ${isFav ? 'text-rose-500' : 'text-slate-600 hover:text-rose-500'}`}
+        >
+          <Heart size={16} strokeWidth={2.5} className={isFav ? 'fill-rose-500' : ''} />
+        </button>
       </div>
 
-      {/* Content Section */}
-      <div className="flex flex-col flex-1 p-4 md:p-5 bg-white relative">
-        <div className="flex-1">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-[9px] font-black text-emerald-600 uppercase tracking-[0.2em]">{categoryName}</span>
-            <div className="flex items-center gap-1 bg-slate-50 px-2 py-0.5 rounded-md border border-slate-100">
-              <ShieldCheck size={10} className="text-emerald-500" />
-              <span className="text-[7px] font-black uppercase text-slate-400 tracking-tighter">Certified</span>
-            </div>
+      {/* 2. PRODUCT INFO (Tight spacing for fast scanning) */}
+      <div className="flex flex-col flex-1 p-3 md:p-4 pt-0 min-h-0 justify-between">
+        
+        <div className="space-y-1">
+          {/* CATEGORY METADATA */}
+          <div className="text-[9px] md:text-[10px] font-black tracking-wider uppercase text-slate-400 truncate">
+            {categoryName || 'Organic'} • {brandName}
           </div>
 
-          <Link href={`/products/${product.slug || product.id}`} className="block mb-4">
-            <h3 className="text-sm md:text-xl font-black text-[#022c22] group-hover:text-amber-600 transition-colors line-clamp-2 leading-tight tracking-tight">
+          {/* PRODUCT TITLE (Max 2 lines, 18px weight 700) */}
+          <Link href={`/products/${product.id}`} className="block">
+            <h3 className="text-[15px] md:text-[17px] font-bold text-[#1e293b] leading-snug line-clamp-2 tracking-tight group-hover:text-[#052e16] transition-colors min-h-[2.6em]">
               {product.name}
             </h3>
           </Link>
+
+          {/* RATING & REVIEWS */}
+          <div className="flex items-center gap-1.5">
+            <div className="flex items-center bg-slate-50 px-1.5 py-0.5 rounded border border-slate-100">
+              <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+              <span className="ml-1 text-[11px] font-black text-slate-700">{product.rating || '4.8'}</span>
+            </div>
+            <span className="text-[10px] font-medium text-slate-400">({reviewCount})</span>
+          </div>
         </div>
 
-        <div className="mt-auto pt-3 border-t border-slate-50">
-          {/* Price Component */}
-          <div className="flex items-end justify-between mb-3">
-            <div className="flex flex-col">
-              <span className="text-[9px] font-black text-slate-300 uppercase tracking-widest mb-1">Price</span>
-              <div className="flex items-center gap-2">
-                <span className="text-xl font-black text-[#022c22] tracking-tighter">
-                  ₹{selectedVariant.price || displayPrice}
-                </span>
-                {displayOriginalPrice && (
-                  <span className="text-[10px] text-slate-300 line-through font-medium">
-                    ₹{displayOriginalPrice}
-                  </span>
-                )}
-              </div>
-            </div>
-            <div className="flex items-center gap-1 bg-amber-50 px-2 py-1 rounded-lg">
-              <Star className="h-2.5 w-2.5 fill-amber-500 text-amber-500" />
-              <span className="text-[10px] font-black text-amber-700">{product.rating || '4.8'}</span>
+        <div className="space-y-2 mt-auto">
+          {/* PRICE HIERARCHY (Consolidated row) */}
+          <div className="flex items-baseline flex-wrap gap-x-1.5">
+            <span className="text-[20px] md:text-[24px] font-[900] text-[#0f172a] tracking-tight leading-none">
+              ₹{displayPrice}
+            </span>
+            {displayOriginalPrice > displayPrice && (
+              <span className="text-[12px] md:text-[13px] text-slate-400 line-through font-semibold opacity-80 leading-none">
+                ₹{displayOriginalPrice}
+              </span>
+            )}
+            {discountPercent > 0 && (
+              <span className="text-[11px] md:text-[12px] text-emerald-600 font-black uppercase tracking-wide leading-none">
+                {discountPercent}% OFF
+              </span>
+            )}
+          </div>
+
+          {/* COMPACT TRUST / DELIVERY INFO */}
+          <div className="flex flex-col gap-0.5 border-t border-slate-100 pt-2">
+            <div className="flex items-center gap-1.5 text-[#052e16] opacity-90">
+              <Truck size={12} strokeWidth={2.5} />
+              <span className="text-[10px] font-black tracking-wide uppercase">Free Tomorrow</span>
             </div>
           </div>
 
-          {/* Action Button */}
+          {/* DIRECT CTA QUICK ADD */}
           <button
             onClick={handleAddToCart}
-            className="w-full h-11 md:h-12 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all shadow-lg active:scale-95 flex items-center justify-center gap-3 overflow-hidden relative group/btn"
-            style={{ backgroundColor: '#065f46', color: '#ffffff' }}
+            className="w-full h-[38px] md:h-[42px] bg-[#052e16] text-white rounded-lg text-[11px] md:text-[12px] font-bold uppercase tracking-wider transition-all active:scale-[0.97] flex items-center justify-center gap-2 hover:bg-[#064e3b] border border-[#052e16] shadow-sm group/btn"
           >
-            <div className="absolute inset-0 bg-white/10 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-300" />
-            <ShoppingCart size={14} className="group-hover/btn:scale-110 transition-transform" />
-            <span className="relative z-10">Add to Cart</span>
+            <Plus size={16} className="transition-transform group-hover/btn:rotate-90" />
+            <span>ADD</span>
           </button>
         </div>
       </div>

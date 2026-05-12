@@ -5,9 +5,12 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { API_URL } from '@/lib/api';
-import { HOME_BANNERS } from '@/lib/staticData';
-
 import useSWR from 'swr';
+
+const FALLBACK_BANNERS = [
+  { id: 1, image: '/ai_images/banner_farm_fresh.png', title: 'Farm Fresh Delivered to You', subtitle: '🌿 Just Harvested Today', cta: 'Shop Fresh', link: '/products' },
+  { id: 2, image: '/ai_images/banner_heritage_spices.png', title: 'Authentic Spices', subtitle: '🌶️ Secret of South Indian Taste', cta: 'Explore Spices', link: '/products' }
+];
 
 const fetcher = (url: string) => fetch(url).then(res => res.json());
 
@@ -16,25 +19,28 @@ const Hero = () => {
   const { data: apiBanners } = useSWR(`${API_URL}/api/banners`, fetcher);
 
   const slides = apiBanners && Array.isArray(apiBanners) && apiBanners.length > 0
-    ? apiBanners.map((b: any) => ({
-        id: b.id,
-        title: b.title,
-        subtitle: b.tagline, // Mapping tagline to subtitle for the badge
-        highlight: b.subtitle, // Mapping subtitle to highlight
-        image: b.desktopImage,
-        link: b.link || '/products',
-        cta: b.buttonText || 'Shop Now'
-      }))
-    : HOME_BANNERS;
+    ? apiBanners
+        .filter((b: any) => b.desktopImage && typeof b.desktopImage === 'string' && b.desktopImage.trim() !== '')
+        .map((b: any) => ({
+          id: b.id,
+          title: b.title,
+          subtitle: b.tagline,
+          highlight: b.subtitle,
+          image: b.desktopImage,
+          link: b.link || '/products',
+          cta: b.buttonText || 'Shop Now'
+        }))
+    : FALLBACK_BANNERS;
 
+  const activeSlides = slides.length > 0 ? slides : FALLBACK_BANNERS;
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-  const next = useCallback(() => setCurrent(c => (c + 1) % slides.length), [slides.length]);
-  const prev = useCallback(() => setCurrent(c => (c - 1 + slides.length) % slides.length), [slides.length]);
+  const next = useCallback(() => setCurrent(c => (c + 1) % activeSlides.length), [activeSlides.length]);
+  const prev = useCallback(() => setCurrent(c => (c - 1 + activeSlides.length) % activeSlides.length), [activeSlides.length]);
 
   const resetTimer = useCallback(() => {
     if (timerRef.current) clearInterval(timerRef.current);
-    timerRef.current = setInterval(next, 5000);
+    timerRef.current = setInterval(next, 6000);
   }, [next]);
 
   useEffect(() => {
@@ -42,116 +48,108 @@ const Hero = () => {
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, [resetTimer]);
 
-  const slide = slides[current];
-
   return (
-    <section className="relative w-full overflow-hidden bg-emerald-950" style={{ height: 'auto' }}>
-      {/* Responsive container with proper aspect ratio */}
-      <div className="relative w-full h-[260px] sm:h-[340px] md:h-[420px] lg:h-[520px] xl:h-[580px]">
-        
-        {/* Full-bleed background slides */}
-        {slides.map((s, idx) => (
-          <div
-            key={s.id ?? idx}
-            className="absolute inset-0 transition-all duration-[1200ms] ease-in-out"
-            style={{ 
-              opacity: current === idx ? 1 : 0, 
-              transform: current === idx ? 'scale(1)' : 'scale(1.05)',
-              zIndex: current === idx ? 1 : 0 
-            }}
-          >
-            <Image
-              src={s.image}
-              alt={s.title || 'Banner'}
-              fill
-              className="object-cover"
-              priority={idx === 0}
-              sizes="100vw"
-              unoptimized={s.image?.startsWith('http')}
-            />
-            {/* Gradient overlays for text readability */}
-            <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent" />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/30" />
-          </div>
-        ))}
+    <section className="w-full pt-4 md:pt-10 pb-4 bg-white overflow-hidden relative">
+      <div className="standard-container">
+        <div className="relative w-full h-[280px] sm:h-[360px] md:h-[420px] lg:h-[480px] rounded-[2rem] md:rounded-[3.5rem] overflow-hidden group shadow-2xl bg-slate-100">
+          
+          {/* Slides */}
+          {activeSlides.map((s, idx) => (
+            <div
+              key={s.id ?? idx}
+              className="absolute inset-0 transition-all duration-[1200ms] ease-in-out"
+              style={{ 
+                opacity: current === idx ? 1 : 0, 
+                transform: current === idx ? 'scale(1)' : 'scale(1.08)',
+                zIndex: current === idx ? 5 : 1 
+              }}
+            >
+              <Image
+                src={s.image || '/ai_images/banner_farm_fresh.png'}
+                alt={s.title || 'Banner'}
+                fill
+                className="object-cover"
+                priority={idx === 0}
+                sizes="100vw"
+                unoptimized={true}
+              />
+              {/* Modern Gradient Overlay: Focused on text protection on the left */}
+              <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/20 to-transparent z-10" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent z-10" />
+            </div>
+          ))}
 
-        {/* CENTER text overlay */}
-        <div className="relative z-10 w-full h-full flex flex-col items-center justify-center text-center px-6">
-          <div key={current} className="max-w-4xl">
-            {slide?.subtitle && (
+          {/* Content Overlay - Left Aligned for Modern Look */}
+          <div className="relative z-10 h-full flex flex-col justify-center px-8 sm:px-12 md:px-20 lg:px-24">
+            <div key={current} className="max-w-xl md:max-w-2xl">
               <span
-                className="inline-block text-[10px] sm:text-[11px] md:text-xs font-black uppercase tracking-[0.35em] mb-3 md:mb-5"
-                style={{ color: '#f59e0b', animation: 'heroFadeUp 0.6s ease both' }}
+                className="inline-block text-[10px] md:text-xs font-black uppercase tracking-[0.4em] mb-4 md:mb-6 px-4 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-500 backdrop-blur-sm"
+                style={{ animation: 'heroSlideRight 0.6s ease both' }}
               >
-                {slide.subtitle}
+                {activeSlides[current]?.subtitle || 'Namma Orru Essentials'}
               </span>
-            )}
-            {slide?.title && (
+              
               <h1
-                className="text-white font-black leading-[1.05] mb-4 md:mb-8 drop-shadow-2xl text-2xl sm:text-3xl md:text-5xl lg:text-6xl xl:text-7xl"
-                style={{ animation: 'heroFadeUp 0.7s 0.1s ease both' }}
+                className="text-white font-black leading-[1.1] mb-6 md:mb-10 text-3xl sm:text-4xl md:text-5xl lg:text-6xl drop-shadow-lg uppercase tracking-tight"
+                style={{ animation: 'heroSlideRight 0.7s 0.1s ease both' }}
               >
-                {slide.title}
+                {activeSlides[current]?.title}
               </h1>
-            )}
-            <div style={{ animation: 'heroFadeUp 0.8s 0.2s ease both', opacity: 0 }} className="animate-fill-forwards">
-              <Link
-                href={slide?.link || '/products'}
-                className="inline-flex items-center h-11 md:h-14 px-8 md:px-12 rounded-full text-[10px] md:text-[11px] font-black uppercase tracking-widest shadow-2xl transition-all hover:scale-105 active:scale-95"
-                style={{ backgroundColor: '#f59e0b', color: '#1c1917' }}
-                onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#d97706')}
-                onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#f59e0b')}
-              >
-                {slide?.cta || 'Shop Now'} &nbsp;→
-              </Link>
+
+              <div style={{ animation: 'heroSlideRight 0.8s 0.2s ease both', opacity: 0 }} className="animate-fill-forwards">
+                <Link
+                  href={activeSlides[current]?.link || '/products'}
+                  className="group inline-flex items-center gap-4 h-12 md:h-16 px-10 md:px-14 rounded-full bg-amber-500 text-slate-950 font-black uppercase tracking-widest text-[10px] md:text-xs shadow-2xl transition-all hover:bg-white hover:scale-105 active:scale-95"
+                >
+                  {activeSlides[current]?.cta || 'Explore Now'}
+                  <ChevronRight size={18} className="group-hover:translate-x-1.5 transition-transform" />
+                </Link>
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Navigation arrows — visible on hover */}
-        <button
-          onClick={() => { prev(); resetTimer(); }}
-          aria-label="Previous slide"
-          className="absolute left-3 md:left-8 top-1/2 -translate-y-1/2 z-20 h-10 w-10 md:h-12 md:w-12 rounded-full flex items-center justify-center transition-all opacity-0 hover:opacity-100 focus:opacity-100 shadow-xl"
-          style={{ backgroundColor: 'rgba(255,255,255,0.85)', color: '#1c1917' }}
-        >
-          <ChevronLeft size={22} strokeWidth={2.5} />
-        </button>
-        <button
-          onClick={() => { next(); resetTimer(); }}
-          aria-label="Next slide"
-          className="absolute right-3 md:right-8 top-1/2 -translate-y-1/2 z-20 h-10 w-10 md:h-12 md:w-12 rounded-full flex items-center justify-center transition-all opacity-0 hover:opacity-100 focus:opacity-100 shadow-xl"
-          style={{ backgroundColor: '#065f46', color: '#ffffff' }}
-        >
-          <ChevronRight size={22} strokeWidth={2.5} />
-        </button>
+          {/* Minimalist Controls */}
+          <div className="absolute bottom-6 md:bottom-10 right-8 md:right-12 z-20 flex items-center gap-6">
+            {/* Pagination Dots */}
+            <div className="flex gap-2.5 items-center">
+              {activeSlides.map((_, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => { setCurrent(idx); resetTimer(); }}
+                  className="h-1.5 transition-all duration-500 rounded-full"
+                  style={{
+                    width: idx === current ? 40 : 10,
+                    backgroundColor: idx === current ? '#f59e0b' : 'rgba(255,255,255,0.3)',
+                  }}
+                />
+              ))}
+            </div>
 
-        {/* Dot indicators */}
-        <div className="absolute bottom-4 md:bottom-8 left-1/2 -translate-x-1/2 z-20 flex gap-2.5 items-center">
-          {slides.map((_, idx) => (
-            <button
-              key={idx}
-              onClick={() => { setCurrent(idx); resetTimer(); }}
-              aria-label={`Slide ${idx + 1}`}
-              className="rounded-full transition-all duration-400"
-              style={{
-                width: idx === current ? 32 : 8,
-                height: 8,
-                backgroundColor: idx === current ? '#f59e0b' : 'rgba(255,255,255,0.45)',
-              }}
-            />
-          ))}
+            {/* Navigation Arrows */}
+            <div className="hidden md:flex gap-3 ml-4">
+              <button
+                onClick={() => { prev(); resetTimer(); }}
+                className="h-12 w-12 rounded-full border border-white/20 bg-white/10 backdrop-blur-md text-white flex items-center justify-center hover:bg-white hover:text-emerald-950 transition-all active:scale-90"
+              >
+                <ChevronLeft size={20} strokeWidth={3} />
+              </button>
+              <button
+                onClick={() => { next(); resetTimer(); }}
+                className="h-12 w-12 rounded-full bg-amber-500 text-slate-950 flex items-center justify-center hover:bg-white transition-all active:scale-90"
+              >
+                <ChevronRight size={20} strokeWidth={3} />
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
       <style dangerouslySetInnerHTML={{ __html: `
-        @keyframes heroFadeUp {
-          from { opacity: 0; transform: translateY(24px); }
-          to   { opacity: 1; transform: translateY(0); }
+        @keyframes heroSlideRight {
+          from { opacity: 0; transform: translateX(-30px); }
+          to   { opacity: 1; transform: translateX(0); }
         }
         .animate-fill-forwards { animation-fill-mode: forwards; }
-        section:hover button[aria-label="Previous slide"],
-        section:hover button[aria-label="Next slide"] { opacity: 0.85; }
       `}} />
     </section>
   );

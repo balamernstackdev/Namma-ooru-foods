@@ -223,9 +223,9 @@ export default function EditProductClient({ id }: { id?: string }) {
                               onChange={e => setFormData({ ...formData, categoryId: e.target.value })}
                            >
                               <option value="">Select Cluster</option>
-                              {categories?.map((cat: any) => (
-                                 <option key={cat.id} value={cat.id}>{cat.name}</option>
-                              ))}
+                               {((Array.isArray(categories) ? categories : (categories as any)?.categories) || [])?.map((cat: any) => (
+                                  <option key={cat.id} value={cat.id}>{cat.name}</option>
+                               ))}
                            </select>
                            <ChevronDown className="absolute right-6 top-1/2 -translate-y-1/2 text-slate-300 pointer-events-none" size={16} />
                         </div>

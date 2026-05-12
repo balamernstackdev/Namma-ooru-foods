@@ -12,7 +12,7 @@ import Image from 'next/image';
 const CategoriesCircles = nextDynamic(() => import('@/components/CategoriesCircles'), {
   ssr: true, // Keep true for SEO discovery of categories
   loading: () => (
-    <div className="w-full py-16 flex justify-center bg-white mt-10">
+    <div className="w-full pt-4 pb-8 flex justify-center bg-white">
       <div className="standard-container">
         <div className="flex justify-center gap-10 md:gap-20 overflow-hidden">
           {[...Array(6)].map((_, i) => <CategoryCircleSkeleton key={i} />)}
@@ -25,36 +25,59 @@ const CategoriesCircles = nextDynamic(() => import('@/components/CategoriesCircl
 import LazyHomeSections from '@/components/HomePageSections';
 import MarketingPopupWrapper from '@/components/MarketingPopupWrapper';
 import VendorShowcase from '@/components/VendorShowcase';
+import BrandPillars from '@/components/BrandPillars';
 
 import { API_URL } from '@/lib/api';
-import { PRODUCTS } from '@/lib/staticData';
 
 // Static export mode — data is fetched at build time
-export const dynamic = 'force-static';
+// Enable active dynamic routing for live inventory syncing
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 async function getLiveProducts() {
   try {
-    const res = await fetch(`${API_URL}/api/products?limit=30`, {
+    const res = await fetch(`${API_URL}/api/products?limit=100`, {
       cache: 'no-store',
     });
-    if (!res.ok) return PRODUCTS;
+    if (!res.ok) return [];
     const data = await res.json();
-    return data.length > 0 ? data : PRODUCTS;
+    const productsList = Array.isArray(data) 
+      ? data 
+      : (data && Array.isArray(data.products) ? data.products : []);
+    return productsList;
   } catch (e) {
-    console.error('Home Fetch Error:', e);
-    return PRODUCTS;
+    console.error('Home Products Fetch Error:', e);
+    return [];
+  }
+}
+
+async function getLiveBanners() {
+  try {
+    const res = await fetch(`${API_URL}/api/banners`, {
+      cache: 'no-store',
+    });
+    if (!res.ok) return [];
+    return await res.json();
+  } catch (e) {
+    console.error('Home Banners Fetch Error:', e);
+    return [];
   }
 }
 
 export default async function Home() {
   const products = await getLiveProducts();
+  const apiBanners = await getLiveBanners();
   
   // Best sellers: tagged, else first 8
-  const featuredProducts = products.filter((p: any) => p.tags?.includes('best-selling')).slice(0, 8);
-  // New arrivals: tagged, else next slice (non-overlapping)
+  // Robust best sellers extraction with intelligent fallback
+  const taggedBestSellers = products.filter((p: any) => p.tags?.includes('best-selling')).slice(0, 8);
+  const featuredProducts = taggedBestSellers.length > 0 ? taggedBestSellers : products.slice(0, 8);
+
+  // New arrivals logic with non-overlapping fallback
   const bestSellerIds = new Set(featuredProducts.map((p: any) => p.id));
-  const newProducts = products.filter((p: any) => !bestSellerIds.has(p.id) && p.tags?.includes('new')).slice(0, 8);
-  // All products for the main grid
+  const taggedNew = products.filter((p: any) => !bestSellerIds.has(p.id) && p.tags?.includes('new')).slice(0, 8);
+  const newProducts = taggedNew.length > 0 ? taggedNew : products.filter((p: any) => !bestSellerIds.has(p.id)).slice(0, 8);
+
   const allProducts = products;
 
   const websiteSchema = {
@@ -121,40 +144,55 @@ export default async function Home() {
         {/* 03. Best Sellers — Carousel */}
         <ProductCarousel
           products={featuredProducts}
-          title='Best <span class="text-accent italic">Sellers</span>'
+          title='Best <span class="text-accent italic lowercase font-serif font-normal">Sellers</span>'
           subtitle="Customer Favorites"
           viewAllHref="/best-selling"
           bgClass="bg-white"
           autoScrollInterval={3000}
         />
-        {/* 04. Featured Promo Banner */}
-        <section className="py-2 flex justify-center">
-          <div className="standard-container">
-            <div className="relative w-full h-[200px] md:h-[350px] rounded-[2rem] overflow-hidden group cursor-pointer">
-              <Image 
-                src="/ai_images/sweets_snacks_banner.png" 
-                alt="Festive Sweets" 
-                fill 
-                className="object-cover transition-transform duration-1000 group-hover:scale-105"
-              />
-              <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/30 to-transparent flex flex-col justify-center px-10 md:px-20">
-                <span className="text-amber-400 text-xs font-black uppercase tracking-[0.3em] mb-4">Festive Specials</span>
-                <h3 className="text-white text-2xl md:text-5xl font-black mb-6 leading-tight drop-shadow-lg">Handmade Sweets & <br /> Traditional Savouries</h3>
-                <div>
-                  <Link href="/products?category=Local Sweets" className="inline-flex h-10 md:h-12 px-8 rounded-full bg-amber-500 text-slate-900 font-black uppercase tracking-widest text-[10px] hover:bg-white hover:text-primary transition-all items-center shadow-lg">
-                    Shop Sweets
-                  </Link>
+        {/* 04. Featured Promo Banner - Dynamic from S3 */}
+        {(() => {
+          const festiveBanner = products.length > 0 ? (apiBanners?.find((b: any) => b.title === 'Harvest Festival') || {
+            desktopImage: 'https://s3.ap-south-1.amazonaws.com/namma-orru-foods/ai_assets/harvest_festival.png',
+            title: 'Festive Specials',
+            subtitle: 'Traditional Harvest',
+            buttonText: 'Shop Now',
+            link: '/products'
+          }) : null;
+
+          if (!festiveBanner) return null;
+
+          return (
+            <section className="py-2 flex justify-center">
+              <div className="standard-container">
+                <div className="relative w-full h-[200px] md:h-[350px] rounded-[2rem] overflow-hidden group cursor-pointer">
+                  <Image 
+                    src={festiveBanner.desktopImage} 
+                    alt={festiveBanner.title} 
+                    fill 
+                    className="object-cover transition-transform duration-1000 group-hover:scale-105"
+                    unoptimized={festiveBanner.desktopImage?.startsWith('http')}
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/30 to-transparent flex flex-col justify-center px-10 md:px-20">
+                    <span className="text-amber-400 text-xs font-black uppercase tracking-[0.3em] mb-4">{festiveBanner.subtitle || 'Festive Specials'}</span>
+                    <h3 className="text-white text-2xl md:text-5xl font-black mb-6 leading-tight drop-shadow-lg">{festiveBanner.title}</h3>
+                    <div>
+                      <Link href={festiveBanner.link || '/products'} className="inline-flex h-10 md:h-12 px-8 rounded-full bg-amber-500 text-slate-900 font-black uppercase tracking-widest text-[10px] hover:bg-white hover:text-primary transition-all items-center shadow-lg">
+                        {festiveBanner.buttonText || 'Explore Now'}
+                      </Link>
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
-          </div>
-        </section>
+            </section>
+          );
+        })()}
 
 
         {/* 05. New Arrivals — Carousel */}
         <ProductCarousel
           products={newProducts}
-          title='New <span class="text-accent italic">Arrivals</span>'
+          title='New <span class="text-accent italic lowercase font-serif font-normal">Arrivals</span>'
           subtitle="Just Harvested"
           viewAllHref="/products"
           bgClass="bg-slate-50"
@@ -167,7 +205,7 @@ export default async function Home() {
         {/* 07. Full Collection — Carousel */}
         <ProductCarousel
           products={allProducts}
-          title='Authentic <span class="text-primary italic">Foods</span>'
+          title='Authentic <span class="text-primary italic lowercase font-serif font-normal">Foods</span>'
           subtitle="Our Full Collection"
           viewAllHref="/products"
           bgClass="bg-white"
@@ -181,6 +219,7 @@ export default async function Home() {
         </div>
 
         <LazyHomeSections />
+        <BrandPillars />
       </main>
     </div>
   );

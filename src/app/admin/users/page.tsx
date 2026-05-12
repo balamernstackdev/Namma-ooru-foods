@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useToast } from '@/context/ToastContext';
 import { Users, Search, Mail, Phone, MapPin, Edit2, Trash2, ShieldCheck, Loader2, Plus, UserPlus } from 'lucide-react';
 import { API_URL } from '@/lib/api';
@@ -61,16 +62,16 @@ export default function AdminUsersPage() {
     <div className="space-y-8 animate-in fade-in duration-700">
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
         <div>
-          <h2 className="text-4xl font-black text-slate-900 tracking-tighter">User Registry</h2>
+          <h2 className="text-4xl font-black text-slate-900 tracking-tighter uppercase">USER REGISTRY</h2>
           <p className="text-slate-400 font-medium text-sm mt-1">Onboard and manage customers, administrators, and marketplace vendors.</p>
         </div>
         <div className="flex flex-wrap gap-4">
-          <button
-            onClick={() => router.push('/admin/users/new')}
-            className="h-14 px-8 rounded-2xl bg-blue-600 text-white text-[11px] font-black uppercase tracking-widest flex items-center gap-3 hover:bg-blue-700 transition-all shadow-xl shadow-blue-500/20 active:scale-95"
+          <Link
+            href="/admin/users/new"
+            className="h-14 px-8 rounded-2xl bg-emerald-600 !text-white text-[11px] font-black uppercase tracking-widest flex items-center gap-3 hover:bg-emerald-700 transition-all shadow-xl shadow-emerald-500/20 active:scale-95 no-underline"
           >
-            <Plus size={20} /> Register New User
-          </button>
+            <Plus size={18} className="!text-white" /> Register New User
+          </Link>
         </div>
       </div>
 
@@ -144,12 +145,12 @@ export default function AdminUsersPage() {
                   </td>
                   <td className="px-8 py-5 text-right">
                     <div className="flex items-center justify-end gap-2">
-                      <button 
-                        onClick={() => router.push(`/admin/users/edit/${user.id}`)} 
-                        className="h-10 w-10 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-400 hover:bg-blue-600 hover:text-white transition-all shadow-sm"
+                      <Link 
+                        href={`/admin/users/edit/${user.id}`} 
+                        className="h-10 w-10 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-400 hover:bg-blue-600 hover:text-white transition-all shadow-sm no-underline"
                       >
                         <Edit2 size={16} />
-                      </button>
+                      </Link>
                       <button 
                         onClick={() => deleteUser(user.id)} 
                         className="h-10 w-10 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-red-300 hover:bg-red-500 hover:text-white transition-all shadow-sm"

@@ -5,6 +5,7 @@ import { Tag, Plus, Trash2, Edit2, ImageIcon, Globe, Loader2, User } from 'lucid
 import { API_URL } from '@/lib/api';
 import AdminPagination from '@/components/admin/AdminPagination';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useToast } from '@/context/ToastContext';
 
 interface Brand {
@@ -60,15 +61,15 @@ export default function AdminBrandsPage() {
     <div className="space-y-10 animate-in fade-in duration-700 pb-20">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-          <h2 className="text-4xl font-black text-slate-900 tracking-tighter">Brand Registry</h2>
+          <h2 className="text-4xl font-black text-slate-900 tracking-tighter uppercase">BRAND REGISTRY</h2>
           <p className="text-slate-400 font-medium text-sm mt-1">Manage {totalBrands} heritage brands and their vendor associations.</p>
         </div>
-        <button 
-          onClick={() => router.push('/admin/brands/new')}
-          className="h-14 px-8 rounded-2xl bg-blue-600 text-white text-[11px] font-black uppercase tracking-widest flex items-center gap-3 hover:bg-blue-700 transition-all shadow-xl shadow-blue-500/20 active:scale-95"
+        <Link 
+          href="/admin/brands/new"
+          className="h-14 px-8 rounded-2xl bg-emerald-600 !text-white text-[11px] font-black uppercase tracking-widest flex items-center gap-3 hover:bg-emerald-700 transition-all shadow-xl shadow-emerald-500/20 active:scale-95 no-underline"
         >
-          <Plus size={18} /> Register New Brand
-        </button>
+          <Plus size={18} className="!text-white" /> Register New Brand
+        </Link>
       </div>
 
       <div className="bg-white rounded-[2rem] border border-slate-200 shadow-sm overflow-hidden">
@@ -132,12 +133,12 @@ export default function AdminBrandsPage() {
                   </td>
                   <td className="px-8 py-6">
                     <div className="flex items-center justify-end gap-2">
-                      <button 
-                        onClick={() => router.push(`/admin/brands/edit/${brand.id}`)} 
-                        className="h-10 w-10 flex items-center justify-center rounded-xl bg-slate-50 text-slate-400 hover:bg-blue-600 hover:text-white transition-all shadow-sm"
+                      <Link 
+                        href={`/admin/brands/edit/${brand.id}`} 
+                        className="h-10 w-10 flex items-center justify-center rounded-xl bg-slate-50 text-slate-400 hover:bg-blue-600 hover:text-white transition-all shadow-sm no-underline"
                       >
                         <Edit2 size={16} />
-                      </button>
+                      </Link>
                       <button 
                         onClick={() => deleteBrand(brand.id)} 
                         className="h-10 w-10 flex items-center justify-center rounded-xl bg-slate-50 text-red-300 hover:bg-red-500 hover:text-white transition-all shadow-sm"

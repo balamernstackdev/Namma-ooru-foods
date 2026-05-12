@@ -76,9 +76,16 @@ export default function VariantForm({ initialData, mode }: VariantFormProps) {
   });
 
   useEffect(() => {
-    fetch(`${API_URL}/api/products`)
+    fetch(`${API_URL}/api/products?limit=100&status=all`)
       .then(r => r.json())
-      .then(setProducts);
+      .then(data => {
+        if (data && data.products) {
+          setProducts(data.products);
+        } else if (Array.isArray(data)) {
+          setProducts(data);
+        }
+      })
+      .catch(err => console.error('Failed to fetch products for variant mapping:', err));
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {

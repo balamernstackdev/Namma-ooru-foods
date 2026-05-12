@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { RotateCcw, CheckCircle, XCircle, Clock, Eye } from 'lucide-react';
+import { RotateCcw, CheckCircle, XCircle, Clock, Eye, Trash2 } from 'lucide-react';
 import { API_URL } from '@/lib/api';
 import AdminPagination from '@/components/admin/AdminPagination';
 
@@ -52,10 +52,22 @@ export default function AdminRefundsPage() {
     } finally { setUpdating(null); }
   };
 
+  const handleDelete = async (id: number) => {
+    if (!confirm('Permanently remove this refund record? This action is irreversible.')) return;
+    try {
+      const res = await fetch(`${API_URL}/api/refunds/admin/${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        setOrders(prev => prev.filter(o => o.id !== id));
+      }
+    } catch (err) {
+      console.error('Delete error:', err);
+    }
+  };
+
   return (
     <div className="space-y-8 animate-in fade-in duration-700">
       <div>
-        <h2 className="text-4xl font-black text-[var(--admin-sidebar)] tracking-tighter">Refund Requests</h2>
+        <h2 className="text-4xl font-black text-[var(--admin-sidebar)] tracking-tighter uppercase">REFUND REQUESTS</h2>
         <p className="text-slate-400 font-medium text-sm mt-1">{orders.length} refund requests on this page</p>
       </div>
 
@@ -120,9 +132,9 @@ export default function AdminRefundsPage() {
                             <CheckCircle size={12} /> Mark Complete
                           </button>
                         )}
-                        {['COMPLETED', 'REJECTED'].includes(order.refundStatus) && (
-                          <span className="text-xs text-slate-300 font-bold">Finalized</span>
-                        )}
+                        <button onClick={() => handleDelete(order.id)} className="h-9 w-9 flex items-center justify-center rounded-xl border border-slate-100 text-red-300 hover:bg-red-500 hover:text-white hover:border-red-500 transition-all" title="Delete Record">
+                           <Trash2 size={15} />
+                        </button>
                       </div>
                     )}
                   </td>

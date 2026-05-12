@@ -24,6 +24,8 @@ interface User {
 interface AuthContextType {
   user: User | null;
   login: (email: string, pass: string) => Promise<void>;
+  requestSignupOTP: (name: string, email: string, pass: string) => Promise<void>;
+  verifySignupOTP: (email: string, otp: string) => Promise<void>;
   signup: (name: string, email: string, pass: string) => Promise<void>;
   logout: () => void;
   isLoading: boolean;
@@ -86,26 +88,62 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
-  const signup = async (name: string, email: string, pass: string) => {
+  const requestSignupOTP = async (name: string, email: string, pass: string) => {
     setIsLoading(true);
     try {
-      const res = await fetch(`${API_URL}/api/auth/signup`, {
+      const res = await fetch(`${API_URL}/api/auth/signup/request`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, email, password: pass })
       });
-
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Signup failed');
-
-      setUser(data.user);
-      localStorage.setItem('namma_orru_token', data.token);
+      if (!res.ok) throw new Error(data.error || 'Failed to initialize dispatch.');
     } catch (err: any) {
-      setIsLoading(false);
       throw err;
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const verifySignupOTP = async (email: string, otp: string) => {
+    setIsLoading(true);
+    try {
+      const res = await fetch(`${API_URL}/api/auth/signup/verify`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, otp })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Verification checksum mismatch.');
+      
+      // Provision logic
+      setUser(data.user);
+      localStorage.setItem('namma_orru_token', data.token);
+    } catch (err: any) {
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const signup = async (name: string, email: string, pass: string) => {
+     // Legacy support, will not support OTP steps. Use direct call for non-OTP legacy environments.
+     setIsLoading(true);
+     try {
+       const res = await fetch(`${API_URL}/api/auth/signup`, {
+         method: 'POST',
+         headers: { 'Content-Type': 'application/json' },
+         body: JSON.stringify({ name, email, password: pass })
+       });
+ 
+       const data = await res.json();
+       if (!res.ok) throw new Error(data.error || 'Signup failed');
+ 
+       setUser(data.user);
+       localStorage.setItem('namma_orru_token', data.token);
+     } finally {
+       setIsLoading(false);
+     }
   };
 
   const logout = () => {
@@ -114,7 +152,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, signup, logout, isLoading }}>
+    <AuthContext.Provider value={{ user, login, requestSignupOTP, verifySignupOTP, signup, logout, isLoading }}>
       {children}
     </AuthContext.Provider>
   );

@@ -1,12 +1,31 @@
 import React from 'react';
 import CategoryDetailLoader from './CategoryDetailLoader';
 import { CATEGORIES } from '@/lib/staticData';
-import { BRANDS } from '@/lib/staticData';
 import { API_URL } from '@/lib/api';
-
 import { Metadata } from 'next';
 
-export const dynamicParams = false;
+export const dynamicParams = true;
+
+export async function generateStaticParams(): Promise<{ id: string }[]> {
+  try {
+    const res = await fetch(`${API_URL}/api/categories`, { next: { revalidate: 3600 } });
+    if (!res.ok) throw new Error('API fetch failed');
+    const data = await res.json();
+    const categoriesList = Array.isArray(data) ? data : (data && Array.isArray(data.categories) ? data.categories : []);
+    
+    if (categoriesList.length > 0) {
+      return categoriesList.map((category: any) => ({
+        id: category.id.toString(),
+      }));
+    }
+    throw new Error('Empty categories list');
+  } catch (error) {
+    console.warn('Falling back to static CATEGORIES for generateStaticParams:', error);
+    return CATEGORIES.map((category) => ({
+      id: category.id.toString(),
+    }));
+  }
+}
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id } = await params;
@@ -14,7 +33,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
     const res = await fetch(`${API_URL}/api/categories`);
     const categories = await res.json();
     const category = Array.isArray(categories) ? categories.find((c: any) => c.id.toString() === id) : null;
-    
+
     if (!category) return { title: 'Category' };
 
     return {
@@ -27,18 +46,6 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
     };
   } catch (e) {
     return { title: 'Category' };
-  }
-}
-
-export async function generateStaticParams() {
-  try {
-    const res = await fetch(`${API_URL}/api/categories`);
-    const categories = await res.json();
-    return Array.isArray(categories) ? categories.map((c: any) => ({ id: c.id.toString() })) : [];
-  } catch (error) {
-    return CATEGORIES.map((c) => ({
-      id: c.id.toString(),
-    }));
   }
 }
 

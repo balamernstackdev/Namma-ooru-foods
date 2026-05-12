@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { Plus, Search, Filter, Edit2, Trash2, ExternalLink } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
 import AdminPagination from '@/components/admin/AdminPagination';
 import useSWR from 'swr';
@@ -83,20 +84,18 @@ export default function AdminProducts() {
          {/* Page Header */}
          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div className="space-y-1">
-               <h2 className="text-4xl font-black text-[var(--admin-sidebar)] tracking-tighter">
-                  {isVendor ? 'Vendor Inventory' : 'Admin Inventory'}
+               <h2 className="text-4xl font-black text-[var(--admin-sidebar)] tracking-tighter uppercase">
+                  {isVendor ? 'VENDOR PRODUCT REGISTRY' : 'PRODUCT REGISTRY'}
                </h2>
-               <p className="text-slate-400 font-medium text-sm">
-                  {isVendor ? 'Managing your premium brand Products.' : 'Synchronizing the physical harvest with the digital storefront.'}
-               </p>
+
             </div>
-            <button
-               onClick={() => router.push('/admin/products/create')}
-               className="h-16 px-10 rounded-2xl bg-[var(--admin-sidebar)] text-white text-[11px] font-black uppercase tracking-widest flex items-center justify-center gap-3 hover:bg-slate-900 transition-all shadow-2xl shadow-slate-900/20 active:scale-95"
+            <Link
+               href="/admin/products/create"
+               className="h-14 px-8 rounded-2xl bg-emerald-600 !text-white text-[11px] font-black uppercase tracking-widest flex items-center justify-center gap-3 hover:bg-emerald-700 transition-all shadow-xl shadow-emerald-500/20 active:scale-95 no-underline"
             >
-               <Plus size={24} className="text-[var(--admin-accent)]" />
+               <Plus size={18} className="!text-white" />
                Add New Product
-            </button>
+            </Link>
          </div>
 
          {/* Command Bar */}
@@ -111,7 +110,7 @@ export default function AdminProducts() {
                   onChange={(e) => setSearchTerm(e.target.value)}
                />
             </div>
-            <select 
+            <select
                value={statusFilter}
                onChange={(e) => setStatusFilter(e.target.value)}
                className="h-14 px-8 rounded-2xl border border-slate-100 text-[var(--admin-sidebar)] text-[11px] font-black uppercase tracking-widest bg-white outline-none focus:ring-2 focus:ring-[var(--admin-accent)] transition-all"
@@ -158,12 +157,11 @@ export default function AdminProducts() {
                                     <div className="flex flex-col">
                                        <span className="text-base font-black text-[var(--admin-sidebar)] tracking-tight">{product.name}</span>
                                        <div className="flex items-center gap-3 mt-1.5">
-                                          <span className={`px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest border ${
-                                             product.status === 'APPROVED' ? 'bg-emerald-50 border-emerald-100 text-emerald-600' :
+                                          <span className={`px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest border ${product.status === 'APPROVED' ? 'bg-emerald-50 border-emerald-100 text-emerald-600' :
                                              product.status === 'PENDING' ? 'bg-amber-50 border-amber-100 text-amber-600' :
-                                             product.status === 'REJECTED' ? 'bg-red-50 border-red-100 text-red-600' :
-                                             'bg-slate-50 border-slate-100 text-slate-400'
-                                          }`}>
+                                                product.status === 'REJECTED' ? 'bg-red-50 border-red-100 text-red-600' :
+                                                   'bg-slate-50 border-slate-100 text-slate-400'
+                                             }`}>
                                              {product.status || 'APPROVED'}
                                           </span>
                                           <span className="text-[10px] text-slate-300 font-bold uppercase tracking-[0.2em]">ID-NM-{1000 + product.id}</span>
@@ -213,13 +211,13 @@ export default function AdminProducts() {
                                           </button>
                                        </>
                                     )}
-                                    <button
-                                       onClick={() => router.push(`/admin/products/edit/${product.id}`)}
+                                    <Link
+                                       href={`/admin/products/edit/${product.id}`}
                                        className="h-12 w-12 flex items-center justify-center rounded-xl bg-white border border-slate-100 text-slate-400 hover:bg-[var(--admin-sidebar)] hover:text-white hover:border-[var(--admin-sidebar)] transition-all shadow-sm"
                                        title="Edit Product"
                                     >
                                        <Edit2 size={18} />
-                                    </button>
+                                    </Link>
                                     <button
                                        onClick={() => handleDelete(product.id)}
                                        className="h-12 w-12 flex items-center justify-center rounded-xl bg-white border border-slate-100 text-red-300 hover:bg-red-500 hover:text-white hover:border-red-500 transition-all shadow-sm"
@@ -235,7 +233,7 @@ export default function AdminProducts() {
                   </tbody>
                </table>
             </div>
-            <AdminPagination 
+            <AdminPagination
                currentPage={currentPage}
                totalPages={totalPages}
                onPageChange={setCurrentPage}

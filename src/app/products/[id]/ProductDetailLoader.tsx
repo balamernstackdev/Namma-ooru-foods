@@ -22,8 +22,8 @@ export default function ProductDetailLoader({ id }: { id: string }) {
     return <PremiumLoader fullScreen={true} />;
   }
 
-  const isValidProduct = product && !product.error;
-  const finalProduct = isValidProduct ? product : (allProducts && Array.isArray(allProducts) ? allProducts[0] : null);
+  const isValidProduct = product && !product.error && product.name;
+  const finalProduct = isValidProduct ? product : null;
   
   if (!finalProduct || (finalProduct as any).error) {
     return (
@@ -37,15 +37,12 @@ export default function ProductDetailLoader({ id }: { id: string }) {
     );
   }
 
+  const productsList = Array.isArray(allProducts) ? allProducts : (allProducts && Array.isArray(allProducts.products) ? allProducts.products : []);
+  
   return (
     <>
-      {/* Product Detail */}
-      <ProductDetailClient product={finalProduct} allProducts={allProducts || []} />
-
-      {/* Reviews Section */}
-      <div className="mx-auto w-full" style={{ maxWidth: '1400px', paddingLeft: '5%', paddingRight: '5%' }}>
-        <ProductReviews productId={finalProduct.id} />
-      </div>
+      {/* Product Detail (Now contains inside-tab reviews) */}
+      <ProductDetailClient product={finalProduct} allProducts={productsList} />
     </>
   );
 }

@@ -1,22 +1,8 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
-import { 
-  ShieldCheck, 
-  Truck, 
-  Tag, 
-  CheckCircle, 
-  RefreshCw, 
-  MapPin, 
-  Plus, 
-  ChevronDown, 
-  ArrowLeft, 
-  ChevronRight,
-  User,
-  CreditCard,
-  Lock,
-  Zap,
-  Star
+import { useState, useEffect } from 'react';
+import {
+   ShieldCheck, Truck, CheckCircle, RefreshCw, MapPin, Plus, ChevronRight, User, CreditCard, Lock, ChevronDown, ChevronUp, Tag, Home, Briefcase, Download, Package, FileText, Sparkles, Star
 } from 'lucide-react';
 import { useCartStore } from '@/store/useCartStore';
 import { useAuth } from '@/context/AuthContext';
@@ -24,590 +10,691 @@ import Link from 'next/link';
 import Script from 'next/script';
 import { API_URL } from '@/lib/api';
 import { motion, AnimatePresence } from 'framer-motion';
+import ProductCard from '@/components/ProductCard';
+import useSWR from 'swr';
 
-interface Address { id: number; name: string; phone: string; line1: string; line2?: string; city: string; state: string; pincode: string; isDefault: boolean; }
+const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
-export default function ElasticCheckout() {
-  const { cart, getTotal, clearCart } = useCartStore();
-  const { user } = useAuth();
-  
-  const [step, setStep] = useState(1); // 1: Identity, 2: Delivery, 3: Payment
-  const [placed, setPlaced] = useState(false);
-  const [isProcessing, setIsProcessing] = useState(false);
-  
-  // Form States
-  const [email, setEmail] = useState('');
-  const [addresses, setAddresses] = useState<Address[]>([]);
-  const [selectedAddressId, setSelectedAddressId] = useState<number | null>(null);
-  const [paymentMethod, setPaymentMethod] = useState('Online Payment (Razorpay)');
-  
-  // Address Creation States
-  const [isAddingAddress, setIsAddingAddress] = useState(false);
-  const [newAddress, setNewAddress] = useState({
-    name: '',
-    phone: '',
-    line1: '',
-    line2: '',
-    city: '',
-    state: '',
-    pincode: '',
-    isDefault: false
-  });
+interface Address { id: number; name: string; phone: string; line1: string; line2?: string; city: string; state: string; pincode: string; isDefault: boolean; type?: string; }
 
-  // Discount States
-  const [promoCode, setPromoCode] = useState('');
-  const [discount, setDiscount] = useState(0);
-  const [discountType, setDiscountType] = useState<string>('');
-  const [promoError, setPromoError] = useState('');
-  const [promoSuccess, setPromoSuccess] = useState('');
-  const [mounted, setMounted] = useState(false);
+export default function CheckoutPage() {
+   const { cart, getTotal, clearCart } = useCartStore();
+   const { user } = useAuth();
 
-  const subtotal = getTotal();
-  const delivery = (discountType === 'FREE_SHIPPING' || subtotal >= 499) ? 0 : 49;
-  const gst = Math.round(subtotal * 0.05);
-  const total = subtotal - discount + delivery + gst;
+   const [step, setStep] = useState(2); // 1: Cart, 2: Delivery, 3: Payment, 4: Complete
+   const [placed, setPlaced] = useState(false);
+   const [isProcessing, setIsProcessing] = useState(false);
+   const [mounted, setMounted] = useState(false);
+   const [isMobileSummaryOpen, setIsMobileSummaryOpen] = useState(false);
 
-  useEffect(() => {
-    setMounted(true);
-    if (user?.id) {
-       setEmail(user.email);
-       setStep(2); // Auto-skip Identity if logged in
-       loadAddresses();
-    }
-  }, [user]);
+   // Form States
+   const [email, setEmail] = useState('');
+   const [addresses, setAddresses] = useState<Address[]>([]);
+   const [selectedAddressId, setSelectedAddressId] = useState<number | null>(null);
+   const [paymentMethod, setPaymentMethod] = useState('Online');
+   const [deliverySlot, setDeliverySlot] = useState('Express');
 
-  const loadAddresses = async () => {
-    if (!user?.id) return;
-    try {
-      const res = await fetch(`${API_URL}/api/addresses/${user.id}`);
-      const data = await res.json();
-      setAddresses(data);
-      const def = data.find((a: Address) => a.isDefault);
-      if (def) setSelectedAddressId(def.id);
-    } catch (e) {
-      console.error(e);
-    }
-  };
+   // Address Creation States
+   const [isAddingAddress, setIsAddingAddress] = useState(false);
+   const [newAddress, setNewAddress] = useState({
+      name: '', phone: '', line1: '', line2: '', city: '', state: '', pincode: '', isDefault: false, type: 'Home'
+   });
 
-  const saveAddress = async () => {
-    if (!user?.id && !email) {
-      setPromoError('Please provide an email in Step 1 first.');
-      return;
-    }
-    
-    setIsProcessing(true);
-    try {
-      const res = await fetch(`${API_URL}/api/addresses`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...newAddress, userId: user?.id, email: email })
-      });
-      const data = await res.json();
-      if (res.ok) {
-        setAddresses([...addresses, data]);
-        setSelectedAddressId(data.id);
-        setIsAddingAddress(false);
-        setNewAddress({ name: '', phone: '', line1: '', line2: '', city: '', state: '', pincode: '', isDefault: false });
+   // Discount States
+   const [promoCode, setPromoCode] = useState('');
+   const [discount, setDiscount] = useState(0);
+   const [discountType, setDiscountType] = useState<string>('');
+   const [promoError, setPromoError] = useState('');
+   const [promoSuccess, setPromoSuccess] = useState('');
+
+   // Cache order before clearing cart
+   const [finalOrderData, setFinalOrderData] = useState<any>(null);
+
+   // Load recommendations for success page
+   const { data: recData } = useSWR(`${API_URL}/api/products?limit=4`, fetcher);
+   const recommendedProducts = recData?.products ? recData.products.slice(0, 4) : [];
+
+   const subtotal = getTotal();
+   const delivery = (discountType === 'FREE_SHIPPING' || subtotal >= 499) ? 0 : 49;
+   const gst = Math.round(subtotal * 0.05);
+   const total = subtotal - discount + delivery + gst;
+
+   useEffect(() => {
+      setMounted(true);
+      if (user?.id) {
+         setEmail(user.email);
+         loadAddresses();
       }
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setIsProcessing(false);
-    }
-  };
+   }, [user]);
 
-  const applyPromo = async () => {
-    if (!promoCode.trim()) return;
-    setPromoError('');
-    setPromoSuccess('');
-    try {
-      const res = await fetch(`${API_URL}/api/coupons/validate`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code: promoCode, userId: user?.id, orderTotal: subtotal })
-      });
-      const data = await res.json();
-      if (!res.ok) { setPromoError(data.error); setDiscount(0); return; }
-      setDiscount(data.discount);
-      setDiscountType(data.type);
-      setPromoSuccess(data.message);
-    } catch { setPromoError('Failed to validate coupon'); }
-  };
-
-  const [confirmedOrderId, setConfirmedOrderId] = useState<number | null>(null);
-
-  const handlePlaceOrder = async () => {
-    setIsProcessing(true);
-    setPromoError('');
-    try {
-      // 1. Create the Order in our DB first
-      const orderRes = await fetch(`${API_URL}/api/orders`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userId: user?.id,
-          email: email,
-          shippingAddressId: selectedAddressId,
-          totalAmount: total,
-          discountAmount: discount,
-          gstAmount: gst,
-          items: cart,
-          paymentMethod: paymentMethod === 'Cash on Delivery' ? 'Cash on Delivery' : 'Online'
-        })
-      });
-      
-      const dbOrder = await orderRes.json();
-      if (!orderRes.ok) throw new Error(dbOrder.error || 'Failed to create order');
-      setConfirmedOrderId(dbOrder.id);
-
-      if (paymentMethod === 'Cash on Delivery') {
-        setPlaced(true);
-        clearCart();
-        return;
+   const loadAddresses = async () => {
+      if (!user?.id) return;
+      try {
+         const res = await fetch(`${API_URL}/api/addresses/${user.id}`);
+         const data = await res.json();
+         setAddresses(data);
+         const def = data.find((a: Address) => a.isDefault) || data[0];
+         if (def) setSelectedAddressId(def.id);
+      } catch (e) {
+         console.error(e);
       }
+   };
 
-      // 2. If Online, process payment
-      const res = await fetch(`${API_URL}/api/payments/orders`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount: total, receipt: `order_${dbOrder.id}` })
-      });
-      const razOrder = await res.json();
-      
-      const options = {
-        key: razOrder.key_id,
-        amount: razOrder.amount,
-        currency: razOrder.currency,
-        name: 'Namma Orru Foods',
-        order_id: razOrder.id,
-        handler: async function (response: any) {
-          const verifyRes = await fetch(`${API_URL}/api/payments/verify`, {
-            method: 'POST', 
+   const saveAddress = async () => {
+      setIsProcessing(true);
+      try {
+         const payload = { ...newAddress, userId: user?.id, email: email || 'guest@example.com' };
+         const res = await fetch(`${API_URL}/api/addresses`, {
+            method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ ...response, ourOrderId: dbOrder.id })
-          });
-          const verifyData = await verifyRes.json();
-          if (verifyData.success) { setPlaced(true); clearCart(); }
-        },
-        prefill: { name: user?.name || 'Customer', email: email || user?.email || '' },
-        theme: { color: '#022c22' }
-      };
-      const rzp = new (window as any).Razorpay(options);
-      rzp.open();
-    } catch (error: any) {
-       console.error(error);
-       setPromoError(error.message || 'Payment processing failed');
-    } finally { setIsProcessing(false); }
-  };
+            body: JSON.stringify(payload)
+         });
+         const data = await res.json();
+         if (res.ok) {
+            setAddresses([...addresses, data]);
+            setSelectedAddressId(data.id);
+            setIsAddingAddress(false);
+            setNewAddress({ name: '', phone: '', line1: '', line2: '', city: '', state: '', pincode: '', isDefault: false, type: 'Home' });
+         }
+      } catch (e) {
+         console.error(e);
+      } finally {
+         setIsProcessing(false);
+      }
+   };
 
-  if (!mounted) return null;
+   const applyPromo = async () => {
+      if (!promoCode.trim()) return;
+      setPromoError(''); setPromoSuccess('');
+      try {
+         const res = await fetch(`${API_URL}/api/coupons/validate`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ code: promoCode, userId: user?.id, orderTotal: subtotal })
+         });
+         const data = await res.json();
+         if (!res.ok) { setPromoError(data.error); setDiscount(0); return; }
+         setDiscount(data.discount);
+         setDiscountType(data.type);
+         setPromoSuccess(data.message);
+      } catch { setPromoError('Failed to validate coupon'); }
+   };
 
-  if (placed) {
-    return (
-      <div className="flex min-h-[90vh] items-center justify-center bg-white px-6">
-        <motion.div 
-           initial={{ scale: 0.9, opacity: 0 }}
-           animate={{ scale: 1, opacity: 1 }}
-           className="text-center max-w-sm"
-        >
-          <div className="mx-auto w-24 h-24 rounded-[2rem] bg-emerald-50 flex items-center justify-center mb-8 border-2 border-emerald-100">
-            <CheckCircle className="h-12 w-12 text-emerald-600" />
-          </div>
-          <h1 className="text-4xl font-black text-[#022c22] uppercase tracking-tighter">Order Confirmed!</h1>
-          <p className="mt-4 text-slate-400 font-bold uppercase tracking-widest text-[11px]">Supporting local clusters with every bite.</p>
-          <div className="mt-8 bg-slate-50 p-6 rounded-[2rem] border border-slate-100">
-             <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest block mb-2">Tracking Ledger ID</span>
-             <p className="font-black text-emerald-950 text-2xl tracking-tighter">#ORD-{confirmedOrderId || (Math.floor(Math.random() * 90000) + 10000)}</p>
-          </div>
-          <div className="flex flex-col gap-3 mt-10">
-            <Link href="/account/orders" className="h-16 rounded-2xl bg-emerald-950 text-white font-black text-[11px] uppercase tracking-widest flex items-center justify-center hover:bg-emerald-800 transition-all shadow-xl shadow-emerald-900/20">
-              Live Logistics Tracking
-            </Link>
-            <Link href="/" className="h-16 rounded-2xl border-2 border-slate-100 text-slate-500 font-black text-[11px] uppercase tracking-widest flex items-center justify-center hover:bg-slate-50 transition-all">
-              Return to Hub
-            </Link>
-          </div>
-        </motion.div>
-      </div>
-    );
-  }
+   const [confirmedOrderId, setConfirmedOrderId] = useState<number | null>(null);
 
-  return (
-    <>
-      <Script src="https://checkout.razorpay.com/v1/checkout.js" />
-      
-      {/* 3-Step Elastic Progress Bar */}
-      <div className="fixed top-[56px] left-0 right-0 z-40 bg-white border-b border-slate-100 flex h-2">
-         <div className={`h-full bg-emerald-600 transition-all duration-500 ${step === 1 ? 'w-1/3' : step === 2 ? 'w-2/3' : 'w-full'}`} />
-      </div>
+   const handlePlaceOrder = async () => {
+      setIsProcessing(true);
+      setPromoError('');
+      try {
+         const orderRes = await fetch(`${API_URL}/api/orders`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+               userId: user?.id,
+               email: email || 'guest@example.com',
+               shippingAddressId: selectedAddressId,
+               totalAmount: total,
+               discountAmount: discount,
+               gstAmount: gst,
+               items: cart,
+               paymentMethod: paymentMethod === 'Cash on Delivery' ? 'Cash on Delivery' : 'Online'
+            })
+         });
 
-      <div className="min-h-screen bg-slate-50/50 pb-40">
-         <div className="standard-container pt-20 pb-10">
-            
-            {/* Header */}
-            <div className="flex items-center gap-6 mb-12">
-               <button 
-                  onClick={() => step > 1 ? setStep(step - 1) : window.history.back()}
-                  className="h-12 w-12 rounded-2xl bg-white border border-slate-100 flex items-center justify-center text-emerald-950 hover:bg-slate-50 transition-all"
+
+
+         const dbOrder = await orderRes.json();
+         if (!orderRes.ok) throw new Error(dbOrder.error || 'Failed to create order');
+         setConfirmedOrderId(dbOrder.id);
+
+         const commitOrderCache = () => {
+            setFinalOrderData({
+               items: [...cart],
+               subtotal, discount, delivery, gst, total,
+               address: addresses.find(a => a.id === selectedAddressId)
+            });
+         };
+
+         if (paymentMethod === 'Cash on Delivery') {
+            commitOrderCache();
+            setPlaced(true);
+            setStep(4);
+            clearCart();
+            return;
+         }
+
+         const res = await fetch(`${API_URL}/api/payments/orders`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ amount: total, receipt: `order_${dbOrder.id}` })
+         });
+         const razOrder = await res.json();
+
+         const options = {
+            key: razOrder.key_id,
+            amount: razOrder.amount,
+            currency: razOrder.currency,
+            name: 'Namma Orru Foods',
+            order_id: razOrder.id,
+            handler: async function (response: any) {
+               const verifyRes = await fetch(`${API_URL}/api/payments/verify`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ ...response, ourOrderId: dbOrder.id })
+               });
+               const verifyData = await verifyRes.json();
+               if (verifyData.success) {
+                  commitOrderCache();
+                  setPlaced(true);
+                  setStep(4);
+                  clearCart();
+               }
+            },
+            prefill: { name: user?.name || 'Customer', email: email || user?.email || '' },
+            theme: { color: '#059669' }
+         };
+         const rzp = new (window as any).Razorpay(options);
+         rzp.open();
+      } catch (error: any) {
+         setPromoError(error.message || 'Payment processing failed');
+      } finally { setIsProcessing(false); }
+   };
+
+   if (!mounted) return null;
+
+   if (placed || step === 4) {
+      return (
+         <div className="bg-[#f8f8f5] min-h-screen pt-[56px] pb-24">
+            <div className="max-w-[720px] mx-auto px-4 sm:px-6">
+
+               {/* HERO SECTION */}
+               <motion.div
+                  initial={{ scale: 0.95, opacity: 0, y: 20 }}
+                  animate={{ scale: 1, opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, ease: "easeOut" }}
+                  className="text-center flex flex-col items-center mb-10 relative"
                >
-                  <ArrowLeft size={20} />
-               </button>
-               <div>
-                  <h1 className="text-3xl font-black text-emerald-950 uppercase tracking-tighter leading-none">
-                     {step === 1 ? 'Who are you?' : step === 2 ? 'Delivery Node' : 'Final Alignment'}
-                  </h1>
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-2">Elastic Protocol Step {step} of 3</p>
-               </div>
-            </div>
+                  {/* Confetti Microinteraction Behind Icon */}
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-gradient-to-tr from-[#16a34a]/20 to-[#dcfce7]/20 rounded-full blur-3xl -z-10 animate-pulse" />
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-               
-               {/* Main Flow */}
-               <div className="lg:col-span-2">
-                  <AnimatePresence mode="wait">
-                     
-                     {/* STEP 1: IDENTITY */}
-                     {step === 1 && (
-                        <motion.div 
-                           key="step1"
-                           initial={{ x: 20, opacity: 0 }}
-                           animate={{ x: 0, opacity: 1 }}
-                           exit={{ x: -20, opacity: 0 }}
-                           className="bg-white rounded-[3rem] p-10 md:p-14 border border-slate-100 shadow-premium"
-                        >
-                           <div className="flex items-center gap-4 mb-10">
-                              <div className="h-12 w-12 rounded-2xl bg-emerald-50 flex items-center justify-center text-emerald-600"><User size={24} /></div>
-                              <h2 className="text-xl font-black text-emerald-950 uppercase tracking-tight">Identity Synchronization</h2>
+                  <div className="w-24 h-24 rounded-[2rem] bg-gradient-to-br from-[#dcfce7] to-[#bbf7d0] flex items-center justify-center mb-6 shadow-[0_12px_40px_rgba(34,197,94,0.3)] border border-white relative">
+                     <div className="absolute inset-0 rounded-[2rem] border-2 border-white opacity-50 animate-[ping_3s_ease-in-out_infinite]" />
+                     <CheckCircle className="h-10 w-10 text-[#16a34a]" />
+                  </div>
+
+                  <h1 className="text-[40px] md:text-[56px] font-black text-[#111827] tracking-tighter leading-none mb-3">Order Confirmed!</h1>
+                  <p className="text-[16px] md:text-[18px] text-[#6b7280] font-medium max-w-sm">We've received your order and are preparing your fresh harvests for dispatch.</p>
+
+                  <div className="mt-8 inline-flex flex-col items-center gap-1.5 bg-white py-3 px-8 rounded-full border border-[#e5e7eb] shadow-sm">
+                     <span className="text-[10px] font-black text-[#9ca3af] uppercase tracking-[0.3em]">Tracking ID</span>
+                     <span className="text-[24px] md:text-[32px] font-black text-[#111827] tracking-tight leading-none">
+                        #{confirmedOrderId || (Math.floor(Math.random() * 90000) + 10000)}
+                     </span>
+                  </div>
+               </motion.div>
+
+               {/* PROGRESS TRACKER */}
+               <div className="bg-white rounded-[24px] p-8 border border-[#e5e7eb] shadow-sm mb-6">
+                  <div className="flex justify-between items-center relative">
+                     <div className="absolute top-1/2 left-6 right-6 h-1 bg-[#f3f4f6] -translate-y-1/2 rounded-full -z-0" />
+                     <div className="absolute top-1/2 left-6 h-1 bg-gradient-to-r from-[#16a34a] to-[#22c55e] w-[15%] -translate-y-1/2 rounded-full z-0" />
+
+                     {['Confirmed', 'Packed', 'Shipped', 'Delivered'].map((stage, idx) => (
+                        <div key={stage} className="flex flex-col items-center gap-2 z-10">
+                           <div className={`w-8 h-8 rounded-full flex items-center justify-center border-4 border-white ${idx === 0 ? 'bg-[#16a34a] text-white shadow-[0_0_0_4px_rgba(22,163,74,0.15)]' : 'bg-[#e5e7eb] text-[#9ca3af]'}`}>
+                              {idx === 0 ? <CheckCircle size={14} /> : <div className="w-2 h-2 rounded-full bg-white" />}
                            </div>
-
-                           <div className="space-y-8">
-                              <div className="space-y-4">
-                                 <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">Email Address (For Secure Receipt)</label>
-                                 <input 
-                                    type="email" 
-                                    placeholder="yourname@example.com"
-                                    className="w-full h-18 px-8 rounded-2xl bg-slate-50 border-2 border-transparent focus:border-emerald-400 outline-none transition-all font-bold text-emerald-950"
-                                    value={email}
-                                    onChange={e => setEmail(e.target.value)}
-                                 />
-                              </div>
-
-                              <div className="bg-amber-50 p-8 rounded-[2rem] border border-amber-100 flex items-center gap-6">
-                                 <Zap className="text-amber-500 shrink-0" size={24} />
-                                 <p className="text-[11px] font-bold text-amber-900 uppercase tracking-widest leading-relaxed">
-                                    Continuing as a guest. You can sync this order to a permanent account after checkout for loyalty rewards.
-                                 </p>
-                              </div>
-
-                              <button 
-                                 onClick={() => setStep(2)}
-                                 disabled={!email.includes('@')}
-                                 className="w-full h-18 rounded-2xl bg-emerald-950 text-white font-black text-[11px] uppercase tracking-widest flex items-center justify-center gap-3 hover:bg-emerald-800 transition-all disabled:opacity-50"
-                              >
-                                 Continue to Delivery <ChevronRight size={18} className="text-amber-400" />
-                              </button>
-                              
-                              <div className="text-center pt-4">
-                                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Already a harvester? <span className="text-emerald-700 underline cursor-pointer">Login to sync</span></p>
-                              </div>
-                           </div>
-                        </motion.div>
-                     )}
-
-                     {/* STEP 2: DELIVERY */}
-                     {step === 2 && (
-                        <motion.div 
-                           key="step2"
-                           initial={{ x: 20, opacity: 0 }}
-                           animate={{ x: 0, opacity: 1 }}
-                           exit={{ x: -20, opacity: 0 }}
-                           className="bg-white rounded-[3rem] p-10 md:p-14 border border-slate-100 shadow-premium"
-                        >
-                           <div className="flex items-center gap-4 mb-10">
-                              <div className="h-12 w-12 rounded-2xl bg-emerald-50 flex items-center justify-center text-emerald-600"><MapPin size={24} /></div>
-                              <h2 className="text-xl font-black text-emerald-950 uppercase tracking-tight">Logistics Hub</h2>
-                           </div>
-
-                           <div className="space-y-6">
-                              {addresses.map(addr => (
-                                 <div 
-                                    key={addr.id}
-                                    onClick={() => setSelectedAddressId(addr.id)}
-                                    className={`p-8 rounded-[2rem] border-2 transition-all cursor-pointer relative group ${selectedAddressId === addr.id ? 'border-emerald-500 bg-emerald-50/20' : 'border-slate-50 bg-slate-50 hover:border-slate-200'}`}
-                                 >
-                                    <div className="flex items-center justify-between">
-                                       <h4 className="font-black text-emerald-950 text-lg tracking-tight">{addr.name}</h4>
-                                       <div className={`h-6 w-6 rounded-full border-2 flex items-center justify-center transition-all ${selectedAddressId === addr.id ? 'bg-emerald-600 border-emerald-600' : 'border-slate-300'}`}>
-                                          {selectedAddressId === addr.id && <CheckCircle className="text-white h-4 w-4" />}
-                                       </div>
-                                    </div>
-                                    <p className="text-slate-400 font-bold text-xs mt-2">{addr.phone}</p>
-                                    <p className="text-slate-500 font-medium text-sm mt-4 leading-relaxed">{addr.line1}, {addr.city}, {addr.state} - {addr.pincode}</p>
-                                    
-                                    {selectedAddressId === addr.id && (
-                                       <motion.div layoutId="addr-badge" className="absolute -top-3 -right-3 bg-amber-400 text-emerald-950 px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest shadow-xl">Active Node</motion.div>
-                                    )}
-                                 </div>
-                              ))}
-
-                               {isAddingAddress ? (
-                                <motion.div 
-                                   initial={{ y: 10, opacity: 0 }}
-                                   animate={{ y: 0, opacity: 1 }}
-                                   className="p-10 rounded-[2.5rem] bg-slate-50 border-2 border-emerald-100 space-y-6"
-                                >
-                                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                      <div className="space-y-2">
-                                         <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">Full Name</label>
-                                         <input 
-                                            type="text" 
-                                            className="w-full h-14 px-6 rounded-xl bg-white border border-slate-200 focus:border-emerald-400 outline-none transition-all font-bold text-sm"
-                                            value={newAddress.name}
-                                            onChange={e => setNewAddress({...newAddress, name: e.target.value})}
-                                         />
-                                      </div>
-                                      <div className="space-y-2">
-                                         <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">Phone Number</label>
-                                         <input 
-                                            type="text" 
-                                            className="w-full h-14 px-6 rounded-xl bg-white border border-slate-200 focus:border-emerald-400 outline-none transition-all font-bold text-sm"
-                                            value={newAddress.phone}
-                                            onChange={e => setNewAddress({...newAddress, phone: e.target.value})}
-                                         />
-                                      </div>
-                                   </div>
-                                   <div className="space-y-2">
-                                      <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">Street Address (Node Location)</label>
-                                      <input 
-                                         type="text" 
-                                         className="w-full h-14 px-6 rounded-xl bg-white border border-slate-200 focus:border-emerald-400 outline-none transition-all font-bold text-sm"
-                                         value={newAddress.line1}
-                                         onChange={e => setNewAddress({...newAddress, line1: e.target.value})}
-                                      />
-                                   </div>
-                                   <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
-                                      <div className="space-y-2">
-                                         <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">City</label>
-                                         <input 
-                                            type="text" 
-                                            className="w-full h-14 px-6 rounded-xl bg-white border border-slate-200 focus:border-emerald-400 outline-none transition-all font-bold text-sm"
-                                            value={newAddress.city}
-                                            onChange={e => setNewAddress({...newAddress, city: e.target.value})}
-                                         />
-                                      </div>
-                                      <div className="space-y-2">
-                                         <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">State</label>
-                                         <input 
-                                            type="text" 
-                                            className="w-full h-14 px-6 rounded-xl bg-white border border-slate-200 focus:border-emerald-400 outline-none transition-all font-bold text-sm"
-                                            value={newAddress.state}
-                                            onChange={e => setNewAddress({...newAddress, state: e.target.value})}
-                                         />
-                                      </div>
-                                      <div className="col-span-2 md:col-span-1 space-y-2">
-                                         <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">Pincode</label>
-                                         <input 
-                                            type="text" 
-                                            className="w-full h-14 px-6 rounded-xl bg-white border border-slate-200 focus:border-emerald-400 outline-none transition-all font-bold text-sm"
-                                            value={newAddress.pincode}
-                                            onChange={e => setNewAddress({...newAddress, pincode: e.target.value})}
-                                         />
-                                      </div>
-                                   </div>
-                                   <div className="flex gap-4 pt-4">
-                                      <button 
-                                         onClick={saveAddress}
-                                         disabled={isProcessing || !newAddress.name || !newAddress.phone || !newAddress.line1 || !newAddress.city}
-                                         className="flex-1 h-14 rounded-xl bg-emerald-600 text-white font-black text-[10px] uppercase tracking-widest hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-600/20"
-                                      >
-                                         Confirm Address
-                                      </button>
-                                      <button 
-                                         onClick={() => setIsAddingAddress(false)}
-                                         className="px-8 h-14 rounded-xl border-2 border-slate-200 text-slate-400 font-black text-[10px] uppercase tracking-widest hover:bg-slate-50 transition-all"
-                                      >
-                                         Cancel
-                                      </button>
-                                   </div>
-                                </motion.div>
-                              ) : (
-                                <button 
-                                   onClick={() => setIsAddingAddress(true)}
-                                   className="w-full h-18 rounded-[2rem] border-2 border-dashed border-slate-200 flex items-center justify-center gap-4 text-slate-400 hover:border-emerald-400 hover:text-emerald-700 transition-all group"
-                                >
-                                   <div className="h-10 w-10 rounded-full bg-slate-50 flex items-center justify-center group-hover:bg-emerald-50"><Plus size={20} /></div>
-                                   <span className="text-[11px] font-black uppercase tracking-widest">Map New Location</span>
-                                </button>
-                              )}
-
-                              <button 
-                                 onClick={() => setStep(3)}
-                                 disabled={!selectedAddressId}
-                                 className="w-full h-18 rounded-2xl bg-emerald-950 text-white font-black text-[11px] uppercase tracking-widest flex items-center justify-center gap-3 hover:bg-emerald-800 transition-all disabled:opacity-50 mt-10"
-                              >
-                                 Finalize & Pay <ChevronRight size={18} className="text-amber-400" />
-                              </button>
-                           </div>
-                        </motion.div>
-                     )}
-
-                     {/* STEP 3: PAYMENT */}
-                     {step === 3 && (
-                        <motion.div 
-                           key="step3"
-                           initial={{ x: 20, opacity: 0 }}
-                           animate={{ x: 0, opacity: 1 }}
-                           exit={{ x: -20, opacity: 0 }}
-                           className="bg-white rounded-[3rem] p-10 md:p-14 border border-slate-100 shadow-premium"
-                        >
-                           <div className="flex items-center gap-4 mb-10">
-                              <div className="h-12 w-12 rounded-2xl bg-emerald-50 flex items-center justify-center text-emerald-600"><CreditCard size={24} /></div>
-                              <h2 className="text-xl font-black text-emerald-950 uppercase tracking-tight">Settlement Engine</h2>
-                           </div>
-
-                           <div className="space-y-6">
-                              {['Online Payment (Razorpay)', 'Cash on Delivery'].map((method) => (
-                                 <div 
-                                    key={method}
-                                    onClick={() => setPaymentMethod(method)}
-                                    className={`p-8 rounded-[2rem] border-2 transition-all cursor-pointer flex items-center justify-between ${paymentMethod === method ? 'border-emerald-500 bg-emerald-50/20' : 'border-slate-50 bg-slate-50 hover:border-slate-200'}`}
-                                 >
-                                    <div className="flex items-center gap-6">
-                                       <div className={`h-12 w-12 rounded-2xl flex items-center justify-center ${method.includes('Razorpay') ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-500'}`}>
-                                          <CreditCard size={24} />
-                                       </div>
-                                       <div>
-                                          <p className="font-black text-emerald-950 uppercase tracking-widest text-sm">{method === 'Online Payment (Razorpay)' ? 'Digitial Gateway' : 'Base Settlement'}</p>
-                                          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">{method === 'Online Payment (Razorpay)' ? 'Secure UPI / Cards / Net' : 'Pay at harvest reach'}</p>
-                                       </div>
-                                    </div>
-                                    <div className={`h-6 w-6 rounded-full border-2 flex items-center justify-center transition-all ${paymentMethod === method ? 'bg-emerald-600 border-emerald-600' : 'border-slate-300'}`}>
-                                       {paymentMethod === method && <CheckCircle className="text-white h-4 w-4" />}
-                                    </div>
-                                 </div>
-                              ))}
-
-                              <div className="p-10 rounded-[2.5rem] bg-emerald-950 text-white space-y-8 mt-10 shadow-2xl shadow-emerald-950/40 relative overflow-hidden">
-                                 <div className="absolute top-0 right-0 h-32 w-32 bg-white/5 rounded-full translate-x-10 -translate-y-10" />
-                                 <div className="flex justify-between items-end border-b border-white/10 pb-6">
-                                    <div>
-                                       <span className="text-[10px] font-black text-emerald-300 uppercase tracking-[0.2em]">Platform Final Total</span>
-                                       <h3 className="text-5xl font-black tracking-tighter mt-2">₹{total}</h3>
-                                    </div>
-                                    <div className="text-right">
-                                       <span className="text-[10px] font-black text-emerald-300 uppercase tracking-widest">Inclusive of taxes</span>
-                                       <div className="flex items-center gap-2 justify-end mt-2 text-amber-400">
-                                          <Lock size={12} /> <span className="text-[10px] font-black uppercase">Secure 256-bit</span>
-                                       </div>
-                                    </div>
-                                 </div>
-
-                                 <button 
-                                    onClick={handlePlaceOrder}
-                                    disabled={isProcessing}
-                                    className="w-full h-20 rounded-[1.5rem] bg-white text-emerald-950 font-black text-sm uppercase tracking-[0.2em] flex items-center justify-center gap-4 hover:bg-amber-400 transition-all active:scale-95 shadow-xl shadow-white/5"
-                                 >
-                                    {isProcessing ? <><RefreshCw size={24} className="animate-spin" /> Verifying Node...</> : <><ShieldCheck size={24} /> Commit Settlement</>}
-                                 </button>
-                              </div>
-                           </div>
-                        </motion.div>
-                     )}
-                  </AnimatePresence>
+                           <span className={`text-[11px] font-bold uppercase tracking-wider hidden sm:block ${idx === 0 ? 'text-[#111827]' : 'text-[#9ca3af]'}`}>{stage}</span>
+                        </div>
+                     ))}
+                  </div>
                </div>
 
-               {/* Sidebar Summary */}
-               <div className="lg:col-span-1">
-                  <div className="bg-white rounded-[3rem] p-10 border border-slate-100 shadow-sm sticky top-24">
-                     <h3 className="text-xl font-black text-emerald-950 uppercase tracking-tight mb-8">Cart Inventory</h3>
-                     
-                     <div className="space-y-6 max-h-[40vh] overflow-y-auto no-scrollbar pr-2 mb-10">
-                        {cart.map(item => (
-                           <div key={`${item.productId}-${item.variant}`} className="flex items-center gap-4 group">
-                              <div className="h-16 w-16 rounded-2xl bg-slate-50 border border-slate-100 overflow-hidden shrink-0">
-                                 <img src={item.image} alt={item.name} className="h-full w-full object-cover group-hover:scale-110 transition-transform" />
+               {/* DELIVERY ETA BLOCK */}
+               <div className="bg-[#f0fdf4] rounded-[24px] p-6 border border-[#bbf7d0]/50 mb-6 flex items-start gap-4 shadow-sm">
+                  <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center shrink-0 shadow-sm text-[#16a34a]">
+                     <Truck size={20} />
+                  </div>
+                  <div>
+                     <h3 className="text-[14px] font-bold text-[#111827] mb-1">Expected Delivery</h3>
+                     <p className="text-[20px] font-black text-[#16a34a] tracking-tight">Today • 6:30 PM - 8:00 PM</p>
+                     {finalOrderData?.address && (
+                        <div className="mt-3 text-[13px] text-[#4b5563] font-medium flex items-start gap-2">
+                           <MapPin size={16} className="mt-0.5 text-[#9ca3af]" />
+                           <span>Delivering to <strong className="text-[#111827]">{finalOrderData.address.line1}, {finalOrderData.address.city}</strong></span>
+                        </div>
+                     )}
+                  </div>
+               </div>
+
+               {/* ORDER SUMMARY */}
+               <div className="bg-white rounded-[24px] border border-[#e5e7eb] shadow-sm mb-8 overflow-hidden">
+                  <div className="p-6 border-b border-[#f1f5f9] flex items-center justify-between">
+                     <h3 className="font-bold text-[#111827] text-lg flex items-center gap-2"><Package size={20} /> Items Ordered</h3>
+                     <span className="text-[12px] font-bold text-[#6b7280] bg-[#f8fafc] px-3 py-1 rounded-full">{finalOrderData?.items?.length || 0} Items</span>
+                  </div>
+
+                  <div className="p-6">
+                     {/* Products List */}
+                     <div className="space-y-4 mb-6">
+                        {(finalOrderData?.items || []).map((item: any) => (
+                           <div key={item.id} className="flex items-center gap-4">
+                              <div className="h-16 w-16 rounded-[14px] bg-[#f8f8f5] border border-[#f1f5f9] overflow-hidden shrink-0">
+                                 <img src={item.image} alt={item.name} className="h-full w-full object-cover" />
                               </div>
                               <div className="flex-1 min-w-0">
-                                 <p className="text-[12px] font-black text-emerald-950 uppercase tracking-tighter truncate">{item.name}</p>
-                                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">{item.variant} × {item.quantity}</p>
+                                 <h4 className="text-[14px] font-bold text-[#111827] truncate">{item.name}</h4>
+                                 <p className="text-[12px] text-[#6b7280] mt-0.5">{item.variant} × {item.quantity}</p>
                               </div>
-                              <span className="text-sm font-black text-emerald-950">₹{item.price * item.quantity}</span>
+                              <span className="text-[15px] font-black text-[#111827]">₹{item.price * item.quantity}</span>
                            </div>
                         ))}
                      </div>
 
-                     <div className="space-y-4 pt-8 border-t border-slate-100">
-                        <div className="flex justify-between text-slate-400 font-bold text-[11px] uppercase tracking-widest">
-                           <span>Base Harvest</span>
-                           <span className="text-emerald-950">₹{subtotal}</span>
-                        </div>
-                        <div className="flex justify-between text-slate-400 font-bold text-[11px] uppercase tracking-widest">
-                           <span>Platform GST</span>
-                           <span className="text-emerald-950">₹{gst}</span>
-                        </div>
-                        {discount > 0 && (
-                           <div className="flex justify-between text-emerald-600 font-bold text-[11px] uppercase tracking-widest">
-                              <span>Benefit</span>
-                              <span>-₹{discount}</span>
-                           </div>
-                        )}
-                        <div className="flex justify-between text-slate-400 font-bold text-[11px] uppercase tracking-widest">
-                           <span>Logistics</span>
-                           <span className="text-emerald-950">{delivery === 0 ? 'FREE' : `₹${delivery}`}</span>
-                        </div>
+                     <div className="h-px w-full bg-[#e5e7eb] mb-5" />
+
+                     {/* Calculations */}
+                     <div className="space-y-2.5 text-[14px]">
+                        <div className="flex justify-between text-[#6b7280] font-medium"><span>Subtotal</span><span className="text-[#111827] font-bold">₹{finalOrderData?.subtotal || 0}</span></div>
+                        <div className="flex justify-between text-[#6b7280] font-medium"><span>Shipping</span><span className="text-[#111827] font-bold">₹{finalOrderData?.delivery || 0}</span></div>
+                        {finalOrderData?.discount > 0 && <div className="flex justify-between text-[#16a34a] font-bold"><span>Discount</span><span>-₹{finalOrderData.discount}</span></div>}
+                        <div className="flex justify-between text-[#6b7280] font-medium"><span>GST (5%)</span><span className="text-[#111827] font-bold">₹{finalOrderData?.gst || 0}</span></div>
                      </div>
 
-                     <div className="mt-8">
-                        <div className="flex gap-2">
-                           <input 
-                              type="text" 
-                              placeholder="Coupon Code"
-                              className="flex-1 h-12 px-6 rounded-xl bg-slate-50 border-2 border-transparent focus:border-amber-400 outline-none font-bold text-[10px] transition-all uppercase tracking-widest"
-                              value={promoCode}
-                              onChange={e => setPromoCode(e.target.value)}
-                           />
-                           <button 
-                              onClick={applyPromo}
-                              className="h-12 px-6 rounded-xl bg-emerald-950 text-white font-black text-[10px] uppercase tracking-widest hover:bg-emerald-800 transition-all"
-                           >
-                              Apply
-                           </button>
-                        </div>
-                        {promoSuccess && <p className="text-[9px] font-black text-emerald-600 mt-2 uppercase tracking-widest">✓ {promoSuccess}</p>}
-                        {promoError && <p className="text-[9px] font-black text-red-500 mt-2 uppercase tracking-widest">{promoError}</p>}
-                     </div>
+                     <div className="h-px w-full bg-[#e5e7eb] my-5" />
 
-                     <div className="mt-10 p-6 rounded-2xl bg-slate-900 border border-slate-800 flex items-center gap-4">
-                        <ShieldCheck className="text-amber-400" size={24} />
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-relaxed">
-                           Your data is secured with AES-256 bank-grade protocol.
-                        </p>
+                     {/* Total */}
+                     <div className="flex justify-between items-end">
+                        <div>
+                           <span className="block text-[14px] font-bold text-[#111827]">Total Paid</span>
+                           <span className="text-[11px] text-[#6b7280]">via {paymentMethod}</span>
+                        </div>
+                        <span className="text-[28px] font-black text-[#111827] tracking-tighter leading-none">₹{finalOrderData?.total || 0}</span>
                      </div>
                   </div>
                </div>
+
+               {/* CTAS */}
+               <div className="flex flex-col sm:flex-row items-center gap-4 mb-14">
+                  <Link href="/account/orders" className="w-full sm:flex-1 h-[58px] rounded-[18px] bg-gradient-to-r from-[#16a34a] to-[#22c55e] text-white font-bold text-[15px] flex items-center justify-center gap-2 shadow-[0_8px_30px_rgba(34,197,94,0.3)] hover:shadow-[0_10px_40px_rgba(34,197,94,0.4)] hover:-translate-y-1 transition-all">
+                     Track Your Order
+                  </Link>
+                  <Link href="/" className="w-full sm:flex-1 h-[58px] rounded-[18px] bg-white text-[#111827] font-bold text-[15px] flex items-center justify-center gap-2 shadow-sm border border-[#e5e7eb] hover:bg-[#f9fafb] transition-all">
+                     Continue Shopping
+                  </Link>
+                  <button className="w-full sm:w-auto h-[58px] px-6 rounded-[18px] bg-[#f8fafc] text-[#4b5563] font-bold text-[14px] flex items-center justify-center gap-2 border border-[#f1f5f9] hover:bg-[#f1f5f9] transition-all">
+                     <Download size={18} /> Invoice
+                  </button>
+               </div>
+
+               {/* RECOMMENDATIONS */}
+               {recommendedProducts.length > 0 && (
+                  <div className="mb-14">
+                     <h3 className="text-[20px] font-black text-[#111827] tracking-tight mb-6">You may also like</h3>
+                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        {recommendedProducts.map((product: any) => (
+                           <ProductCard key={product.id} product={product} />
+                        ))}
+                     </div>
+                  </div>
+               )}
+
+               {/* TRUST FOOTER */}
+               <div className="border-t border-[#e5e7eb] pt-8 flex flex-wrap justify-center gap-6 text-[12px] font-bold uppercase tracking-widest text-[#6b7280]">
+                  <div className="flex items-center gap-2"><ShieldCheck size={16} /> Secure Payments</div>
+                  <div className="flex items-center gap-2"><Sparkles size={16} /> Fresh Product Guarantee</div>
+                  <div className="flex items-center gap-2"><MapPin size={16} /> Real-Time Tracking</div>
+               </div>
+
             </div>
          </div>
-         
-         {/* Thumb-First Mobile Navigation (Checkout Context) */}
-         <div className="lg:hidden fixed bottom-6 left-4 right-4 z-50">
-            <div className="bg-emerald-950 rounded-[2rem] p-5 flex items-center justify-between shadow-2xl shadow-emerald-950/40 border border-white/10">
-               <div>
-                  <span className="text-[9px] font-black text-emerald-300/60 uppercase tracking-widest block mb-1">Total Payload</span>
-                  <span className="text-2xl font-black text-white tracking-tighter">₹{total}</span>
+      );
+   }
+
+   const renderStepIndicator = () => (
+      <div className="flex items-center justify-center w-full max-w-xl mx-auto mb-8">
+         {[{ id: 1, label: 'Cart' }, { id: 2, label: 'Delivery' }, { id: 3, label: 'Payment' }, { id: 4, label: 'Complete' }].map((s, i) => (
+            <div key={s.id} className="flex items-center">
+               <div className="flex flex-col items-center">
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center font-black text-[12px] z-10 transition-all ${step >= s.id ? 'bg-[#16a34a] text-white shadow-[0_0_0_4px_rgba(22,163,74,0.15)]' : 'bg-white border-2 border-[#e5e7eb] text-[#9ca3af]'
+                     }`}>
+                     {step > s.id ? <CheckCircle size={14} /> : s.id}
+                  </div>
+                  <span className={`absolute mt-12 text-[10px] font-bold uppercase tracking-wider ${step >= s.id ? 'text-[#111827]' : 'text-[#9ca3af]'}`}>
+                     {s.label}
+                  </span>
                </div>
-               <button 
-                  onClick={() => {
-                     if (step === 3) handlePlaceOrder();
-                     else setStep(step + 1);
-                  }}
-                  disabled={isProcessing || (step === 2 && !selectedAddressId) || (step === 1 && !email.includes('@'))}
-                  className="h-14 px-8 bg-amber-400 text-emerald-950 rounded-2xl font-black text-[11px] uppercase tracking-widest flex items-center gap-3 active:scale-95 transition-all shadow-xl shadow-amber-400/20"
+               {i < 3 && (
+                  <div className={`w-12 sm:w-24 h-1 mx-2 rounded-full transition-all ${step > s.id ? 'bg-[#16a34a]' : 'bg-[#e5e7eb]'}`} />
+               )}
+            </div>
+         ))}
+      </div>
+   );
+
+   return (
+      <>
+         <Script src="https://checkout.razorpay.com/v1/checkout.js" />
+         <div className="min-h-screen bg-[#f8f8f5] pt-6 md:pt-10 pb-40">
+            <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
+
+               {/* Minimal Header */}
+               <div className="text-center mb-10">
+                  <h1 className="text-[32px] md:text-[42px] font-black text-[#111827] tracking-tight mb-8">Secure Checkout</h1>
+                  {renderStepIndicator()}
+               </div>
+
+               <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 mt-12">
+
+                  {/* LEFT SIDE: FLOW (65%) */}
+                  <div className="lg:col-span-7 flex flex-col gap-8">
+                     <AnimatePresence mode="wait">
+
+                        {/* STEP 2: DELIVERY */}
+                        {step === 2 && (
+                           <motion.div key="step2" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-8">
+
+                              {/* Authentication Trap for Guests */}
+                              {!user && (
+                                 <div className="bg-white rounded-[24px] p-6 border border-[#e5e7eb] shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
+                                    <div>
+                                       <h3 className="font-bold text-[#111827]">Checking out as Guest</h3>
+                                       <p className="text-[12px] text-[#6b7280]">We'll send order updates to this email.</p>
+                                    </div>
+                                    <input
+                                       type="email"
+                                       placeholder="Enter email address"
+                                       className="h-[48px] px-4 w-full sm:w-64 rounded-xl bg-[#f9fafb] border border-[#e5e7eb] focus:border-[#16a34a] focus:ring-4 focus:ring-[#16a34a]/10 outline-none transition-all text-sm font-semibold text-[#111827]"
+                                       value={email}
+                                       onChange={e => setEmail(e.target.value)}
+                                    />
+                                 </div>
+                              )}
+
+                              <div className="flex items-center justify-between">
+                                 <h2 className="text-[24px] font-black text-[#111827] tracking-tight">Delivery Address</h2>
+                              </div>
+
+                              {/* SAVED ADDRESSES GRID */}
+                              {addresses.length > 0 && !isAddingAddress && (
+                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    {addresses.map(addr => (
+                                       <div
+                                          key={addr.id}
+                                          onClick={() => setSelectedAddressId(addr.id)}
+                                          className={`p-5 rounded-[20px] border-2 transition-all cursor-pointer relative ${selectedAddressId === addr.id ? 'border-[#16a34a] bg-[#f0fdf4]' : 'border-[#e5e7eb] bg-white hover:border-[#16a34a]/50'}`}
+                                       >
+                                          <div className="flex items-center justify-between mb-2">
+                                             <div className="flex items-center gap-2">
+                                                {addr.type === 'Home' ? <Home size={14} className="text-[#6b7280]" /> : <Briefcase size={14} className="text-[#6b7280]" />}
+                                                <h4 className="font-bold text-[#111827] text-sm">{addr.type || 'Home'}</h4>
+                                             </div>
+                                             <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${selectedAddressId === addr.id ? 'border-[#16a34a] bg-[#16a34a]' : 'border-[#d1d5db]'}`}>
+                                                {selectedAddressId === addr.id && <CheckCircle size={12} className="text-white" />}
+                                             </div>
+                                          </div>
+                                          <p className="font-bold text-[#111827] text-sm mb-1">{addr.name} • {addr.phone}</p>
+                                          <p className="text-[#6b7280] text-[13px] leading-relaxed line-clamp-2">{addr.line1}, {addr.city}</p>
+                                       </div>
+                                    ))}
+                                 </div>
+                              )}
+
+                              {/* ADD NEW ADDRESS FORM */}
+                              {(isAddingAddress || addresses.length === 0) ? (
+                                 <div className="bg-white rounded-[24px] p-6 border border-[#e5e7eb] shadow-sm space-y-5">
+                                    <h3 className="font-bold text-[#111827] text-lg mb-4">Add New Location</h3>
+
+                                    <div className="flex gap-3 mb-2">
+                                       {['Home', 'Office', 'Other'].map(t => (
+                                          <button
+                                             key={t} onClick={() => setNewAddress({ ...newAddress, type: t })}
+                                             className={`px-4 py-2 rounded-full text-[12px] font-bold border transition-all ${newAddress.type === t ? 'border-[#16a34a] bg-[#f0fdf4] text-[#16a34a]' : 'border-[#e5e7eb] bg-white text-[#6b7280]'}`}
+                                          >{t}</button>
+                                       ))}
+                                    </div>
+
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                                       <input
+                                          placeholder="Full Name" type="text"
+                                          className="h-[56px] px-5 rounded-[18px] bg-white border border-[#e5e7eb] focus:border-[#16a34a] focus:ring-4 focus:ring-[#16a34a]/10 outline-none transition-all text-[15px] font-semibold text-[#111827]"
+                                          value={newAddress.name} onChange={e => setNewAddress({ ...newAddress, name: e.target.value })}
+                                       />
+                                       <input
+                                          placeholder="Phone Number" type="text"
+                                          className="h-[56px] px-5 rounded-[18px] bg-white border border-[#e5e7eb] focus:border-[#16a34a] focus:ring-4 focus:ring-[#16a34a]/10 outline-none transition-all text-[15px] font-semibold text-[#111827]"
+                                          value={newAddress.phone} onChange={e => setNewAddress({ ...newAddress, phone: e.target.value })}
+                                       />
+                                    </div>
+                                    <input
+                                       placeholder="Street Address / Building" type="text"
+                                       className="w-full h-[56px] px-5 rounded-[18px] bg-white border border-[#e5e7eb] focus:border-[#16a34a] focus:ring-4 focus:ring-[#16a34a]/10 outline-none transition-all text-[15px] font-semibold text-[#111827]"
+                                       value={newAddress.line1} onChange={e => setNewAddress({ ...newAddress, line1: e.target.value })}
+                                    />
+                                    <div className="grid grid-cols-2 gap-5">
+                                       <input
+                                          placeholder="City" type="text"
+                                          className="h-[56px] px-5 rounded-[18px] bg-white border border-[#e5e7eb] focus:border-[#16a34a] focus:ring-4 focus:ring-[#16a34a]/10 outline-none transition-all text-[15px] font-semibold text-[#111827]"
+                                          value={newAddress.city} onChange={e => setNewAddress({ ...newAddress, city: e.target.value })}
+                                       />
+                                       <input
+                                          placeholder="Pincode" type="text"
+                                          className="h-[56px] px-5 rounded-[18px] bg-white border border-[#e5e7eb] focus:border-[#16a34a] focus:ring-4 focus:ring-[#16a34a]/10 outline-none transition-all text-[15px] font-semibold text-[#111827]"
+                                          value={newAddress.pincode} onChange={e => setNewAddress({ ...newAddress, pincode: e.target.value })}
+                                       />
+                                    </div>
+
+                                    <div className="flex gap-4 pt-2">
+                                       <button
+                                          onClick={saveAddress} disabled={isProcessing || !newAddress.name || !newAddress.line1 || !newAddress.phone}
+                                          className="h-[56px] px-8 rounded-[18px] bg-gradient-to-r from-[#059669] to-[#16a34a] text-white font-bold text-sm shadow-[0_4px_14px_rgba(22,163,74,0.3)] hover:shadow-[0_6px_20px_rgba(22,163,74,0.4)] hover:-translate-y-0.5 transition-all disabled:opacity-50"
+                                       >Save Address</button>
+                                       {addresses.length > 0 && (
+                                          <button onClick={() => setIsAddingAddress(false)} className="h-[56px] px-6 rounded-[18px] font-bold text-sm text-[#6b7280] hover:bg-[#f3f4f6] transition-all">Cancel</button>
+                                       )}
+                                    </div>
+                                 </div>
+                              ) : (
+                                 <button
+                                    onClick={() => setIsAddingAddress(true)}
+                                    className="h-[56px] w-full rounded-[18px] border-2 border-dashed border-[#d1d5db] flex items-center justify-center gap-2 text-[#6b7280] font-bold text-sm hover:border-[#16a34a] hover:text-[#16a34a] hover:bg-[#f0fdf4] transition-all"
+                                 >
+                                    <Plus size={18} /> Add New Address
+                                 </button>
+                              )}
+
+                              {/* DELIVERY SLOTS */}
+                              <div className="pt-6">
+                                 <h3 className="font-bold text-[#111827] text-lg mb-4">Preferred Delivery Slot</h3>
+                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                    {['Express', 'Morning', 'Afternoon', 'Evening'].map(slot => (
+                                       <button
+                                          key={slot}
+                                          onClick={() => setDeliverySlot(slot)}
+                                          className={`h-12 rounded-[14px] border font-bold text-[13px] transition-all ${deliverySlot === slot ? 'border-[#16a34a] bg-[#f0fdf4] text-[#16a34a]' : 'border-[#e5e7eb] bg-white text-[#6b7280] hover:border-[#d1d5db]'}`}
+                                       >
+                                          {slot} {slot === 'Express' && '⚡'}
+                                       </button>
+                                    ))}
+                                 </div>
+                              </div>
+
+                              <div className="pt-6">
+                                 <button
+                                    onClick={() => setStep(3)}
+                                    disabled={!selectedAddressId || (!user && !email)}
+                                    className="w-full h-[60px] rounded-[18px] bg-gradient-to-r from-[#059669] to-[#16a34a] text-white font-bold text-lg flex items-center justify-center gap-3 shadow-[0_8px_30px_rgba(22,163,74,0.3)] hover:shadow-[0_10px_40px_rgba(22,163,74,0.4)] hover:-translate-y-1 transition-all disabled:opacity-50 disabled:hover:translate-y-0"
+                                 >
+                                    Continue to Payment <ChevronRight size={20} />
+                                 </button>
+                              </div>
+                           </motion.div>
+                        )}
+
+                        {/* STEP 3: PAYMENT */}
+                        {step === 3 && (
+                           <motion.div key="step3" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-8">
+                              <div className="flex items-center justify-between">
+                                 <h2 className="text-[24px] font-black text-[#111827] tracking-tight">Payment Method</h2>
+                                 <button onClick={() => setStep(2)} className="text-sm font-bold text-[#16a34a] hover:underline">Edit Delivery</button>
+                              </div>
+
+                              <div className="space-y-4">
+                                 {['Online', 'Cash on Delivery'].map((method) => (
+                                    <div
+                                       key={method}
+                                       onClick={() => setPaymentMethod(method)}
+                                       className={`p-6 rounded-[20px] border-2 transition-all cursor-pointer flex items-center justify-between ${paymentMethod === method ? 'border-[#16a34a] bg-[#f0fdf4]' : 'border-[#e5e7eb] bg-white hover:border-[#16a34a]/30'}`}
+                                    >
+                                       <div className="flex items-center gap-4">
+                                          <div className={`w-12 h-12 rounded-full flex items-center justify-center ${method === 'Online' ? 'bg-[#dcfce7] text-[#16a34a]' : 'bg-[#f3f4f6] text-[#6b7280]'}`}>
+                                             <CreditCard size={20} />
+                                          </div>
+                                          <div>
+                                             <h4 className="font-bold text-[#111827] text-[15px]">{method === 'Online' ? 'Pay Online (Cards/UPI/NetBanking)' : 'Pay on Delivery'}</h4>
+                                             <p className="text-[12px] text-[#6b7280] font-medium">{method === 'Online' ? 'Instant & secure digital settlement' : 'Pay via cash or UPI at your doorstep'}</p>
+                                          </div>
+                                       </div>
+                                       <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${paymentMethod === method ? 'border-[#16a34a] bg-[#16a34a]' : 'border-[#d1d5db]'}`}>
+                                          {paymentMethod === method && <CheckCircle size={14} className="text-white" />}
+                                       </div>
+                                    </div>
+                                 ))}
+                              </div>
+
+                              <button
+                                 onClick={handlePlaceOrder}
+                                 disabled={isProcessing}
+                                 className="w-full h-[60px] rounded-[18px] bg-gradient-to-r from-[#059669] to-[#16a34a] text-white font-bold text-lg flex items-center justify-center gap-3 shadow-[0_8px_30px_rgba(22,163,74,0.3)] hover:shadow-[0_10px_40px_rgba(22,163,74,0.4)] hover:-translate-y-1 transition-all disabled:opacity-50"
+                              >
+                                 {isProcessing ? <><RefreshCw size={20} className="animate-spin" /> Processing...</> : <><Lock size={18} /> Pay ₹{total}</>}
+                              </button>
+                           </motion.div>
+                        )}
+                     </AnimatePresence>
+                  </div>
+
+                  {/* RIGHT SIDE: SUMMARY (35%) */}
+                  <div className="lg:col-span-5">
+                     <div className="bg-white rounded-[24px] border border-[#e5e7eb] shadow-[0_4px_24px_rgba(0,0,0,0.04)] lg:sticky lg:top-24 overflow-hidden">
+
+                        <div className="p-6 bg-[#fcfdfb] border-b border-[#f1f5f9]">
+                           <h3 className="font-bold text-[#111827] text-lg">Order Summary</h3>
+                        </div>
+
+                        <div className="p-6">
+                           {/* PRODUCT PREVIEWS */}
+                           <div className="space-y-4 max-h-[30vh] overflow-y-auto no-scrollbar mb-6 pr-2">
+                              {cart.map(item => (
+                                 <div key={`${item.productId}-${item.variant}`} className="flex items-center gap-4">
+                                    <div className="h-[72px] w-[72px] rounded-[14px] bg-[#f8f8f5] border border-[#f1f5f9] overflow-hidden shrink-0 relative">
+                                       <img src={item.image} alt={item.name} className="h-full w-full object-cover" />
+                                       <span className="absolute top-1 right-1 bg-white/90 backdrop-blur text-[#111827] text-[10px] font-black w-5 h-5 flex items-center justify-center rounded-full shadow-sm">{item.quantity}</span>
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                       <h4 className="text-[14px] font-bold text-[#111827] truncate">{item.name}</h4>
+                                       <p className="text-[12px] text-[#6b7280] mt-0.5">{item.variant}</p>
+                                    </div>
+                                    <span className="text-[15px] font-black text-[#111827]">₹{item.price * item.quantity}</span>
+                                 </div>
+                              ))}
+                           </div>
+
+                           {/* ESTIMATED ETA */}
+                           <div className="bg-[#f0fdf4] rounded-[14px] p-4 flex items-start gap-3 mb-6 border border-[#bbf7d0]/50">
+                              <Truck className="text-[#16a34a] shrink-0" size={20} />
+                              <div>
+                                 <p className="text-[12px] font-bold text-[#111827]">Estimated Delivery</p>
+                                 <p className="text-[14px] font-black text-[#16a34a] mt-0.5">Today by 7:30 PM</p>
+                              </div>
+                           </div>
+
+                           {/* CALCULATION BLOCKS */}
+                           <div className="space-y-3 pt-2 text-[14px]">
+                              <div className="flex justify-between text-[#6b7280] font-medium">
+                                 <span>Subtotal</span>
+                                 <span className="text-[#111827] font-bold">₹{subtotal}</span>
+                              </div>
+                              <div className="flex justify-between text-[#6b7280] font-medium">
+                                 <span>GST (5%)</span>
+                                 <span className="text-[#111827] font-bold">₹{gst}</span>
+                              </div>
+                              {discount > 0 && (
+                                 <div className="flex justify-between text-[#16a34a] font-bold">
+                                    <span>Coupon Savings</span>
+                                    <span>-₹{discount}</span>
+                                 </div>
+                              )}
+                              <div className="flex justify-between text-[#6b7280] font-medium">
+                                 <span>Delivery Fee</span>
+                                 <span className={delivery === 0 ? 'text-[#16a34a] font-bold' : 'text-[#111827] font-bold'}>
+                                    {delivery === 0 ? 'FREE' : `₹${delivery}`}
+                                 </span>
+                              </div>
+                           </div>
+
+                           <div className="h-px w-full bg-[#e5e7eb] my-5" />
+
+                           {/* FINAL TOTAL */}
+                           <div className="flex justify-between items-end mb-6">
+                              <div>
+                                 <span className="block text-[14px] font-bold text-[#111827]">Total to Pay</span>
+                                 <span className="text-[11px] text-[#6b7280]">Inclusive of all taxes</span>
+                              </div>
+                              <span className="text-[32px] font-black text-[#111827] tracking-tighter leading-none">₹{total}</span>
+                           </div>
+
+                           {/* SECURITY BLOCK */}
+                           <div className="bg-[#f8fafc] rounded-[16px] p-4 flex items-center gap-3 border border-[#f1f5f9]">
+                              <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-sm shrink-0 text-[#64748b]">
+                                 <ShieldCheck size={20} />
+                              </div>
+                              <div className="flex-1">
+                                 <p className="text-[11px] font-bold text-[#334155] uppercase tracking-wider">Bank-Grade Security</p>
+                                 <p className="text-[11px] text-[#64748b]">100% secure encrypted payment</p>
+                              </div>
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+
+               </div>
+            </div>
+
+            {/* MOBILE STICKY CTA */}
+            <div className="lg:hidden fixed bottom-0 left-0 w-full bg-white border-t border-[#e5e7eb] z-50 px-4 py-4 shadow-[0_-10px_40px_rgba(0,0,0,0.08)]">
+               <div className="flex items-center justify-between mb-3">
+                  <div>
+                     <p className="text-[12px] font-bold text-[#6b7280]">Total Due</p>
+                     <p className="text-[20px] font-black text-[#111827] leading-none mt-1">₹{total}</p>
+                  </div>
+                  <button onClick={() => setIsMobileSummaryOpen(!isMobileSummaryOpen)} className="text-[12px] font-bold text-[#16a34a] flex items-center gap-1">
+                     View Details {isMobileSummaryOpen ? <ChevronDown size={14} /> : <ChevronUp size={14} />}
+                  </button>
+               </div>
+
+               <AnimatePresence>
+                  {isMobileSummaryOpen && (
+                     <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
+                        <div className="pb-4 space-y-2 text-[13px] border-b border-[#e5e7eb] mb-4">
+                           <div className="flex justify-between text-[#6b7280]"><span>Subtotal</span><span className="font-bold text-[#111827]">₹{subtotal}</span></div>
+                           <div className="flex justify-between text-[#6b7280]"><span>Delivery</span><span className="font-bold text-[#111827]">{delivery === 0 ? 'FREE' : `₹${delivery}`}</span></div>
+                           <div className="flex justify-between text-[#6b7280]"><span>Taxes</span><span className="font-bold text-[#111827]">₹{gst}</span></div>
+                        </div>
+                     </motion.div>
+                  )}
+               </AnimatePresence>
+
+               <button
+                  onClick={() => { if (step === 3) handlePlaceOrder(); else setStep(step + 1); }}
+                  disabled={isProcessing || (step === 2 && !selectedAddressId)}
+                  className="w-full h-[54px] rounded-[16px] bg-gradient-to-r from-[#059669] to-[#16a34a] text-white font-bold text-[15px] flex items-center justify-center gap-2 shadow-lg active:scale-95 transition-all disabled:opacity-50"
                >
-                  {isProcessing ? 'Verifying...' : step === 3 ? 'Place Order' : 'Next Step'} <ChevronRight size={18} />
+                  {isProcessing ? 'Processing...' : step === 3 ? `Pay ₹${total}` : 'Continue to Payment'} <ChevronRight size={18} />
                </button>
             </div>
+
          </div>
-      </div>
-    </>
-  );
+      </>
+   );
 }

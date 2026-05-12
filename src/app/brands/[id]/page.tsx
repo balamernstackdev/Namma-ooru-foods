@@ -2,10 +2,30 @@ import React from 'react';
 import BrandDetailLoader from './BrandDetailLoader';
 import { BRANDS } from '@/lib/staticData';
 import { API_URL } from '@/lib/api';
-
 import { Metadata } from 'next';
 
-export const dynamicParams = false;
+export const dynamicParams = true;
+
+export async function generateStaticParams() {
+  try {
+    const res = await fetch(`${API_URL}/api/brands`);
+    if (!res.ok) throw new Error('API fetch failed');
+    const data = await res.json();
+    const brandsList = Array.isArray(data) ? data : (data && Array.isArray(data.brands) ? data.brands : []);
+    
+    if (brandsList.length > 0) {
+      return brandsList.map((brand: any) => ({
+        id: brand.id.toString(),
+      }));
+    }
+    throw new Error('Empty brands list');
+  } catch (error) {
+    console.warn('Falling back to static BRANDS for generateStaticParams');
+    return BRANDS.map((brand) => ({
+      id: brand.id.toString(),
+    }));
+  }
+}
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id } = await params;
@@ -26,18 +46,6 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
     };
   } catch (e) {
     return { title: 'Our Farmers' };
-  }
-}
-
-export async function generateStaticParams() {
-  try {
-    const res = await fetch(`${API_URL}/api/brands`);
-    const brands = await res.json();
-    return Array.isArray(brands) ? brands.map((b: any) => ({ id: b.id.toString() })) : [];
-  } catch (error) {
-    return BRANDS.map((b) => ({
-      id: b.id.toString(),
-    }));
   }
 }
 

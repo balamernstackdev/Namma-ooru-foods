@@ -11,18 +11,18 @@ import useSWR from 'swr';
 const fetcher = (url: string) => fetch(url).then(res => res.json());
 
 const CategoriesPage = () => {
-  const { data: categoriesList, error } = useSWR(`${API_URL}/api/categories`, fetcher);
-  
   // Pagination State
   const [currentPage, setCurrentPage] = React.useState(1);
   const itemsPerPage = 12;
 
-  const categories = categoriesList || [];
-  const totalPages = Math.ceil(categories.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedCategories = categories.slice(startIndex, startIndex + itemsPerPage);
+  // Fetch with dynamic query arguments
+  const { data: responseData, error } = useSWR(`${API_URL}/api/categories?page=${currentPage}&limit=${itemsPerPage}`, fetcher);
 
-  if (!categoriesList && !error) {
+  const categories = responseData?.categories || [];
+  const totalPages = responseData?.totalPages || 1;
+  const paginatedCategories = Array.isArray(categories) ? categories : [];
+
+  if (!responseData && !error) {
     return (
       <div className="w-full h-screen flex items-center justify-center bg-white">
         <div className="flex flex-col items-center gap-4">

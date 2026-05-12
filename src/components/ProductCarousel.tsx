@@ -73,16 +73,16 @@ export default function ProductCarousel({
   if (products.length === 0) return null;
 
   return (
-    <section className={`py-4 ${bgClass} flex justify-center`}>
+    <section className={`py-4 md:py-8 ${bgClass} flex justify-center`}>
       <div className="standard-container w-full">
         {/* Header */}
         <div className="flex items-end justify-between mb-3 px-1">
           <div>
-            <span className="text-[10px] font-black uppercase tracking-[0.4em] text-primary mb-1 inline-block">
+            <span className="text-[10px] font-black uppercase tracking-[0.4em] text-amber-500 mb-4 inline-block">
               {subtitle}
             </span>
             <h2
-              className="text-slate-900 font-black tracking-tight text-2xl md:text-3xl leading-tight"
+              className="text-slate-900 font-black tracking-tight text-2xl md:text-3xl leading-tight uppercase"
               dangerouslySetInnerHTML={{ __html: title }}
             />
           </div>
@@ -91,7 +91,7 @@ export default function ProductCarousel({
             <button
               onClick={scrollLeft}
               aria-label="Previous products"
-              className="h-11 w-11 rounded-full flex items-center justify-center border border-slate-200 transition-all shadow-sm active:scale-95 hover:scale-105"
+              className="hidden md:flex h-11 w-11 rounded-full items-center justify-center border border-slate-200 transition-all shadow-sm active:scale-95 hover:scale-105"
               style={{ backgroundColor: '#f1f5f9', color: '#334155' }}
             >
               <ChevronLeft size={20} strokeWidth={2.5} />
@@ -100,7 +100,7 @@ export default function ProductCarousel({
             <button
               onClick={scrollRight}
               aria-label="Next products"
-              className="h-11 w-11 rounded-full flex items-center justify-center transition-all shadow-md active:scale-95 hover:scale-105"
+              className="hidden md:flex h-11 w-11 rounded-full items-center justify-center transition-all shadow-md active:scale-95 hover:scale-105"
               style={{ backgroundColor: '#065f46', color: '#ffffff' }}
             >
               <ChevronRight size={20} strokeWidth={2.5} />
@@ -121,13 +121,13 @@ export default function ProductCarousel({
             ref={scrollRef}
             onMouseEnter={() => setIsPaused(true)}
             onMouseLeave={() => setIsPaused(false)}
-            className="flex gap-4 md:gap-8 overflow-x-auto scroll-smooth pb-10 pt-4 snap-x snap-mandatory no-scrollbar"
+            className="flex gap-3 md:gap-8 overflow-x-auto scroll-smooth pb-10 pt-4 snap-x snap-mandatory no-scrollbar"
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           >
             {products.map((product: any) => (
               <div
                 key={product.id}
-                className="shrink-0 w-[240px] md:w-[320px] snap-start"
+                className="shrink-0 w-[165px] md:w-[320px] snap-start h-full"
               >
                 <ProductCard product={product} />
               </div>
@@ -136,8 +136,8 @@ export default function ProductCarousel({
         </div>
 
         {/* Mobile view-all */}
-        <div className="md:hidden flex justify-center mt-4">
-          <Link href={viewAllHref} className="text-[10px] font-black uppercase tracking-widest text-primary hover:text-accent transition-colors">
+        <div className="md:hidden flex justify-center mt-0">
+          <Link href={viewAllHref} className="text-[10px] font-black uppercase tracking-widest text-primary hover:text-accent transition-colors border-b border-primary/20 pb-1">
             View All Products →
           </Link>
         </div>

@@ -39,6 +39,18 @@ export default function AdminNewsletterPage() {
     link.click();
   };
 
+  const handleDelete = async (id: number) => {
+    if (!confirm('Remove this email from the subscriber list?')) return;
+    try {
+      const res = await fetch(`${API_URL}/api/newsletter/admin/subscribers/${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        setSubscribers(prev => prev.filter(s => s.id !== id));
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   const filtered = subscribers.filter(s => s.email.toLowerCase().includes(searchTerm.toLowerCase()));
 
   return (
@@ -105,7 +117,10 @@ export default function AdminNewsletterPage() {
                     </div>
                   </td>
                   <td className="px-8 py-5 text-right">
-                    <button className="h-9 w-9 inline-flex items-center justify-center rounded-xl border border-slate-100 text-red-300 hover:bg-red-500 hover:text-white transition-all">
+                    <button 
+                      onClick={() => handleDelete(sub.id)}
+                      className="h-9 w-9 inline-flex items-center justify-center rounded-xl border border-slate-100 text-red-300 hover:bg-red-500 hover:text-white transition-all"
+                    >
                       <Trash2 size={15} />
                     </button>
                   </td>

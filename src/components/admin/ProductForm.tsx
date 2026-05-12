@@ -93,6 +93,7 @@ export default function ProductForm({ initialData, mode }: ProductFormProps) {
    const [formData, setFormData] = useState({
       name: initialData?.name || '',
       categoryId: initialData?.categoryId?.toString() || '',
+      subcategoryId: initialData?.subcategoryId?.toString() || '',
       description: initialData?.description || '',
       image: initialData?.image || '',
       images: initialData?.images?.map((img: any) => img.url) || [],
@@ -111,6 +112,8 @@ export default function ProductForm({ initialData, mode }: ProductFormProps) {
    });
 
    const { data: categories } = useSWR(`${API_URL}/api/categories`, fetcher);
+   const { data: subcategoriesRes } = useSWR(formData.categoryId ? `${API_URL}/api/subcategories?categoryId=${formData.categoryId}` : null, fetcher);
+   const subcategories = subcategoriesRes?.subcategories || [];
 
    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
@@ -184,7 +187,7 @@ export default function ProductForm({ initialData, mode }: ProductFormProps) {
          const res = await fetch(url, {
             method: mode === 'edit' ? 'PUT' : 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ ...formData, categoryId: parseInt(formData.categoryId), variants: [] })
+            body: JSON.stringify({ ...formData, categoryId: parseInt(formData.categoryId), subcategoryId: formData.subcategoryId ? parseInt(formData.subcategoryId) : null, variants: [] })
          });
 
          if (res.ok) {
@@ -322,15 +325,27 @@ export default function ProductForm({ initialData, mode }: ProductFormProps) {
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                      <InputWrapper label="Primary Category">
-                        <select required className="w-full h-14 px-6 rounded-xl border border-slate-200 focus:border-blue-500 outline-none font-bold text-sm appearance-none bg-white" value={formData.categoryId} onChange={e => setFormData({ ...formData, categoryId: e.target.value })} >
+                        <select required className="w-full h-14 px-6 rounded-xl border border-slate-200 focus:border-blue-500 outline-none font-bold text-sm appearance-none bg-white" value={formData.categoryId} onChange={e => setFormData({ ...formData, categoryId: e.target.value, subcategoryId: '' })} >
                            <option value="">Select Category</option>
-                           {categories?.map((cat: any) => (
+                           {(Array.isArray(categories) ? categories : (categories as any)?.categories || [])?.filter((c: any) => !c.parentId).map((cat: any) => (
                               <option key={cat.id} value={cat.id}>
-                                 {cat.parent ? `${cat.parent.name} > ${cat.name}` : cat.name}
+                                 {cat.name}
                               </option>
                            ))}
                         </select>
                      </InputWrapper>
+                     <InputWrapper label="Subcategory (Optional)">
+                        <select className="w-full h-14 px-6 rounded-xl border border-slate-200 focus:border-blue-500 outline-none font-bold text-sm appearance-none bg-white disabled:opacity-50" value={formData.subcategoryId} onChange={e => setFormData({ ...formData, subcategoryId: e.target.value })} disabled={!formData.categoryId}>
+                           <option value="">Select Subcategory</option>
+                           {subcategories.map((cat: any) => (
+                              <option key={cat.id} value={cat.id}>
+                                 {cat.name}
+                              </option>
+                           ))}
+                        </select>
+                     </InputWrapper>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                      <div className="flex gap-4">
                         <InputWrapper label="Selling Price (INR)"><input type="number" required className="w-full h-14 px-6 rounded-xl border border-slate-200 focus:border-blue-500 outline-none font-black text-blue-600 text-base" value={formData.price} onChange={e => setFormData({ ...formData, price: e.target.value })} /></InputWrapper>
                         <InputWrapper label="MRP"><input type="number" className="w-full h-14 px-6 rounded-xl border border-slate-200 focus:border-blue-500 outline-none font-black text-slate-300 text-base" value={formData.originalPrice} onChange={e => setFormData({ ...formData, originalPrice: e.target.value })} /></InputWrapper>

@@ -13,6 +13,7 @@ const fetcher = (url: string) => fetch(url).then(res => res.json());
 const ShopByVideo = () => {
   const { data: videos, error, isLoading } = useSWR(`${API_URL}/api/videos/active`, fetcher);
   const [activeVideo, setActiveVideo] = useState<any>(null);
+  const [hoveredId, setHoveredId] = useState<number | null>(null);
   const [videoError, setVideoError] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isMuted, setIsMuted] = useState(true);
@@ -42,7 +43,6 @@ const ShopByVideo = () => {
     }
   };
 
-  // Reset states when closing
   const closeVideo = () => {
     setActiveVideo(null);
     setVideoError(false);
@@ -51,104 +51,103 @@ const ShopByVideo = () => {
     setProgress(0);
   };
 
-  // Fallback to empty if loading or error so we don't break the UI
   const displayVideos = Array.isArray(videos) ? videos : [];
 
-  if (isLoading || (!displayVideos.length && !error)) {
-    return null; // Don't show anything while loading to prevent layout shift
-  }
+  if (isLoading || (!displayVideos.length && !error)) return null;
 
   return (
-    <section className={`w-full relative overflow-hidden py-2 md:py-6 bg-slate-50 ${activeVideo ? 'z-[9999]' : 'z-10'}`}>
-      {/* Background Decorative Elements */}
-      <div className="absolute top-0 left-0 w-full h-full pointer-events-none opacity-40 overflow-hidden">
-        <div className="absolute -top-24 -left-24 w-96 h-96 bg-emerald-100 rounded-full blur-3xl" />
-        <div className="absolute top-1/2 -right-24 w-64 h-64 bg-amber-100 rounded-full blur-3xl" />
-      </div>
-
+    <section className={`w-full relative overflow-hidden py-4 md:py-8 bg-white ${activeVideo ? 'z-[9999]' : 'z-10'}`}>
       <div className="standard-container relative z-10">
-        <div className="flex flex-col items-center text-center mb-3 md:mb-8">
-          <span className="text-[10px] font-black uppercase tracking-[0.5em] text-emerald-600 mb-4 inline-block">Visual Commerce</span>
-          <h2 className="text-4xl md:text-6xl font-black text-slate-900 tracking-tight mb-6">
-            Shop by <span className="text-emerald-600 italic">Video</span>
-          </h2>
-          <div className="w-24 h-1.5 bg-amber-400 rounded-full" />
+        {/* Header - Standardized Category Style */}
+        <div className="flex flex-col mb-6 md:mb-10">
+          <span className="text-[10px] md:text-xs font-black uppercase tracking-[0.4em] text-amber-500 mb-5">Visual Commerce</span>
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+            <h2 className="text-3xl md:text-5xl font-black text-emerald-950 tracking-tighter uppercase leading-[1.2]">
+              Shop by <span className="text-amber-500 italic lowercase font-serif font-normal">video</span>
+            </h2>
+            <Link 
+              href="/videos" 
+              className="group flex items-center gap-3 text-[10px] font-black uppercase tracking-widest text-emerald-950 hover:text-amber-500 transition-colors"
+            >
+              Explore all stories <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+            </Link>
+          </div>
         </div>
 
-        <div className="flex gap-6 md:gap-10 overflow-x-auto pb-6 no-scrollbar snap-x snap-mandatory">
-          {/* Spacer for centering if few items */}
-          {displayVideos.length < 3 && <div className="hidden lg:block lg:flex-1" />}
-          
+        {/* Video Reel Grid/Carousel */}
+        <div className="flex gap-4 md:gap-8 overflow-x-auto pb-4 no-scrollbar snap-x snap-mandatory px-1">
           {displayVideos.map((video: any) => (
-            <div
+            <motion.div
               key={video.id}
+              whileHover={{ y: -8 }}
+              onMouseEnter={() => setHoveredId(video.id)}
+              onMouseLeave={() => setHoveredId(null)}
               onClick={() => {
                 setActiveVideo(video);
                 setVideoError(false);
               }}
-              className="relative flex-shrink-0 w-[210px] md:w-[320px] aspect-[9/16] rounded-[2rem] md:rounded-[2.5rem] overflow-hidden snap-start shadow-2xl group cursor-pointer border-4 border-white transition-all duration-500 hover:-translate-y-2 hover:shadow-emerald-900/10"
+              className="relative flex-shrink-0 w-[180px] sm:w-[220px] md:w-[260px] aspect-[9/16] rounded-[2rem] md:rounded-[2.5rem] overflow-hidden snap-start shadow-xl group cursor-pointer border border-slate-100 transition-all duration-500"
             >
-              {/* Thumbnail / Preview Video */}
-              <div className="absolute inset-0 z-0">
-                {video.thumbnail ? (
+              {/* Media Layer */}
+              <div className="absolute inset-0 bg-slate-900">
+                {/* Fallback to Thumbnail or Video Preview */}
+                {video.thumbnail && hoveredId !== video.id ? (
                   <Image
                     src={video.thumbnail}
                     alt={video.title}
                     fill
-                    className="object-cover transition-transform duration-[1500ms] group-hover:scale-110"
+                    className="object-cover transition-transform duration-[2000ms] group-hover:scale-110"
                   />
                 ) : (
                   <video
-                    src={video.videoUrl}
                     autoPlay
                     muted
                     loop
                     playsInline
-                    className="w-full h-full object-cover transition-transform duration-[1500ms] group-hover:scale-110"
-                  />
+                    crossOrigin="anonymous"
+                    className="w-full h-full object-cover transition-transform duration-[2000ms] group-hover:scale-110"
+                  >
+                    <source src={video.videoUrl} type="video/mp4" />
+                  </video>
                 )}
+                {/* Modern Gradient Overlays */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-80" />
+                <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-transparent opacity-40" />
               </div>
 
-              {/* Overlays */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity" />
-              
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="h-16 w-16 md:h-20 md:w-20 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/30 text-white scale-90 group-hover:scale-110 transition-all duration-500">
-                  <Play className="h-8 w-8 fill-white ml-1" />
+              {/* Interaction UI */}
+              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-500 scale-90 group-hover:scale-100">
+                <div className="h-14 w-14 rounded-full bg-white/20 backdrop-blur-xl flex items-center justify-center border border-white/30 text-white">
+                  <Play className="h-6 w-6 fill-white ml-1" />
                 </div>
               </div>
 
-              {/* Status Badge */}
-              <div className="absolute top-6 left-6 flex items-center gap-2 bg-black/20 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/20">
-                <div className="h-2 w-2 rounded-full bg-red-500 animate-pulse" />
-                <span className="text-[9px] font-black text-white uppercase tracking-widest">Story</span>
+              {/* Badges */}
+              <div className="absolute top-5 left-5 flex items-center gap-2 bg-black/30 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10">
+                <div className="h-1.5 w-1.5 rounded-full bg-red-500 animate-pulse" />
+                <span className="text-[8px] font-black text-white uppercase tracking-widest">Story</span>
               </div>
 
-              {/* Product Info Overlay */}
-              <div className="absolute bottom-0 left-0 right-0 p-8 flex flex-col gap-4">
-                <div>
-                  <h3 className="text-white font-bold text-xl md:text-2xl leading-tight mb-1">{video.title}</h3>
-                  <p className="text-white/60 text-xs font-medium uppercase tracking-widest">Tap to watch</p>
-                </div>
+              {/* Info Overlay */}
+              <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8">
+                <h3 className="text-white font-black text-lg md:text-xl leading-tight mb-2 uppercase tracking-tight group-hover:text-amber-400 transition-colors">
+                  {video.title}
+                </h3>
                 
-                <div className="flex items-center justify-between mt-2 pt-4 border-t border-white/10">
-                  {video.price && (
-                    <div className="flex flex-col">
-                      <span className="text-white/50 text-[9px] font-black uppercase tracking-widest">Starting at</span>
-                      <span className="text-white font-black text-2xl">₹{video.price}</span>
-                    </div>
-                  )}
-                  <div className="h-12 w-12 rounded-xl bg-white text-emerald-950 flex items-center justify-center shadow-xl group-hover:bg-amber-400 transition-colors duration-300">
-                    <ShoppingCart className="h-5 w-5" />
+                <div className="flex items-center justify-between pt-4 border-t border-white/10">
+                  <div className="flex flex-col">
+                    <span className="text-white/40 text-[8px] font-black uppercase tracking-widest">Featured</span>
+                    <span className="text-white font-black text-lg">₹{video.price || '99'}+</span>
+                  </div>
+                  <div className="h-10 w-10 rounded-xl bg-white text-emerald-950 flex items-center justify-center shadow-lg group-hover:bg-amber-400 transition-all duration-300">
+                    <ShoppingCart className="h-4 w-4" />
                   </div>
                 </div>
               </div>
-            </div>
+            </motion.div>
           ))}
-
-          {/* Spacer for centering */}
-          {displayVideos.length < 3 && <div className="hidden lg:block lg:flex-1" />}
         </div>
+
 
         <div className="flex justify-center mt-2">
           <Link href="/videos" className="h-14 px-10 rounded-full border border-slate-200 bg-white text-slate-500 font-black text-[10px] uppercase tracking-widest hover:bg-emerald-600 hover:text-white hover:border-emerald-600 transition-all flex items-center gap-3">
@@ -201,16 +200,18 @@ const ShopByVideo = () => {
               >
                 <video
                   ref={videoRef}
-                  src={activeVideo.videoUrl}
                   className="w-full h-full object-cover"
                   autoPlay
                   loop
                   muted={isMuted}
                   playsInline
+                  crossOrigin="anonymous"
                   controls={false}
                   onTimeUpdate={handleTimeUpdate}
                   onError={() => setVideoError(true)}
-                />
+                >
+                  <source src={activeVideo.videoUrl} type="video/mp4" />
+                </video>
 
                 {/* Progress Bar (Amazon Style) */}
                 <div className="absolute bottom-0 left-0 right-0 h-1.5 bg-white/20 z-10">

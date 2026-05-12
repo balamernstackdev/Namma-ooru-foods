@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Search, Truck, CheckCircle2, XCircle, Clock, ChevronDown, Package, Store } from 'lucide-react';
+import { Search, Truck, CheckCircle2, XCircle, Clock, ChevronDown, Package, Store, Trash2 } from 'lucide-react';
 import useSWR from 'swr';
 import { API_URL } from '@/lib/api';
 import { useState } from 'react';
@@ -11,13 +11,17 @@ const fetcher = (url: string) => fetch(url).then(res => res.json());
 
 export default function AdminOrders() {
   const [currentPage, setCurrentPage] = useState(1);
-  const { data, error } = useSWR(`${API_URL}/api/admin/orders?page=${currentPage}&limit=10`, fetcher);
+  const [search, setSearch] = useState('');
+  const { data, error, mutate } = useSWR(`${API_URL}/api/admin/orders?page=${currentPage}&limit=10&search=${search}`, fetcher);
   const [expandedOrder, setExpandedOrder] = useState<number | null>(null);
 
-  const { orders = [], statusCounts = [], totalPages = 1 } = data || {};
+  const { orders = [], statusCounts = {}, totalPages = 1 } = data || {};
 
   const getStatusCount = (status: string) => {
-    return statusCounts.find((s: any) => s.status === status)?._count || 0;
+    if (status === 'PENDING') {
+      return (statusCounts['PENDING'] || 0) + (statusCounts['PROCESSING'] || 0);
+    }
+    return statusCounts[status] || 0;
   };
 
   const getOrderVendors = (order: any) => {
@@ -46,7 +50,7 @@ export default function AdminOrders() {
       {/* Page Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="space-y-1">
-           <h2 className="text-3xl font-black text-[#022c22] tracking-tighter">Order Management</h2>
+           <h2 className="text-4xl font-black text-[#022c22] tracking-tighter uppercase">ORDER MANAGEMENT</h2>
            <p className="text-slate-400 font-medium text-sm">Review and fulfill customer requests.</p>
         </div>
         <div className="flex items-center gap-3">
@@ -76,6 +80,8 @@ export default function AdminOrders() {
                 type="text" 
                 placeholder="Find orders by ID, user or email..." 
                 className="bg-transparent border-none outline-none text-sm font-bold text-[#022c22] placeholder:text-slate-300 w-full"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
               />
            </div>
         </div>
@@ -90,6 +96,7 @@ export default function AdminOrders() {
                     <th className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Items</th>
                     <th className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Status</th>
                     <th className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 text-right">Total</th>
+                    <th className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 text-right">Actions</th>
                  </tr>
               </thead>
               <tbody className="divide-y divide-slate-50">
@@ -163,6 +170,19 @@ export default function AdminOrders() {
                         </td>
                         <td className="px-6 py-6 text-right">
                            <span className="text-base font-black text-[#022c22] tracking-tighter">₹{Number(order.totalAmount).toLocaleString()}</span>
+                        </td>
+                        <td className="px-6 py-6 text-right" onClick={(e) => e.stopPropagation()}>
+                           <button 
+                             onClick={async () => {
+                               if (confirm('Permanently purge this order from the historical database? This cannot be undone.')) {
+                                 const res = await fetch(`${API_URL}/api/admin/orders/${order.id}`, { method: 'DELETE' });
+                                 if (res.ok) mutate();
+                               }
+                             }}
+                             className="h-10 w-10 rounded-xl bg-slate-50 text-red-300 hover:bg-red-500 hover:text-white transition-all shadow-sm flex items-center justify-center"
+                           >
+                              <Trash2 size={16} />
+                           </button>
                         </td>
                       </tr>
 
