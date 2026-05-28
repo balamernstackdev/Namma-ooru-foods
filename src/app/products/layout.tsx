@@ -1,11 +1,11 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Namma Orru Collection | Authentic Heritage Harvests',
-  description: 'Explore the complete collection of Namma Orru\'s artisanal items. Authentic, traditional, and sourced directly from verified agrarian clusters.',
+  title: 'namma ooru Collection | Authentic Heritage Products',
+  description: 'Explore the complete collection of namma ooru\'s artisanal items. Authentic, traditional, and sourced directly from verified agrarian clusters.',
   openGraph: {
-    title: 'Namma Orru Collection',
-    description: 'Explore the complete Namma Orru traditional harvest collection.',
+    title: 'namma ooru Collection',
+    description: 'Explore the complete namma ooru traditional Product collection.',
     url: 'https://namma-urru-foods.web.app/products',
   }
 };

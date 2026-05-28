@@ -14,7 +14,7 @@ interface Review {
 function StarDisplay({ rating }: { rating: number }) {
   return (
     <div className="flex gap-0.5">
-      {[1,2,3,4,5].map(s => <Star key={s} className={`h-3.5 w-3.5 ${s <= rating ? 'fill-amber-400 text-amber-400' : 'text-slate-200'}`} />)}
+      {[1, 2, 3, 4, 5].map(s => <Star key={s} className={`h-3.5 w-3.5 ${s <= rating ? 'fill-amber-400 text-amber-400' : 'text-slate-200'}`} />)}
     </div>
   );
 }
@@ -62,7 +62,7 @@ export default function AdminReviewsPage() {
     <div className="space-y-8 animate-in fade-in duration-700 pb-20">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-          <h2 className="text-4xl font-black text-[var(--admin-sidebar)] tracking-tighter">Review Moderation</h2>
+          <h2 className="text-4xl font-black text-[var(--admin-sidebar)] tracking-tighter">Review Management</h2>
           <p className="text-slate-400 font-medium text-sm mt-1">{reviews.length} reviews on this page</p>
         </div>
         <div className="flex gap-2">
@@ -133,7 +133,7 @@ export default function AdminReviewsPage() {
             </tbody>
           </table>
         </div>
-        <AdminPagination 
+        <AdminPagination
           currentPage={currentPage}
           totalPages={totalPages}
           onPageChange={setCurrentPage}

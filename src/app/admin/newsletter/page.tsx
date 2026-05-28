@@ -27,10 +27,10 @@ export default function AdminNewsletterPage() {
   const downloadCSV = () => {
     const headers = ['ID', 'Email', 'Subscribed At'];
     const rows = subscribers.map(s => [s.id, s.email, new Date(s.createdAt).toISOString()]);
-    const csvContent = "data:text/csv;charset=utf-8," 
-      + headers.join(",") + "\n" 
+    const csvContent = "data:text/csv;charset=utf-8,"
+      + headers.join(",") + "\n"
       + rows.map(e => e.join(",")).join("\n");
-    
+
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
@@ -57,10 +57,10 @@ export default function AdminNewsletterPage() {
     <div className="space-y-8 animate-in fade-in duration-700">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-          <h2 className="text-4xl font-black text-[var(--admin-sidebar)] tracking-tighter">Marketing Leads</h2>
+          <h2 className="text-4xl font-black text-[var(--admin-sidebar)] tracking-tighter">Newsletter Leads</h2>
           <p className="text-slate-400 font-medium text-sm mt-1">{subscribers.length} active newsletter subscribers.</p>
         </div>
-        <button 
+        <button
           onClick={downloadCSV}
           className="h-16 px-10 rounded-2xl bg-[var(--admin-sidebar)] text-white text-[11px] font-black uppercase tracking-widest flex items-center gap-3 hover:bg-slate-900 transition-all shadow-2xl"
         >
@@ -72,9 +72,9 @@ export default function AdminNewsletterPage() {
         <div className="p-8 border-b border-slate-50 flex items-center gap-4">
           <div className="relative flex-1 max-w-md">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-300" />
-            <input 
-              type="text" 
-              placeholder="Filter by email..." 
+            <input
+              type="text"
+              placeholder="Filter by email..."
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
               className="w-full h-12 bg-slate-50 rounded-xl pl-11 pr-4 text-xs font-bold outline-none focus:border-[var(--admin-accent)] border border-transparent transition-all"
@@ -117,7 +117,7 @@ export default function AdminNewsletterPage() {
                     </div>
                   </td>
                   <td className="px-8 py-5 text-right">
-                    <button 
+                    <button
                       onClick={() => handleDelete(sub.id)}
                       className="h-9 w-9 inline-flex items-center justify-center rounded-xl border border-slate-100 text-red-300 hover:bg-red-500 hover:text-white transition-all"
                     >

@@ -13,11 +13,11 @@
 
 :root {
   /* 
-   * NAMMA ORRU DESIGN SYSTEM (8px Scale)
+   * namma ooru DESIGN SYSTEM (8px Scale)
    * A premium, organic-focused high-fidelity architecture.
    */
 
-  /* 01. Color Palette - Forest & Gold Harvest */
+  /* 01. Color Palette - Forest & Gold Product */
   --primary: #065f46;
   /* Forest Green */
   --primary-hover: #064e3b;
@@ -109,9 +109,9 @@
 }
 
 @theme {
-  --font-sans: var(--font-inter), sans-serif;
-  --font-heading: var(--font-jost), sans-serif;
-  --font-body: var(--font-inter), sans-serif;
+  --font-sans: var(--font-manrope), sans-serif;
+  --font-heading: var(--font-manrope), sans-serif;
+  --font-body: var(--font-manrope), sans-serif;
 }
 
 /* 06. Resets & Global Logic */
@@ -273,9 +273,11 @@ section,
   0% {
     transform: translateX(-100%);
   }
+
   50% {
     transform: translateX(200%);
   }
+
   100% {
     transform: translateX(-100%);
   }
@@ -285,6 +287,7 @@ section,
   0% {
     transform: translateX(-100%);
   }
+
   100% {
     transform: translateX(200%);
   }
@@ -358,4 +361,34 @@ section,
   background: rgba(249, 115, 22, 0.8);
   border: 2px solid transparent;
   background-clip: padding-box;
+}
+
+/* =====================================================
+   MOBILE NAV SAFE AREA UTILITIES
+   Prevents the fixed MobileBottomNav (h-20 = 80px)
+   from overlapping page content on small screens.
+   Apply .mobile-nav-safe to any full-page wrapper.
+   ===================================================== */
+.mobile-nav-safe {
+  padding-bottom: 6rem;
+  /* 96px — clears the 80px nav + buffer */
+}
+
+@media (min-width: 1024px) {
+  .mobile-nav-safe {
+    padding-bottom: 0;
+  }
+}
+
+/* Safe area support for notch/home-indicator devices */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .mobile-nav-safe {
+    padding-bottom: calc(6rem + env(safe-area-inset-bottom));
+  }
+
+  @media (min-width: 1024px) {
+    .mobile-nav-safe {
+      padding-bottom: 0;
+    }
+  }
 }

@@ -32,11 +32,12 @@ export default function VariantManager({ brandId }: { brandId?: number }) {
 
   const fetchVariants = async () => {
     const url = brandId 
-      ? `${API_URL}/api/variants?brandId=${brandId}` 
-      : `${API_URL}/api/variants`;
+      ? `${API_URL}/api/variants?subVendorId=${brandId}&limit=1000` 
+      : `${API_URL}/api/variants?limit=1000`;
     const res = await fetch(url);
     const data = await res.json();
-    setVariants(data);
+    const variantsArray = Array.isArray(data) ? data : (data?.variants || []);
+    setVariants(variantsArray);
   };
 
 

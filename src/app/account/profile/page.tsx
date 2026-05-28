@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { User, Mail, Phone, MapPin, Edit3, Save, X, Camera, ShieldCheck, Calendar, ChevronLeft } from 'lucide-react';
+import { User, Mail, Phone, MapPin, Edit3, Save, X, Camera, ShieldCheck, Calendar, ChevronLeft, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
 import { Skeleton } from '@/components/Skeleton';
@@ -9,7 +9,7 @@ import { Skeleton } from '@/components/Skeleton';
 export default function ProfilePage() {
   const { user, isLoading } = useAuth();
   const [editing, setEditing] = useState(false);
-  
+
   // Local state for editing form
   const [form, setForm] = useState({
     name: '',
@@ -20,6 +20,7 @@ export default function ProfilePage() {
     city: '',
     state: '',
     pincode: '',
+    addressId: null as number | null,
   });
 
   // Sync local form state with user data when it loads
@@ -29,18 +30,76 @@ export default function ProfilePage() {
         name: user.name || '',
         email: user.email || '',
         phone: user.phone || 'Not provided',
-        dob: '', 
+        dob: '',
         address: user.defaultAddress?.line1 || '',
         city: user.defaultAddress?.city || '',
         state: user.defaultAddress?.state || '',
         pincode: user.defaultAddress?.pincode || '',
+        addressId: user.defaultAddress?.id || null,
       });
     }
   }, [user]);
 
-  const handleSave = () => { 
-    // Logic for saving to backend would go here
-    setEditing(false); 
+  const [isSaving, setIsSaving] = useState(false);
+
+  const handleSave = async () => {
+    if (!user) return;
+    setIsSaving(true);
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/users/${user.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: form.name,
+          email: form.email,
+          phone: form.phone,
+        })
+      });
+
+      if (!res.ok) {
+        const errJson = await res.json().catch(() => ({}));
+        throw new Error(errJson.error || 'Failed to update profile');
+      }
+
+      // Now save the address
+      const addressPayload = {
+        userId: user.id,
+        name: form.name,
+        phone: form.phone,
+        line1: form.address,
+        city: form.city,
+        state: form.state,
+        pincode: form.pincode,
+        isDefault: true
+      };
+
+      let addressRes;
+      if (form.addressId) {
+        addressRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/addresses/${form.addressId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(addressPayload)
+        });
+      } else if (form.address || form.city || form.pincode) {
+        addressRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/addresses/`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(addressPayload)
+        });
+      }
+
+      if (addressRes && !addressRes.ok) throw new Error('Failed to save address');
+
+      // Successfully updated personal and address details
+      // A full page reload is a simple way to refresh AuthContext state
+      window.location.reload();
+    } catch (err: any) {
+      console.error(err);
+      alert(err instanceof Error ? err.message : 'Failed to save profile. Please try again.');
+    } finally {
+      setIsSaving(false);
+      setEditing(false);
+    }
   };
 
   if (isLoading) {
@@ -48,15 +107,15 @@ export default function ProfilePage() {
       <div className="max-w-4xl space-y-8">
         <Skeleton className="h-10 w-48 rounded-xl" />
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-           <Skeleton className="h-64 rounded-[1.5rem]" />
-           <Skeleton className="h-64 rounded-[1.5rem]" />
+          <Skeleton className="h-64 rounded-[1.5rem]" />
+          <Skeleton className="h-64 rounded-[1.5rem]" />
         </div>
       </div>
     );
   }
 
   if (!user) {
-     return <div className="text-slate-400 font-bold uppercase tracking-widest text-center py-20">Please log in to view profile</div>;
+    return <div className="text-slate-400 font-bold uppercase tracking-widest text-center py-20">Please log in to view profile</div>;
   }
 
   return (
@@ -92,7 +151,6 @@ export default function ProfilePage() {
                 { label: 'Full Name', key: 'name', icon: User, type: 'text' },
                 { label: 'Email Address', key: 'email', icon: Mail, type: 'email' },
                 { label: 'Mobile Number', key: 'phone', icon: Phone, type: 'tel' },
-                { label: 'Date of Birth', key: 'dob', icon: Calendar, type: 'date' },
               ].map(({ label, key, icon: Icon, type }) => (
                 <div key={key}>
                   <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-2 block">{label}</label>
@@ -155,9 +213,11 @@ export default function ProfilePage() {
             </button>
             <button
               onClick={handleSave}
-              className="flex items-center gap-2 px-8 py-3 rounded-2xl bg-emerald-950 text-white font-black text-[12px] uppercase tracking-widest hover:bg-emerald-800 transition-all shadow-lg"
+              disabled={isSaving}
+              className="flex items-center gap-2 px-8 py-3 rounded-2xl bg-emerald-950 text-white font-black text-[12px] uppercase tracking-widest hover:bg-emerald-800 transition-all shadow-lg disabled:opacity-50"
             >
-              <Save className="h-4 w-4" /> Save Changes
+              {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+              {isSaving ? 'Saving...' : 'Save Changes'}
             </button>
           </div>
         )}

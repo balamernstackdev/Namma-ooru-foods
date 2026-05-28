@@ -35,24 +35,32 @@ export default function VendorProducts() {
    const router = useRouter();
    const [searchTerm, setSearchTerm] = useState('');
 
-   const { data: products, error, mutate, isLoading } = useSWR<Product[]>(
-      user?.brandId ? `${API_URL}/api/products?brandId=${user.brandId}&status=all` : null,
+   const isAdmin = user?.role?.toLowerCase() === 'admin';
+   const fetchUrl = isAdmin
+      ? `${API_URL}/api/products?status=all&limit=1000`
+      : user?.brandId
+         ? `${API_URL}/api/products?subVendorId=${user.brandId}&status=all&limit=1000`
+         : null;
+
+   const { data: productsData, error, mutate, isLoading } = useSWR<any>(
+      fetchUrl,
       fetcher
    );
 
-   const loading = user?.brandId ? isLoading : false;
+   const products = productsData?.products || [];
+   const loading = (isAdmin || user?.brandId) ? isLoading : false;
 
    const handleDelete = async (id: number) => {
-      if (confirm('Permanently remove this harvest from your store?')) {
+      if (confirm('Permanently remove this Product from your store?')) {
          try {
             const response = await fetch(`${API_URL}/api/products/${id}`, {
                method: 'DELETE'
             });
             if (response.ok) {
-               mutate(products?.filter(p => p.id !== id), false);
+               mutate();
             }
          } catch (error) {
-            console.error('Error deleting harvest:', error);
+            console.error('Error deleting Product:', error);
          }
       }
    };
@@ -60,7 +68,7 @@ export default function VendorProducts() {
    const exportToCSV = () => {
       if (!filteredProducts) return;
       const headers = ['ID', 'Name', 'Category', 'Price', 'Stock'];
-      const rows = filteredProducts.map(p => [
+      const rows = filteredProducts.map((p: any) => [
          p.id,
          `"${p.name}"`,
          `"${p.category?.name || 'N/A'}"`,
@@ -70,7 +78,7 @@ export default function VendorProducts() {
 
       const csvContent = "data:text/csv;charset=utf-8,"
          + headers.join(",") + "\n"
-         + rows.map(e => e.join(",")).join("\n");
+         + rows.map((e: any) => e.join(",")).join("\n");
 
       const encodedUri = encodeURI(csvContent);
       const link = document.createElement("a");
@@ -81,7 +89,7 @@ export default function VendorProducts() {
       document.body.removeChild(link);
    };
 
-   const filteredProducts = products?.filter(p =>
+   const filteredProducts = products?.filter((p: any) =>
       p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       p.category?.name?.toLowerCase().includes(searchTerm.toLowerCase())
    ) || [];
@@ -93,9 +101,9 @@ export default function VendorProducts() {
          {/* Internal Page Header */}
          <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
             <div className="space-y-1">
-               <h2 className="text-4xl font-black text-emerald-950 dark:text-white tracking-tighter uppercase">My Harvests</h2>
+               <h2 className="text-4xl font-black text-emerald-950 dark:text-white tracking-tighter uppercase">My Products</h2>
                <p className="text-slate-400 font-bold text-[10px] uppercase tracking-widest leading-relaxed">
-                  Managing the inventory of <span className="text-emerald-900 dark:text-emerald-400">Namma Reseller Store</span>
+                  Managing the inventory of <span className="text-emerald-900 dark:text-emerald-400">{isAdmin ? "All Vendor Partners" : "Namma Reseller Store"}</span>
                </p>
             </div>
             <div className="flex items-center gap-4">
@@ -156,7 +164,7 @@ export default function VendorProducts() {
                      [1, 2, 3, 4, 5].map(i => <TableRowSkeleton key={i} />)
                   ) : (
                      <AnimatePresence>
-                        {filteredProducts.map((product) => (
+                        {filteredProducts.map((product: any) => (
                            <motion.tr
                               key={product.id}
                               initial={{ opacity: 0, x: -10 }}
@@ -168,7 +176,7 @@ export default function VendorProducts() {
                                  <div className="flex items-center gap-6">
                                     <div className="h-16 w-16 rounded-2xl bg-slate-100 dark:bg-slate-800 overflow-hidden border border-slate-100 dark:border-slate-800 shrink-0">
                                        <OptimizedImage
-                                          src={product.image || '/placeholder-harvest.jpg'}
+                                          src={product.image || '/placeholder-Product.jpg'}
                                           alt={product.name}
                                           width={64}
                                           height={64}
@@ -188,16 +196,14 @@ export default function VendorProducts() {
                               </td>
                               <td className="px-10 py-8">
                                  <div className="flex items-center gap-2.5">
-                                    <div className={`h-2 w-2 rounded-full ${
-                                       product.status === 'APPROVED' ? 'bg-emerald-500' : 
-                                       product.status === 'PENDING' ? 'bg-amber-500' : 
-                                       product.status === 'REJECTED' ? 'bg-red-500' : 'bg-slate-400'
-                                    } animate-pulse`} />
-                                    <span className={`text-[10px] font-black uppercase tracking-widest ${
-                                       product.status === 'APPROVED' ? 'text-emerald-950 dark:text-emerald-100' :
+                                    <div className={`h-2 w-2 rounded-full ${product.status === 'APPROVED' ? 'bg-emerald-500' :
+                                       product.status === 'PENDING' ? 'bg-amber-500' :
+                                          product.status === 'REJECTED' ? 'bg-red-500' : 'bg-slate-400'
+                                       } animate-pulse`} />
+                                    <span className={`text-[10px] font-black uppercase tracking-widest ${product.status === 'APPROVED' ? 'text-emerald-950 dark:text-emerald-100' :
                                        product.status === 'PENDING' ? 'text-amber-700 dark:text-amber-400' :
-                                       product.status === 'REJECTED' ? 'text-red-700 dark:text-red-400' : 'text-slate-500'
-                                    }`}>
+                                          product.status === 'REJECTED' ? 'text-red-700 dark:text-red-400' : 'text-slate-500'
+                                       }`}>
                                        {product.status || 'DRAFT'}
                                     </span>
                                  </div>

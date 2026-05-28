@@ -18,7 +18,7 @@ const fetcher = (url: string) => fetch(url).then((res) => res.json());
 interface Address { id: number; name: string; phone: string; line1: string; line2?: string; city: string; state: string; pincode: string; isDefault: boolean; type?: string; }
 
 export default function CheckoutPage() {
-   const { cart, getTotal, clearCart } = useCartStore();
+   const { cart, getTotal, clearCart, appliedCoupon, setAppliedCoupon } = useCartStore();
    const { user } = useAuth();
 
    const [step, setStep] = useState(2); // 1: Cart, 2: Delivery, 3: Payment, 4: Complete
@@ -110,7 +110,7 @@ export default function CheckoutPage() {
          const res = await fetch(`${API_URL}/api/coupons/validate`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ code: promoCode, userId: user?.id, orderTotal: subtotal })
+            body: JSON.stringify({ code: promoCode, userId: user?.id, orderTotal: subtotal, items: cart })
          });
          const data = await res.json();
          if (!res.ok) { setPromoError(data.error); setDiscount(0); return; }
@@ -155,46 +155,28 @@ export default function CheckoutPage() {
             });
          };
 
-         if (paymentMethod === 'Cash on Delivery') {
-            commitOrderCache();
-            setPlaced(true);
-            setStep(4);
-            clearCart();
-            return;
-         }
-
          const res = await fetch(`${API_URL}/api/payments/orders`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ amount: total, receipt: `order_${dbOrder.id}` })
+            body: JSON.stringify({
+               amount: total,
+               customerId: user?.id,
+               customerEmail: email || user?.email || '',
+               customerPhone: addresses.find(a => a.id === selectedAddressId)?.phone || '9999999999',
+               returnUrl: `${API_URL}/api/payments/verify`,
+               dbOrderId: dbOrder.id
+            })
          });
-         const razOrder = await res.json();
+         const hdfcOrder = await res.json();
 
-         const options = {
-            key: razOrder.key_id,
-            amount: razOrder.amount,
-            currency: razOrder.currency,
-            name: 'Namma Orru Foods',
-            order_id: razOrder.id,
-            handler: async function (response: any) {
-               const verifyRes = await fetch(`${API_URL}/api/payments/verify`, {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ ...response, ourOrderId: dbOrder.id })
-               });
-               const verifyData = await verifyRes.json();
-               if (verifyData.success) {
-                  commitOrderCache();
-                  setPlaced(true);
-                  setStep(4);
-                  clearCart();
-               }
-            },
-            prefill: { name: user?.name || 'Customer', email: email || user?.email || '' },
-            theme: { color: '#059669' }
-         };
-         const rzp = new (window as any).Razorpay(options);
-         rzp.open();
+         if (!res.ok) throw new Error(hdfcOrder.error || 'Failed to initialize payment');
+
+         if (hdfcOrder.paymentLink) {
+            // Redirect to HDFC SmartGateway Secure Checkout
+            window.location.href = hdfcOrder.paymentLink;
+         } else {
+            throw new Error('Payment gateway link could not be generated');
+         }
       } catch (error: any) {
          setPromoError(error.message || 'Payment processing failed');
       } finally { setIsProcessing(false); }
@@ -223,7 +205,7 @@ export default function CheckoutPage() {
                   </div>
 
                   <h1 className="text-[40px] md:text-[56px] font-black text-[#111827] tracking-tighter leading-none mb-3">Order Confirmed!</h1>
-                  <p className="text-[16px] md:text-[18px] text-[#6b7280] font-medium max-w-sm">We've received your order and are preparing your fresh harvests for dispatch.</p>
+                  <p className="text-[16px] md:text-[18px] text-[#6b7280] font-medium max-w-sm">We've received your order and are preparing your fresh Products for dispatch.</p>
 
                   <div className="mt-8 inline-flex flex-col items-center gap-1.5 bg-white py-3 px-8 rounded-full border border-[#e5e7eb] shadow-sm">
                      <span className="text-[10px] font-black text-[#9ca3af] uppercase tracking-[0.3em]">Tracking ID</span>
@@ -374,7 +356,6 @@ export default function CheckoutPage() {
 
    return (
       <>
-         <Script src="https://checkout.razorpay.com/v1/checkout.js" />
          <div className="min-h-screen bg-[#f8f8f5] pt-6 md:pt-10 pb-40">
             <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
 
@@ -503,21 +484,6 @@ export default function CheckoutPage() {
                                  </button>
                               )}
 
-                              {/* DELIVERY SLOTS */}
-                              <div className="pt-6">
-                                 <h3 className="font-bold text-[#111827] text-lg mb-4">Preferred Delivery Slot</h3>
-                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                                    {['Express', 'Morning', 'Afternoon', 'Evening'].map(slot => (
-                                       <button
-                                          key={slot}
-                                          onClick={() => setDeliverySlot(slot)}
-                                          className={`h-12 rounded-[14px] border font-bold text-[13px] transition-all ${deliverySlot === slot ? 'border-[#16a34a] bg-[#f0fdf4] text-[#16a34a]' : 'border-[#e5e7eb] bg-white text-[#6b7280] hover:border-[#d1d5db]'}`}
-                                       >
-                                          {slot} {slot === 'Express' && '⚡'}
-                                       </button>
-                                    ))}
-                                 </div>
-                              </div>
 
                               <div className="pt-6">
                                  <button
@@ -540,7 +506,7 @@ export default function CheckoutPage() {
                               </div>
 
                               <div className="space-y-4">
-                                 {['Online', 'Cash on Delivery'].map((method) => (
+                                 {['Online'].map((method) => (
                                     <div
                                        key={method}
                                        onClick={() => setPaymentMethod(method)}
@@ -600,15 +566,6 @@ export default function CheckoutPage() {
                               ))}
                            </div>
 
-                           {/* ESTIMATED ETA */}
-                           <div className="bg-[#f0fdf4] rounded-[14px] p-4 flex items-start gap-3 mb-6 border border-[#bbf7d0]/50">
-                              <Truck className="text-[#16a34a] shrink-0" size={20} />
-                              <div>
-                                 <p className="text-[12px] font-bold text-[#111827]">Estimated Delivery</p>
-                                 <p className="text-[14px] font-black text-[#16a34a] mt-0.5">Today by 7:30 PM</p>
-                              </div>
-                           </div>
-
                            {/* CALCULATION BLOCKS */}
                            <div className="space-y-3 pt-2 text-[14px]">
                               <div className="flex justify-between text-[#6b7280] font-medium">
@@ -650,7 +607,33 @@ export default function CheckoutPage() {
                                  <ShieldCheck size={20} />
                               </div>
                               <div className="flex-1">
-                                 <p className="text-[11px] font-bold text-[#334155] uppercase tracking-wider">Bank-Grade Security</p>
+                                 <button className="h-[34px] px-4 bg-slate-100 text-slate-600 font-bold text-[12px] uppercase tracking-wider rounded-lg hover:bg-emerald-50 hover:text-emerald-600 transition-colors"
+                                    onClick={async () => {
+                                       try {
+                                          const res = await fetch(`${API_URL}/api/coupons/validate`, {
+                                             method: 'POST',
+                                             headers: { 'Content-Type': 'application/json' },
+                                             body: JSON.stringify({ code: promoCode, userId: user?.id, orderTotal: subtotal, items: cart })
+                                          });
+                                          const data = await res.json();
+                                          if (!res.ok) {
+                                             setPromoError(data.error);
+                                             setDiscount(0);
+                                             setAppliedCoupon(null);
+                                             return;
+                                          }
+                                          setDiscount(data.discount);
+                                          setDiscountType(data.type);
+                                          setPromoSuccess(data.message);
+                                          setAppliedCoupon({ code: promoCode, discount: data.discount, type: data.type, message: data.message });
+                                       } catch {
+                                          setPromoError('Failed to validate coupon');
+                                          setAppliedCoupon(null);
+                                       }
+                                    }}
+                                 >Apply</button>
+                                 {promoError && (<p className="text-red-600 text-[12px] mt-1">{promoError}</p>)}
+                                 {promoSuccess && (<p className="text-green-600 text-[12px] mt-1">{promoSuccess}</p>)}
                                  <p className="text-[11px] text-[#64748b]">100% secure encrypted payment</p>
                               </div>
                            </div>

@@ -117,7 +117,7 @@ export default function AdminBannersPage() {
       <div className="space-y-8 animate-in fade-in duration-700">
          <div className="flex items-center justify-between">
             <div>
-               <h2 className="text-4xl font-black text-[var(--admin-sidebar)] tracking-tighter">Campaign Banners</h2>
+               <h2 className="text-4xl font-black text-[var(--admin-sidebar)] tracking-tighter">Banners Management</h2>
                <p className="text-slate-400 font-medium text-sm mt-1">Manage seasonal promotions and hero section visuals.</p>
             </div>
             <button

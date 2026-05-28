@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { 
-   TrendingUp, SlidersHorizontal, Check, ChevronDown, X, Star, Sparkles, 
+import {
+   TrendingUp, SlidersHorizontal, Check, ChevronDown, X, Star, Sparkles,
    ChevronRight, Home, LayoutGrid, Grid, List, ArrowUpDown, ShieldCheck
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -36,15 +36,18 @@ export default function BestSellingPage() {
       setCollapsedGroups(prev => ({ ...prev, [group]: !prev[group] }));
    };
 
-   const liveProductsList = Array.isArray(products) 
-      ? products 
+   const liveProductsList = Array.isArray(products)
+      ? products
       : (products && Array.isArray((products as any).products) ? (products as any).products : []);
 
-   const liveCategoriesList = Array.isArray(categoriesData) 
-      ? categoriesData 
+   const liveCategoriesList = Array.isArray(categoriesData)
+      ? categoriesData
       : (categoriesData && Array.isArray((categoriesData as any).categories) ? (categoriesData as any).categories : []);
 
-   const allProducts: any[] = liveProductsList;
+   const allProducts: any[] = liveProductsList.filter((p: any) => p.tags?.includes('best-selling')).length > 0
+      ? liveProductsList.filter((p: any) => p.tags?.includes('best-selling'))
+      : liveProductsList;
+
    const categoryNames: string[] = ['All', ...liveCategoriesList.map((c: any) => c.name)];
 
    // Reset filters handler
@@ -58,10 +61,10 @@ export default function BestSellingPage() {
    // Filtering Logic
    const filteredProducts = allProducts.filter((p: any) => {
       // Category match
-      const catMatch = activeCategory === 'All' || 
-                      p.category?.name === activeCategory || 
-                      p.category === activeCategory ||
-                      (Array.isArray(p.tags) && p.tags.includes(activeCategory));
+      const catMatch = activeCategory === 'All' ||
+         p.category?.name === activeCategory ||
+         p.category === activeCategory ||
+         (Array.isArray(p.tags) && p.tags.includes(activeCategory));
       if (!catMatch) return false;
 
       // Price match
@@ -98,7 +101,7 @@ export default function BestSellingPage() {
 
    return (
       <div className="flex flex-col bg-[#f8fafc] w-full min-h-screen">
-         
+
          {/* COMPACT COMMERCE TOPBAR & BREADCRUMB */}
          <div className="w-full bg-white border-b border-slate-200 sticky top-0 z-[100] shadow-sm shadow-slate-100/50">
             <div className="max-w-[1600px] mx-auto px-4 md:px-6 py-3 flex items-center justify-between text-xs text-slate-500">
@@ -124,7 +127,7 @@ export default function BestSellingPage() {
                {/* SIDEBAR: PREMIUM ACCORDION FILTERS */}
                <aside className="hidden lg:block w-[280px] xl:w-[310px] shrink-0 bg-white border-r border-slate-200 h-[calc(100vh-40px)] sticky top-10 overflow-y-auto no-scrollbar">
                   <div className="p-6 flex flex-col gap-6">
-                     
+
                      {/* Filter Header */}
                      <div className="flex items-center justify-between border-b border-slate-100 pb-4">
                         <h2 className="text-sm font-black text-slate-900 uppercase tracking-wider flex items-center gap-2">
@@ -139,7 +142,7 @@ export default function BestSellingPage() {
 
                      {/* Group 1: Categories */}
                      <div className="border-b border-slate-100 pb-5">
-                        <button 
+                        <button
                            onClick={() => toggleGroup('categories')}
                            className="flex items-center justify-between w-full text-left mb-3 font-black uppercase text-[11px] tracking-widest text-slate-800"
                         >
@@ -167,7 +170,7 @@ export default function BestSellingPage() {
 
                      {/* Group 2: Price Range */}
                      <div className="border-b border-slate-100 pb-5">
-                        <button 
+                        <button
                            onClick={() => toggleGroup('price')}
                            className="flex items-center justify-between w-full text-left mb-3 font-black uppercase text-[11px] tracking-widest text-slate-800"
                         >
@@ -183,9 +186,9 @@ export default function BestSellingPage() {
                                  { value: 'above500', label: 'Above ₹500' }
                               ].map(opt => (
                                  <label key={opt.value} className="flex items-center gap-2.5 cursor-pointer font-semibold text-slate-600 hover:text-slate-900 transition-colors">
-                                    <input 
-                                       type="radio" 
-                                       name="priceFilter" 
+                                    <input
+                                       type="radio"
+                                       name="priceFilter"
                                        checked={priceFilter === opt.value}
                                        onChange={() => { setPriceFilter(opt.value); setCurrentPage(1); }}
                                        className="h-4 w-4 rounded-full accent-emerald-700 border-slate-300"
@@ -199,7 +202,7 @@ export default function BestSellingPage() {
 
                      {/* Group 3: Rating Filter */}
                      <div className="pb-4">
-                        <button 
+                        <button
                            onClick={() => toggleGroup('rating')}
                            className="flex items-center justify-between w-full text-left mb-3 font-black uppercase text-[11px] tracking-widest text-slate-800"
                         >
@@ -231,13 +234,13 @@ export default function BestSellingPage() {
                </aside>
 
                {/* CATALOG CONTENT AREA */}
-               <main className="flex-1 px-4 md:px-8 py-6 md:py-8 flex flex-col gap-6 min-h-screen max-w-full overflow-hidden">
-                  
+               <main className="flex-1 px-4 md:px-8 py-6 md:py-8 pb-28 lg:pb-8 flex flex-col gap-6 min-h-screen max-w-full overflow-hidden">
+
                   {/* DYNAMIC TOOLBAR HEADER */}
                   <div className="bg-white border border-slate-200 rounded-xl p-4 md:p-5 flex flex-col md:flex-row gap-4 items-start md:items-center justify-between shadow-sm shadow-slate-100">
                      <div className="flex flex-col">
                         <h1 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight uppercase leading-none mb-1.5">
-                           {activeCategory === 'All' ? 'Bestselling Harvests' : activeCategory}
+                           {activeCategory === 'All' ? 'Bestselling Products' : activeCategory}
                         </h1>
                         <span className="text-xs text-slate-400 font-medium">
                            Showing <strong className="text-slate-800 font-black">{sortedProducts.length}</strong> available premium items
@@ -307,7 +310,7 @@ export default function BestSellingPage() {
                         <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 gap-4 md:gap-5 lg:gap-6">
                            <AnimatePresence mode='popLayout'>
                               {paginatedProducts.map((product: any) => (
-                                 <motion.div 
+                                 <motion.div
                                     key={product.id}
                                     layout
                                     initial={{ opacity: 0, y: 10 }}
@@ -355,8 +358,8 @@ export default function BestSellingPage() {
          </div>
 
          {/* MOBILE FLOATING TOOLBAR & DRAWER BUTTONS */}
-         <div className="lg:hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 bg-slate-900 text-white px-2.5 py-2 rounded-full shadow-2xl shadow-slate-950/50 border border-slate-700/40 font-black uppercase tracking-widest text-[10px]">
-            <button 
+         <div className="lg:hidden fixed bottom-24 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 bg-slate-900 text-white px-2.5 py-2 rounded-full shadow-2xl shadow-slate-950/50 border border-slate-700/40 font-black uppercase tracking-widest text-[10px]">
+            <button
                onClick={() => setShowFilters(true)}
                className="flex items-center gap-2 py-2.5 px-5 bg-emerald-800 text-white rounded-full border border-emerald-700 hover:bg-emerald-700 active:scale-95"
             >
@@ -371,7 +374,7 @@ export default function BestSellingPage() {
             {showFilters && (
                <>
                   {/* Backdrop */}
-                  <motion.div 
+                  <motion.div
                      initial={{ opacity: 0 }}
                      animate={{ opacity: 1 }}
                      exit={{ opacity: 0 }}
@@ -406,7 +409,7 @@ export default function BestSellingPage() {
                            <h4 className="text-[11px] font-black uppercase tracking-widest text-slate-400">Sort Order</h4>
                            <div className="grid grid-cols-2 gap-2">
                               {(['rating', 'price_asc', 'price_desc', 'newest'] as const).map(opt => (
-                                 <button 
+                                 <button
                                     key={opt}
                                     onClick={() => { setSortOrder(opt); setCurrentPage(1); }}
                                     className={`py-3 px-4 rounded-xl text-[11px] font-bold border transition-all text-center ${sortOrder === opt ? 'bg-emerald-900 border-emerald-900 text-white' : 'border-slate-200 text-slate-700 bg-slate-50'}`}
@@ -445,12 +448,12 @@ export default function BestSellingPage() {
                               ].map(opt => (
                                  <label key={opt.value} className="flex items-center justify-between p-2.5 font-bold text-slate-700 cursor-pointer text-[12px]">
                                     <span>{opt.label}</span>
-                                    <input 
-                                       type="radio" 
+                                    <input
+                                       type="radio"
                                        name="mobilePrice"
                                        checked={priceFilter === opt.value}
                                        onChange={() => { setPriceFilter(opt.value); setCurrentPage(1); }}
-                                       className="h-4 w-4 accent-emerald-700" 
+                                       className="h-4 w-4 accent-emerald-700"
                                     />
                                  </label>
                               ))}

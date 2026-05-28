@@ -21,7 +21,7 @@ export default function VendorVariantsPage() {
                   <span className="font-black text-lg">?</span>
                </div>
                <p className="text-[11px] font-bold text-amber-900 leading-relaxed uppercase tracking-widest">
-                  <span className="opacity-50">Local Stock:</span> managing specifications for your unique harvests.
+                  <span className="opacity-50">Local Stock:</span> managing specifications for your unique Products.
                </p>
             </div>
             <Link

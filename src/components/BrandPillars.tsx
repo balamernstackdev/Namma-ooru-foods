@@ -19,7 +19,7 @@ const PILLARS = [
   {
     id: 'academy',
     title: 'Organic Training Academy',
-    subtitle: 'Harvesting Knowledge',
+    subtitle: 'Producting Knowledge',
     description: 'Providing comprehensive training for farmers on organic certification, traditional techniques, and sustainable agriculture.',
     image: '/ai_images/banner_heritage_spices.png',
     link: 'https://penniyamacademy.com',
@@ -54,7 +54,7 @@ export default function BrandPillars() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 md:gap-10">
           {PILLARS.map((pillar) => (
-            <div 
+            <div
               key={pillar.id}
               className="group relative bg-white rounded-[3rem] p-6 shadow-xl shadow-slate-200/50 border border-white transition-all duration-500 hover:-translate-y-4 hover:shadow-2xl overflow-hidden"
             >
@@ -86,12 +86,12 @@ export default function BrandPillars() {
                   <h3 className="text-2xl md:text-3xl font-black text-emerald-950 tracking-tight mb-4 leading-tight group-hover:text-emerald-700 transition-colors">
                     {pillar.title}
                   </h3>
-                  
+
                   <p className="text-slate-500 text-xs md:text-sm font-medium leading-relaxed mb-8 line-clamp-3">
                     {pillar.description}
                   </p>
 
-                  <Link 
+                  <Link
                     href={pillar.link}
                     target="_blank"
                     rel="noopener noreferrer"

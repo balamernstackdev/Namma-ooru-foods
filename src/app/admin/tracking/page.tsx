@@ -10,17 +10,23 @@ const fetcher = (url: string) => fetch(url).then(r => r.json());
 
 export default function AdminTrackingPage() {
   const [currentPage, setCurrentPage] = useState(1);
-  const { data, isLoading } = useSWR(`${API_URL}/api/orders?page=${currentPage}&limit=10`, fetcher);
+  const { data, isLoading, mutate } = useSWR(`${API_URL}/api/orders?page=${currentPage}&limit=10`, fetcher);
   const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
   const [form, setForm] = useState({ carrierName: '', trackingNumber: '', trackingUrl: '', estimatedDelivery: '' });
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [activeTab, setActiveTab] = useState<'ALL' | 'PROCESSING' | 'SHIPPED' | 'DELIVERED'>('ALL');
 
   const { orders = [], totalPages = 1 } = data || {};
 
-  const shippableOrders = orders.filter((o: any) => ['PROCESSING', 'PENDING', 'SHIPPED'].includes(o.status));
-  const filtered = shippableOrders.filter((o: any) => String(o.id).includes(searchTerm) || o.user?.name?.toLowerCase().includes(searchTerm.toLowerCase()));
+  const shippableOrders = orders.filter((o: any) => ['PROCESSING', 'PENDING', 'SHIPPED', 'DELIVERED'].includes(o.status));
+  const filtered = shippableOrders.filter((o: any) => {
+    if (activeTab === 'PROCESSING' && o.status !== 'PROCESSING') return false;
+    if (activeTab === 'SHIPPED' && o.status !== 'SHIPPED') return false;
+    if (activeTab === 'DELIVERED' && o.status !== 'DELIVERED') return false;
+    return String(o.id).includes(searchTerm) || o.user?.name?.toLowerCase().includes(searchTerm.toLowerCase());
+  });
 
   useEffect(() => {
     if (!selectedOrderId) return;
@@ -40,6 +46,27 @@ export default function AdminTrackingPage() {
       }).catch(() => setForm({ carrierName: '', trackingNumber: '', trackingUrl: '', estimatedDelivery: '' }));
   }, [selectedOrderId]);
 
+  const [markingDelivered, setMarkingDelivered] = useState(false);
+
+  const handleMarkDelivered = async () => {
+    if (!selectedOrderId) return;
+    setMarkingDelivered(true);
+    try {
+      const res = await fetch(`${API_URL}/api/orders/${selectedOrderId}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'DELIVERED' })
+      });
+      if (res.ok) {
+        mutate();
+      }
+    } catch (error) {
+      console.error('Failed to mark delivered:', error);
+    } finally {
+      setMarkingDelivered(false);
+    }
+  };
+
   const handleSave = async () => {
     if (!selectedOrderId) return;
     setSaving(true); setSaved(false);
@@ -48,6 +75,7 @@ export default function AdminTrackingPage() {
         method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form)
       });
       setSaved(true);
+      mutate();
       setTimeout(() => setSaved(false), 3000);
     } finally { setSaving(false); }
   };
@@ -57,7 +85,7 @@ export default function AdminTrackingPage() {
   return (
     <div className="space-y-8 animate-in fade-in duration-700">
       <div>
-        <h2 className="text-4xl font-black text-[var(--admin-sidebar)] tracking-tighter">Shipment Manager</h2>
+        <h2 className="text-4xl font-black text-[var(--admin-sidebar)] tracking-tighter">Shipment Management</h2>
         <p className="text-slate-400 font-medium text-sm mt-1">Assign carrier tracking details to orders and update shipment status.</p>
       </div>
 
@@ -70,13 +98,44 @@ export default function AdminTrackingPage() {
               value={searchTerm} onChange={e => setSearchTerm(e.target.value)}
               className="flex-1 text-sm font-bold outline-none text-[var(--admin-sidebar)] placeholder:text-slate-300 bg-transparent" />
           </div>
+
+          {/* Status Tabs */}
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
+            {[
+              { id: 'ALL', label: 'All' },
+              { id: 'PROCESSING', label: 'Processing' },
+              { id: 'SHIPPED', label: 'Shipped' },
+              { id: 'DELIVERED', label: 'Delivered' }
+            ].map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => {
+                  setActiveTab(tab.id as any);
+                  setSelectedOrderId(null);
+                }}
+                className={`px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all whitespace-nowrap border
+                  ${activeTab === tab.id 
+                    ? 'bg-[var(--admin-sidebar)] text-white border-[var(--admin-sidebar)] shadow-md shadow-slate-900/10' 
+                    : 'bg-white text-slate-400 border-slate-100 hover:text-slate-600 hover:border-slate-200'
+                  }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+
           {isLoading && <div className="text-center py-12"><div className="h-8 w-8 border-2 border-slate-100 border-t-[var(--admin-accent)] rounded-full animate-spin mx-auto" /></div>}
           {filtered.map((order: any) => (
             <button key={order.id} id={`admin-track-order-${order.id}`} onClick={() => setSelectedOrderId(order.id)}
               className={`w-full text-left rounded-2xl border-2 p-5 transition-all ${selectedOrderId === order.id ? 'border-[var(--admin-accent)] bg-amber-50/30' : 'border-slate-100 bg-white hover:border-slate-200'}`}>
               <div className="flex items-center justify-between">
                 <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Order #{order.id}</p>
-                <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-lg ${order.status === 'SHIPPED' ? 'bg-blue-100 text-blue-700' : 'bg-amber-100 text-amber-700'}`}>{order.status}</span>
+                <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-lg 
+                  ${order.status === 'SHIPPED' ? 'bg-blue-100 text-blue-700' : 
+                    order.status === 'DELIVERED' ? 'bg-emerald-100 text-emerald-700' : 
+                    'bg-amber-100 text-amber-700'}`}>
+                  {order.status}
+                </span>
               </div>
               <p className="font-black text-[var(--admin-sidebar)] text-sm mt-1">{order.user?.name || 'Customer'}</p>
               <p className="text-xs text-slate-400 font-medium">₹{Number(order.totalAmount).toLocaleString()}</p>
@@ -86,7 +145,7 @@ export default function AdminTrackingPage() {
             <div className="bg-white rounded-2xl border border-slate-100 p-8 text-center text-slate-300 font-bold text-sm">No orders available for tracking</div>
           )}
           <div className="pt-4">
-            <AdminPagination 
+            <AdminPagination
               currentPage={currentPage}
               totalPages={totalPages}
               onPageChange={setCurrentPage}
@@ -129,6 +188,12 @@ export default function AdminTrackingPage() {
                   className="flex items-center gap-2 px-8 py-3 rounded-xl bg-[var(--admin-sidebar)] text-white text-xs font-black uppercase tracking-widest hover:bg-slate-800 transition-all disabled:opacity-50">
                   {saved ? <><CheckCircle className="h-4 w-4 text-emerald-400" /> Saved!</> : saving ? 'Saving...' : <><Save className="h-4 w-4" /> Save & Mark Shipped</>}
                 </button>
+                {selectedOrder.status !== 'DELIVERED' && (
+                  <button id="mark-delivered-btn" onClick={handleMarkDelivered} disabled={markingDelivered}
+                    className="flex items-center gap-2 px-8 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black uppercase tracking-widest transition-all disabled:opacity-50">
+                    {markingDelivered ? 'Updating...' : <><CheckCircle className="h-4 w-4" /> Mark Delivered</>}
+                  </button>
+                )}
                 {form.trackingUrl && (
                   <a href={form.trackingUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-6 py-3 rounded-xl border-2 border-slate-100 text-xs font-black uppercase tracking-widest text-slate-400 hover:bg-slate-50 transition-all">
                     Preview Link <ExternalLink className="h-3.5 w-3.5" />

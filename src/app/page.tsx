@@ -3,14 +3,15 @@ import Link from "next/link";
 import ProductCard from "@/components/ProductCard";
 import ProductCarousel from "@/components/ProductCarousel";
 import HomeBanner from "@/components/HomeBanner";
-import { ArrowRight, Truck, ShieldCheck, Leaf, Zap } from 'lucide-react';
+import { Truck, ShieldCheck, Leaf, Zap } from 'lucide-react';
 import MarketingPopup from "@/components/MarketingPopup";
 import nextDynamic from 'next/dynamic';
 import { Skeleton, CategoryCircleSkeleton } from '@/components/Skeleton';
 import PageReveal, { StaggerContainer, StaggerItem } from '@/components/PageReveal';
 import Image from 'next/image';
+
 const CategoriesCircles = nextDynamic(() => import('@/components/CategoriesCircles'), {
-  ssr: true, // Keep true for SEO discovery of categories
+  ssr: true,
   loading: () => (
     <div className="w-full pt-4 pb-8 flex justify-center bg-white">
       <div className="standard-container">
@@ -24,29 +25,21 @@ const CategoriesCircles = nextDynamic(() => import('@/components/CategoriesCircl
 
 import LazyHomeSections from '@/components/HomePageSections';
 import MarketingPopupWrapper from '@/components/MarketingPopupWrapper';
+import ArtisanMarketplace from '@/components/ArtisanMarketplace';
 import VendorShowcase from '@/components/VendorShowcase';
-import BrandPillars from '@/components/BrandPillars';
+import FarmersCollection from '@/components/FarmersCollection';
 
 import { API_URL } from '@/lib/api';
-
-// Static export mode — data is fetched at build time
-// Enable active dynamic routing for live inventory syncing
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
 
 async function getLiveProducts() {
   try {
     const res = await fetch(`${API_URL}/api/products?limit=100`, {
-      cache: 'no-store',
+      next: { revalidate: 3600 },
     });
     if (!res.ok) return [];
     const data = await res.json();
-    const productsList = Array.isArray(data) 
-      ? data 
-      : (data && Array.isArray(data.products) ? data.products : []);
-    return productsList;
+    return Array.isArray(data) ? data : (data && Array.isArray(data.products) ? data.products : []);
   } catch (e) {
-    console.error('Home Products Fetch Error:', e);
     return [];
   }
 }
@@ -54,12 +47,11 @@ async function getLiveProducts() {
 async function getLiveBanners() {
   try {
     const res = await fetch(`${API_URL}/api/banners`, {
-      cache: 'no-store',
+      next: { revalidate: 3600 },
     });
     if (!res.ok) return [];
     return await res.json();
   } catch (e) {
-    console.error('Home Banners Fetch Error:', e);
     return [];
   }
 }
@@ -67,118 +59,65 @@ async function getLiveBanners() {
 export default async function Home() {
   const products = await getLiveProducts();
   const apiBanners = await getLiveBanners();
-  
-  // Best sellers: tagged, else first 8
-  // Robust best sellers extraction with intelligent fallback
+
   const taggedBestSellers = products.filter((p: any) => p.tags?.includes('best-selling')).slice(0, 8);
   const featuredProducts = taggedBestSellers.length > 0 ? taggedBestSellers : products.slice(0, 8);
 
-  // New arrivals logic with non-overlapping fallback
   const bestSellerIds = new Set(featuredProducts.map((p: any) => p.id));
-  const taggedNew = products.filter((p: any) => !bestSellerIds.has(p.id) && p.tags?.includes('new')).slice(0, 8);
-  const newProducts = taggedNew.length > 0 ? taggedNew : products.filter((p: any) => !bestSellerIds.has(p.id)).slice(0, 8);
-
-  const allProducts = products;
-
-  const websiteSchema = {
-    "@context": "https://schema.org",
-    "@type": "WebSite",
-    "name": "Namma Orru Foods",
-    "url": "https://nammaorrufoods.com",
-    "potentialAction": {
-      "@type": "SearchAction",
-      "target": "https://nammaorrufoods.com/search?q={search_term_string}",
-      "query-input": "required name=search_term_string"
-    }
-  };
-
-  const orgSchema = {
-    "@context": "https://schema.org",
-    "@type": "Organization",
-    "name": "Namma Orru Foods",
-    "url": "https://namma-urru-foods.web.app",
-    "logo": "https://namma-urru-foods.web.app/logo.webp",
-    "contactPoint": {
-      "@type": "ContactPoint",
-      "telephone": "+91-98400-12345",
-      "contactType": "customer service"
-    }
-  };
-
-  const collectionSchema = {
-    "@context": "https://schema.org",
-    "@type": "CollectionPage",
-    "name": "Organic Food Collection | Namma Orru Foods",
-    "description": "Explore our curated collection of authentic, organic, and farm-fresh products sourced directly from local agrarian clusters.",
-    "url": "https://namma-urru-foods.web.app/products",
-    "mainEntity": {
-      "@type": "ItemList",
-      "itemListElement": featuredProducts.map((p: any, idx: number) => ({
-        "@type": "ListItem",
-        "position": idx + 1,
-        "url": `https://namma-urru-foods.web.app/products/${p.slug || p.id}`
-      }))
-    }
-  };
+  const newProducts = products.filter((p: any) => !bestSellerIds.has(p.id)).slice(0, 8);
 
   return (
     <div className="flex flex-col bg-white w-full overflow-x-hidden">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(orgSchema) }}
-      />
       <main>
         <Hero />
         <MarketingPopupWrapper />
 
-        {/* 01. Brands You Love - Moved to Top */}
-        <VendorShowcase />
-
-        {/* 02. Our Organic Range */}
+        {/* 1. Shop By Category */}
         <CategoriesCircles />
 
-        {/* 03. Best Sellers — Carousel */}
+        {/* 2. Featured Vendors */}
+        <VendorShowcase />
+
+        {/* 3. BEST SELLERS — Most Popular Products */}
         <ProductCarousel
           products={featuredProducts}
-          title='Best <span class="text-accent italic lowercase font-serif font-normal">Sellers</span>'
-          subtitle="Customer Favorites"
+          title='BEST <span class="text-accent italic lowercase font-serif font-normal">SELLERS</span>'
+          subtitle="Most Popular Products"
           viewAllHref="/best-selling"
-          bgClass="bg-white"
+          bgClass="bg-slate-50"
           autoScrollInterval={3000}
         />
-        {/* 04. Featured Promo Banner - Dynamic from S3 */}
+
+        {/* 4. Popular Brands — Grid Marketplace */}
+        <ArtisanMarketplace />
+
+        {/* 5. Festive Specials Banner */}
         {(() => {
-          const festiveBanner = products.length > 0 ? (apiBanners?.find((b: any) => b.title === 'Harvest Festival') || {
-            desktopImage: 'https://s3.ap-south-1.amazonaws.com/namma-orru-foods/ai_assets/harvest_festival.png',
+          const festiveBanner = apiBanners?.find((b: any) => b.title === 'Product Festival') || {
+            desktopImage: 'https://s3.ap-south-1.amazonaws.com/namma-orru-foods/ai_assets/Product_festival.png',
             title: 'Festive Specials',
-            subtitle: 'Traditional Harvest',
+            subtitle: 'Traditional Product',
             buttonText: 'Shop Now',
             link: '/products'
-          }) : null;
-
-          if (!festiveBanner) return null;
+          };
 
           return (
-            <section className="py-2 flex justify-center">
+            <section className="py-12 flex justify-center">
               <div className="standard-container">
-                <div className="relative w-full h-[200px] md:h-[350px] rounded-[2rem] overflow-hidden group cursor-pointer">
-                  <Image 
-                    src={festiveBanner.desktopImage} 
-                    alt={festiveBanner.title} 
-                    fill 
+                <div className="relative w-full h-[250px] md:h-[400px] rounded-[3rem] overflow-hidden group cursor-pointer shadow-2xl">
+                  <Image
+                    src={festiveBanner.desktopImage}
+                    alt={festiveBanner.title}
+                    fill
                     className="object-cover transition-transform duration-1000 group-hover:scale-105"
                     unoptimized={festiveBanner.desktopImage?.startsWith('http')}
                   />
-                  <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/30 to-transparent flex flex-col justify-center px-10 md:px-20">
-                    <span className="text-amber-400 text-xs font-black uppercase tracking-[0.3em] mb-4">{festiveBanner.subtitle || 'Festive Specials'}</span>
-                    <h3 className="text-white text-2xl md:text-5xl font-black mb-6 leading-tight drop-shadow-lg">{festiveBanner.title}</h3>
+                  <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/30 to-transparent flex flex-col justify-center px-12 md:px-24">
+                    <span className="text-amber-400 text-xs font-black uppercase tracking-[0.4em] mb-6">{festiveBanner.subtitle}</span>
+                    <h3 className="text-white text-3xl md:text-6xl font-black mb-8 leading-tight tracking-tighter uppercase">{festiveBanner.title}</h3>
                     <div>
-                      <Link href={festiveBanner.link || '/products'} className="inline-flex h-10 md:h-12 px-8 rounded-full bg-amber-500 text-slate-900 font-black uppercase tracking-widest text-[10px] hover:bg-white hover:text-primary transition-all items-center shadow-lg">
-                        {festiveBanner.buttonText || 'Explore Now'}
+                      <Link href={festiveBanner.link || '/products'} className="inline-flex h-12 px-10 rounded-full bg-amber-500 text-slate-900 font-black uppercase tracking-widest text-xs hover:bg-white transition-all items-center shadow-xl">
+                        {festiveBanner.buttonText}
                       </Link>
                     </div>
                   </div>
@@ -188,53 +127,25 @@ export default async function Home() {
           );
         })()}
 
+        {/* 6. Farmers' Collections — Interactive Products Listing Page Section */}
+        <FarmersCollection products={products} />
 
-        {/* 05. New Arrivals — Carousel */}
+        {/* 7. Premium Collections — New Arrivals Carousel */}
         <ProductCarousel
           products={newProducts}
-          title='New <span class="text-accent italic lowercase font-serif font-normal">Arrivals</span>'
-          subtitle="Just Harvested"
+          title='Organic <span class="text-primary italic lowercase font-serif font-normal">Collections</span>'
+          subtitle="Pure. Authentic. Heritage."
           viewAllHref="/products"
-          bgClass="bg-slate-50"
+          bgClass="bg-white"
           autoScrollInterval={3500}
         />
 
-        {/* 06. Dynamic Banner — admin-controlled */}
+        {/* 7. Dynamic Banner — admin-controlled */}
         <HomeBanner apiUrl={API_URL} />
 
-        {/* 07. Full Collection — Carousel */}
-        <ProductCarousel
-          products={allProducts}
-          title='Authentic <span class="text-primary italic lowercase font-serif font-normal">Foods</span>'
-          subtitle="Our Full Collection"
-          viewAllHref="/products"
-          bgClass="bg-white"
-          autoScrollInterval={4000}
-        />
-
-        <div className="flex justify-center pb-2">
-          <Link href="/products" className="h-14 px-12 rounded-full border-2 border-primary text-primary font-black uppercase tracking-widest text-xs hover:bg-primary hover:text-white transition-all flex items-center gap-3 group">
-            View Complete Catalog <ArrowRight className="group-hover:translate-x-2 transition-transform" />
-          </Link>
-        </div>
 
         <LazyHomeSections />
-        <BrandPillars />
       </main>
     </div>
   );
-}
-
-function FeatureItem({ Icon, title, desc }: { Icon: any, title: string, desc: string }) {
-  return (
-    <div className="flex flex-row items-center gap-4 group cursor-default text-left w-full">
-      <div className="h-14 w-14 md:h-16 md:w-16 shrink-0 rounded-2xl bg-[#f9f9f9] flex items-center justify-center text-[var(--primary)] transition-all duration-300 shadow-sm border border-[#eeeeee]">
-        <Icon className="h-6 w-6 md:h-7 md:w-7" strokeWidth={1.5} />
-      </div>
-      <div className="flex flex-col">
-        <h4 className="font-bold text-[#1a1a1a] text-[13px] md:text-lg tracking-tight leading-tight">{title}</h4>
-        <p className="text-[9px] md:text-[10px] text-gray-400 font-black uppercase tracking-[0.1em] mt-1">{desc}</p>
-      </div>
-    </div>
-  )
 }

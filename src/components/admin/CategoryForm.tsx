@@ -265,8 +265,8 @@ export default function CategoryForm({ initialData, mode }: CategoryFormProps) {
                 <div className="p-8 space-y-8">
                   <InputWrapper label="Meta Title" helpText="The title tag for search engines. Recommended: 60 chars.">
                     <div className="relative">
-                       <Search size={16} className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400" />
-                       <input
+                      <Search size={16} className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400" />
+                      <input
                         value={formData.metaTitle}
                         onChange={e => setFormData({ ...formData, metaTitle: e.target.value })}
                         placeholder="Traditional Millets | Premium Organic Catalog"
@@ -291,58 +291,58 @@ export default function CategoryForm({ initialData, mode }: CategoryFormProps) {
             <div className="col-span-12 lg:col-span-4 space-y-8">
               {/* Display Settings */}
               <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                 <SectionHeader title="Display & Layout" icon={MonitorCheck} colorClass="text-purple-600" />
-                 <div className="p-8 space-y-6">
-                    <InputWrapper label="Navigation Priority" helpText="Lower numbers appear first in menus.">
-                      <div className="relative">
-                        <LayoutList size={16} className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400" />
-                        <input
-                          type="number"
-                          value={formData.sortOrder}
-                          onChange={e => setFormData({ ...formData, sortOrder: e.target.value })}
-                          className="w-full h-14 pl-14 pr-6 rounded-xl border border-slate-200 focus:border-blue-500 outline-none font-bold text-slate-900 text-sm"
-                        />
-                      </div>
-                    </InputWrapper>
-
-                    <div className="space-y-4">
-                      <div className="flex items-center justify-between p-4 rounded-xl bg-slate-50 border border-slate-100 transition-all">
-                        <div>
-                          <p className="text-[11px] font-black text-slate-900 uppercase">Active Status</p>
-                          <p className="text-[10px] font-bold text-slate-400">Enable in customer shop</p>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => setFormData({ ...formData, isActive: !formData.isActive })}
-                          className={`h-6 w-11 rounded-full transition-all relative ${formData.isActive ? 'bg-blue-600' : 'bg-slate-200'}`}
-                        >
-                          <div className={`absolute top-1 h-4 w-4 rounded-full bg-white transition-all ${formData.isActive ? 'left-6' : 'left-1'}`} />
-                        </button>
-                      </div>
-
-                      <div className="flex items-center justify-between p-4 rounded-xl bg-slate-50 border border-slate-100 transition-all">
-                        <div>
-                          <p className="text-[11px] font-black text-slate-900 uppercase">Featured Section</p>
-                          <p className="text-[10px] font-bold text-slate-400">Show on homepage grid</p>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => setFormData({ ...formData, showOnHome: !formData.showOnHome })}
-                          className={`h-6 w-11 rounded-full transition-all relative ${formData.showOnHome ? 'bg-emerald-500' : 'bg-slate-200'}`}
-                        >
-                          <div className={`absolute top-1 h-4 w-4 rounded-full bg-white transition-all ${formData.showOnHome ? 'left-6' : 'left-1'}`} />
-                        </button>
-                      </div>
+                <SectionHeader title="Display & Layout" icon={MonitorCheck} colorClass="text-purple-600" />
+                <div className="p-8 space-y-6">
+                  <InputWrapper label="Navigation Priority" helpText="Lower numbers appear first in menus.">
+                    <div className="relative">
+                      <LayoutList size={16} className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400" />
+                      <input
+                        type="number"
+                        value={formData.sortOrder}
+                        onChange={e => setFormData({ ...formData, sortOrder: e.target.value })}
+                        className="w-full h-14 pl-14 pr-6 rounded-xl border border-slate-200 focus:border-blue-500 outline-none font-bold text-slate-900 text-sm"
+                      />
                     </div>
-                 </div>
-               </div>
+                  </InputWrapper>
+
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between p-4 rounded-xl bg-slate-50 border border-slate-100 transition-all">
+                      <div>
+                        <p className="text-[11px] font-black text-slate-900 uppercase">Active Status</p>
+                        <p className="text-[10px] font-bold text-slate-400">Enable in customer shop</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setFormData({ ...formData, isActive: !formData.isActive })}
+                        className={`h-6 w-11 rounded-full transition-all relative ${formData.isActive ? 'bg-blue-600' : 'bg-slate-200'}`}
+                      >
+                        <div className={`absolute top-1 h-4 w-4 rounded-full bg-white transition-all ${formData.isActive ? 'left-6' : 'left-1'}`} />
+                      </button>
+                    </div>
+
+                    <div className="flex items-center justify-between p-4 rounded-xl bg-slate-50 border border-slate-100 transition-all">
+                      <div>
+                        <p className="text-[11px] font-black text-slate-900 uppercase">Featured Section</p>
+                        <p className="text-[10px] font-bold text-slate-400">Show on homepage grid</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setFormData({ ...formData, showOnHome: !formData.showOnHome })}
+                        className={`h-6 w-11 rounded-full transition-all relative ${formData.showOnHome ? 'bg-emerald-500' : 'bg-slate-200'}`}
+                      >
+                        <div className={`absolute top-1 h-4 w-4 rounded-full bg-white transition-all ${formData.showOnHome ? 'left-6' : 'left-1'}`} />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
 
               {/* Danger Zone */}
               {mode === 'edit' && (
                 <div className="bg-red-50 rounded-2xl border border-red-100 p-8">
                   <div className="flex items-center gap-3 mb-6">
                     <Trash2 size={18} className="text-red-600" />
-                    <h4 className="text-[10px] font-black text-red-900 uppercase tracking-widest text-slate-900">Danger Zone</h4>
+                    <h4 className="text-[10px] font-black text-red-900 uppercase tracking-widest text-slate-900">Delete</h4>
                   </div>
                   <p className="text-[11px] font-bold text-red-800 leading-relaxed mb-6 italic">
                     Removing this category will orphan its products unless they are re-assigned.

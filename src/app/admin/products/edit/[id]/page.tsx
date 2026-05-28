@@ -1,11 +1,10 @@
 import React from 'react';
-import { PRODUCTS } from '@/lib/staticData';
 import AdminEditProductClient from './AdminEditProductClient';
 
-// Admin routes are protected and load data dynamically at runtime.
-// We only need one placeholder path to satisfy Next.js prerender requirements.
+// export const dynamicParams = true;
+
 export function generateStaticParams() {
-  return [{ id: '0' }];
+  return Array.from({ length: 300 }, (_, i) => ({ id: (i + 1).toString() }));
 }
 
 export default async function Page({ params }: { params: Promise<{ id: string }> }) {

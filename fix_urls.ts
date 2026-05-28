@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 
-const frontendDir = 'd:/Our Projects/Namma Orru foods/frontend/src';
+const frontendDir = 'd:/Our Projects/namma ooru foods/frontend/src';
 const oldUrl = 'https://api-backend-nammaorru-foods.onrender.com';
 
 function walk(dir: string, callback: (filePath: string) => void) {
@@ -21,10 +21,10 @@ walk(frontendDir, (filePath) => {
   let content = fs.readFileSync(filePath, 'utf-8');
   if (content.includes(oldUrl)) {
     console.log(`Fixing ${filePath}`);
-    
+
     // Replace URL
     content = content.replace(new RegExp(oldUrl, 'g'), '${API_URL}');
-    
+
     // Ensure import is present if not already there
     if (!content.includes("from '@/lib/api'")) {
       // Add import after other imports or at top
@@ -38,7 +38,7 @@ walk(frontendDir, (filePath) => {
       lines.splice(lastImportIndex + 1, 0, "import { API_URL } from '@/lib/api';");
       content = lines.join('\n');
     }
-    
+
     // If we used ${API_URL} but it wasn't a template literal, we might need to fix it.
     // Actually, most replacements were in strings.
     // 'https://...' -> '${API_URL}'

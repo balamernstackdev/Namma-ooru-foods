@@ -1,8 +1,10 @@
 import React from 'react';
 import EditCategoryClient from './EditCategoryClient';
 
+// export const dynamicParams = true;
+
 export function generateStaticParams() {
-  return [{ id: '1' }];
+  return Array.from({ length: 300 }, (_, i) => ({ id: (i + 1).toString() }));
 }
 
 export default async function Page({ params }: { params: Promise<{ id: string }> }) {

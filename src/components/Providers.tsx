@@ -4,6 +4,7 @@ import React from 'react';
 import { ThemeProvider } from "@/context/ThemeContext";
 import { AuthProvider as RealAuthProvider } from "@/context/AuthContext";
 import { ToastProvider } from "@/context/ToastContext";
+import { CartProvider } from "@/context/CartContext";
 import SmoothScroll from "@/components/SmoothScroll";
 
 export function Providers({ children }: { children: React.ReactNode }) {
@@ -11,11 +12,14 @@ export function Providers({ children }: { children: React.ReactNode }) {
     <ThemeProvider>
       <RealAuthProvider>
         <ToastProvider>
-          <SmoothScroll>
-            {children}
-          </SmoothScroll>
+          <CartProvider>
+            <SmoothScroll>
+              {children}
+            </SmoothScroll>
+          </CartProvider>
         </ToastProvider>
       </RealAuthProvider>
     </ThemeProvider>
   );
 }
+

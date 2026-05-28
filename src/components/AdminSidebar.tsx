@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { 
+import {
   LayoutDashboard, Package, Layers, Tag, ShoppingCart, Users,
   BarChart3, Settings, Bell, Image as ImageIcon, Ticket, Star,
   Truck, RotateCcw, BookOpen, ChevronDown
@@ -25,8 +25,8 @@ const navGroups = [
   {
     label: 'Commerce',
     items: [
-      { name: 'Coupon Engine', href: '/admin/coupons', icon: Ticket },
-      { name: 'Review Moderation', href: '/admin/reviews', icon: Star },
+      { name: 'Coupons', href: '/admin/coupons', icon: Ticket },
+      { name: 'Reviews', href: '/admin/reviews', icon: Star },
       { name: 'Promotions', href: '/admin/promotions', icon: ImageIcon },
       { name: 'Banners', href: '/admin/banners', icon: ImageIcon },
     ]
@@ -65,7 +65,7 @@ const AdminSidebar = () => {
     <aside className="fixed left-0 top-0 h-screen w-64 border-r border-[var(--border)] bg-[var(--card)] flex flex-col overflow-y-auto">
       <div className="px-6 py-7 border-b border-[var(--border)] shrink-0">
         <Link href="/" className="block">
-          <span className="text-lg font-black tracking-tight text-[var(--primary)]">Namma Orru</span>
+          <span className="text-lg font-black tracking-tight text-[var(--primary)]">namma ooru</span>
           <span className="block text-[10px] font-black uppercase tracking-[0.3em] text-[var(--secondary)] opacity-60 mt-0.5">Command Center</span>
         </Link>
       </div>
@@ -88,11 +88,10 @@ const AdminSidebar = () => {
                   <Link
                     key={item.name}
                     href={item.href}
-                    className={`flex items-center gap-3 rounded-xl px-4 py-2.5 text-[13px] font-bold transition-all ${
-                      isActive
-                        ? 'bg-[var(--primary)] text-white shadow-md shadow-[var(--primary)]/20'
-                        : 'text-[var(--muted-foreground)] hover:bg-[var(--muted)] hover:text-[var(--foreground)]'
-                    }`}
+                    className={`flex items-center gap-3 rounded-xl px-4 py-2.5 text-[13px] font-bold transition-all ${isActive
+                      ? 'bg-[var(--primary)] text-white shadow-md shadow-[var(--primary)]/20'
+                      : 'text-[var(--muted-foreground)] hover:bg-[var(--muted)] hover:text-[var(--foreground)]'
+                      }`}
                   >
                     <item.icon className="h-4 w-4 shrink-0" />
                     {item.name}

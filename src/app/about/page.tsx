@@ -4,7 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 
 export const metadata: Metadata = {
-  title: 'Our Story & Mission | Namma Orru Foods',
+  title: 'Our Story & Mission | namma ooru Foods',
   description: 'Born from a simple dream to restore the ancient wisdom of ancestral farming to the modern Indian home.',
 };
 import { Leaf, ShieldCheck, Truck, Heart, Users, Target, ArrowRight } from 'lucide-react';
@@ -30,7 +30,7 @@ export default function AboutPage() {
 
             <span className="text-amber-400 text-[9px] md:text-[10px] font-black uppercase tracking-[0.3em] md:tracking-[0.4em] mb-4 md:mb-6 inline-block">Our Story • Our Roots</span>
             <h1 className="text-3xl md:text-6xl font-black text-white leading-tight md:leading-[1] tracking-tighter mb-4 md:mb-8">
-              Namma Orru <br className="hidden md:block" />
+              namma ooru <br className="hidden md:block" />
               <span className="text-amber-400 italic">Foods</span>
             </h1>
             <p className="text-emerald-50/70 text-sm md:text-2xl font-medium max-w-2xl mx-auto leading-relaxed">
@@ -74,13 +74,13 @@ export default function AboutPage() {
               </h2>
               <div className="space-y-6 md:space-y-8 text-base md:text-lg text-gray-600 font-medium leading-relaxed">
                 <p>
-                  <strong className="text-emerald-950">Namma Orru Foods Pvt Ltd</strong> is committed to producing, processing, packaging, and distributing organic food products that emphasize traditional, ancient food-making techniques. Specializing in a diverse range of items such as organic snacks, pickles, herbal products, edible oils, sweets, millets, spices, homemade masalas, and more, the company ensures all ingredients are naturally sourced and free from chemicals.
+                  <strong className="text-emerald-950">namma ooru Foods Pvt Ltd</strong> is committed to producing, processing, packaging, and distributing organic food products that emphasize traditional, ancient food-making techniques. Specializing in a diverse range of items such as organic snacks, pickles, herbal products, edible oils, sweets, millets, spices, homemade masalas, and more, the company ensures all ingredients are naturally sourced and free from chemicals.
                 </p>
                 <p>
-                  At the heart of Namma Orru Foods is a focus on preserving culinary Story. The company revives time-tested food preparation methods like slow cooking, hand grinding, and other authentic processes that help retain the natural flavors and nutritional value of ingredients. These traditional practices, passed down through generations, not only ensure superior product quality but also celebrate the wisdom of age-old food-making techniques.
+                  At the heart of namma ooru Foods is a focus on preserving culinary Story. The company revives time-tested food preparation methods like slow cooking, hand grinding, and other authentic processes that help retain the natural flavors and nutritional value of ingredients. These traditional practices, passed down through generations, not only ensure superior product quality but also celebrate the wisdom of age-old food-making techniques.
                 </p>
                 <p>
-                  Namma Orru Foods actively empowers rural communities, particularly women, by involving them in the production process. This approach not only helps preserve traditional food-making skills but also provides women with economic opportunities and a platform for leadership.
+                  namma ooru Foods actively empowers rural communities, particularly women, by involving them in the production process. This approach not only helps preserve traditional food-making skills but also provides women with economic opportunities and a platform for leadership.
                 </p>
               </div>
             </div>
@@ -137,7 +137,7 @@ export default function AboutPage() {
               <Link href="/products" className="w-full md:w-auto min-w-[200px] h-14 md:h-18 px-12 md:px-20 rounded-full bg-emerald-950 !text-white text-[10px] md:text-sm font-black uppercase tracking-[0.2em] hover:bg-black transition-all shadow-2xl flex items-center justify-center whitespace-nowrap shrink-0">
                 Start Shopping
               </Link>
-              <Link href="/brands" className="w-full md:w-auto min-w-[200px] h-14 md:h-18 px-12 md:px-20 rounded-full bg-white !text-emerald-950 text-[10px] md:text-sm font-black uppercase tracking-[0.2em] border-2 border-emerald-950/10 transition-all hover:border-emerald-950 hover:bg-emerald-50 flex items-center justify-center whitespace-nowrap shrink-0">
+              <Link href="/artisans" className="w-full md:w-auto min-w-[200px] h-14 md:h-18 px-12 md:px-20 rounded-full bg-white !text-emerald-950 text-[10px] md:text-sm font-black uppercase tracking-[0.2em] border-2 border-emerald-950/10 transition-all hover:border-emerald-950 hover:bg-emerald-50 flex items-center justify-center whitespace-nowrap shrink-0">
                 Our Farmers
               </Link>
             </div>

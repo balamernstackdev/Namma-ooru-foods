@@ -78,16 +78,16 @@ export default function AdminVariantsPage() {
   };
 
   const filtered = variants.filter(v =>
-    v.sku.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    v.product.name.toLowerCase().includes(searchTerm.toLowerCase())
+    (v.sku || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (v.product?.name || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
     <div className="space-y-8 animate-in fade-in duration-700 relative min-h-[70vh]">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-          <h2 className="text-4xl font-black text-[var(--admin-sidebar)] tracking-tighter uppercase">VARIANTS MANAGEMENT</h2>
-          <p className="text-slate-400 font-medium text-sm mt-1">Directly manage stock and SKUs for all product variations.</p>
+          <h2 className="text-4xl font-black text-[var(--admin-sidebar)] tracking-tighter">Variants Management</h2>
+          {/* <p className="text-slate-400 font-medium text-sm mt-1">Directly manage stock and SKUs for all product variations.</p> */}
         </div>
         <Link
           href="/admin/variants/new"

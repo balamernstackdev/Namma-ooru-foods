@@ -26,11 +26,12 @@ export default function CategoryManager({ brandId }: { brandId?: number }) {
 
   const fetchCategories = async () => {
     const url = brandId 
-      ? `${API_URL}/api/categories?brandId=${brandId}` 
-      : `${API_URL}/api/categories`;
+      ? `${API_URL}/api/categories?subVendorId=${brandId}&all=true&limit=1000` 
+      : `${API_URL}/api/categories?all=true&limit=1000`;
     const res = await fetch(url);
     const data = await res.json();
-    setCategories(data);
+    const categoriesArray = Array.isArray(data) ? data : (data?.categories || []);
+    setCategories(categoriesArray);
   };
 
 

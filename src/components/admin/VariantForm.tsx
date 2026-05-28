@@ -15,7 +15,8 @@ import {
   Weight,
   AlertTriangle,
   MonitorCheck,
-  LayoutList
+  LayoutList,
+  Search
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { API_URL } from '@/lib/api';
@@ -46,7 +47,7 @@ const InputWrapper = ({ label, children, helpText }: any) => (
 );
 
 const SectionHeader = ({ title, icon: Icon, colorClass = "text-blue-600" }: any) => (
-  <div className="px-8 py-3.5 border-b border-slate-100 bg-slate-50/50 flex items-center gap-3">
+  <div className="px-8 py-3.5 border-b border-slate-100 bg-slate-50/50 flex items-center gap-3 rounded-t-2xl">
     <Icon size={16} className={colorClass} />
     <h2 className="text-[10px] font-black text-slate-900 uppercase tracking-[0.2em]">{title}</h2>
   </div>
@@ -58,6 +59,10 @@ export default function VariantForm({ initialData, mode }: VariantFormProps) {
 
   const [products, setProducts] = useState<any[]>([]);
   const [submitting, setSubmitting] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
+  const filteredProducts = products.filter(p => p.name.toLowerCase().includes(searchQuery.toLowerCase()));
 
   const [formData, setFormData] = useState({
     id: initialData?.id || '',
@@ -90,6 +95,10 @@ export default function VariantForm({ initialData, mode }: VariantFormProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!formData.productId) {
+      addToast('Error', 'Please select a parent product');
+      return;
+    }
     setSubmitting(true);
     try {
       const url = mode === 'edit'
@@ -150,26 +159,64 @@ export default function VariantForm({ initialData, mode }: VariantFormProps) {
           <div className="grid grid-cols-12 gap-8">
             <div className="col-span-12 lg:col-span-8 space-y-8">
               {/* Specification Card */}
-              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm">
                 <SectionHeader title="Entity Mapping" icon={Layers} colorClass="text-blue-600" />
                 <div className="p-8 space-y-8">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <InputWrapper label="Parent Product" helpText="The core product this variation belongs to.">
                       <div className="relative">
-                        <select
-                          required
-                          value={formData.productId}
-                          onChange={e => setFormData({ ...formData, productId: e.target.value })}
-                          className="w-full h-14 px-6 rounded-xl border border-slate-200 focus:border-blue-500 outline-none font-bold text-sm appearance-none bg-white"
+                        <div 
+                          onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                          className={`w-full h-14 px-6 rounded-xl border ${!formData.productId && submitting ? 'border-red-400' : 'border-slate-200'} focus:border-blue-500 outline-none font-bold text-sm bg-white flex items-center justify-between cursor-pointer transition-all`}
                         >
-                          <option value="">Select Product...</option>
-                          {products.map(p => (
-                            <option key={p.id} value={p.id}>{p.name}</option>
-                          ))}
-                        </select>
-                        <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
-                          <ChevronDown size={18} />
+                          <span className={formData.productId ? 'text-slate-900 truncate pr-4' : 'text-slate-400'}>
+                            {formData.productId ? products.find(p => p.id.toString() === formData.productId)?.name : 'Search & Select Product...'}
+                          </span>
+                          <ChevronDown size={18} className={`text-slate-400 transition-transform duration-300 ${isDropdownOpen ? 'rotate-180' : ''}`} />
                         </div>
+                        
+                        {isDropdownOpen && (
+                          <>
+                            <div className="fixed inset-0 z-40" onClick={() => setIsDropdownOpen(false)} />
+                            <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl border border-slate-200 shadow-xl overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                              <div className="p-3 border-b border-slate-100 bg-slate-50/50">
+                                <div className="relative">
+                                  <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                                  <input 
+                                    type="text" 
+                                    autoFocus
+                                    placeholder="Search by product name..." 
+                                    value={searchQuery}
+                                    onChange={e => setSearchQuery(e.target.value)}
+                                    className="w-full h-10 pl-9 pr-4 rounded-lg bg-white border border-slate-200 focus:border-blue-500 focus:ring-2 ring-blue-500/20 outline-none text-xs font-bold transition-all shadow-sm"
+                                  />
+                                </div>
+                              </div>
+                              <div className="max-h-64 overflow-y-auto p-2 space-y-1">
+                                {filteredProducts.map(p => (
+                                  <div 
+                                    key={p.id}
+                                    onClick={() => {
+                                      setFormData({ ...formData, productId: p.id.toString() });
+                                      setIsDropdownOpen(false);
+                                      setSearchQuery('');
+                                    }}
+                                    className={`px-4 py-3 rounded-lg text-sm font-bold cursor-pointer transition-all flex items-center justify-between ${formData.productId === p.id.toString() ? 'bg-blue-50 text-blue-700' : 'text-slate-700 hover:bg-slate-50'}`}
+                                  >
+                                    <span className="truncate">{p.name}</span>
+                                    {formData.productId === p.id.toString() && <div className="h-2 w-2 rounded-full bg-blue-600 shrink-0" />}
+                                  </div>
+                                ))}
+                                {filteredProducts.length === 0 && (
+                                  <div className="px-4 py-10 text-center flex flex-col items-center justify-center gap-2">
+                                    <Search size={24} className="text-slate-200" />
+                                    <span className="text-[11px] font-black uppercase tracking-widest text-slate-400">No products found</span>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </>
+                        )}
                       </div>
                     </InputWrapper>
 
@@ -214,7 +261,7 @@ export default function VariantForm({ initialData, mode }: VariantFormProps) {
               </div>
 
               {/* Financials & Stock Card */}
-              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm">
                 <SectionHeader title="Financials & Logistics" icon={Package} colorClass="text-emerald-600" />
                 <div className="p-8 space-y-8">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -304,7 +351,7 @@ export default function VariantForm({ initialData, mode }: VariantFormProps) {
 
             <div className="col-span-12 lg:col-span-4 space-y-8">
                {/* Visibility Card */}
-               <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+               <div className="bg-white rounded-2xl border border-slate-200 shadow-sm">
                  <SectionHeader title="Display Settings" icon={MonitorCheck} colorClass="text-purple-600" />
                  <div className="p-8 space-y-6">
                     <InputWrapper label="Sort Order" helpText="Lower numbers appear first in the dropdown.">

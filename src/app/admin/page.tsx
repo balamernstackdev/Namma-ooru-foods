@@ -14,7 +14,8 @@ import {
    Plus,
    ExternalLink,
    Package,
-   Clock
+   Clock,
+   Shield
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import useSWR from 'swr';
@@ -61,7 +62,14 @@ export default function AdminDashboard() {
                   <span className="text-emerald-800">Welcome Back, {user?.name}!</span>
                </p>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-3">
+               <button
+                  onClick={() => router.push('/admin/marketplace-governance')}
+                  className="h-10 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[12px] shadow-lg shadow-emerald-500/25 transition-all flex items-center gap-2 active:scale-95 group border-0 cursor-pointer"
+               >
+                  <Shield size={16} className="group-hover:scale-110 transition-transform" />
+                  Vendor Management
+               </button>
                <button
                   onClick={() => router.push('/admin/analytics')}
                   className="h-10 px-4 rounded-xl bg-white border border-slate-200 text-slate-600 font-bold text-[12px] shadow-sm hover:shadow-md hover:bg-slate-50 transition-all flex items-center gap-2"
@@ -71,7 +79,7 @@ export default function AdminDashboard() {
                </button>
                <button
                   onClick={() => router.push('/admin/products')}
-                  className="h-10 px-5 rounded-xl bg-slate-950 text-white font-bold text-[12px] shadow-lg shadow-slate-950/20 hover:bg-slate-900 transition-all flex items-center gap-2 active:scale-95 group"
+                  className="h-10 px-5 rounded-xl bg-slate-950 text-white font-bold text-[12px] shadow-lg shadow-slate-950/20 hover:bg-slate-900 transition-all flex items-center gap-2 active:scale-95 group border-0 cursor-pointer"
                >
                   <Plus size={16} className="group-hover:rotate-90 transition-transform" />
                   New Initiative
@@ -136,10 +144,10 @@ export default function AdminDashboard() {
          )}
 
 
-         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+         <div className="w-full">
 
             {/* Recent Orders */}
-            <div className="lg:col-span-2 bg-white rounded-3xl border border-slate-200/60 p-8 shadow-sm">
+            <div className="bg-white rounded-3xl border border-slate-200/60 p-8 shadow-sm">
                <div className="flex items-center justify-between mb-8">
                   <div>
                      <h3 className="text-xl font-black text-slate-950 tracking-tight">Recent Conversions</h3>
@@ -207,46 +215,6 @@ export default function AdminDashboard() {
                   </table>
                </div>
             </div>
-
-            <div className="space-y-8">
-               {/* Catalog Highlights */}
-               <div className="bg-slate-950 rounded-3xl p-8 shadow-2xl text-white relative overflow-hidden group">
-                  <div className="absolute top-0 right-0 w-40 h-40 bg-emerald-500/10 rounded-full blur-3xl -mr-20 -mt-20 group-hover:bg-emerald-500/20 transition-all duration-700" />
-                  <div className="relative z-10">
-                     <h3 className="text-xl font-black mb-1 tracking-tight">Master Catalog</h3>
-                     <p className="text-[11px] font-black text-emerald-400 uppercase tracking-[0.2em] mb-8">High Performance SKU List</p>
-
-                     <div className="space-y-6">
-                        {topProducts.length > 0 ? topProducts.map((product: any, i: number) => (
-                           <div key={i} className="flex items-center gap-4 group/item cursor-pointer" onClick={() => router.push('/admin/products')}>
-                              <div className="h-12 w-12 rounded-xl bg-white/5 border border-white/10 overflow-hidden shrink-0 transition-all group-hover/item:border-emerald-500/50 group-hover/item:scale-105 shadow-xl">
-                                 <img src={product.image} className="h-full w-full object-cover" alt="" />
-                              </div>
-                              <div className="flex flex-col min-w-0">
-                                 <span className="text-[13px] font-black tracking-tight truncate group-hover/item:text-emerald-400 transition-colors">{product.name}</span>
-                                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-0.5">{product.sales} units dispatched</span>
-                              </div>
-                           </div>
-                        )) : (
-                           <div className="py-10 text-center text-white/10">
-                              <Package size={32} className="mx-auto mb-2" />
-                              <span className="text-[10px] font-black uppercase tracking-widest">Inventory Static</span>
-                           </div>
-                        )}
-                     </div>
-
-                     <button
-                        onClick={() => router.push('/admin/products')}
-                        className="w-full mt-10 h-12 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-[12px] uppercase tracking-widest rounded-xl shadow-lg shadow-emerald-900/40 transition-all flex items-center justify-center gap-3 active:scale-95"
-                     >
-                        <Package size={18} />
-                        Optimize Stock
-                     </button>
-                  </div>
-               </div>
-
-            </div>
-
          </div>
       </div>
    );

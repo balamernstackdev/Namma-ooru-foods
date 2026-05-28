@@ -67,7 +67,7 @@ export default function AdminRefundsPage() {
   return (
     <div className="space-y-8 animate-in fade-in duration-700">
       <div>
-        <h2 className="text-4xl font-black text-[var(--admin-sidebar)] tracking-tighter uppercase">REFUND REQUESTS</h2>
+        <h2 className="text-4xl font-black text-[var(--admin-sidebar)] tracking-tighter">Refund Management</h2>
         <p className="text-slate-400 font-medium text-sm mt-1">{orders.length} refund requests on this page</p>
       </div>
 
@@ -133,7 +133,7 @@ export default function AdminRefundsPage() {
                           </button>
                         )}
                         <button onClick={() => handleDelete(order.id)} className="h-9 w-9 flex items-center justify-center rounded-xl border border-slate-100 text-red-300 hover:bg-red-500 hover:text-white hover:border-red-500 transition-all" title="Delete Record">
-                           <Trash2 size={15} />
+                          <Trash2 size={15} />
                         </button>
                       </div>
                     )}
@@ -149,7 +149,7 @@ export default function AdminRefundsPage() {
             </tbody>
           </table>
         </div>
-        <AdminPagination 
+        <AdminPagination
           currentPage={currentPage}
           totalPages={totalPages}
           onPageChange={setCurrentPage}

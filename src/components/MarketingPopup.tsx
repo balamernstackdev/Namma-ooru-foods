@@ -55,7 +55,7 @@ const MarketingPopup = () => {
             <div className="relative w-full md:w-[45%] h-64 md:h-auto bg-emerald-900 overflow-hidden">
               <Image
                 src="/ai_images/discount_offer_1776230743911.png"
-                alt="Organic Harvest"
+                alt="Organic Product"
                 fill
                 className="object-cover transition-transform duration-1000 hover:scale-110"
                 priority
@@ -72,7 +72,7 @@ const MarketingPopup = () => {
                   <Gift className="h-8 w-8 text-emerald-950" />
                 </motion.div>
                 <h2 className="text-4xl md:text-5xl font-black tracking-tighter leading-none mb-1">20%<span className="text-amber-400">OFF</span></h2>
-                <p className="text-[12px] font-black uppercase tracking-[0.3em] opacity-80">Your First Harvest</p>
+                <p className="text-[12px] font-black uppercase tracking-[0.3em] opacity-80">Your First Product</p>
               </div>
             </div>
 
@@ -101,7 +101,7 @@ const MarketingPopup = () => {
 
                     <h3 className="text-3xl md:text-3xl font-black text-emerald-950 tracking-tighter leading-tight mb-4">
                       Taste the purity of <span className="relative inline-block text-emerald-700">
-                        Namma Orru
+                        namma ooru
                         <Sparkles className="absolute -top-4 -right-4 h-4 w-4 text-amber-400" />
                       </span>
                     </h3>

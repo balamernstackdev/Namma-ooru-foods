@@ -58,8 +58,8 @@ export default function ProductApprovals() {
          {/* Page Header */}
          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div className="space-y-1">
-               <h2 className="text-4xl font-black text-[var(--admin-sidebar)] tracking-tighter uppercase">
-                  VENDOR PRODUCT APPROVALS
+               <h2 className="text-4xl font-black text-[var(--admin-sidebar)] tracking-tighter">
+                  Vendor Products Approvals
                </h2>
                <p className="text-slate-400 font-bold text-xs uppercase tracking-widest">Review and approve products submitted by vendors</p>
             </div>

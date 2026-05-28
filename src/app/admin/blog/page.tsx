@@ -53,7 +53,7 @@ export default function AdminBlogPage() {
     <div className="space-y-8 animate-in fade-in duration-700">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-          <h2 className="text-4xl font-black text-[var(--admin-sidebar)] tracking-tighter">Content Ledger</h2>
+          <h2 className="text-4xl font-black text-[var(--admin-sidebar)] tracking-tighter">Blog Management</h2>
           <p className="text-slate-400 font-medium text-sm mt-1">Managing articles, recipes, and seasonal updates.</p>
         </div>
         <button id="new-article-btn" onClick={() => router.push('/admin/blog/new')}
@@ -133,7 +133,7 @@ export default function AdminBlogPage() {
             </tbody>
           </table>
         </div>
-        <AdminPagination 
+        <AdminPagination
           currentPage={currentPage}
           totalPages={totalPages}
           onPageChange={setCurrentPage}

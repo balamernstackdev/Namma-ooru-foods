@@ -61,20 +61,29 @@ export default function HomeBanner({ apiUrl }: HomeBannerProps) {
 
   const banners = apiBanners && Array.isArray(apiBanners) && apiBanners.length > 0
     ? apiBanners
-        .filter((b: any) => b.desktopImage && typeof b.desktopImage === 'string' && b.desktopImage.trim() !== '')
-        .map((b: BannerData) => ({
-          id: b.id,
-          title: b.title || "Namma Orru",
-          highlight: b.tagline || "Special Offer",
-          subtitle: b.subtitle || "Premium quality products",
-          image: b.desktopImage,
-          link: b.link || '/products',
-          accentColor: b.accentColor || '#5cb338' // Default green
-        }))
+      .filter((b: any) => b.desktopImage && typeof b.desktopImage === 'string' && b.desktopImage.trim() !== '')
+      .map((b: BannerData) => ({
+        id: b.id,
+        title: b.title || "namma ooru",
+        highlight: b.tagline || "Special Offer",
+        subtitle: b.subtitle || "Premium quality products",
+        image: b.desktopImage,
+        link: b.link || '/products',
+        accentColor: b.accentColor || '#5cb338' // Default green
+      }))
     : STATIC_BANNERS;
 
   // Final fallback if filtered API list is empty
   const displayBanners = banners.length > 0 ? banners : STATIC_BANNERS;
+
+  // Prevent out-of-bounds index when list of banners changes dynamically (e.g. SWR load)
+  useEffect(() => {
+    if (current >= displayBanners.length) {
+      setCurrent(0);
+    }
+  }, [displayBanners.length, current]);
+
+  const activeBanner = displayBanners[current] || displayBanners[0] || STATIC_BANNERS[0];
 
   const next = useCallback(() => {
     setCurrent(c => (c + 1) % displayBanners.length);
@@ -93,20 +102,20 @@ export default function HomeBanner({ apiUrl }: HomeBannerProps) {
     <section className="w-full py-4 md:py-10">
       <div className="standard-container w-full px-4 md:px-0">
         <div className="relative w-full h-[280px] sm:h-[350px] md:h-[420px] lg:h-[480px] rounded-[2rem] md:rounded-[3.5rem] overflow-hidden group shadow-2xl">
-          
+
           {/* Background slides */}
           {displayBanners.map((b, i) => (
             <div
               key={b.id}
               className="absolute inset-0 transition-all duration-[1200ms] ease-in-out"
-              style={{ 
-                opacity: i === current ? 1 : 0, 
+              style={{
+                opacity: i === current ? 1 : 0,
                 transform: i === current ? 'scale(1)' : 'scale(1.08)',
               }}
             >
               <Image
                 src={b.image}
-                alt={b.title}
+                alt={b.title || "Banner"}
                 fill
                 className="object-cover"
                 priority={i === 0}
@@ -127,29 +136,30 @@ export default function HomeBanner({ apiUrl }: HomeBannerProps) {
               transition={{ duration: 0.8 }}
               className="max-w-2xl"
             >
-              <span 
+              <span
                 className="inline-block text-[10px] md:text-xs font-black uppercase tracking-[0.3em] mb-3 md:mb-5 px-4 py-1.5 rounded-full border"
-                style={{ 
-                  color: displayBanners[current].accentColor, 
-                  borderColor: `${displayBanners[current].accentColor}50`,
-                  backgroundColor: `${displayBanners[current].accentColor}15`
+                style={{
+                  color: activeBanner.accentColor,
+                  borderColor: `${activeBanner.accentColor}50`,
+                  backgroundColor: `${activeBanner.accentColor}15`
                 }}
               >
-                Namma Orru Foods
+                namma ooru Foods
               </span>
               <h2 className="text-white text-2xl sm:text-3xl md:text-5xl lg:text-6xl font-black tracking-tight leading-[1.05] mb-2 md:mb-4 drop-shadow-lg">
-                {displayBanners[current].title} <br />
-                <span style={{ color: displayBanners[current].accentColor }}>
-                  {displayBanners[current].highlight}
+                {activeBanner.title} <br />
+                <span style={{ color: activeBanner.accentColor }}>
+                  {activeBanner.highlight}
                 </span>
               </h2>
               <p className="text-white/70 text-sm md:text-lg font-medium mb-6 md:mb-10 max-w-md">
-                {displayBanners[current].subtitle}
+                {activeBanner.subtitle}
               </p>
-              <Link 
-                href={displayBanners[current].link}
+              <Link
+                href={activeBanner.link || "/products"}
+                prefetch={false}
                 className="inline-flex h-11 md:h-14 px-8 md:px-14 rounded-full text-white text-[10px] md:text-xs font-black uppercase tracking-widest hover:scale-105 transition-all shadow-xl items-center justify-center"
-                style={{ backgroundColor: displayBanners[current].accentColor }}
+                style={{ backgroundColor: activeBanner.accentColor }}
               >
                 Shop Now →
               </Link>
@@ -176,11 +186,10 @@ export default function HomeBanner({ apiUrl }: HomeBannerProps) {
               <button
                 key={i}
                 onClick={() => setCurrent(i)}
-                className={`h-2 transition-all rounded-full ${
-                  i === current ? 'w-10 md:w-12' : 'w-2'
-                }`}
-                style={{ 
-                  backgroundColor: i === current ? displayBanners[current].accentColor : 'rgba(255,255,255,0.35)' 
+                className={`h-2 transition-all rounded-full ${i === current ? 'w-10 md:w-12' : 'w-2'
+                  }`}
+                style={{
+                  backgroundColor: i === current ? activeBanner.accentColor : 'rgba(255,255,255,0.35)'
                 }}
               />
             ))}

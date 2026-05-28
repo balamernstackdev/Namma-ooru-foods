@@ -82,7 +82,7 @@ export default function ProductCarousel({
               {subtitle}
             </span>
             <h2
-              className="text-slate-900 font-black tracking-tight text-2xl md:text-3xl leading-tight uppercase"
+              className="text-emerald-950 font-black tracking-tighter text-2xl md:text-4xl lg:text-5xl leading-none uppercase"
               dangerouslySetInnerHTML={{ __html: title }}
             />
           </div>
@@ -107,6 +107,7 @@ export default function ProductCarousel({
             </button>
             <Link
               href={viewAllHref}
+              prefetch={false}
               className="hidden md:inline-flex text-[10px] font-black uppercase tracking-widest ml-2 whitespace-nowrap"
               style={{ color: '#065f46' }}
             >
@@ -137,7 +138,7 @@ export default function ProductCarousel({
 
         {/* Mobile view-all */}
         <div className="md:hidden flex justify-center mt-0">
-          <Link href={viewAllHref} className="text-[10px] font-black uppercase tracking-widest text-primary hover:text-accent transition-colors border-b border-primary/20 pb-1">
+          <Link href={viewAllHref} prefetch={false} className="text-[10px] font-black uppercase tracking-widest text-primary hover:text-accent transition-colors border-b border-primary/20 pb-1">
             View All Products →
           </Link>
         </div>

@@ -78,8 +78,8 @@ export default function BlogDetailClient({ post }: { post: BlogPost | null }) {
             <div className="flex items-center gap-2">
               <div className="h-10 w-10 rounded-full bg-amber-100 flex items-center justify-center text-amber-700 font-black text-xs border border-white shadow-sm">N</div>
               <div>
-                <p className="text-[9px] font-black uppercase tracking-widest text-[#022c22]">Namma Orru Foods</p>
-                <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Author • The Harvesters</p>
+                <p className="text-[9px] font-black uppercase tracking-widest text-[#022c22]">namma ooru Foods</p>
+                <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Author • The Producters</p>
               </div>
             </div>
             <div className="h-8 w-px bg-slate-100 hidden sm:block" />

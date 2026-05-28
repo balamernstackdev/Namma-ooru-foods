@@ -9,13 +9,43 @@ import {
    Layers,
    Info,
    Type,
-   Hash
+   Hash,
+   ChevronDown,
+   HelpCircle
 } from 'lucide-react';
-import { motion } from 'framer-motion';
 import useSWR from 'swr';
 import { useToast } from '@/context/ToastContext';
 import { API_URL } from '@/lib/api';
+
 const fetcher = (url: string) => fetch(url).then(res => res.json());
+
+const InputWrapper = ({ label, children, helpText, maxWidth = "max-w-full" }: any) => (
+   <div className={`space-y-2 flex-1 ${maxWidth}`}>
+      <div className="flex items-center justify-between">
+         <label className="text-[11px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+            {label}
+         </label>
+         {helpText && (
+            <div className="group relative">
+               <HelpCircle size={14} className="text-slate-300 cursor-help hover:text-emerald-500 transition-all shadow-sm" />
+               <div className="absolute bottom-full right-0 mb-2 w-48 p-2 bg-slate-800 text-white text-[10px] rounded shadow-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
+                  {helpText}
+               </div>
+            </div>
+         )}
+      </div>
+      <div className="relative">
+         {children}
+      </div>
+   </div>
+);
+
+const SectionHeader = ({ title, icon: Icon, colorClass = "text-emerald-600" }: any) => (
+   <div className="px-8 py-3.5 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 flex items-center gap-3">
+      <Icon size={16} className={colorClass} />
+      <h2 className="text-[10px] font-black text-slate-900 dark:text-slate-200 uppercase tracking-[0.2em]">{title}</h2>
+   </div>
+);
 
 export default function CreateVariant() {
    const router = useRouter();
@@ -32,7 +62,8 @@ export default function CreateVariant() {
       sku: ''
    });
 
-   const { data: products } = useSWR(user?.brandId ? `${API_URL}/api/products?brandId=${user.brandId}` : null, fetcher);
+   const { data: productsData } = useSWR(user?.brandId ? `${API_URL}/api/products?subVendorId=${user.brandId}&limit=1000` : null, fetcher);
+   const products = productsData?.products || [];
 
    const handleSubmit = async (e: React.FormEvent) => {
       e.preventDefault();
@@ -70,137 +101,126 @@ export default function CreateVariant() {
    };
 
    return (
-      <div className="max-w-4xl mx-auto pb-32">
-         {/* Header Navigation */}
-         <div className="flex items-center justify-between mb-16">
-            <button
-               onClick={() => router.back()}
-               className="h-14 w-14 rounded-full bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 flex items-center justify-center text-emerald-950 dark:text-white hover:bg-slate-50 transition-all shadow-sm"
-            >
-               <ArrowLeft size={20} />
-            </button>
-            <div className="text-center">
-               <h2 className="text-3xl font-black text-emerald-950 dark:text-white tracking-tighter uppercase">Variant</h2>
-               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Refining Product Specifications for Store #{user?.brandId}</p>
+      <div className="w-full pb-24 bg-[#f8fafc] dark:bg-slate-950 min-h-screen">
+         {/* Sticky Header Navigation */}
+         <div className="sticky top-0 z-40 bg-[#f8fafc]/80 dark:bg-slate-950/80 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800 mb-8 py-6 px-8">
+            <div className="w-full flex items-center justify-between">
+               <div className="flex items-center gap-4">
+                  <button
+                     onClick={() => router.back()}
+                     className="h-10 w-10 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-center justify-center text-slate-500 hover:bg-slate-50 hover:text-emerald-600 transition-all shadow-sm"
+                  >
+                     <ArrowLeft size={18} />
+                  </button>
+                  <div>
+                     <h1 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">
+                        Create Variant
+                     </h1>
+                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Refining Product Specifications for Store #{user?.brandId}</p>
+                  </div>
+               </div>
+               <div className="flex items-center gap-3">
+                  <button onClick={() => router.back()} className="px-4 py-2 rounded-lg text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-900 transition-all">Discard</button>
+                  <button
+                     form="variant-form"
+                     type="submit"
+                     disabled={isLoading}
+                     className="px-6 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black flex items-center gap-2 shadow-lg shadow-emerald-500/20 disabled:opacity-50 transition-all active:scale-95 uppercase tracking-wider"
+                  >
+                     <Save size={14} />
+                     {isLoading ? 'Defining...' : 'Create Variant'}
+                  </button>
+               </div>
             </div>
-            <button
-               form="variant-form"
-               disabled={isLoading}
-               className="h-16 px-10 rounded-2xl bg-amber-500 text-emerald-950 text-[11px] font-black uppercase tracking-widest flex items-center justify-center gap-3 hover:bg-amber-400 transition-all shadow-2xl shadow-amber-900/40"
-            >
-               {isLoading ? 'Saving...' : <><Save size={20} /> Save</>}
-            </button>
          </div>
 
-         <form id="variant-form" onSubmit={handleSubmit} className="grid grid-cols-1 gap-12">
+         <form id="variant-form" onSubmit={handleSubmit} className="w-full px-8 space-y-10">
 
-            <div className="bg-white dark:bg-slate-900 rounded-[3rem] p-10 md:p-14 border border-slate-100 dark:border-slate-800 space-y-12 shadow-sm">
-
-               {/* Section: Specification */}
-               <div className="space-y-10">
-                  <div className="flex items-center gap-4 text-emerald-950 dark:text-white">
-                     <div className="h-12 w-12 rounded-2xl bg-amber-50 dark:bg-amber-900/20 flex items-center justify-center text-amber-600">
-                        <Layers size={24} />
+            {/* 1. CORE MOLECULE CARD */}
+            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden w-full">
+               <SectionHeader title="Weight & Inventory DNA" icon={Layers} colorClass="text-emerald-600" />
+               <div className="p-8 space-y-8">
+                  
+                  <InputWrapper label="Parent Root Product">
+                     <div className="relative">
+                        <select
+                           required
+                           className="w-full h-14 px-6 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:border-emerald-500 outline-none font-bold text-sm appearance-none text-slate-950 dark:text-white"
+                           value={form.productId}
+                           onChange={e => setForm({ ...form, productId: e.target.value })}
+                        >
+                           <option value="">Select Root Product to Associate</option>
+                           {Array.isArray(products) && products.map((p: any) => (
+                              <option key={p.id} value={p.id}>{p.name}</option>
+                           ))}
+                        </select>
+                        <ChevronDown className="absolute right-6 top-1/2 -translate-y-1/2 text-slate-300 pointer-events-none" size={16} />
                      </div>
-                     <h3 className="text-xl font-black tracking-tight">Weight & Inventory DNA</h3>
-                  </div>
+                  </InputWrapper>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-                     <div className="space-y-4 md:col-span-2">
-                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">Parent Root Product</label>
-                        <div className="relative">
-                           <select
-                              required
-                              className="w-full h-16 px-8 rounded-2xl bg-slate-50 dark:bg-slate-800 border-2 border-transparent focus:border-amber-400 outline-none transition-all font-bold text-emerald-950 dark:text-white appearance-none"
-                              value={form.productId}
-                              onChange={e => setForm({ ...form, productId: e.target.value })}
-                           >
-                              <option value="">Select Root Product to Associate</option>
-                              {Array.isArray(products) && products.map((p: any) => (
-                                 <option key={p.id} value={p.id}>{p.name}</option>
-                              ))}
-                           </select>
-                        </div>
-                     </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                     <InputWrapper label="Scale Label">
+                        <input
+                           required
+                           type="text"
+                           placeholder="e.g. 500g Jar / 1kg Pouch"
+                           className="w-full h-14 px-6 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:border-emerald-500 focus:ring-4 ring-emerald-500/5 outline-none font-bold text-slate-950 dark:text-white text-sm transition-all"
+                           value={form.name}
+                           onChange={e => setForm({ ...form, name: e.target.value })}
+                        />
+                     </InputWrapper>
 
-                     <div className="space-y-4">
-                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">Scale Label</label>
-                        <div className="relative">
-                           <Type className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
-                           <input
-                              required
-                              type="text"
-                              placeholder="e.g. 500g Jar / 1kg Pouch"
-                              className="w-full h-16 pl-16 pr-8 rounded-2xl bg-slate-50 dark:bg-slate-800 border-2 border-transparent focus:border-amber-400 outline-none transition-all font-bold text-emerald-950 dark:text-white"
-                              value={form.name}
-                              onChange={e => setForm({ ...form, name: e.target.value })}
-                           />
-                        </div>
-                     </div>
-
-                     <div className="space-y-4">
-                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">Market Price (Base)</label>
-                        <div className="relative">
-                           <span className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-300 font-bold text-lg">₹</span>
+                     <div className="grid grid-cols-2 gap-4">
+                        <InputWrapper label="Market Price (Base)">
                            <input
                               required
                               type="number"
-                              placeholder="0.00"
-                              className="w-full h-16 pl-16 pr-8 rounded-2xl bg-slate-50 dark:bg-slate-800 border-2 border-transparent focus:border-amber-400 outline-none transition-all font-bold text-emerald-950 dark:text-white"
+                              placeholder="₹ Base Price"
+                              className="w-full h-14 px-6 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:border-emerald-500 outline-none font-black text-emerald-600 text-sm"
                               value={form.price}
                               onChange={e => setForm({ ...form, price: e.target.value })}
                            />
-                        </div>
-                     </div>
-                     <div className="space-y-4">
-                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">Market MRP (Original)</label>
-                        <div className="relative">
-                           <span className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-300 font-bold text-lg">₹</span>
+                        </InputWrapper>
+                        <InputWrapper label="MRP">
                            <input
                               type="number"
-                              placeholder="MRP"
-                              className="w-full h-16 pl-16 pr-8 rounded-2xl bg-slate-50 dark:bg-slate-800 border-2 border-transparent focus:border-amber-400 outline-none transition-all font-bold text-emerald-950 dark:text-white"
+                              placeholder="₹ MRP"
+                              className="w-full h-14 px-6 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:border-emerald-500 outline-none font-black text-slate-300 text-sm"
                               value={form.originalPrice}
                               onChange={e => setForm({ ...form, originalPrice: e.target.value })}
                            />
-                        </div>
+                        </InputWrapper>
                      </div>
+                  </div>
 
-                     <div className="space-y-4">
-                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">Stock Availability</label>
-                        <div className="relative">
-                           <Hash className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
-                           <input
-                              required
-                              type="number"
-                              placeholder="Available SKU Count"
-                              className="w-full h-16 pl-16 pr-8 rounded-2xl bg-slate-50 dark:bg-slate-800 border-2 border-transparent focus:border-amber-400 outline-none transition-all font-bold text-emerald-950 dark:text-white"
-                              value={form.stock}
-                              onChange={e => setForm({ ...form, stock: e.target.value })}
-                           />
-                        </div>
-                     </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                     <InputWrapper label="Stock Availability">
+                        <input
+                           required
+                           type="number"
+                           placeholder="Available SKU Count"
+                           className="w-full h-14 px-6 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:border-emerald-500 outline-none font-bold text-sm text-slate-950 dark:text-white"
+                           value={form.stock}
+                           onChange={e => setForm({ ...form, stock: e.target.value })}
+                        />
+                     </InputWrapper>
 
-                     <div className="space-y-4">
-                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">Inventory SKU ID</label>
-                        <div className="relative">
-                           <Hash className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
-                           <input
-                              type="text"
-                              placeholder="e.g. TM-SAUCE-500G"
-                              className="w-full h-16 pl-16 pr-8 rounded-2xl bg-slate-50 dark:bg-slate-800 border-2 border-transparent focus:border-amber-400 outline-none transition-all font-bold text-emerald-950 dark:text-white"
-                              value={form.sku}
-                              onChange={e => setForm({ ...form, sku: e.target.value })}
-                           />
-                        </div>
-                     </div>
+                     <InputWrapper label="Inventory SKU ID">
+                        <input
+                           type="text"
+                           placeholder="e.g. TM-SAUCE-500G"
+                           className="w-full h-14 px-6 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:border-emerald-500 outline-none font-bold text-sm text-slate-950 dark:text-white"
+                           value={form.sku}
+                           onChange={e => setForm({ ...form, sku: e.target.value })}
+                        />
+                     </InputWrapper>
+                  </div>
 
-                     <div className="p-8 rounded-[2rem] bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-800 flex items-center gap-6">
-                        <Info className="text-slate-400 shrink-0" size={24} />
-                        <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest leading-relaxed">
-                           Variants allow you to offer the same product in multiple sizes or configurations. Every variant maintains its own pricing and stock integrity.
-                        </p>
-                     </div>
+                  <div className="p-6 rounded-xl bg-emerald-50 dark:bg-emerald-900/10 border border-emerald-100 dark:border-emerald-800 flex items-center gap-6">
+                     <Info className="text-emerald-600 shrink-0" size={20} />
+                     <p className="text-[11px] font-bold text-emerald-900 dark:text-emerald-400 uppercase tracking-widest leading-relaxed">
+                        Variants allow you to offer the same product in multiple sizes or configurations. Every variant maintains its own pricing and stock integrity.
+                     </p>
                   </div>
                </div>
             </div>

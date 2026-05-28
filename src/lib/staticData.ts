@@ -11,7 +11,7 @@ export const CATEGORIES = [
 ];
 
 export const HOME_BANNERS = [
-  { id: 1, image: '/ai_images/banner_farm_fresh.png', title: 'Farm Fresh Delivered to You', subtitle: '🌿 Just Harvested Today', cta: 'Shop Fresh', link: '/products?category=Traditional Rice & Millets' },
+  { id: 1, image: '/ai_images/banner_farm_fresh.png', title: 'Farm Fresh Delivered to You', subtitle: '🌿 Just Producted Today', cta: 'Shop Fresh', link: '/products?category=Traditional Rice & Millets' },
   { id: 2, image: '/ai_images/banner_heritage_spices.png', title: 'Stone Ground Authentic Spices', subtitle: '🌶️ Secret of South Indian Taste', cta: 'Explore Spices', link: '/products?category=Flour & Powders' },
   { id: 3, image: '/ai_images/banner_natural_products.png', title: 'Cold Pressed Pure Oils', subtitle: '🫒 Health in Every Drop', cta: 'Shop Oils', link: '/products?category=Cold Pressed Oils' },
 ];
@@ -591,7 +591,7 @@ export const PROMOTIONS = [
     category: 'All Grains & Pulses',
     end: 'Ends in 3 days',
     active: true,
-    code: 'HARVEST20',
+    code: 'Product20',
     description: 'Get 20% off on all grains and pulses. Stock up now before the season ends.',
     image: '/ai_images/cinematic_farm_1776230966841.png',
     color: '#d97706'

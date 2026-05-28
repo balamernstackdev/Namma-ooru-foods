@@ -1,38 +1,117 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
-import { Mail, Lock, User, ArrowRight, ShieldCheck, Leaf, Globe, ShoppingBag, ChevronLeft, Heart, Package, MapPin, CreditCard, Bell, Settings, LogOut, ChevronRight, LayoutDashboard } from 'lucide-react';
+import {
+  User,
+  ArrowRight,
+  ShieldCheck,
+  Leaf,
+  Heart,
+  Package,
+  MapPin,
+  CreditCard,
+  Bell,
+  Settings,
+  LogOut,
+  ChevronRight,
+  LayoutDashboard,
+  Timer,
+  Phone,
+  LockKeyhole,
+  Mail,
+  Eye,
+  EyeOff,
+  CheckCircle2,
+  Lock,
+  ArrowLeft,
+  Sparkles,
+  Award
+} from 'lucide-react';
 import Link from 'next/link';
-import Image from 'next/image';
-
+import { motion, AnimatePresence } from 'framer-motion';
 import { useToast } from '@/context/ToastContext';
-import { ShieldAlert, Timer } from 'lucide-react';
+import { API_URL } from '@/lib/api';
 
 export default function AccountPage() {
-  const [isLogin, setIsLogin] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { user, login, requestSignupOTP, verifySignupOTP, logout, isLoading } = useAuth();
-  const { toast } = useToast();
+  const { user, login, requestAuthOTP, verifyAuthOTP, logout, isLoading } = useAuth();
+  const { addToast } = useToast();
   const router = useRouter();
 
-  // STEP MANAGEMENT: 1 for Details, 2 for Registration OTP Validation
-  const [step, setStep] = useState(1);
-  const [otp, setOtp] = useState('');
-  const [isVerifying, setIsVerifying] = useState(false);
-  const [resendTimer, setResendTimer] = useState(0);
+  // Dynamic branding background
+  const [heroImage, setHeroImage] = useState('/ai_images/honey_jar_premium_1779435764877.png');
 
-  React.useEffect(() => {
+  // Flows: 'login' | 'signup' | 'forgot-password'
+  const [mode, setMode] = useState<'login' | 'signup' | 'forgot-password'>('login');
+
+  // Login method: 'password' | 'otp'
+  const [loginMethod, setLoginMethod] = useState<'password' | 'otp'>('password');
+
+  // Input states
+  const [phone, setPhone] = useState('');
+  const [email, setEmail] = useState('');
+  const [name, setName] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [agreeTerms, setAgreeTerms] = useState(true);
+
+  // OTP Verification view states
+  const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
+  const [otpPurpose, setOtpPurpose] = useState<'auth' | 'register' | 'reset' | null>(null);
+  const [otpArray, setOtpArray] = useState(['', '', '', '', '', '']);
+  const [resendTimer, setResendTimer] = useState(0);
+  const [showSuccessAnimation, setShowSuccessAnimation] = useState(false);
+
+  // Forgot password sub-steps: 1 (Enter Info), 2 (OTP Verification), 3 (Enter New Password)
+  const [forgotStep, setForgotStep] = useState<1 | 2 | 3>(1);
+  const [forgotEmail, setForgotEmail] = useState('');
+
+  // Refs for auto-focus OTP inputs
+  const otpRefs = [
+    useRef<HTMLInputElement>(null),
+    useRef<HTMLInputElement>(null),
+    useRef<HTMLInputElement>(null),
+    useRef<HTMLInputElement>(null),
+    useRef<HTMLInputElement>(null),
+    useRef<HTMLInputElement>(null),
+  ];
+
+  // Dynamic Background configuration
+  useEffect(() => {
+    const fetchHeroImage = async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/settings/login_hero_image`);
+        if (response.ok) {
+          const contentType = response.headers.get('content-type');
+          if (contentType && contentType.includes('application/json')) {
+            const data = await response.json();
+            if (data && data.value) {
+              setHeroImage(data.value);
+            }
+          }
+        }
+      } catch (err) {
+        console.error('Error fetching dynamic login hero image setting:', err);
+      }
+    };
+    fetchHeroImage();
+  }, []);
+
+  // OTP countdown timer effect
+  useEffect(() => {
     let interval: any;
-    if (step === 2 && resendTimer > 0) {
-      interval = setInterval(() => setResendTimer((p) => p - 1), 1000);
+    if (resendTimer > 0) {
+      interval = setInterval(() => setResendTimer((prev) => prev - 1), 1000);
     }
     return () => clearInterval(interval);
-  }, [step, resendTimer]);
+  }, [resendTimer]);
 
-  // Redirect logic unchanged
-  React.useEffect(() => {
+  // Session redirection to correct panels
+  useEffect(() => {
     if (user && typeof window !== 'undefined') {
       const role = user.role?.toLowerCase();
       if (role === 'admin') {
@@ -40,329 +119,1017 @@ export default function AccountPage() {
       } else if (role === 'vendor') {
         router.push('/vendor');
       } else if (window.innerWidth < 768) {
-        // Stay on mobile dash
+        // Mobile custom layout stays here
       } else {
         router.push('/');
       }
     }
   }, [user, router]);
 
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [name, setName] = useState('');
+  // Handle manual OTP change in the 6 inputs list
+  const handleOtpChange = (value: string, index: number) => {
+    if (value && isNaN(Number(value))) return;
 
-  const menuItems = [
-    { label: 'My Profile',       href: '/account/profile',      icon: User,        desc: 'Personal details & settings' },
-    ...((user?.role?.toLowerCase() === 'admin' || user?.role?.toLowerCase() === 'vendor') ? [
-      { 
-        label: 'Admin Panel', 
-        href: user.role.toLowerCase() === 'vendor' ? '/vendor' : '/admin', 
-        icon: LayoutDashboard, 
-        desc: 'Enterprise Portal' 
-      }
-    ] : []),
-    { label: 'Wishlist',         href: '/account/wishlist',     icon: Heart,       desc: 'Saved products' },
-    { label: 'My Orders',        href: '/account/orders',       icon: Package,     desc: 'Order history & status' },
-    { label: 'Track Order',      href: '/account/tracking',     icon: MapPin,      desc: 'Real-time shipment tracking' },
-    { label: 'Payments',         href: '/account/payments',     icon: CreditCard,  desc: 'Transaction history' },
-    { label: 'Notifications',    href: '/account/notifications',icon: Bell,        desc: 'Alerts & updates' },
-    { label: 'Settings',         href: '/account/settings',     icon: Settings,    desc: 'Privacy & preferences' },
-  ];
+    const newOtp = [...otpArray];
+    newOtp[index] = value.substring(value.length - 1);
+    setOtpArray(newOtp);
 
-  const handleInitialSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-    try {
-      if (isLogin) {
-        await login(email, password);
-        toast.success('Signed in successfully.');
-      } else {
-        // Step 1: Request registration OTP
-        await requestSignupOTP(name, email, password);
-        toast.success('Security token dispatched to your email.');
-        setResendTimer(30);
-        setStep(2);
-      }
-    } catch (err: any) {
-      setError(err.message || 'Handshake initialization failed.');
-      toast.error(err.message || 'Authentication failed.');
+    // Focus next input box
+    if (value && index < 5) {
+      otpRefs[index + 1].current?.focus();
     }
   };
 
-  const handleVerifyOTP = async (e: React.FormEvent) => {
-     e.preventDefault();
-     setError(null);
-     setIsVerifying(true);
-     try {
-        await verifySignupOTP(email, otp);
-        toast.success('Identity validated & Provisioned!');
-     } catch (err: any) {
-        setError(err.message || 'Validation sequence invalid.');
-        toast.error(err.message || 'OTP Failed.');
-     } finally {
-        setIsVerifying(false);
-     }
+  const handleOtpKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, index: number) => {
+    if (e.key === 'Backspace') {
+      const newOtp = [...otpArray];
+      if (otpArray[index] === '' && index > 0) {
+        // Focus previous input box
+        otpRefs[index - 1].current?.focus();
+        newOtp[index - 1] = '';
+      } else {
+        newOtp[index] = '';
+      }
+      setOtpArray(newOtp);
+    }
   };
 
-  const handleResendOTP = async () => {
-     if (resendTimer > 0) return;
-     setError(null);
-     try {
-        await requestSignupOTP(name, email, password);
-        toast.success('Payload redelivered successfully.');
-        setResendTimer(60);
-     } catch (err: any) {
-        setError(err.message);
-     }
+  const handleOtpPaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+    e.preventDefault();
+    const pastedData = e.clipboardData.getData('text').slice(0, 6);
+    if (!/^\d+$/.test(pastedData)) return;
+
+    const newOtp = [...otpArray];
+    for (let i = 0; i < pastedData.length; i++) {
+      newOtp[i] = pastedData[i];
+    }
+    setOtpArray(newOtp);
+
+    const targetIdx = Math.min(pastedData.length, 5);
+    otpRefs[targetIdx].current?.focus();
   };
 
+  // Get joined string OTP
+  const getFullOtp = () => otpArray.join('');
+
+  // OTP triggers
+  const triggerResend = async () => {
+    if (resendTimer > 0) return;
+    setError(null);
+    try {
+      if (otpPurpose === 'auth') {
+        await requestAuthOTP(phone);
+        addToast('Success', 'Authentication OTP resent successfully.');
+      } else if (otpPurpose === 'register') {
+        const signupPayload = { name, email, phone, password };
+        const res = await fetch(`${API_URL}/api/auth/signup/request`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(signupPayload)
+        });
+        if (!res.ok) {
+          const err = await res.json();
+          throw new Error(err.error || 'Failed to dispatch registration OTP');
+        }
+        addToast('Success', 'Registration verification token resent.');
+      } else if (otpPurpose === 'reset') {
+        const res = await fetch(`${API_URL}/api/auth/forgot-password`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: forgotEmail })
+        });
+        if (!res.ok) {
+          const err = await res.json();
+          throw new Error(err.error || 'Failed to dispatch reset code.');
+        }
+        addToast('Success', 'Password override OTP code resent.');
+      }
+      setResendTimer(60);
+    } catch (err: any) {
+      setError(err.message);
+      addToast('Error', err.message);
+    }
+  };
+
+  // 1. Submit LOGIN details
+  const handleLoginSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+
+    if (loginMethod === 'otp') {
+      if (phone.length < 10) {
+        setError('Please enter a valid 10-digit mobile number.');
+        return;
+      }
+      try {
+        await requestAuthOTP(phone);
+        setOtpPurpose('auth');
+        setOtpArray(['', '', '', '', '', '']);
+        setResendTimer(30);
+        setIsVerifyingOtp(true);
+        addToast('Security Check', 'Secure SMS authorization token sent.');
+      } catch (err: any) {
+        setError(err.message || 'OTP dispatch failed.');
+        addToast('Error', err.message || 'OTP dispatch failed.');
+      }
+    } else {
+      // Password based login
+      if (!phone) {
+        setError('Please enter your mobile number or email address.');
+        return;
+      }
+      if (!password) {
+        setError('Please enter your account password.');
+        return;
+      }
+      try {
+        await login(phone, password);
+        addToast('Welcome Back!', 'Login Successfullly');
+      } catch (err: any) {
+        setError(err.message || 'Invalid credentials.');
+        addToast('Authentication Failed', err.message || 'Check your password.');
+      }
+    }
+  };
+
+  // 2. Submit SIGNUP details
+  const handleSignupSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+
+    if (!name || !email || !phone || !password) {
+      setError('Please fill in all the required onboarding details.');
+      return;
+    }
+    if (phone.length < 10) {
+      setError('Please enter a valid 10-digit mobile number.');
+      return;
+    }
+    if (password !== confirmPassword) {
+      setError('Passwords do not match. Please verify your passwords.');
+      return;
+    }
+    if (!agreeTerms) {
+      setError('Please accept our marketplace terms and conditions to proceed.');
+      return;
+    }
+
+    try {
+      const signupPayload = { name, email, phone, password, role: 'USER' };
+      const res = await fetch(`${API_URL}/api/auth/signup/request`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(signupPayload)
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to request registration.');
+
+      setOtpPurpose('register');
+      setOtpArray(['', '', '', '', '', '']);
+      setResendTimer(60);
+      setIsVerifyingOtp(true);
+      addToast('Onboarding OTP Sent', 'Please verify your phone number using the OTP sent.');
+    } catch (err: any) {
+      setError(err.message || 'Registration failed.');
+      addToast('Error', err.message || 'Registration failed.');
+    }
+  };
+
+  // Unified Form Submit
+  const handleFormSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (mode === 'signup') {
+      handleSignupSubmit(e);
+    } else {
+      handleLoginSubmit(e);
+    }
+  };
+
+  // 3. Submit FORGOT PASSWORD (Step 1)
+  const handleForgotSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+
+    if (!forgotEmail) {
+      setError('Please specify your registered Mobile Number.');
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API_URL}/api/auth/forgot-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: forgotEmail })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Verification request dropped.');
+
+      setOtpPurpose('reset');
+      setOtpArray(['', '', '', '', '', '']);
+      setResendTimer(60);
+      setIsVerifyingOtp(true);
+      addToast('Verification OTP Shared', 'Password recovery OTP has been sent successfully to your mobile.');
+    } catch (err: any) {
+      setError(err.message || 'Password reset request failed.');
+      addToast('Error', err.message || 'Password reset request failed.');
+    }
+  };
+
+  // OTP CHECKSUM VERIFICATION (Flow centralizer)
+  const handleOtpVerifySubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+
+    const fullOtp = getFullOtp();
+    if (fullOtp.length < 6) return;
+
+    try {
+      if (otpPurpose === 'auth') {
+        await verifyAuthOTP(phone, fullOtp);
+        triggerSuccessEffect();
+      } else if (otpPurpose === 'register') {
+        const res = await fetch(`${API_URL}/api/auth/signup/verify`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, phone, otp: fullOtp })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Identity confirmation mismatched.');
+
+        // Instantly authenticate user session
+        localStorage.setItem('namma_orru_token', data.token);
+        // Refresh context
+        window.location.reload();
+        triggerSuccessEffect();
+      } else if (otpPurpose === 'reset') {
+        const res = await fetch(`${API_URL}/api/auth/verify-reset-otp`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: forgotEmail, otp: fullOtp })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'OTP mismatch.');
+
+        setIsVerifyingOtp(false);
+        setForgotStep(3); // Direct forward to new password layout
+        addToast('Verification Passed', 'Please specify your new secure password.');
+      }
+    } catch (err: any) {
+      setError('Invalid OTP');
+    }
+  };
+
+  // OTP 3: Execute Reset override
+  const handleExecutePasswordReset = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+
+    if (password !== confirmPassword) {
+      setError('Passwords do not match. Please check your new password.');
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API_URL}/api/auth/reset-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: forgotEmail, otp: getFullOtp(), newPassword: password })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to update credentials.');
+
+      addToast('Credentials Override Success', 'Password updated successfully. Please login.');
+      setMode('login');
+      setForgotStep(1);
+      setPassword('');
+      setConfirmPassword('');
+    } catch (err: any) {
+      setError(err.message || 'Credentials override failed.');
+      addToast('Error', err.message || 'Credentials override failed.');
+    }
+  };
+
+  const triggerSuccessEffect = () => {
+    setShowSuccessAnimation(true);
+    setTimeout(() => {
+      setShowSuccessAnimation(false);
+      setIsVerifyingOtp(false);
+    }, 2200);
+  };
+
+  // -----------------------------------------------------
+  // AUTHENTICATED MOBILE CONTROL PANEL
+  // -----------------------------------------------------
   if (user) {
+    const menuItems = [
+      { label: 'My Profile', href: '/account/profile', icon: User, desc: 'Personal details & settings' },
+      ...((user?.role?.toLowerCase() === 'admin' || user?.role?.toLowerCase() === 'vendor') ? [
+        {
+          label: 'Control Board Portal',
+          href: user.role.toLowerCase() === 'vendor' ? '/vendor' : '/admin',
+          icon: LayoutDashboard,
+          desc: 'Enterprise Operations panel'
+        }
+      ] : []),
+      { label: 'Wishlist', href: '/account/wishlist', icon: Heart, desc: 'Saved products' },
+      { label: 'My Orders', href: '/account/orders', icon: Package, desc: 'Order history & status' },
+      { label: 'Payments', href: '/account/payments', icon: CreditCard, desc: 'Transaction history' },
+      { label: 'Settings', href: '/account/settings', icon: Settings, desc: 'Privacy & preferences' },
+    ];
+
     return (
-      <div className="md:hidden flex flex-col gap-4 p-4">
-        {/* User Card - Mobile Only */}
-        <div className="bg-[var(--admin-sidebar)] rounded-[2rem] p-6 text-white shadow-premium relative overflow-hidden mb-4">
-          <div className="absolute inset-0 bg-white/5 opacity-[0.05] pointer-events-none" />
-          <div className="relative z-10 flex items-center gap-4">
-            <div className="h-16 w-16 rounded-full overflow-hidden border-2 border-amber-400 shadow-xl shrink-0">
-              {user.avatar 
-                ? <img src={user.avatar} alt={user.name} className="h-full w-full object-cover" />
-                : <div className="h-full w-full bg-blue-800 flex items-center justify-center text-xl font-black">{user.name[0]}</div>
-              }
-            </div>
-            <div className="flex flex-col min-w-0">
-              <h2 className="text-[18px] font-black tracking-tight leading-tight truncate">{user.name}</h2>
-              <p className="text-[10px] font-bold text-blue-400 uppercase tracking-widest opacity-80 truncate">{user.email}</p>
-            </div>
-          </div>
-        </div>
+      <div className="md:hidden flex flex-col gap-5 p-6 min-h-screen bg-stone-50/50">
+        <span className="text-[10px] font-black uppercase tracking-[0.35em] text-stone-400 pl-4 border-l-4 border-emerald-500 mb-1 mt-4">
+          Marketplace Hub
+        </span>
 
-        <span className="text-[10px] font-black uppercase tracking-[0.5em] text-slate-400 pl-4 border-l-2 border-amber-400 mb-2">My Account</span>
-
-        <nav className="flex flex-col gap-3">
+        <nav className="flex flex-col gap-4">
           {menuItems.map((item) => (
             <Link
               key={item.href}
               href={item.href}
-              className="group flex items-center justify-between py-4 px-6 rounded-[2rem] bg-white border border-slate-100 shadow-sm active:scale-95 transition-all"
+              className="group flex items-center justify-between py-4.5 px-6 rounded-[2rem] bg-white border border-stone-100 shadow-[0_8px_30px_rgb(0,0,0,0.02)] active:scale-[0.98] transition-all duration-300"
             >
-              <div className="flex items-center gap-4">
-                <div className="h-12 w-12 rounded-2xl bg-slate-50 flex items-center justify-center text-[var(--primary)] group-hover:bg-[var(--primary-light)] transition-all">
+              <div className="flex items-center gap-5">
+                <div className="h-12 w-12 rounded-2xl bg-stone-50 flex items-center justify-center text-stone-600 group-hover:bg-emerald-50 group-hover:text-emerald-600 transition-colors">
                   <item.icon size={22} strokeWidth={2.5} />
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-[14px] font-black text-[var(--admin-sidebar)]">{item.label}</span>
-                  <span className="text-[10px] text-slate-400 font-medium">{item.desc}</span>
+                  <span className="text-[14px] font-black text-stone-900 tracking-tight leading-snug">{item.label}</span>
+                  <span className="text-[11px] text-stone-400 font-medium mt-0.5">{item.desc}</span>
                 </div>
               </div>
-              <div className="h-8 w-8 rounded-full bg-slate-50 flex items-center justify-center">
-                <ChevronRight className="h-4 w-4 text-[var(--admin-sidebar)]" strokeWidth={3} />
+              <div className="h-8 w-8 rounded-full bg-stone-50 flex items-center justify-center group-hover:bg-emerald-50 transition-colors">
+                <ChevronRight className="h-4 w-4 text-stone-400 group-hover:text-emerald-600" strokeWidth={3} />
               </div>
             </Link>
           ))}
 
           <button
             onClick={logout}
-            className="flex items-center gap-4 py-4 px-6 rounded-[2rem] bg-red-50 active:bg-red-100 transition-all border border-red-100 mt-4 group"
+            className="flex items-center gap-5 py-4 px-6 rounded-[2rem] bg-red-50/50 hover:bg-red-50 active:scale-[0.98] transition-all duration-300 mt-6 border border-red-100/70"
           >
-            <div className="h-12 w-12 rounded-2xl bg-white flex items-center justify-center text-red-400 shadow-sm transition-all group-active:scale-90">
+            <div className="h-12 w-12 rounded-2xl bg-white flex items-center justify-center text-red-500 shadow-sm border border-red-100/40">
               <LogOut size={22} strokeWidth={2.5} />
             </div>
-            <span className="text-[14px] font-black text-red-500 uppercase tracking-widest">Sign Out</span>
+            <span className="text-[13px] font-black text-red-600 uppercase tracking-[0.2em]">Sign Out</span>
           </button>
         </nav>
       </div>
     );
   }
 
+  // -----------------------------------------------------
+  // MAIN GUEST ENTRY POINT (SPLIT SCREEN EXPERIENCE)
+  // -----------------------------------------------------
   return (
-    <div className="min-h-[calc(100vh-96px)] w-full bg-slate-50 flex items-center justify-center p-6 md:p-12 relative overflow-hidden">
-      {/* Decorative Background Blur */}
-      <div className="absolute top-0 right-0 h-96 w-96 bg-[var(--primary-light)]/50 rounded-full blur-3xl -z-10" />
-      <div className="absolute bottom-0 left-0 h-96 w-96 bg-amber-100/50 rounded-full blur-3xl -z-10" />
+    <div className="min-h-[calc(100vh-96px)] w-full bg-[#fdfbf7] dark:bg-slate-950 flex items-stretch relative overflow-hidden transition-colors duration-500">
 
-      {/* Main Authenticaton Card */}
-      <div className="w-full max-w-6xl bg-white mx-auto rounded-[2rem] md:rounded-[2.5rem] shadow-[0_30px_60px_rgba(2,15,30,0.05)] border border-slate-100 overflow-hidden flex flex-col lg:flex-row relative z-10 min-h-[600px]">
+      {/* Dynamic Browser Autofill Overrides to remove default browser blue/yellow overlays */}
+      <style dangerouslySetInnerHTML={{
+        __html: `
+        input:-webkit-autofill,
+        input:-webkit-autofill:hover, 
+        input:-webkit-autofill:focus, 
+        input:-webkit-autofill:active {
+          -webkit-box-shadow: 0 0 0 1000px white inset !important;
+          -webkit-text-fill-color: #1c1917 !important;
+          transition: background-color 5000s ease-in-out 0s;
+        }
+        .dark input:-webkit-autofill,
+        .dark input:-webkit-autofill:hover, 
+        .dark input:-webkit-autofill:focus, 
+        .dark input:-webkit-autofill:active {
+          -webkit-box-shadow: 0 0 0 1000px #0f172a inset !important;
+          -webkit-text-fill-color: #ffffff !important;
+        }
+      `}} />
+
+      {/* 1. LEFT BACKGROUND IMAGE PANE */}
+      {/* On desktop: covers 58% of screen. On mobile: covers full background! */}
+      <div className="absolute inset-0 lg:static lg:flex lg:w-[58%] relative bg-stone-950 flex-col justify-end p-20 overflow-hidden">
+        {/* Cinematic Organic visual overlay background */}
+        <img
+          src={heroImage}
+          className="absolute inset-0 h-full w-full object-cover opacity-65 lg:opacity-60 scale-105 transition-all duration-1000"
+          alt="Premium Namma Ooru Foods Organic Spices & Grains"
+        />
+        {/* Sophisticated gradient mapping */}
+        <div className="absolute inset-0 bg-gradient-to-t from-stone-950 via-stone-950/45 to-stone-950/25 opacity-95" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-transparent via-transparent to-stone-950/90" />
 
 
-        {/* LEFT: CINEMATIC STORYTELLING (50%) */}
-        <div className="hidden lg:block lg:w-1/2 relative bg-[var(--admin-sidebar)] min-h-[500px]">
-          <img
-            src="/ai_images/honey_gold_1776231080758.png"
-            className="absolute inset-0 h-full w-full object-cover opacity-60 contrast-125"
-            alt="Organic Farm"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-[var(--admin-sidebar)] via-[var(--admin-sidebar)]/10 to-transparent opacity-80" />
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent to-[var(--admin-sidebar)]/20" />
 
-          <div className="absolute inset-0 flex flex-col justify-end p-10 md:p-14">
-            <div className="max-w-xs">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="h-1 w-10 bg-amber-400 rounded-full" />
-                <span className="text-[9px] font-black text-white uppercase tracking-[0.4em]">Story</span>
-              </div>
-              <h2 className="text-3xl md:text-4xl font-black text-white tracking-tighter leading-tight mb-4">
-                Join Namma Orru
-              </h2>
-              <p className="text-blue-50/70 font-medium text-[11px] uppercase tracking-widest leading-relaxed mb-8">
-                Shop authentic, farm-fresh products directly from the source.
-              </p>
-              <div className="flex gap-8">
-                <div className="flex items-center gap-3">
-                  <ShieldCheck className="text-amber-400 h-6 w-6" />
-                  <span className="text-[10px] font-black text-white uppercase tracking-widest">Secure</span>
-                </div>
-                <div className="flex items-center gap-3 border-l border-white/10 pl-12">
-                  <Leaf className="text-blue-400 h-6 w-6" />
-                  <span className="text-[10px] font-black text-white uppercase tracking-widest">Organic</span>
-                </div>
-              </div>
-            </div>
+        {/* Brand Text Content (Desktop only) */}
+        <div className="hidden lg:block relative z-20 max-w-xl animate-fade-in-up animation-delay-500">
+          <div className="flex items-center gap-4 mb-6">
+            <div className="h-[2px] w-12 bg-emerald-500 rounded-full" />
+            <span className="text-[11px] font-black text-emerald-400 uppercase tracking-[0.35em]">Namma Ooru Foods</span>
           </div>
-        </div>
+          <h1 className="text-5xl xl:text-[68px] font-black text-white tracking-tighter leading-[1.02] mb-8 drop-shadow-xl uppercase">
+            Authentic.<br />
+            Farm Fresh.<br />
+            Delivered.
+          </h1>
+          <p className="text-stone-300 font-bold text-lg leading-relaxed max-w-md mb-12">
+            Enjoy premium, chemical-free organic groceries and traditional products sourced directly from local agrarian families.
+          </p>
 
-        {/* RIGHT: AUTHENTICATION FLOW (50%) */}
-        <div className="flex-1 lg:w-1/2 flex flex-col justify-center items-center bg-white py-16 relative">
-          <div className="w-full max-w-[460px] px-6 lg:px-10 flex flex-col items-center">
-
-
-            <div className="mb-10 flex flex-col items-center text-center">
-              <Link href="/" className="inline-block mb-6 hover:scale-105 transition-transform duration-500">
-                <img src="/logo.webp" alt="Namma Orru" className="h-16 w-auto object-contain" />
-              </Link>
-              <h1 className="text-3xl md:text-4xl font-black text-[var(--admin-sidebar)] tracking-tighter mb-3 leading-none">
-                {isLogin ? 'Welcome Back' : 'Sign Up'}
-              </h1>
-              <p className="text-[9px] font-black uppercase tracking-[0.3em] text-slate-300">
-                Authentication Required
-              </p>
+          {/* Dynamic Stat cards */}
+          <div className="flex gap-5 w-full">
+            <div className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-[2rem] p-6 flex-1 shadow-2xl transition-all hover:bg-white/10 hover:border-white/20 group">
+              <h4 className="text-3xl font-black text-white mb-1 tracking-tight group-hover:scale-105 transition-transform duration-300">50k+</h4>
+              <p className="text-[10px] font-black text-stone-400 uppercase tracking-widest">Happy Families</p>
             </div>
-
-            {error && (
-              <div className="w-full p-4 mb-6 bg-red-50 border-2 border-red-100 rounded-xl flex items-center gap-3 animate-shake">
-                <div className="h-8 w-8 rounded-full bg-red-500 flex items-center justify-center shrink-0">
-                  <Lock className="text-white h-4 w-4" />
-                </div>
-                <p className="text-[10px] font-black text-red-500 uppercase tracking-widest leading-snug">{error}</p>
-              </div>
-            )}
-
-            {/* CONDITIONAL VIEW RENDERING */}
-            {step === 1 ? (
-              <form onSubmit={handleInitialSubmit} className="w-full flex flex-col gap-5">
-                {!isLogin && (
-                  <div className="flex flex-col gap-3">
-                    <label className="text-[10px] font-black uppercase tracking-[0.4em] text-[var(--admin-sidebar)] ml-2">Member Name</label>
-                    <input
-                      type="text"
-                      placeholder="Member Name"
-                      className="w-full h-14 px-6 bg-slate-50 border-2 border-slate-50 rounded-xl outline-none font-bold text-sm text-[var(--admin-sidebar)] placeholder:text-slate-300 focus:border-amber-400 focus:bg-white transition-all shadow-sm"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      required={!isLogin}
-                    />
-                  </div>
-                )}
-
-                <div className="flex flex-col gap-3">
-                  <label className="text-[10px] font-black uppercase tracking-[0.4em] text-[var(--admin-sidebar)] ml-2">Email Identity</label>
-                  <input
-                    type="email"
-                    placeholder="identity@nammaoru.com"
-                    className="w-full h-14 px-6 bg-slate-50 border-2 border-slate-50 rounded-xl outline-none font-bold text-sm text-[var(--admin-sidebar)] placeholder:text-slate-300 focus:border-amber-400 focus:bg-white transition-all shadow-sm"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                  />
-                </div>
-
-                <div className="flex flex-col gap-3">
-                  <div className="flex justify-between items-center ml-2">
-                    <label className="text-[10px] font-black uppercase tracking-[0.4em] text-[var(--admin-sidebar)]">Password</label>
-                    {isLogin && (
-                      <Link href="/forgot-password" className="text-[10px] font-black text-amber-600 uppercase tracking-widest hover:underline cursor-pointer">
-                        Forgot Access?
-                      </Link>
-                    )}
-                  </div>
-                  <input
-                    type="password"
-                    placeholder="••••••••"
-                    className="w-full h-14 px-6 bg-slate-50 border-2 border-slate-50 rounded-xl outline-none font-bold text-sm text-[var(--admin-sidebar)] placeholder:text-slate-300 focus:border-amber-400 focus:bg-white transition-all overflow-hidden tracking-[0.5em] shadow-sm"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                  />
-                </div>
-
-                <button
-                  disabled={isLoading}
-                  className="w-full h-14 bg-[var(--admin-sidebar)] mt-4 rounded-xl text-white font-black uppercase tracking-[0.4em] text-[10px] hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3 shadow-premium disabled:opacity-70"
-                >
-                  {isLoading ? 'Establishing Connection...' : (isLogin ? 'Log In' : 'Generate OTP')}
-                  {!isLoading && <ArrowRight size={18} />}
-                </button>
-              </form>
-            ) : (
-              <form onSubmit={handleVerifyOTP} className="w-full flex flex-col gap-6 animate-in zoom-in-95 duration-500">
-                 <div className="flex flex-col gap-3 text-center mb-2">
-                    <div className="w-12 h-12 bg-amber-50 rounded-full flex items-center justify-center mx-auto text-amber-600 mb-2">
-                       <ShieldCheck size={24} />
-                    </div>
-                    <h3 className="text-lg font-black text-[var(--admin-sidebar)] tracking-tight">Verify Sequence</h3>
-                    <p className="text-[11px] font-bold text-slate-400 px-6">
-                       Insert verification node sent to <strong className="text-amber-600">{email}</strong>
-                    </p>
-                 </div>
-
-                 <div className="flex flex-col gap-4">
-                    <input 
-                      type="text"
-                      maxLength={6}
-                      required
-                      placeholder="••••••"
-                      value={otp}
-                      onChange={(e) => setOtp(e.target.value.replace(/\D/g,''))}
-                      className="w-full h-16 text-center bg-slate-50 border-2 border-amber-200/50 rounded-2xl outline-none font-black text-3xl text-[var(--admin-sidebar)] placeholder:text-slate-200 focus:border-amber-400 tracking-[0.4em] shadow-inner"
-                    />
-                    <div className="flex items-center justify-between px-2">
-                       <div className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                          <Timer size={12} /> {resendTimer > 0 ? `Wait ${resendTimer}s` : 'System Ready'}
-                       </div>
-                       {resendTimer === 0 && (
-                          <button type="button" onClick={handleResendOTP} className="text-[10px] font-black text-amber-600 uppercase tracking-widest border-b-2 border-amber-600/30 hover:border-amber-600 transition-all">
-                             Resend Cipher
-                          </button>
-                       )}
-                    </div>
-                 </div>
-
-                 <button
-                    disabled={isVerifying}
-                    type="submit"
-                    className="w-full h-14 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-black uppercase tracking-[0.4em] text-[10px] flex items-center justify-center gap-3 shadow-xl active:scale-95 transition-all"
-                 >
-                    {isVerifying ? 'Finalizing Commit...' : 'Authorize & Create'}
-                 </button>
-
-                 <button type="button" onClick={() => setStep(1)} className="text-[9px] font-black uppercase tracking-widest text-slate-300 hover:text-slate-500 text-center mt-2 transition-all">
-                    &larr; Return to parameters
-                 </button>
-              </form>
-            )}
-
-
-
-            <div className="mt-10 text-center">
-              <p className="text-sm font-bold text-slate-300">
-                {isLogin ? "No Access yet?" : "Already have an account?"}
-                <button onClick={() => setIsLogin(!isLogin)} className="ml-4 text-amber-500 font-black underline underline-offset-[12px] decoration-2">
-                  {isLogin ? 'Sign Up' : 'Log In'}
-                </button>
-              </p>
+            <div className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-[2rem] p-6 flex-1 shadow-2xl transition-all hover:bg-white/10 hover:border-white/20 group">
+              <h4 className="text-3xl font-black text-white mb-1 tracking-tight group-hover:scale-105 transition-transform duration-300">200+</h4>
+              <p className="text-[10px] font-black text-stone-400 uppercase tracking-widest">Local Farmers</p>
+            </div>
+            <div className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-[2rem] p-6 flex-1 shadow-2xl transition-all hover:bg-white/10 hover:border-white/20 group">
+              <h4 className="text-3xl font-black text-white mb-1 tracking-tight group-hover:scale-105 transition-transform duration-300">500+</h4>
+              <p className="text-[10px] font-black text-stone-400 uppercase tracking-widest">Organic items</p>
             </div>
           </div>
         </div>
       </div>
+
+      {/* 2. RIGHT / CENTER AUTHENTICATION GLASS PANE */}
+      {/* On desktop: occupies 42%. On mobile: overlays transparently on background! */}
+      <div className="w-full lg:w-[42%] flex items-center justify-center p-4 sm:p-12 bg-transparent lg:bg-gradient-to-tr lg:from-stone-50 lg:to-[#fffefb] dark:lg:from-slate-950 dark:lg:to-slate-900/60 relative overflow-y-auto z-10">
+        <div className="absolute top-10 left-10 w-80 h-80 bg-emerald-100/30 dark:bg-emerald-950/15 rounded-full blur-[120px] pointer-events-none lg:block hidden" />
+        <div className="absolute bottom-10 right-10 w-80 h-80 bg-amber-100/30 dark:bg-amber-950/10 rounded-full blur-[120px] pointer-events-none lg:block hidden" />
+
+        {/* Breathtaking smart authentication card */}
+        <div className="w-full max-w-[520px] px-6 py-10 sm:p-12 bg-white/90 dark:bg-slate-900/90 backdrop-blur-2xl rounded-[36px] border border-white/50 dark:border-slate-800/50 shadow-[0_20px_80px_rgba(0,0,0,0.08)] flex flex-col relative overflow-hidden transition-all duration-500">
+
+          {/* OTP success cinematic animation overlay */}
+          <AnimatePresence>
+            {showSuccessAnimation && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="absolute inset-0 bg-white/95 dark:bg-slate-900/95 rounded-[36px] z-50 flex flex-col items-center justify-center p-8 text-center"
+              >
+                <div className="relative mb-6">
+                  <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 15, repeat: Infinity, ease: 'linear' }}
+                    className="absolute -inset-4 border border-dashed border-[#0F9D58]/35 rounded-full"
+                  />
+                  <div className="h-24 w-24 rounded-full bg-emerald-50 dark:bg-emerald-950/40 flex items-center justify-center text-[#0F9D58] shadow-xl shadow-emerald-500/10">
+                    <CheckCircle2 size={48} className="animate-scale-up" />
+                  </div>
+                </div>
+                <h3 className="text-2xl font-black text-stone-900 dark:text-white tracking-tight uppercase">Verification Success</h3>
+                <p className="text-xs font-bold text-stone-400 dark:text-slate-400 uppercase tracking-widest mt-2">Securing marketplace session...</p>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* OTP Verification flow wrapper */}
+          <AnimatePresence mode="wait">
+            {isVerifyingOtp ? (
+              <motion.div
+                key="otp-verification"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                className="flex flex-col gap-6"
+              >
+                {/* Back Link */}
+                <button
+                  onClick={() => setIsVerifyingOtp(false)}
+                  className="flex items-center gap-2 text-xs font-black text-stone-450 dark:text-slate-450 hover:text-stone-900 dark:hover:text-white uppercase tracking-widest self-start transition-colors"
+                >
+                  <ArrowLeft size={14} />
+                  Back
+                </button>
+
+                <div className="text-center">
+                  <h2 className="text-[32px] font-black text-stone-900 dark:text-white tracking-tighter leading-none mb-3 uppercase">Verify Mobile</h2>
+                  <p className="text-xs font-bold text-stone-450 dark:text-slate-450 leading-relaxed uppercase tracking-wider">
+                    We've dispatched a secure verification OTP to <span className="text-[#0F9D58] dark:text-[#0F9D58]">+91 {phone || forgotEmail}</span>
+                  </p>
+                </div>
+
+                {error && (
+                  <div className="w-full p-4.5 bg-red-50/70 dark:bg-red-950/20 border border-red-100 dark:border-red-950/40 rounded-2xl flex items-start gap-3.5 animate-shake">
+                    <LockKeyhole className="text-red-500 h-4 w-4 shrink-0 mt-0.5" />
+                    <p className="text-xs font-bold text-red-600 dark:text-red-400 leading-relaxed">{error}</p>
+                  </div>
+                )}
+
+                <form onSubmit={handleOtpVerifySubmit} className="flex flex-col gap-8">
+                  <div className="flex flex-col items-center gap-6">
+                    {/* Multi Box OTP Input component */}
+                    <div className="flex justify-between gap-2.5 w-full mx-auto" onPaste={handleOtpPaste}>
+                      {otpArray.map((digit, i) => (
+                        <input
+                          key={i}
+                          ref={otpRefs[i]}
+                          type="text"
+                          maxLength={1}
+                          pattern="\d*"
+                          className={`w-12 h-14 sm:w-14 sm:h-16 text-center text-2xl font-black rounded-xl border-2 bg-stone-50/50 dark:bg-slate-800/30 text-stone-900 dark:text-white outline-none focus:scale-105 focus:ring-4 focus:ring-emerald-500/10 focus:border-[#0F9D58] transition-all ${digit ? 'border-emerald-300 dark:border-emerald-700 bg-emerald-50/20 dark:bg-emerald-950/10' : 'border-stone-200 dark:border-slate-800'}`}
+                          value={digit}
+                          onChange={(e) => handleOtpChange(e.target.value, i)}
+                          onKeyDown={(e) => handleOtpKeyDown(e, i)}
+                          required
+                          autoFocus={i === 0}
+                        />
+                      ))}
+                    </div>
+
+                    <div className="flex items-center justify-between w-full px-1">
+                      <div className="flex items-center gap-1.5 text-xs font-bold text-stone-400 dark:text-slate-400 uppercase tracking-widest">
+                        <Timer size={14} />
+                        {resendTimer > 0 ? `00:${resendTimer.toString().padStart(2, '0')}` : 'Code Expired'}
+                      </div>
+                      {resendTimer === 0 ? (
+                        <button
+                          type="button"
+                          onClick={triggerResend}
+                          className="text-xs font-black text-[#0F9D58] hover:text-[#0B7D46] underline underline-offset-4 transition-colors uppercase tracking-widest"
+                        >
+                          Resend Code
+                        </button>
+                      ) : (
+                        <span className="text-xs font-bold text-stone-300 dark:text-slate-700 uppercase tracking-widest">Resend Code</span>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col gap-3">
+                    <button
+                      type="submit"
+                      disabled={isLoading || getFullOtp().length < 6}
+                      className="w-full h-[60px] bg-[#0F9D58] hover:bg-[#0B7D46] disabled:bg-stone-200 dark:disabled:bg-slate-850 disabled:text-stone-400 dark:disabled:text-slate-600 rounded-2xl text-white font-semibold text-[13px] tracking-[0.15em] uppercase transition-all duration-300 flex items-center justify-center gap-2 shadow-lg cursor-pointer"
+                    >
+                      {isLoading ? (
+                        <span className="flex items-center gap-2">
+                          <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                          VERIFYING CODE...
+                        </span>
+                      ) : (
+                        'Verify & Continue'
+                      )}
+                    </button>
+                  </div>
+                </form>
+              </motion.div>
+            ) : mode === 'login' || mode === 'signup' ? (
+              // ========================================================
+              // LOGIN & EXPANDABLE SIGNUP FLOW (NO TABS!)
+              // ========================================================
+              <motion.div
+                key="smart-auth-flow"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="flex flex-col gap-6"
+              >
+                {/* Visual Header */}
+                <div className="text-center">
+                  <h2 className="text-[32px] font-black text-stone-900 dark:text-white tracking-tighter leading-none mb-3">
+                    {mode === 'login' ? 'Welcome Back' : 'Create Account'}
+                  </h2>
+                  <p className="text-xs font-bold text-stone-450 dark:text-slate-400 uppercase tracking-widest leading-relaxed">
+                    {mode === 'login' ? 'Enter your mobile number or email to securely sign in or create an account.' : 'Join our premium organic food revolution today.'}
+                  </p>
+                </div>
+
+                {error && (
+                  <div className="w-full p-4.5 bg-red-50/70 dark:bg-red-950/20 border border-red-100 dark:border-red-950/40 rounded-2xl flex items-start gap-3 animate-shake">
+                    <LockKeyhole className="text-red-500 h-4 w-4 shrink-0 mt-0.5" />
+                    <p className="text-xs font-bold text-red-600 dark:text-red-400 leading-relaxed">{error}</p>
+                  </div>
+                )}
+
+                <form onSubmit={handleFormSubmit} className="flex flex-col gap-2">
+
+                  {/* SIGNUP ADDITIONAL FIELDS CONTAINER (SLIDE DOWN FROM TOP) */}
+                  <AnimatePresence initial={false}>
+                    {mode === 'signup' && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0, marginBottom: 0 }}
+                        animate={{ height: 'auto', opacity: 1, marginBottom: 16 }}
+                        exit={{ height: 0, opacity: 0, marginBottom: 0 }}
+                        transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                        className="overflow-hidden flex flex-col gap-4"
+                      >
+                        {/* 1. Full Name */}
+                        <div className="relative h-[64px] rounded-2xl bg-white dark:bg-slate-900 border border-[#E8ECE5] dark:border-slate-800 shadow-[0_4px_20px_rgba(0,0,0,0.03)] focus-within:border-[#0F9D58] focus-within:shadow-[0_0_0_4px_rgba(15,157,88,0.12)] transition-all duration-300 flex items-center px-5">
+                          <div className="relative flex-grow h-full">
+                            <input
+                              type="text"
+                              value={name}
+                              onChange={e => setName(e.target.value)}
+                              className="peer w-full h-full pt-4 bg-transparent outline-none font-bold text-sm text-stone-900 dark:text-white placeholder-transparent"
+                              placeholder="Full Name"
+                              required={mode === 'signup'}
+                            />
+                            <label className="absolute left-0 top-3.5 text-[9px] font-black text-stone-400 uppercase tracking-[0.15em] transition-all peer-placeholder-shown:text-xs peer-placeholder-shown:top-5.5 peer-placeholder-shown:font-semibold peer-focus:top-3.5 peer-focus:text-[9px] peer-focus:text-[#0F9D58] pointer-events-none">
+                              Full Name
+                            </label>
+                          </div>
+                        </div>
+
+                        {/* 2. Email Address */}
+                        <div className="relative h-[64px] rounded-2xl bg-white dark:bg-slate-900 border border-[#E8ECE5] dark:border-slate-800 shadow-[0_4px_20px_rgba(0,0,0,0.03)] focus-within:border-[#0F9D58] focus-within:shadow-[0_0_0_4px_rgba(15,157,88,0.12)] transition-all duration-300 flex items-center px-5">
+                          <div className="relative flex-grow h-full">
+                            <input
+                              type="email"
+                              value={email}
+                              onChange={e => setEmail(e.target.value)}
+                              className="peer w-full h-full pt-4 bg-transparent outline-none font-bold text-sm text-stone-900 dark:text-white placeholder-transparent"
+                              placeholder="Email Address"
+                              required={mode === 'signup'}
+                            />
+                            <label className="absolute left-0 top-3.5 text-[9px] font-black text-stone-400 uppercase tracking-[0.15em] transition-all peer-placeholder-shown:text-xs peer-placeholder-shown:top-5.5 peer-placeholder-shown:font-semibold peer-focus:top-3.5 peer-focus:text-[9px] peer-focus:text-[#0F9D58] pointer-events-none">
+                              Email Address
+                            </label>
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
+                  {/* SHARED FIELDS (ALWAYS VISIBLE, MORPHING HEIGHT & ALIGNMENT) */}
+                  <div className="flex flex-col gap-2">
+
+                    {/* 3. PREMIUM MOBILE INPUT */}
+                    <div className="relative h-[64px] rounded-2xl bg-white dark:bg-slate-900 border border-[#E8ECE5] dark:border-slate-800 shadow-[0_4px_20px_rgba(0,0,0,0.03)] focus-within:border-[#0F9D58] focus-within:shadow-[0_0_0_4px_rgba(15,157,88,0.12)] transition-all duration-300 flex items-center px-5">
+                      <div className="relative flex-grow h-full">
+                        <input
+                          type={mode === 'login' && loginMethod === 'password' ? 'text' : 'tel'}
+                          value={phone}
+                          onChange={e => {
+                            if (mode === 'login' && loginMethod === 'password') {
+                              setPhone(e.target.value);
+                            } else {
+                              setPhone(e.target.value.replace(/\D/g, ''));
+                            }
+                          }}
+                          placeholder={mode === 'login' && loginMethod === 'password' ? 'Mobile or Email' : 'Mobile Number'}
+                          className="peer w-full h-full pt-4 bg-transparent outline-none font-bold text-sm text-stone-900 dark:text-white placeholder-transparent"
+                          required
+                        />
+                        <label className="absolute left-0 top-3.5 text-[9px] font-black text-stone-400 uppercase tracking-[0.15em] transition-all peer-placeholder-shown:text-xs peer-placeholder-shown:top-5.5 peer-placeholder-shown:font-semibold peer-focus:top-3.5 peer-focus:text-[9px] peer-focus:text-[#0F9D58] pointer-events-none">
+                          {mode === 'login' && loginMethod === 'password' ? 'Mobile or Email' : 'Mobile Number'}
+                        </label>
+                      </div>
+                    </div>
+
+                    {/* 4. PREMIUM PASSWORD INPUT */}
+                    {!(mode === 'login' && loginMethod === 'otp') && (
+                      <div className="relative h-[64px] rounded-2xl bg-white dark:bg-slate-900 border border-[#E8ECE5] dark:border-slate-800 shadow-[0_4px_20px_rgba(0,0,0,0.03)] focus-within:border-[#0F9D58] focus-within:shadow-[0_0_0_4px_rgba(15,157,88,0.12)] transition-all duration-300 flex items-center px-5">
+                        <div className="relative flex-grow h-full">
+                          <input
+                            type={showPassword ? 'text' : 'password'}
+                            value={password}
+                            onChange={e => setPassword(e.target.value)}
+                            className="peer w-full h-full pt-4 bg-transparent outline-none font-bold text-sm text-stone-900 dark:text-white placeholder-transparent"
+                            placeholder="Password"
+                            required
+                          />
+                          <label className="absolute left-0 top-3.5 text-[9px] font-black text-stone-400 uppercase tracking-[0.15em] transition-all peer-placeholder-shown:text-xs peer-placeholder-shown:top-5.5 peer-placeholder-shown:font-semibold peer-focus:top-3.5 peer-focus:text-[9px] peer-focus:text-[#0F9D58] pointer-events-none">
+                            Password
+                          </label>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="text-stone-400 hover:text-stone-605 transition-colors shrink-0 ml-2"
+                        >
+                          {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* SIGNUP / OPTIONAL CONTROLS (SLIDE DOWN FROM BOTTOM) */}
+                  <AnimatePresence initial={false}>
+                    {mode === 'signup' ? (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0, marginTop: 0 }}
+                        animate={{ height: 'auto', opacity: 1, marginTop: 8 }}
+                        exit={{ height: 0, opacity: 0, marginTop: 0 }}
+                        transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                        className="overflow-hidden flex flex-col gap-4"
+                      >
+                        {/* 5. Confirm Password */}
+                        <div className="relative h-[64px] rounded-2xl bg-white dark:bg-slate-900 border border-[#E8ECE5] dark:border-slate-800 shadow-[0_4px_20px_rgba(0,0,0,0.03)] focus-within:border-[#0F9D58] focus-within:shadow-[0_0_0_4px_rgba(15,157,88,0.12)] transition-all duration-300 flex items-center px-5">
+                          <div className="relative flex-grow h-full">
+                            <input
+                              type={showConfirmPassword ? 'text' : 'password'}
+                              value={confirmPassword}
+                              onChange={e => setConfirmPassword(e.target.value)}
+                              className="peer w-full h-full pt-4 bg-transparent outline-none font-bold text-sm text-stone-900 dark:text-white placeholder-transparent"
+                              placeholder="Confirm Password"
+                              required={mode === 'signup'}
+                            />
+                            <label className="absolute left-0 top-3.5 text-[9px] font-black text-stone-400 uppercase tracking-[0.15em] transition-all peer-placeholder-shown:text-xs peer-placeholder-shown:top-5.5 peer-placeholder-shown:font-semibold peer-focus:top-3.5 peer-focus:text-[9px] peer-focus:text-[#0F9D58] pointer-events-none">
+                              Confirm Password
+                            </label>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                            className="text-stone-400 hover:text-stone-605 transition-colors shrink-0 ml-2"
+                          >
+                            {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                          </button>
+                        </div>
+
+                        {/* Terms checkbox */}
+                        <div className="flex items-center gap-2.5 px-1 mt-2">
+                          <input
+                            id="agree-terms"
+                            type="checkbox"
+                            className="h-4.5 w-4.5 rounded border-stone-300 text-[#0F9D58] focus:ring-emerald-500/15 cursor-pointer shrink-0"
+                            checked={agreeTerms}
+                            onChange={e => setAgreeTerms(e.target.checked)}
+                          />
+                          <label htmlFor="agree-terms" className="text-[10px] font-bold text-stone-500 dark:text-slate-400 leading-none cursor-pointer select-none">
+                            I agree to Namma Ooru Foods's <Link href="/terms" className="font-black text-[#0F9D58] dark:text-[#0F9D58] underline underline-offset-2">terms & conditions</Link> and <Link href="/privacy" className="font-black text-[#0F9D58] dark:text-[#0F9D58] underline underline-offset-2">privacy notice</Link>.
+                          </label>
+                        </div>
+                      </motion.div>
+                    ) : (
+                      // LOGIN-ONLY CONTROLS (forgot password & inline switch)
+                      <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className="flex items-center justify-between px-1 mt-0.5"
+                      >
+                        {/* OTP Switch Link */}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setLoginMethod(loginMethod === 'password' ? 'otp' : 'password');
+                            setError(null);
+                          }}
+                          className="text-[11px] font-black text-[#0F9D58] hover:text-[#0B7D46] uppercase tracking-widest transition-colors"
+                        >
+                          {loginMethod === 'password' ? 'Login with OTP' : 'Login with Password'}
+                        </button>
+
+                        {/* Forgot password */}
+                        {loginMethod === 'password' && (
+                          <button
+                            type="button"
+                            onClick={() => { setMode('forgot-password'); setError(null); }}
+                            className="text-[11px] font-black text-stone-400 hover:text-stone-705 uppercase tracking-widest transition-colors"
+                          >
+                            Forgot Password?
+                          </button>
+                        )}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
+                  {/* RENDER DYNAMIC CORE CTA BUTTON */}
+                  <button
+                    type="submit"
+                    disabled={isLoading}
+                    className="w-full h-[60px] bg-[#0F9D58] hover:bg-[#0B7D46] disabled:bg-stone-200 dark:disabled:bg-slate-850 disabled:text-stone-400 dark:disabled:text-slate-600 rounded-2xl text-white font-semibold text-[13px] tracking-[0.15em] uppercase transition-all duration-300 flex items-center justify-center gap-2 shadow-lg cursor-pointer mt-1"
+                  >
+                    {isLoading ? (
+                      <span className="flex items-center gap-2">
+                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        PROCESSING REQUEST...
+                      </span>
+                    ) : mode === 'signup' ? (
+                      'Register & Verify OTP'
+                    ) : loginMethod === 'otp' ? (
+                      'Login With OTP'
+                    ) : (
+                      'Login'
+                    )}
+                  </button>
+                </form>
+
+                {/* Switch flow layout */}
+                <div className="text-center mt-4">
+                  <p className="text-sm font-semibold text-stone-500">
+                    {mode === 'login' ? (
+                      <>
+                        New here?{' '}
+                        <button
+                          type="button"
+                          onClick={() => { setMode('signup'); setError(null); }}
+                          className="font-black text-[#0F9D58] hover:text-[#0B7D46] transition-colors hover:underline"
+                        >
+                          Create Account
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        Already have an account?{' '}
+                        <button
+                          type="button"
+                          onClick={() => { setMode('login'); setError(null); }}
+                          className="font-black text-[#0F9D58] hover:text-[#0B7D46] transition-colors hover:underline"
+                        >
+                          Login
+                        </button>
+                      </>
+                    )}
+                  </p>
+                </div>
+              </motion.div>
+            ) : (
+              // ========================================================
+              // FORGOT PASSWORD FLOW
+              // ========================================================
+              <motion.div
+                key="forgot-password-flow"
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -15 }}
+                className="flex flex-col gap-6"
+              >
+                <button
+                  onClick={() => { setMode('login'); setForgotStep(1); setError(null); }}
+                  className="flex items-center gap-2 text-xs font-black text-stone-400 dark:text-slate-400 hover:text-stone-900 dark:hover:text-white uppercase tracking-widest self-start transition-colors"
+                >
+                  <ArrowLeft size={14} />
+                  Back to Login
+                </button>
+
+                <div className="text-center">
+                  <h2 className="text-[32px] font-black text-stone-900 dark:text-white tracking-tighter leading-none mb-3 uppercase">Recover Account</h2>
+                  <p className="text-sm font-bold text-stone-400 dark:text-slate-400">
+                    {forgotStep === 1
+                      ? 'Specify your registered mobile number below to receive an OTP.'
+                      : 'Create your new strong password below.'}
+                  </p>
+                </div>
+
+                {error && (
+                  <div className="w-full p-4.5 bg-red-50/70 dark:bg-red-950/20 border border-red-100 dark:border-red-950/40 rounded-2xl flex items-start gap-3 animate-shake">
+                    <LockKeyhole className="text-red-500 h-4 w-4 shrink-0 mt-0.5" />
+                    <p className="text-xs font-bold text-red-600 dark:text-red-400 leading-relaxed">{error}</p>
+                  </div>
+                )}
+
+                {forgotStep === 1 ? (
+                  <form onSubmit={handleForgotSubmit} className="flex flex-col gap-5">
+                    <div className="relative h-[64px] rounded-2xl bg-white dark:bg-slate-900 border border-[#E8ECE5] dark:border-slate-800 shadow-[0_4px_20px_rgba(0,0,0,0.03)] focus-within:border-[#0F9D58] focus-within:shadow-[0_0_0_4px_rgba(15,157,88,0.12)] transition-all duration-300 flex items-center px-5">
+                      <div className="relative flex-grow h-full">
+                        <input
+                          type="tel"
+                          placeholder="Mobile Number"
+                          className="peer w-full h-full pt-4 bg-transparent outline-none font-bold text-sm text-stone-900 dark:text-white placeholder-transparent"
+                          value={forgotEmail}
+                          onChange={e => setForgotEmail(e.target.value.replace(/\D/g, ''))}
+                          required
+                        />
+                        <label className="absolute left-0 top-3.5 text-[9px] font-black text-stone-400 uppercase tracking-[0.15em] transition-all peer-placeholder-shown:text-xs peer-placeholder-shown:top-5.5 peer-placeholder-shown:font-semibold peer-focus:top-3.5 peer-focus:text-[9px] peer-focus:text-[#0F9D58] pointer-events-none">
+                          Mobile Number
+                        </label>
+                      </div>
+                    </div>
+
+                    <button
+                      type="submit"
+                      disabled={isLoading}
+                      className="w-full h-[60px] bg-[#0F9D58] hover:bg-[#0B7D46] disabled:bg-stone-200 dark:disabled:bg-slate-850 disabled:text-stone-400 dark:disabled:text-slate-600 rounded-2xl text-white font-semibold text-[13px] tracking-[0.15em] uppercase transition-all duration-300 flex items-center justify-center gap-2 shadow-lg cursor-pointer mt-2"
+                    >
+                      {isLoading ? (
+                        <span className="flex items-center gap-2">
+                          <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                          DISPATCHING OTP...
+                        </span>
+                      ) : (
+                        'Request Verification OTP'
+                      )}
+                    </button>
+                  </form>
+                ) : (
+                  <form onSubmit={handleExecutePasswordReset} className="flex flex-col gap-5">
+
+                    {/* New Password */}
+                    <div className="relative h-[64px] rounded-2xl bg-white dark:bg-slate-900 border border-[#E8ECE5] dark:border-slate-800 shadow-[0_4px_20px_rgba(0,0,0,0.03)] focus-within:border-[#0F9D58] focus-within:shadow-[0_0_0_4px_rgba(15,157,88,0.12)] transition-all duration-300 flex items-center px-5">
+                      <div className="relative flex-grow h-full">
+                        <input
+                          type={showPassword ? 'text' : 'password'}
+                          placeholder="••••••••"
+                          className="peer w-full h-full pt-4 bg-transparent outline-none font-bold text-sm text-stone-900 dark:text-white placeholder-transparent"
+                          value={password}
+                          onChange={e => setPassword(e.target.value)}
+                          required
+                        />
+                        <label className="absolute left-0 top-3.5 text-[9px] font-black text-stone-400 uppercase tracking-[0.15em] transition-all peer-placeholder-shown:text-xs peer-placeholder-shown:top-5.5 peer-placeholder-shown:font-semibold peer-focus:top-3.5 peer-focus:text-[9px] peer-focus:text-[#0F9D58] pointer-events-none">
+                          New Password
+                        </label>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="text-stone-400 hover:text-stone-605 transition-colors shrink-0 ml-2"
+                      >
+                        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                      </button>
+                    </div>
+
+                    {/* Confirm New Password */}
+                    <div className="relative h-[64px] rounded-2xl bg-white dark:bg-slate-900 border border-[#E8ECE5] dark:border-slate-800 shadow-[0_4px_20px_rgba(0,0,0,0.03)] focus-within:border-[#0F9D58] focus-within:shadow-[0_0_0_4px_rgba(15,157,88,0.12)] transition-all duration-300 flex items-center px-5">
+                      <div className="relative flex-grow h-full">
+                        <input
+                          type={showConfirmPassword ? 'text' : 'password'}
+                          placeholder="••••••••"
+                          className="peer w-full h-full pt-4 bg-transparent outline-none font-bold text-sm text-stone-900 dark:text-white placeholder-transparent"
+                          value={confirmPassword}
+                          onChange={e => setConfirmPassword(e.target.value)}
+                          required
+                        />
+                        <label className="absolute left-0 top-3.5 text-[9px] font-black text-stone-400 uppercase tracking-[0.15em] transition-all peer-placeholder-shown:text-xs peer-placeholder-shown:top-5.5 peer-placeholder-shown:font-semibold peer-focus:top-3.5 peer-focus:text-[9px] peer-focus:text-[#0F9D58] pointer-events-none">
+                          Confirm New Password
+                        </label>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        className="text-stone-400 hover:text-stone-605 transition-colors shrink-0 ml-2"
+                      >
+                        {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                      </button>
+                    </div>
+
+                    <button
+                      type="submit"
+                      disabled={isLoading}
+                      className="w-full h-[60px] bg-[#0F9D58] hover:bg-[#0B7D46] disabled:bg-stone-200 dark:disabled:bg-slate-850 disabled:text-stone-400 dark:disabled:text-slate-600 rounded-2xl text-white font-semibold text-[13px] tracking-[0.15em] uppercase transition-all duration-300 flex items-center justify-center gap-2 shadow-lg cursor-pointer mt-2"
+                    >
+                      {isLoading ? (
+                        <span className="flex items-center gap-2">
+                          <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                          CHANGING PASSWORD...
+                        </span>
+                      ) : (
+                        'Change Password'
+                      )}
+                    </button>
+                  </form>
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+        </div>
+      </div>
+
+      {/* Visual global transitions injected style rules */}
+      <style jsx global>{`
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        .animate-fade-in-up {
+          animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+          opacity: 0;
+        }
+        .animation-delay-200 {
+          animation-delay: 200ms;
+        }
+        .animation-delay-400 {
+          animation-delay: 400ms;
+        }
+        .animation-delay-500 {
+          animation-delay: 500ms;
+        }
+        
+        @keyframes shake {
+          0%, 100% { transform: translateX(0); }
+          20%, 60% { transform: translateX(-6px); }
+          40%, 80% { transform: translateX(6px); }
+        }
+        .animate-shake {
+          animation: shake 0.4s ease-in-out;
+        }
+
+        @keyframes scaleUp {
+          from {
+            transform: scale(0.85);
+            opacity: 0;
+          }
+          to {
+            transform: scale(1);
+            opacity: 1;
+          }
+        }
+        .animate-scale-up {
+          animation: scaleUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+      `}</style>
     </div>
   );
 }

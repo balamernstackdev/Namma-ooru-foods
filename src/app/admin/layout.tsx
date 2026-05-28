@@ -3,6 +3,7 @@
 import React from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter, usePathname } from 'next/navigation';
+import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import {
   LayoutDashboard, Package, ShoppingBag, Users, BarChart3, Settings,
@@ -11,12 +12,37 @@ import {
   ChevronDown, ChevronRight, Shield, Play
 } from 'lucide-react';
 import { useState } from 'react';
+import useSWR from 'swr';
+import { API_URL } from '@/lib/api';
+import { formatDistanceToNow } from 'date-fns';
+import { io } from 'socket.io-client';
+import toast from 'react-hot-toast';
+
+const fetcher = (url: string) => fetch(url).then(res => res.json());
 
 const navGroups = [
   {
     label: 'Dashboard',
+    hideHeader: true,
     items: [
       { label: 'Dashboard', href: '/admin', icon: LayoutDashboard },
+      { label: 'Notifications', href: '/admin/notifications', icon: Bell },
+    ]
+  },
+  {
+    label: 'Customers',
+    items: [
+      { label: 'Users', href: '/admin/users', icon: Users },
+      { label: 'Reviews', href: '/admin/reviews', icon: Star },
+    ]
+  },
+  {
+    label: 'Vendors',
+    items: [
+      { label: 'Vendor Registrations', href: '/admin/vendor-requests', icon: Shield, adminOnly: true },
+      { label: 'Vendor Management', href: '/admin/marketplace-governance', icon: Shield, adminOnly: true },
+      { label: 'Service Regions', href: '/admin/hubs', icon: Layers, adminOnly: true },
+      { label: 'Vendor Payouts', href: '/admin/payouts', icon: ClipboardList, adminOnly: true },
     ]
   },
   {
@@ -28,40 +54,37 @@ const navGroups = [
       { label: 'Subcategories', href: '/admin/subcategories', icon: Layers },
       { label: 'Variants', href: '/admin/variants', icon: Layers },
       { label: 'Brands', href: '/admin/brands', icon: Tag },
-      { label: 'Orders', href: '/admin/orders', icon: ShoppingBag },
-      { label: 'Customers', href: '/admin/users', icon: Users },
     ]
   },
   {
+    label: 'Orders',
+    items: [
+      { label: 'Orders', href: '/admin/orders', icon: ShoppingBag },
+      { label: 'Shipment Tracker', href: '/admin/tracking', icon: Truck },
+      { label: 'Refund Requests', href: '/admin/refund-requests', icon: RotateCcw },
+    ]
+  },
+
+  {
     label: 'Marketing',
     items: [
-      { label: 'Coupon Engine', href: '/admin/coupons', icon: Ticket },
-      { label: 'Reviews', href: '/admin/reviews', icon: Star },
+      { label: 'Coupons', href: '/admin/coupons', icon: Ticket },
       { label: 'Promotions', href: '/admin/promotions', icon: ClipboardList },
       { label: 'Banners', href: '/admin/banners', icon: ImageIcon },
     ]
   },
   {
-    label: 'Tracking',
-    items: [
-      { label: 'Shipment Tracker', href: '/admin/tracking', icon: Truck },
-      { label: 'Refund Requests', href: '/admin/refunds', icon: RotateCcw },
-    ]
-  },
-  {
     label: 'Content',
     items: [
-      { label: 'Video Stories', href: '/admin/videos', icon: Play },
+      { label: 'Video Stories', href: '/admin/video-commerce', icon: Play },
       { label: 'Blog / Articles', href: '/admin/blog', icon: BookOpen },
-      { label: 'Notifications', href: '/admin/notifications', icon: Bell },
       { label: 'Newsletter', href: '/admin/newsletter', icon: Mail },
     ]
   },
   {
     label: 'System',
+    hideHeader: true,
     items: [
-      { label: 'Audit Trail', href: '/admin/audit', icon: Shield },
-      { label: 'Analytics', href: '/admin/analytics', icon: BarChart3 },
       { label: 'Global Settings', href: '/admin/settings', icon: Settings, adminOnly: true },
     ]
   },
@@ -73,6 +96,56 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const router = useRouter();
   const pathname = usePathname();
   const [collapsedGroups, setCollapsedGroups] = useState<string[]>([]);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
+
+  const { data: rawNotifs, mutate: mutateNotifs } = useSWR<any>(`${API_URL}/api/notifications`, fetcher, {
+    refreshInterval: 60000 // Poll once a minute as fallback
+  });
+  const notifications = Array.isArray(rawNotifs) ? rawNotifs : (rawNotifs?.notifications || []);
+  const unreadCount = notifications.filter((n: any) => !n.isRead).length;
+
+  // Global Socket Listener
+  React.useEffect(() => {
+    if (!user?.id) return;
+
+    const socket = io(API_URL.replace('/api', ''));
+
+    socket.on('connect', () => {
+      // Admins join 'admin' room, Vendors join their specific room
+      if (user.role?.toLowerCase() === 'admin') {
+        socket.emit('join', 'admin');
+      } else {
+        socket.emit('join', `vendor:${user.id}`);
+      }
+      socket.emit('join', `user_${user.id}`);
+    });
+
+    socket.on('notification:new', (newNotif: any) => {
+      mutateNotifs(); // Update unread count and popover
+
+      // Don't show toast if we are already on the notifications page (it has its own listener)
+      if (pathname !== '/admin/notifications') {
+        toast.success(newNotif.title, {
+          icon: '🔔',
+          duration: 5000,
+          style: {
+            borderRadius: '16px',
+            background: '#022c22',
+            color: '#fff',
+            fontSize: '12px',
+            fontWeight: 'bold',
+            padding: '16px',
+            border: '1px solid rgba(16, 185, 129, 0.2)'
+          }
+        });
+      }
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, [user?.id, user?.role, mutateNotifs, pathname]);
 
   React.useEffect(() => {
     if (!isLoading) {
@@ -117,12 +190,17 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] flex font-sans selection:bg-emerald-100 selection:text-emerald-900">
-      <style dangerouslySetInnerHTML={{ __html: `
+      <style dangerouslySetInnerHTML={{
+        __html: `
         .admin-sidebar-nav::-webkit-scrollbar {
           width: 6px;
         }
         .admin-sidebar-nav::-webkit-scrollbar-thumb {
-          background: rgba(255,255,255,0.25);
+        .admin-sidebar-nav::-webkit-scrollbar {
+          width: 5px;
+        }
+        .admin-sidebar-nav::-webkit-scrollbar-thumb {
+          background: rgba(0,0,0,0.05);
           border-radius: 20px;
         }
         .admin-sidebar-nav::-webkit-scrollbar-track {
@@ -130,18 +208,34 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         }
       `}} />
 
+      {/* ─── MOBILE OVERLAY ─────────────────────────────────────────── */}
+      <AnimatePresence>
+        {isSidebarOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setIsSidebarOpen(false)}
+            className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[45] lg:hidden"
+          />
+        )}
+      </AnimatePresence>
+
       {/* ─── SIDEBAR ─────────────────────────────────────────────────── */}
-      <aside className="w-64 bg-gradient-to-b from-[#0f5132] via-[#146c43] to-[#198754] text-white flex flex-col fixed top-0 left-0 bottom-0 z-50 shadow-2xl border-r border-white/5 overflow-hidden" data-lenis-prevent>
+      <aside className={`
+        w-72 bg-white text-slate-900 flex flex-col fixed top-0 left-0 bottom-0 z-50 border-r border-slate-200 transition-transform duration-500 ease-in-out
+        ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+      `} data-lenis-prevent>
 
         {/* Brand Header */}
-        <div className="p-[24px_20px] border-bottom border-white/10 bg-white/[0.03] border-b shrink-0">
-          <Link href="/" className="flex items-center gap-4 transition-transform hover:scale-[1.02] active:scale-95">
-            <div className="h-12 w-12 flex items-center justify-center flex-shrink-0 bg-white/10 rounded-xl border border-white/10 backdrop-blur">
-              <img src="/logo.webp" alt="Logo" className="h-8 w-8 object-contain brightness-0 invert" />
+        <div className="p-8 border-b border-slate-100 bg-slate-50/30 shrink-0 relative z-10">
+          <Link href="/" className="flex items-center gap-4 transition-all hover:opacity-80 active:scale-95">
+            <div className="h-16 w-16 flex items-center justify-center flex-shrink-0 bg-white rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.05)] border border-slate-100 overflow-hidden">
+              <img src="/logo.webp" alt="Logo" className="h-14 w-14 object-contain" />
             </div>
             <div className="flex flex-col">
-              <span className="text-[15px] font-black tracking-tight leading-none text-white">Namma Orru</span>
-              <span className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-200 mt-1">Admin Panel</span>
+              <span className="text-[17px] font-black tracking-tighter leading-none text-slate-900 uppercase italic">Namma <span className="text-emerald-600">Orru</span></span>
+              <span className="text-[9px] font-bold uppercase tracking-[0.4em] text-slate-400 mt-1.5">Admin Console</span>
             </div>
           </Link>
         </div>
@@ -153,22 +247,25 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           >
             {navGroups.map(group => {
               const isCollapsed = collapsedGroups.includes(group.label);
+              const hideHeader = (group as any).hideHeader === true;
               return (
-                <div key={group.label} className="mb-4">
+                <div key={group.label} className={hideHeader ? "mb-1" : "mb-4"}>
                   {/* Group Header */}
-                  <button
-                    onClick={() => toggleGroup(group.label)}
-                    className="w-full flex items-center justify-between px-3 py-1.5 mb-1 rounded-lg hover:bg-white/5 transition-all group"
-                  >
-                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[#e2e8f0] opacity-80 group-hover:opacity-100 transition-opacity">
-                      {group.label}
-                    </span>
-                    <ChevronDown className={`h-3 w-3 text-white/30 transition-transform ${isCollapsed ? '-rotate-90' : ''}`} />
-                  </button>
+                  {!hideHeader && (
+                    <button
+                      onClick={() => toggleGroup(group.label)}
+                      className="w-full flex items-center justify-between px-4 py-2.5 mb-2 rounded-xl bg-slate-100/50 hover:bg-slate-100 border border-slate-200/60 transition-all group/header shadow-[0_2px_10px_rgba(0,0,0,0.02)]"
+                    >
+                      <span className="text-[11px] font-black uppercase tracking-[0.25em] text-slate-700 group-hover/header:text-emerald-700 transition-colors">
+                        {group.label}
+                      </span>
+                      <ChevronDown className={`h-4 w-4 text-slate-400 group-hover/header:text-emerald-600 transition-transform duration-300 ${isCollapsed ? '-rotate-90' : ''}`} />
+                    </button>
+                  )}
 
                   {/* Group Items */}
                   <div className="flex flex-col gap-1 mt-1">
-                    {!isCollapsed && group.items.map(item => {
+                    {(!isCollapsed || hideHeader) && group.items.map(item => {
                       // Skip if item is adminOnly and user is not admin
                       if ((item as any).adminOnly && userRole !== 'admin') return null;
 
@@ -176,31 +273,43 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                         ? pathname === '/admin' || pathname === '/admin/'
                         : (pathname === item.href || pathname.startsWith(item.href + '/')) &&
                         !(item.href === '/admin/products' && pathname.startsWith('/admin/products/approvals'));
-                      
+
                       return (
                         <Link
                           key={item.href}
                           href={item.href}
+                          onClick={() => setIsSidebarOpen(false)}
                           className={`
-                            flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all duration-200 group
+                            flex items-center gap-3.5 px-4 py-3 rounded-2xl transition-all duration-300 group
                             ${isActive
-                              ? 'bg-white/[0.16] backdrop-blur-md border border-white/[0.12] text-white shadow-lg'
-                              : 'text-[#f8fafc]/70 hover:bg-white/[0.06] hover:text-white border border-transparent'
+                              ? 'bg-emerald-600 text-white shadow-[0_10px_20px_-5px_rgba(5,150,105,0.3)] scale-[1.02]'
+                              : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900 border border-transparent'
                             }
                           `}
                         >
                           <item.icon
                             className={`
-                              h-[18px] w-[18px] shrink-0 transition-all duration-200
-                              ${isActive ? 'text-white opacity-100 scale-110 translate-x-0.5 drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]' : 'text-[#cbd5e1] opacity-70 group-hover:opacity-100 group-hover:scale-105'}
+                              h-[20px] w-[20px] shrink-0 transition-all duration-300
+                              ${isActive ? 'text-white scale-110 drop-shadow-[0_4px_8px_rgba(0,0,0,0.1)]' : 'text-slate-400 group-hover:text-emerald-600 group-hover:scale-110'}
                             `}
-                            strokeWidth={isActive ? 2.5 : 2}
+                            strokeWidth={isActive ? 2.5 : 1.5}
                           />
-                          <span className={`text-[13.5px] font-semibold flex-1 tracking-wide ${isActive ? 'text-white font-bold' : 'text-[#f8fafc]'}`}>
+                          <span className={`text-[14px] font-semibold flex-1 tracking-tight ${isActive ? 'text-white' : 'text-inherit'}`}>
                             {item.label}
                           </span>
+                          
+                          {/* Unread Notifications Badge */}
+                          {item.label === 'Notifications' && unreadCount > 0 && (
+                            <span className={`px-2 py-0.5 rounded-full text-[10px] font-black ${isActive ? 'bg-white text-emerald-600' : 'bg-red-500 text-white'}`}>
+                              {unreadCount > 99 ? '99+' : unreadCount}
+                            </span>
+                          )}
+
                           {isActive && (
-                             <div className="h-1.5 w-1.5 rounded-full bg-white shadow-[0_0_8px_#fff]" />
+                            <motion.div
+                              layoutId="active-pill"
+                              className="h-1.5 w-1.5 rounded-full bg-white/90 shadow-[0_0_8px_rgba(255,255,255,0.8)]"
+                            />
                           )}
                         </Link>
                       );
@@ -212,31 +321,131 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </nav>
         </div>
 
-        {/* User Footer - Glass Container */}
-        <div className="shrink-0 p-4 bg-white/[0.02] border-t border-white/10">
-          <div className="bg-white/[0.08] backdrop-blur-xl border border-white/[0.08] rounded-[18px] p-3 flex items-center gap-3 shadow-lg">
-            <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-emerald-800 to-emerald-600 border border-white/20 flex items-center justify-center text-xs font-black shrink-0 overflow-hidden text-white shadow-inner">
+        {/* User Footer - Clean Container */}
+        <div className="shrink-0 p-6 bg-slate-50/50 border-t border-slate-100">
+          <div className="bg-white border border-slate-200 rounded-[22px] p-4 flex items-center gap-4 group/user hover:shadow-lg transition-all cursor-pointer">
+            <div className="h-10 w-10 rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-700 border border-emerald-400/20 flex items-center justify-center text-sm font-black shrink-0 overflow-hidden text-white shadow-sm">
               {(user.avatar && user.avatar.trim() !== '') ? <img src={user.avatar || undefined} className="w-full h-full object-cover" alt="avatar" /> : (user.name?.[0] || 'A')}
             </div>
             <div className="flex flex-col min-w-0 flex-1">
-              <span className="text-[12px] font-bold tracking-tight leading-none text-white truncate">{user.name || 'Administrator'}</span>
-              <span className="text-[9px] font-black uppercase tracking-[0.2em] text-emerald-100 opacity-80 mt-1.5">
-                {userRole === 'admin' ? 'Super Admin' : 'Vendor'}
+              <span className="text-[13px] font-bold tracking-tight leading-none text-slate-900 truncate">{user.name || 'Administrator'}</span>
+              <span className="text-[9px] font-black uppercase tracking-[0.3em] text-emerald-600 mt-2">
+                {userRole === 'admin' ? 'Super Admin' : 'Vendor Access'}
               </span>
             </div>
             <button
               onClick={logout}
-              title="Sign Out"
-              className="h-8 w-8 rounded-xl bg-white/[0.1] border border-white/10 flex items-center justify-center text-white hover:bg-red-500 hover:border-red-400 transition-all duration-300 shrink-0 group shadow-sm active:scale-90"
+              className="h-10 w-10 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center text-slate-400 hover:text-white hover:bg-red-500 hover:border-red-400 transition-all duration-300"
             >
-              <LogOut size={14} className="group-hover:scale-110 transition-transform" />
+              <LogOut size={16} />
             </button>
           </div>
         </div>
       </aside>
 
       {/* ─── MAIN CONTENT ─────────────────────────────────────────────── */}
-      <main className="flex-1 ml-64 min-w-0 relative overflow-x-hidden">
+      <main className="flex-1 lg:ml-72 min-w-0 relative overflow-x-hidden">
+
+        {/* Admin Top Header */}
+        <header className="hidden h-20 bg-white/80 backdrop-blur-md border-b border-slate-100 items-center justify-between px-8 sticky top-0 z-40">
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+              className="h-10 w-10 flex items-center justify-center rounded-xl bg-slate-50 border border-slate-200 text-slate-500 lg:hidden hover:bg-emerald-50 hover:text-emerald-600 hover:border-emerald-200 transition-all"
+            >
+              <LayoutDashboard size={20} />
+            </button>
+            <div className="flex flex-col">
+              <h2 className="text-[11px] font-black uppercase tracking-[0.3em] text-slate-400">System</h2>
+              <span className="text-sm font-bold text-slate-900 tracking-tight">
+                {navGroups.flatMap(g => g.items).find(i => pathname === i.href || pathname.startsWith(i.href + '/'))?.label || 'Overview'}
+              </span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-4 relative">
+            <button
+              onClick={() => setShowNotifications(!showNotifications)}
+              className={`h-10 w-10 flex items-center justify-center rounded-xl transition-all relative ${showNotifications ? 'bg-emerald-600 text-white shadow-lg' : 'bg-slate-50 border border-slate-200 text-slate-500 hover:bg-emerald-50 hover:text-emerald-600 hover:border-emerald-200'}`}
+            >
+              <Bell size={18} />
+              {unreadCount > 0 && (
+                <div className="absolute top-2.5 right-2.5 h-2 w-2 rounded-full bg-red-500 border-2 border-white" />
+              )}
+            </button>
+
+            {/* Notifications Popover */}
+            <AnimatePresence>
+              {showNotifications && (
+                <>
+                  <div className="fixed inset-0 z-40" onClick={() => setShowNotifications(false)} />
+                  <motion.div
+                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                    className="absolute top-full right-0 mt-3 w-96 bg-white rounded-[2.5rem] border border-slate-100 shadow-[0_30px_60px_rgba(0,0,0,0.12)] z-50 overflow-hidden"
+                  >
+                    <div className="p-8 border-b border-slate-50 bg-slate-50/50 flex items-center justify-between">
+                      <div className="flex flex-col">
+                        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-900">Signal Intelligence</h3>
+                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1">Real-time Activity Hub</span>
+                      </div>
+                      <span className="px-3 py-1 rounded-full bg-emerald-600 text-[9px] font-black text-white uppercase tracking-tighter shadow-lg shadow-emerald-600/20">{unreadCount} Active</span>
+                    </div>
+                    <div className="max-h-[400px] overflow-y-auto divide-y divide-slate-50">
+                      {notifications.length === 0 ? (
+                        <div className="p-16 text-center">
+                          <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-slate-50 text-slate-200 mb-4">
+                            <Bell size={32} strokeWidth={1} />
+                          </div>
+                          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Zero Signals Detected</p>
+                        </div>
+                      ) : (
+                        notifications.slice(0, 6).map((n: any) => (
+                          <Link
+                            key={n.id}
+                            href="/admin/notifications"
+                            onClick={() => setShowNotifications(false)}
+                            className="flex flex-col gap-3 p-6 hover:bg-slate-50/80 transition-all cursor-pointer group border-l-4 border-transparent hover:border-emerald-500"
+                          >
+                            <div className="flex items-center justify-between gap-4">
+                              <div className={`h-1.5 w-1.5 rounded-full ${!n.isRead ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-slate-300'}`} />
+                              <span className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">{n.notificationType}</span>
+                              <span className="text-[8px] font-bold text-slate-300 ml-auto flex items-center gap-1">
+                                <Clock size={10} /> {formatDistanceToNow(new Date(n.createdAt), { addSuffix: true })}
+                              </span>
+                            </div>
+                            <div className="space-y-1">
+                              <h4 className={`text-[13px] font-black tracking-tight leading-tight ${!n.isRead ? 'text-slate-900' : 'text-slate-500'}`}>{n.title}</h4>
+                              <p className="text-[11px] text-slate-500 font-medium line-clamp-2 leading-relaxed">{n.message}</p>
+                            </div>
+                          </Link>
+                        ))
+                      )}
+                    </div>
+                    <Link
+                      href="/admin/notifications"
+                      onClick={() => setShowNotifications(false)}
+                      className="block p-5 text-center text-[10px] font-black uppercase tracking-[0.2em] text-emerald-600 hover:bg-emerald-50 transition-all border-t border-slate-50 italic"
+                    >
+                      Open Command Center →
+                    </Link>
+                  </motion.div>
+                </>
+              )}
+            </AnimatePresence>
+            <div className="h-10 w-px bg-slate-100 mx-2" />
+            <div className="flex items-center gap-3">
+              <div className="flex flex-col items-end hidden md:flex">
+                <span className="text-[11px] font-bold text-slate-900 leading-none">{user.name || 'Admin'}</span>
+                <span className="text-[9px] font-black uppercase tracking-widest text-emerald-600 mt-1">Live</span>
+              </div>
+              <div className="h-10 w-10 rounded-xl bg-emerald-100 border border-emerald-200 flex items-center justify-center text-emerald-700 font-bold text-sm">
+                {user.name?.[0] || 'A'}
+              </div>
+            </div>
+          </div>
+        </header>
 
         {/* Dynamic Content */}
         <div className="p-8 max-w-[1600px] mx-auto">

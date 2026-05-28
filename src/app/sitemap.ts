@@ -9,10 +9,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   try {
     const res = await fetch(`${API_URL}/api/products`);
-    const products = await res.json();
+    const data = await res.json();
+    const productsList = Array.isArray(data) ? data : (data && Array.isArray(data.products) ? data.products : []);
 
-    const productUrls = products.map((p: any) => ({
-      url: `${baseUrl}/products/${p.slug || p.id}`,
+    const productUrls = productsList.map((p: any) => ({
+      url: `${baseUrl}/products/detail?id=${p.slug || p.id}`,
       lastModified: new Date(p.updatedAt || new Date()),
       changeFrequency: 'weekly',
       priority: 0.8,

@@ -4,8 +4,8 @@ export const dynamic = 'force-static';
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'Namma Orru Foods',
-    short_name: 'Namma Orru',
+    name: 'namma ooru Foods',
+    short_name: 'namma ooru',
     description: 'Premium Organic & Local Essentials delivered from heart of our community.',
     start_url: '/',
     display: 'standalone',
@@ -22,7 +22,7 @@ export default function manifest(): MetadataRoute.Manifest {
         sizes: '192x192',
         type: 'image/webp',
       },
-       {
+      {
         src: '/logo.webp',
         sizes: '512x512',
         type: 'image/webp',

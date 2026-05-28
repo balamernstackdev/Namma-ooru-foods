@@ -17,6 +17,8 @@ interface CartState {
   addToCart: (item: Omit<CartItem, 'id'>) => void;
   removeFromCart: (id: number) => void;
   updateQuantity: (id: number, quantity: number) => void;
+  appliedCoupon: { code: string; discount: number; type: string; message: string } | null;
+  setAppliedCoupon: (coupon: { code: string; discount: number; type: string; message: string } | null) => void;
   clearCart: () => void;
   setIsOpen: (open: boolean) => void;
   getTotal: () => number;
@@ -49,6 +51,8 @@ export const useCartStore = create<CartState>()(
         }
       },
 
+      appliedCoupon: null,
+      setAppliedCoupon: (coupon) => set({ appliedCoupon: coupon }),
       removeFromCart: (id) => {
         set({
           cart: get().cart.filter((i) => i.id !== id),
@@ -59,7 +63,7 @@ export const useCartStore = create<CartState>()(
           cart: get().cart.map((i) => (i.id === id ? { ...i, quantity } : i)),
         });
       },
-      clearCart: () => set({ cart: [] }),
+      clearCart: () => set({ cart: [], appliedCoupon: null }),
       getTotal: () => {
         return get().cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
       },

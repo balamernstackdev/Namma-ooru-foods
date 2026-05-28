@@ -28,9 +28,12 @@ import {
    Globe,
    X,
    Video,
-   Play
+   Play,
+   ShoppingBag
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import RelatedProductsSelector from './RelatedProductsSelector';
+import ComboProductsSelector from './ComboProductsSelector';
 
 import useSWR from 'swr';
 import { useToast } from '@/context/ToastContext';
@@ -84,8 +87,11 @@ export default function ProductForm({ initialData, mode }: ProductFormProps) {
    const router = useRouter();
    const { addToast } = useToast();
    const [isLoading, setIsLoading] = useState(false);
+   const [relatedProducts, setRelatedProducts] = useState<any[]>([]);
+   const [comboProducts, setComboProducts] = useState<any[]>([]);
    const [isUploading, setIsUploading] = useState(false);
    const [isVideoUploading, setIsVideoUploading] = useState(false);
+   const [videoUploadProgress, setVideoUploadProgress] = useState(0);
    const [openFaqIdx, setOpenFaqIdx] = useState<number | null>(0);
    const fileInputRef = useRef<HTMLInputElement>(null);
    const videoInputRef = useRef<HTMLInputElement>(null);
@@ -96,7 +102,9 @@ export default function ProductForm({ initialData, mode }: ProductFormProps) {
       subcategoryId: initialData?.subcategoryId?.toString() || '',
       description: initialData?.description || '',
       image: initialData?.image || '',
-      images: initialData?.images?.map((img: any) => img.url) || [],
+      images: (initialData?.images?.length > 0)
+         ? initialData.images.map((img: any) => img.url || img)
+         : (initialData?.image ? [initialData.image] : []),
       videoUrl: initialData?.videoUrl || '',
       price: initialData?.price || '',
       originalPrice: initialData?.originalPrice || '',
@@ -105,15 +113,77 @@ export default function ProductForm({ initialData, mode }: ProductFormProps) {
       whyChoose: initialData?.whyChoose || '',
       whoShouldEat: initialData?.whoShouldEat || '',
       howToEat: initialData?.howToEat || '',
-      faqs: initialData?.faqs || [],
+      storageInstructions: initialData?.storageInstructions || '',
+      faqs: initialData?.faqs ? initialData.faqs.map((f: any) => ({ q: f.question || f.q || '', a: f.answer || f.a || '' })) : [],
       metaTitle: initialData?.metaTitle || '',
       metaDescription: initialData?.metaDescription || '',
-      metaKeywords: initialData?.metaKeywords || ''
+      metaKeywords: initialData?.metaKeywords ? initialData.metaKeywords.split(',').map((k: string) => k.trim()).filter(Boolean) : [] as string[],
+      newKeyword: '',
+      variants: initialData?.variants || [],
+      comboOffer: initialData?.comboOffer || '',
+      freeDelivery: initialData?.freeDelivery || ''
    });
 
    const { data: categories } = useSWR(`${API_URL}/api/categories`, fetcher);
    const { data: subcategoriesRes } = useSWR(formData.categoryId ? `${API_URL}/api/subcategories?categoryId=${formData.categoryId}` : null, fetcher);
    const subcategories = subcategoriesRes?.subcategories || [];
+
+   React.useEffect(() => {
+      if (initialData) {
+         const extractedImages = initialData.images?.length > 0
+            ? initialData.images.map((img: any) => img.url || img)
+            : initialData.image ? [initialData.image] : [];
+
+         setFormData(prev => ({
+            ...prev,
+            name: initialData.name || '',
+            categoryId: initialData.categoryId?.toString() || '',
+            subcategoryId: initialData.subcategoryId?.toString() || '',
+            description: initialData.description || '',
+            image: initialData.image || '',
+            images: extractedImages,
+            videoUrl: initialData.videoUrl || '',
+            price: initialData.price || '',
+            originalPrice: initialData.originalPrice || '',
+            whatIsProduct: initialData.whatIsProduct || '',
+            healthBenefits: initialData.healthBenefits || '',
+            whyChoose: initialData.whyChoose || '',
+            whoShouldEat: initialData.whoShouldEat || '',
+            howToEat: initialData.howToEat || '',
+            storageInstructions: initialData.storageInstructions || '',
+            faqs: initialData.faqs ? initialData.faqs.map((f: any) => ({ q: f.question || f.q || '', a: f.answer || f.a || '' })) : [],
+            metaTitle: initialData.metaTitle || '',
+            metaDescription: initialData.metaDescription || '',
+            metaKeywords: initialData.metaKeywords ? initialData.metaKeywords.split(',').map((k: string) => k.trim()).filter(Boolean) : [],
+            newKeyword: '',
+            variants: initialData.variants || [],
+            comboOffer: initialData.comboOffer || '',
+            freeDelivery: initialData.freeDelivery || ''
+         }));
+          if (initialData.relatedProductsSource) {
+             const allRPs = initialData.relatedProductsSource.map((rp: any) => ({
+                relatedProductId: rp.relatedProductId,
+                priority: rp.priority,
+                type: rp.type
+             }));
+             setRelatedProducts(allRPs.filter((rp: any) => rp.type !== 'COMBO'));
+             setComboProducts(allRPs.filter((rp: any) => rp.type === 'COMBO'));
+          }
+      }
+   }, [initialData]);
+
+   const handleAddKeyword = () => {
+      if (formData.newKeyword && !formData.metaKeywords.includes(formData.newKeyword)) {
+         setFormData({ ...formData, metaKeywords: [...formData.metaKeywords, formData.newKeyword], newKeyword: '' });
+      }
+   };
+
+   const handleKeywordKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (e.key === 'Enter' || e.key === ',') {
+         e.preventDefault();
+         handleAddKeyword();
+      }
+   };
 
    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
@@ -149,23 +219,49 @@ export default function ProductForm({ initialData, mode }: ProductFormProps) {
       if (!file) return;
 
       setIsVideoUploading(true);
+      setVideoUploadProgress(0);
       const uploadData = new FormData();
       uploadData.append('video', file);
 
-      try {
-         const res = await fetch(`${API_URL}/api/upload/video`, {
-            method: 'POST',
-            body: uploadData,
-         });
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', `${API_URL}/api/upload/video`);
 
-         if (res.ok) {
-            const data = await res.json();
-            setFormData(prev => ({ ...prev, videoUrl: data.url }));
-            addToast('Success', 'Product video uploaded');
-         }
-      } finally {
-         setIsVideoUploading(false);
+      // Add auth token if needed
+      const token = typeof window !== 'undefined' ? localStorage.getItem('namma_orru_token') : null;
+      if (token) {
+         xhr.setRequestHeader('Authorization', `Bearer ${token}`);
       }
+
+      xhr.upload.onprogress = (event) => {
+         if (event.lengthComputable) {
+            const percentComplete = Math.round((event.loaded / event.total) * 100);
+            setVideoUploadProgress(percentComplete);
+         }
+      };
+
+      xhr.onload = () => {
+         setIsVideoUploading(false);
+         if (xhr.status >= 200 && xhr.status < 300) {
+            try {
+               const data = JSON.parse(xhr.responseText);
+               setFormData(prev => ({ ...prev, videoUrl: data.url }));
+               addToast('Success', 'Product video uploaded');
+            } catch (err) {
+               addToast('Error', 'Invalid response from server.');
+            }
+         } else {
+            console.error('Upload error:', xhr.responseText);
+            addToast('Error', 'Video upload failed. Check if file size is under 500MB.');
+         }
+      };
+
+      xhr.onerror = () => {
+         setIsVideoUploading(false);
+         console.error('Network error during upload');
+         addToast('Error', 'Network error during upload.');
+      };
+
+      xhr.send(uploadData);
    };
 
    const removeImage = (index: number) => {
@@ -184,14 +280,39 @@ export default function ProductForm({ initialData, mode }: ProductFormProps) {
       setIsLoading(true);
       try {
          const url = mode === 'edit' ? `${API_URL}/api/products/${initialData.id}` : `${API_URL}/api/products`;
+         const token = typeof window !== 'undefined' ? localStorage.getItem('namma_orru_token') : null;
+         const headers = { 'Content-Type': 'application/json' };
+         if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+         }
          const res = await fetch(url, {
             method: mode === 'edit' ? 'PUT' : 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ ...formData, categoryId: parseInt(formData.categoryId), subcategoryId: formData.subcategoryId ? parseInt(formData.subcategoryId) : null, variants: [] })
+            headers,
+            body: JSON.stringify({
+               ...formData,
+                relatedProducts: [...relatedProducts, ...comboProducts.map((cp: any, idx: number) => ({
+                  ...cp,
+                  type: 'COMBO',
+                  priority: relatedProducts.length + idx
+               }))],
+               categoryId: parseInt(formData.categoryId),
+               comboOffer: formData.comboOffer,
+               freeDelivery: formData.freeDelivery,
+               subcategoryId: formData.subcategoryId ? parseInt(formData.subcategoryId) : null,
+               metaKeywords: formData.metaKeywords.join(', '),
+               variants: formData.variants.map((v: any) => ({
+                  name: v.name,
+                  price: v.price ? parseFloat(v.price) : null,
+                  originalPrice: v.originalPrice ? parseFloat(v.originalPrice) : null,
+                  stock: parseInt(v.stock?.toString() || '0'),
+                  sku: v.sku,
+                  barcode: v.barcode
+               }))
+            })
          });
 
          if (res.ok) {
-            addToast('Success', 'Product catalog updated');
+            addToast('Success', 'Product updated successfully');
             router.push('/admin/products');
          }
       } finally {
@@ -277,7 +398,7 @@ export default function ProductForm({ initialData, mode }: ProductFormProps) {
 
             {/* 1. MEDIA ASSETS */}
             <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden w-full">
-               <SectionHeader title="Visual Assets & Discovery" icon={ImageIcon} colorClass="text-blue-600" />
+               <SectionHeader title="Product Images" icon={ImageIcon} colorClass="text-blue-600" />
                <div className="p-8 space-y-8">
                   <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-4">
                      {formData.images.map((img: string, idx: number) => (
@@ -301,15 +422,27 @@ export default function ProductForm({ initialData, mode }: ProductFormProps) {
                            <h4 className="text-[11px] font-black text-slate-900 uppercase tracking-widest">Product Discovery Video</h4>
                         </div>
                      </div>
-                     <div onClick={() => !isVideoUploading && !formData.videoUrl && videoInputRef.current?.click()} className={`h-24 rounded-xl border-2 border-dashed border-slate-200 bg-slate-50/30 flex items-center justify-center transition-all relative ${!formData.videoUrl ? 'hover:border-blue-500 cursor-pointer' : ''}`}>
+                     <div onClick={() => !isVideoUploading && !formData.videoUrl && videoInputRef.current?.click()} className={`h-auto min-h-[96px] rounded-xl border-2 border-dashed border-slate-200 bg-slate-50/30 flex flex-col items-center justify-center transition-all relative ${!formData.videoUrl ? 'hover:border-blue-500 cursor-pointer' : ''}`}>
                         <input type="file" ref={videoInputRef} className="hidden" accept="video/*" onChange={handleVideoUpload} />
-                        {isVideoUploading ? <Loader2 className="h-6 w-6 text-blue-600 animate-spin" /> : formData.videoUrl ? (
-                           <div className="flex items-center gap-4 px-6 w-full">
-                              <div className="h-12 aspect-video bg-black rounded flex items-center justify-center text-white"><Play size={18} fill="currentColor" /></div>
-                              <p className="flex-1 text-[11px] font-black text-slate-900 uppercase truncate">Video Harvest Linked</p>
-                              <button type="button" onClick={() => videoInputRef.current?.click()} className="text-[10px] font-black text-blue-600 uppercase">Change</button>
+                        {isVideoUploading ? (
+                           <div className="py-8 flex flex-col items-center justify-center w-full px-10">
+                              <Loader2 className="h-6 w-6 text-blue-600 animate-spin mb-4" />
+                              <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                                 <div className="h-full bg-blue-600 transition-all duration-300" style={{ width: `${videoUploadProgress}%` }} />
+                              </div>
+                              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-2">{videoUploadProgress}% Uploaded</p>
                            </div>
-                        ) : <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Upload story video</span>}
+                        ) : formData.videoUrl ? (
+                           <div className="w-full flex flex-col items-center">
+                              <video src={formData.videoUrl} controls className="w-full max-h-[300px] rounded-t-lg bg-black object-contain" />
+                              <div className="flex items-center justify-between w-full px-4 py-3 bg-white border-t border-slate-100 rounded-b-lg">
+                                 <p className="text-[11px] font-black text-slate-900 uppercase truncate">Video Uploaded</p>
+                                 <button type="button" onClick={() => videoInputRef.current?.click()} className="text-[10px] font-black text-blue-600 uppercase hover:text-blue-700">Replace Video</button>
+                              </div>
+                           </div>
+                        ) : (
+                           <div className="py-8"><span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Upload story video</span></div>
+                        )}
                      </div>
                   </div>
                </div>
@@ -317,7 +450,7 @@ export default function ProductForm({ initialData, mode }: ProductFormProps) {
 
             {/* 2. IDENTITY & COMMERCE */}
             <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden w-full">
-               <SectionHeader title="Core Specifications" icon={Tag} colorClass="text-slate-900" />
+               <SectionHeader title="Product Details" icon={Tag} colorClass="text-slate-900" />
                <div className="p-8 space-y-8">
                   <InputWrapper label="Product Title">
                      <input type="text" required className="w-full h-14 px-6 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-4 ring-blue-500/5 outline-none font-bold text-slate-900 text-sm transition-all" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} />
@@ -354,12 +487,76 @@ export default function ProductForm({ initialData, mode }: ProductFormProps) {
                   <InputWrapper label="Marketplace Hook (Short Summary)">
                      <textarea rows={2} className="w-full px-6 py-4 rounded-xl border border-slate-200 focus:border-blue-500 outline-none font-bold text-slate-600 text-sm resize-none" value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })} />
                   </InputWrapper>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                     <InputWrapper label="Combo Offer text (e.g. Buy 2 get 10% OFF)">
+                        <input
+                           type="text"
+                           placeholder="Leave empty for default"
+                           className="w-full h-14 px-6 rounded-xl border border-slate-200 focus:border-blue-500 outline-none font-bold text-slate-600 text-sm"
+                           value={formData.comboOffer}
+                           onChange={e => setFormData({ ...formData, comboOffer: e.target.value })}
+                        />
+                     </InputWrapper>
+                     <InputWrapper label="Free Delivery text (e.g. Orders above ₹499)">
+                        <input
+                           type="text"
+                           placeholder="Leave empty for default"
+                           className="w-full h-14 px-6 rounded-xl border border-slate-200 focus:border-blue-500 outline-none font-bold text-slate-600 text-sm"
+                           value={formData.freeDelivery}
+                           onChange={e => setFormData({ ...formData, freeDelivery: e.target.value })}
+                        />
+                     </InputWrapper>
+                  </div>
                </div>
             </div>
 
-            {/* 3. THE ARTISANAL ENCYCLOPEDIA (RICH TEXT) */}
+            {/* VARIANT MANAGER */}
             <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden w-full">
-               <SectionHeader title="The Artisanal Encyclopedia" icon={Sparkles} colorClass="text-amber-500" />
+               <div className="px-6 py-5 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                     <Layers size={16} className="text-emerald-600" />
+                     <h3 className="text-[10px] font-black text-slate-900 uppercase tracking-widest">Variant & Inventory Manager</h3>
+                  </div>
+                  <button type="button" onClick={() => setFormData({ ...formData, variants: [...formData.variants, { name: '', price: '', originalPrice: '', stock: '0', sku: '' }] })} className="px-3 py-1.5 rounded-lg bg-emerald-600 text-white text-[10px] font-black uppercase tracking-widest hover:bg-emerald-700 transition-all shadow-sm">+ Add Variant</button>
+               </div>
+               <div className="p-6 space-y-4">
+                  {formData.variants.length === 0 ? (
+                     <div className="text-center py-8 text-slate-400 text-sm font-medium border-2 border-dashed border-slate-100 rounded-xl bg-slate-50/50">No variants added. The product will use the base price.</div>
+                  ) : (
+                     <div className="overflow-x-auto">
+                        <table className="w-full text-left border-collapse">
+                           <thead>
+                              <tr className="border-b border-slate-100 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                 <th className="pb-3 font-black">Variant Name <span className="font-medium normal-case text-slate-300">(e.g. 500g)</span></th>
+                                 <th className="pb-3 font-black">Selling Price</th>
+                                 <th className="pb-3 font-black">MRP</th>
+                                 <th className="pb-3 font-black">Stock</th>
+                                 <th className="pb-3 font-black">SKU <span className="font-medium normal-case text-slate-300">(Optional)</span></th>
+                                 <th className="pb-3 font-black text-right">Actions</th>
+                              </tr>
+                           </thead>
+                           <tbody className="divide-y divide-slate-50">
+                              {formData.variants.map((variant: any, idx: number) => (
+                                 <tr key={idx} className="group">
+                                    <td className="py-3 pr-2"><input type="text" className="w-full h-11 px-4 rounded-xl border border-slate-200 text-sm font-bold outline-none focus:border-emerald-500 transition-colors" placeholder="Variant name" value={variant.name} onChange={e => { const newV = [...formData.variants]; newV[idx].name = e.target.value; setFormData({ ...formData, variants: newV }); }} /></td>
+                                    <td className="py-3 pr-2"><input type="number" className="w-full h-11 px-4 rounded-xl border border-slate-200 text-sm font-bold outline-none focus:border-emerald-500 transition-colors text-blue-600" placeholder="Price" value={variant.price} onChange={e => { const newV = [...formData.variants]; newV[idx].price = e.target.value; setFormData({ ...formData, variants: newV }); }} /></td>
+                                    <td className="py-3 pr-2"><input type="number" className="w-full h-11 px-4 rounded-xl border border-slate-200 text-sm font-bold outline-none focus:border-emerald-500 transition-colors text-slate-400" placeholder="MRP" value={variant.originalPrice} onChange={e => { const newV = [...formData.variants]; newV[idx].originalPrice = e.target.value; setFormData({ ...formData, variants: newV }); }} /></td>
+                                    <td className="py-3 pr-2"><input type="number" className="w-full h-11 px-4 rounded-xl border border-slate-200 text-sm font-bold outline-none focus:border-emerald-500 transition-colors" placeholder="Stock" value={variant.stock} onChange={e => { const newV = [...formData.variants]; newV[idx].stock = e.target.value; setFormData({ ...formData, variants: newV }); }} /></td>
+                                    <td className="py-3 pr-2"><input type="text" className="w-full h-11 px-4 rounded-xl border border-slate-200 text-sm font-bold outline-none focus:border-emerald-500 transition-colors uppercase" placeholder="SKU" value={variant.sku} onChange={e => { const newV = [...formData.variants]; newV[idx].sku = e.target.value; setFormData({ ...formData, variants: newV }); }} /></td>
+                                    <td className="py-3 text-right"><button type="button" onClick={() => { const newV = [...formData.variants]; newV.splice(idx, 1); setFormData({ ...formData, variants: newV }); }} className="h-11 w-11 inline-flex items-center justify-center rounded-xl text-slate-300 hover:text-red-500 hover:bg-red-50 transition-all"><Trash2 size={16} /></button></td>
+                                 </tr>
+                              ))}
+                           </tbody>
+                        </table>
+                     </div>
+                  )}
+               </div>
+            </div>
+
+            {/* 3. Product Specification (RICH TEXT) */}
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden w-full">
+               <SectionHeader title="Product Specification" icon={Sparkles} colorClass="text-amber-500" />
                <div className="p-8 space-y-10">
                   <div className="grid grid-cols-1 gap-10">
                      <InputWrapper label="The Product Story">
@@ -377,32 +574,120 @@ export default function ProductForm({ initialData, mode }: ProductFormProps) {
                            <ReactQuill theme="snow" value={formData.howToEat} onChange={val => setFormData({ ...formData, howToEat: val })} modules={quillModules} formats={quillFormats} />
                         </div>
                      </InputWrapper>
-                     <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-                        <InputWrapper label="Ideal Audience">
-                           <textarea rows={3} className="w-full px-5 py-4 rounded-xl border border-slate-200 focus:border-blue-500 outline-none font-bold text-slate-600" value={formData.whoShouldEat} onChange={e => setFormData({ ...formData, whoShouldEat: e.target.value })} />
-                        </InputWrapper>
-                        <InputWrapper label="Quality & Heritage Promise">
-                           <textarea rows={3} className="w-full px-5 py-4 rounded-xl border border-slate-200 focus:border-blue-500 outline-none font-bold text-slate-600" value={formData.whyChoose} onChange={e => setFormData({ ...formData, whyChoose: e.target.value })} />
-                        </InputWrapper>
-                     </div>
+                     <InputWrapper label="Storage Instructions">
+                        <div className="rich-text-container">
+                           <ReactQuill theme="snow" value={formData.storageInstructions} onChange={val => setFormData({ ...formData, storageInstructions: val })} modules={quillModules} formats={quillFormats} />
+                        </div>
+                     </InputWrapper>
+                     <InputWrapper label="Ideal Audience">
+                        <div className="rich-text-container">
+                           <ReactQuill theme="snow" value={formData.whoShouldEat} onChange={val => setFormData({ ...formData, whoShouldEat: val })} modules={quillModules} formats={quillFormats} />
+                        </div>
+                     </InputWrapper>
+                     <InputWrapper label="Quality & Heritage Promise">
+                        <div className="rich-text-container">
+                           <ReactQuill theme="snow" value={formData.whyChoose} onChange={val => setFormData({ ...formData, whyChoose: val })} modules={quillModules} formats={quillFormats} />
+                        </div>
+                     </InputWrapper>
                   </div>
                </div>
             </div>
 
             {/* 4. SEO CARD */}
             <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-               <SectionHeader title="Search Optimization" icon={Globe} colorClass="text-blue-600" />
+               <SectionHeader title="SEO Meta Details" icon={Globe} colorClass="text-blue-600" />
                <div className="p-8 space-y-6">
                   <div className="space-y-2"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Meta Title</label><input type="text" className="w-full h-11 px-4 rounded-xl border border-slate-200 focus:border-blue-500 outline-none text-sm font-bold" value={formData.metaTitle} onChange={e => setFormData({ ...formData, metaTitle: e.target.value })} /></div>
                   <div className="space-y-2"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Meta Description</label><textarea rows={3} className="w-full p-4 rounded-xl border border-slate-200 focus:border-blue-500 outline-none text-sm font-bold" value={formData.metaDescription} onChange={e => setFormData({ ...formData, metaDescription: e.target.value })} /></div>
-                  <div className="space-y-2"><label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">SEO Keywords</label><input type="text" className="w-full h-11 px-4 rounded-xl border border-slate-200 focus:border-blue-500 outline-none text-sm font-bold" value={formData.metaKeywords} onChange={e => setFormData({ ...formData, metaKeywords: e.target.value })} /></div>
+                  <div className="space-y-4">
+                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">SEO Keywords</label>
+                     <div className="flex flex-wrap gap-2">
+                        {formData.metaKeywords.map((kw: string) => (
+                           <span key={kw} className="px-3 py-1.5 rounded-lg bg-blue-50 text-blue-600 text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
+                              {kw}
+                              <button type="button" onClick={() => setFormData({ ...formData, metaKeywords: formData.metaKeywords.filter((k: string) => k !== kw) })} className="hover:text-red-500 font-bold">×</button>
+                           </span>
+                        ))}
+                     </div>
+                     <div className="flex gap-2">
+                        <input
+                           placeholder="Type a keyword and press Enter or Comma..."
+                           className="flex-1 h-12 px-5 rounded-xl border border-slate-200 outline-none font-bold text-xs"
+                           value={formData.newKeyword}
+                           onChange={e => setFormData({ ...formData, newKeyword: e.target.value })}
+                           onKeyDown={handleKeywordKeyDown}
+                        />
+                        <button
+                           type="button"
+                           onClick={handleAddKeyword}
+                           className="h-12 w-12 rounded-xl bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition-all font-black text-slate-800"
+                        >
+                           <Plus size={18} strokeWidth={3} />
+                        </button>
+                     </div>
+                  </div>
                </div>
             </div>
 
-            {/* 5. FAQ CARD */}
+            {/* 5. RELATED PRODUCTS / RECOMMENDED ESSENTIALS */}
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+               <div className="px-8 py-4 border-b border-slate-100 bg-gradient-to-r from-purple-50 to-white flex items-center gap-3">
+                  <div className="h-8 w-8 rounded-lg bg-purple-100 flex items-center justify-center">
+                     <Sparkles size={15} className="text-purple-600" />
+                  </div>
+                  <div>
+                     <h2 className="text-[10px] font-black text-slate-900 uppercase tracking-[0.2em]">Related Products / Recommended Essentials</h2>
+                     <p className="text-[9px] text-slate-400 font-semibold mt-0.5">Manually curate what customers see after viewing this product</p>
+                  </div>
+                  <div className="ml-auto">
+                     <span className={`text-[8px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full border ${relatedProducts.length > 0 ? 'bg-purple-50 text-purple-600 border-purple-200' : 'bg-slate-50 text-slate-400 border-slate-200'}`}>
+                        {relatedProducts.length > 0 ? `${relatedProducts.length} Manual Picks` : 'Auto Fallback Active'}
+                     </span>
+                  </div>
+               </div>
+
+
+               <div className="p-8">
+                  <RelatedProductsSelector
+                     relatedProducts={relatedProducts}
+                     onChange={setRelatedProducts}
+                     isAdmin={true}
+                     currentProductId={initialData?.id}
+                  />
+               </div>
+            </div>
+
+            {/* 6. COMBO & BUNDLE MANAGEMENT */}
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+               <div className="px-8 py-4 border-b border-slate-100 bg-gradient-to-r from-amber-50 to-white flex items-center gap-3">
+                  <div className="h-8 w-8 rounded-lg bg-amber-100 flex items-center justify-center">
+                     <ShoppingBag size={15} className="text-amber-600" />
+                  </div>
+                  <div>
+                     <h2 className="text-[10px] font-black text-slate-900 uppercase tracking-[0.2em]">Combo & Bundle Management</h2>
+                     <p className="text-[9px] text-slate-400 font-semibold mt-0.5">Configure "Frequently Bought Together" products for this specific product</p>
+                  </div>
+                  <div className="ml-auto">
+                     <span className={`text-[8px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full border ${comboProducts.length > 0 ? 'bg-amber-50 text-amber-600 border-amber-200' : 'bg-slate-50 text-slate-400 border-slate-200'}`}>
+                        {comboProducts.length > 0 ? `${comboProducts.length} Combo Items` : 'Smart Fallback'}
+                     </span>
+                  </div>
+               </div>
+               <div className="p-8">
+                  <ComboProductsSelector
+                     comboProducts={comboProducts}
+                     onChange={setComboProducts}
+                     isAdmin={true}
+                     currentProductId={initialData?.id}
+                  />
+               </div>
+            </div>
+
+            {/* 7. FAQ CARD */}
+
             <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
                <div className="px-6 py-5 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
-                  <h3 className="text-[10px] font-black text-slate-900 uppercase tracking-widest">FAQ Manager</h3>
+                  <h3 className="text-[10px] font-black text-slate-900 uppercase tracking-widest">FAQ</h3>
                   <button type="button" onClick={() => { const newFaqs = [...formData.faqs, { q: '', a: '' }]; setFormData({ ...formData, faqs: newFaqs }); setOpenFaqIdx(newFaqs.length - 1); }} className="px-3 py-1.5 rounded-lg bg-blue-600 text-white text-[10px] font-black uppercase tracking-widest hover:bg-blue-700 transition-all">+ Add</button>
                </div>
                <div className="p-4 space-y-2">

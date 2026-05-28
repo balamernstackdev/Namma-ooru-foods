@@ -25,17 +25,18 @@ export default function AdminUsersPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedRole, setSelectedRole] = useState('ALL');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const itemsPerPage = 10;
 
   useEffect(() => {
-    fetchUsers(currentPage);
-  }, [currentPage]);
+    fetchUsers(currentPage, selectedRole);
+  }, [currentPage, selectedRole]);
 
-  const fetchUsers = (page: number) => {
+  const fetchUsers = (page: number, role: string) => {
     setLoading(true);
-    fetch(`${API_URL}/api/admin-ops/users?page=${page}&limit=${itemsPerPage}`)
+    fetch(`${API_URL}/api/admin-ops/users?page=${page}&limit=${itemsPerPage}&role=${role}`)
       .then(r => r.json())
       .then(data => {
         setUsers(data.users || []);
@@ -62,7 +63,7 @@ export default function AdminUsersPage() {
     <div className="space-y-8 animate-in fade-in duration-700">
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
         <div>
-          <h2 className="text-4xl font-black text-slate-900 tracking-tighter uppercase">USER REGISTRY</h2>
+          <h2 className="text-4xl font-black text-slate-900 tracking-tighter">Users Management</h2>
           <p className="text-slate-400 font-medium text-sm mt-1">Onboard and manage customers, administrators, and marketplace vendors.</p>
         </div>
         <div className="flex flex-wrap gap-4">
@@ -76,8 +77,8 @@ export default function AdminUsersPage() {
       </div>
 
       <div className="bg-white rounded-[2.5rem] border border-slate-200 shadow-sm overflow-hidden">
-        <div className="p-8 border-b border-slate-50 flex items-center gap-4 bg-slate-50/20">
-          <div className="relative flex-1 max-w-md">
+        <div className="p-8 border-b border-slate-50 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-50/20">
+          <div className="relative flex-1 max-w-md w-full">
             <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-300" />
             <input
               type="text"
@@ -86,6 +87,36 @@ export default function AdminUsersPage() {
               onChange={e => setSearchTerm(e.target.value)}
               className="w-full h-12 bg-white rounded-xl pl-14 pr-4 text-xs font-bold outline-none border border-slate-100 focus:border-blue-500 transition-all shadow-sm"
             />
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            {[
+              { id: 'ALL', label: 'All Users' },
+              { id: 'VENDOR', label: 'Vendors' },
+              { id: 'USER', label: 'Customers' },
+              { id: 'ADMIN', label: 'Administrators' }
+            ].map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => {
+                  setSelectedRole(tab.id);
+                  setCurrentPage(1);
+                }}
+                className={`px-4 py-2 rounded-xl text-xs font-extrabold uppercase tracking-wider transition-all duration-300 ${
+                  selectedRole === tab.id
+                    ? tab.id === 'ALL'
+                      ? 'bg-slate-900 text-white shadow-lg shadow-slate-900/10'
+                      : tab.id === 'VENDOR'
+                      ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-500/20'
+                      : tab.id === 'USER'
+                      ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20'
+                      : 'bg-purple-600 text-white shadow-lg shadow-purple-500/20'
+                    : 'bg-white text-slate-500 hover:text-slate-800 border border-slate-200/60 shadow-sm'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
           </div>
         </div>
 
@@ -101,7 +132,7 @@ export default function AdminUsersPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50">
-               {loading ? (
+              {loading ? (
                 <tr><td colSpan={5} className="px-8 py-20 text-center"><Loader2 className="h-10 w-10 animate-spin mx-auto text-slate-200" /></td></tr>
               ) : users.filter(u => u.name?.toLowerCase().includes(searchTerm.toLowerCase()) || u.email?.toLowerCase().includes(searchTerm.toLowerCase())).map(user => (
                 <tr key={user.id} className="group hover:bg-slate-50/50 transition-all">
@@ -145,14 +176,14 @@ export default function AdminUsersPage() {
                   </td>
                   <td className="px-8 py-5 text-right">
                     <div className="flex items-center justify-end gap-2">
-                      <Link 
-                        href={`/admin/users/edit/${user.id}`} 
+                      <Link
+                        href={`/admin/users/edit/${user.id}`}
                         className="h-10 w-10 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-400 hover:bg-blue-600 hover:text-white transition-all shadow-sm no-underline"
                       >
                         <Edit2 size={16} />
                       </Link>
-                      <button 
-                        onClick={() => deleteUser(user.id)} 
+                      <button
+                        onClick={() => deleteUser(user.id)}
                         className="h-10 w-10 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-red-300 hover:bg-red-500 hover:text-white transition-all shadow-sm"
                       >
                         <Trash2 size={16} />
@@ -167,7 +198,7 @@ export default function AdminUsersPage() {
             </tbody>
           </table>
         </div>
-        <AdminPagination 
+        <AdminPagination
           currentPage={currentPage}
           totalPages={totalPages}
           onPageChange={setCurrentPage}

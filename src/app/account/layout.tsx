@@ -4,7 +4,7 @@ import React from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { User, Heart, Package, MapPin, CreditCard, Bell, Settings, LogOut, ChevronRight, LayoutDashboard } from 'lucide-react';
+import { User, Heart, Package, MapPin, CreditCard, Bell, Settings, LogOut, ChevronRight, LayoutDashboard, RefreshCcw } from 'lucide-react';
 
 import { useRouter } from 'next/navigation';
 
@@ -23,7 +23,7 @@ export default function AccountLayout({ children }: { children: React.ReactNode 
   const isBaseAccount = pathname === '/account' || pathname === '/account/';
 
   // 1. Loading State - Show a premium loader instead of naked children
-  if (isLoading) {
+  if (isLoading && !isBaseAccount) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50">
         <div className="relative">
@@ -53,18 +53,16 @@ export default function AccountLayout({ children }: { children: React.ReactNode 
     { label: 'My Profile', href: '/account/profile', icon: User },
     // Inject Admin Link for privileged roles
     ...((user?.role?.toLowerCase() === 'admin' || user?.role?.toLowerCase() === 'vendor') ? [
-      { 
-        label: 'Admin Panel', 
-        href: user.role.toLowerCase() === 'vendor' ? '/vendor' : '/admin', 
-        icon: LayoutDashboard 
+      {
+        label: 'Admin Panel',
+        href: user.role.toLowerCase() === 'vendor' ? '/vendor' : '/admin',
+        icon: LayoutDashboard
       }
     ] : []),
     { label: 'Wishlist', href: '/account/wishlist', icon: Heart },
     { label: 'My Orders', href: '/account/orders', icon: Package },
-    { label: 'Track Order', href: '/account/tracking', icon: MapPin },
     { label: 'Payments', href: '/account/payments', icon: CreditCard },
-    { label: 'Notifications', href: '/account/notifications', icon: Bell },
-    { label: 'Settings', href: '/account/settings', icon: Settings },
+    { label: 'Refund Requests', href: '/account/refund-requests', icon: RefreshCcw },
   ];
 
 
@@ -83,22 +81,6 @@ export default function AccountLayout({ children }: { children: React.ReactNode 
           <aside className="w-full md:w-80 shrink-0 hidden md:block">
             <div className="sticky top-28 space-y-6">
 
-              {/* User Profile Card */}
-              <div className="bg-emerald-950 rounded-[2rem] p-4 text-white shadow-premium relative overflow-hidden">
-                <div className="absolute inset-0 bg-emerald-800/10 opacity-[0.05] pointer-events-none" />
-                <div className="relative z-10 flex items-center gap-4">
-                  <div className="h-12 w-12 rounded-full overflow-hidden border-2 border-amber-400 shrink-0 shadow-lg">
-                    {user?.avatar
-                      ? <img src={user.avatar} alt={user.name} className="h-full w-full object-cover" />
-                      : <div className="h-full w-full bg-emerald-800 flex items-center justify-center text-sm font-black">{user?.name?.[0]}</div>
-                    }
-                  </div>
-                  <div className="flex flex-col min-w-0">
-                    <h2 className="text-[12px] font-black tracking-tight leading-tight truncate">{user?.name}</h2>
-                    <p className="text-[8px] font-bold text-emerald-400 uppercase tracking-widest opacity-80 truncate">{user?.email}</p>
-                  </div>
-                </div>
-              </div>
 
               {/* Navigation Menu */}
               <nav className="bg-white rounded-[2rem] border border-slate-100 shadow-sm overflow-hidden p-2">

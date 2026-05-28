@@ -1,56 +1,57 @@
+// Cache-buster dummy update: trigger next dev route update
 import React from 'react';
 import BrandDetailLoader from './BrandDetailLoader';
-import { BRANDS } from '@/lib/staticData';
 import { API_URL } from '@/lib/api';
 import { Metadata } from 'next';
-
-export const dynamicParams = true;
+// export const dynamicParams = true;
 
 export async function generateStaticParams() {
   try {
-    const res = await fetch(`${API_URL}/api/brands`);
-    if (!res.ok) throw new Error('API fetch failed');
-    const data = await res.json();
-    const brandsList = Array.isArray(data) ? data : (data && Array.isArray(data.brands) ? data.brands : []);
-    
-    if (brandsList.length > 0) {
-      return brandsList.map((brand: any) => ({
-        id: brand.id.toString(),
-      }));
+    let res = await fetch(`${API_URL}/api/sub-vendors?includeEmpty=true&limit=1000`, { cache: 'no-store' });
+    if (!res.ok) {
+      res = await fetch(`http://localhost:5000/api/sub-vendors?includeEmpty=true&limit=1000`, { cache: 'no-store' });
     }
-    throw new Error('Empty brands list');
+    const data = await res.json();
+    const brands = data.subVendors || [];
+    const params = [];
+    for (const brand of brands) {
+      params.push({ id: brand.id.toString() });
+      if (brand.slug) params.push({ id: brand.slug });
+    }
+    if (params.length === 0) throw new Error('No brands fetched');
+    return params;
   } catch (error) {
-    console.warn('Falling back to static BRANDS for generateStaticParams');
-    return BRANDS.map((brand) => ({
-      id: brand.id.toString(),
-    }));
+    console.warn('Falling back to default brand ID in generateStaticParams:', error);
+    return [{ id: '1' }];
   }
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
-  const { id } = await params;
+  const resolvedParams = await params;
+  const { id } = resolvedParams;
   try {
-    const res = await fetch(`${API_URL}/api/brands`);
-    const brands = await res.json();
-    const brand = Array.isArray(brands) ? brands.find((b: any) => b.id.toString() === id) : null;
-    
-    if (!brand) return { title: 'Our Farmers' };
+    const res = await fetch(`${API_URL}/api/sub-vendors/${id}`);
+    const brand = await res.json();
+
+    if (!brand || brand.error) return { title: 'Heritage Brand | namma ooru Foods' };
 
     return {
-      title: `${brand.name} | Verified Producer`,
-      description: `Learn more about ${brand.name}, one of our trusted local producers bringing you the finest organic harvests.`,
+      title: `${brand.name} | Heritage Brand`,
+      description: brand.description || `Explore the ${brand.name} collection, featuring authentic heritage products sourced with integrity.`,
       openGraph: {
-        title: `${brand.name} | Namma Orru Foods`,
+        title: `${brand.name} | namma ooru Foods`,
         description: `Directly sourced organic products from ${brand.name}.`,
+        images: brand.logo ? [brand.logo] : []
       }
     };
   } catch (e) {
-    return { title: 'Our Farmers' };
+    return { title: 'Heritage Brand | namma ooru Foods' };
   }
 }
 
 export default async function BrandDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
+  const resolvedParams = await params;
+  const { id } = resolvedParams;
 
   return (
     <BrandDetailLoader id={id} />

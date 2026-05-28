@@ -17,7 +17,7 @@ interface SearchProductCardProps {
 export default function SearchProductCard({ product, isHighlighted, onClick }: SearchProductCardProps) {
   return (
     <Link
-      href={`/products/${product.id}`}
+      href={`/products/detail?id=${product.id}`}
       onClick={onClick}
       data-highlighted={isHighlighted}
       className={`flex items-center gap-4 px-4 py-3 transition-colors ${

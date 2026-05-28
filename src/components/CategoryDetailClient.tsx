@@ -16,7 +16,7 @@ export default function CategoryDetailClient({ categoryId, categoryProducts }: C
     .split('-')
     .map(word => word.charAt(0).toUpperCase() + word.slice(1))
     .join(' ');
-  
+
   return (
     <div className="flex flex-col bg-white w-full min-h-screen">
       <div className="w-full bg-[#f9fafb] border-b border-slate-100 py-3">
@@ -40,9 +40,9 @@ export default function CategoryDetailClient({ categoryId, categoryProducts }: C
               <div className="h-32 w-32 rounded-[3rem] bg-slate-50 border border-slate-100 flex items-center justify-center mb-10 text-6xl grayscale opacity-50">
                 🌾
               </div>
-              <h2 className="text-4xl font-black text-emerald-950 tracking-tighter mb-4">Awaiting Fresh Harvest</h2>
+              <h2 className="text-4xl font-black text-emerald-950 tracking-tighter mb-4">Awaiting Fresh Product</h2>
               <p className="text-slate-400 font-medium max-w-sm mx-auto mb-12">
-                Our agrarian cluster is currently preparing the next batch of {categoryName.toLowerCase()}. 
+                Our agrarian cluster is currently preparing the next batch of {categoryName.toLowerCase()}.
               </p>
               <Link href="/products" className="h-16 px-12 rounded-2xl bg-emerald-950 text-white flex items-center justify-center text-[11px] font-black uppercase tracking-widest hover:bg-emerald-800 transition-all shadow-2xl shadow-emerald-900/20">
                 Explore All Offerings

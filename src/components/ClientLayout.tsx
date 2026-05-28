@@ -9,7 +9,7 @@ import { usePathname } from 'next/navigation';
 
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const isDashboardPath = pathname?.startsWith('/admin') || pathname?.startsWith('/vendor');
+  const isDashboardPath = pathname?.startsWith('/admin') || pathname === '/vendor' || pathname?.startsWith('/vendor/');
 
   React.useEffect(() => {
     window.scrollTo(0, 0);
@@ -18,7 +18,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
   return (
     <>
       {!isDashboardPath && <Navbar />}
-      <main className="min-h-fit flex-1">
+      <main className="min-h-fit flex-1 pb-20 lg:pb-0">
         {children}
       </main>
       {!isDashboardPath && <Footer />}

@@ -4,58 +4,7 @@ import React, { useState } from 'react';
 import { Bell, ShoppingBag, Tag, Info, Trash2, Check, Clock, ChevronLeft } from 'lucide-react';
 import Link from 'next/link';
 
-const initialNotifications = [
-  {
-    id: 1,
-    type: 'order',
-    title: 'Order Delivered!',
-    message: 'Your order NOF-2024-001847 has been successfully delivered. Please rate the products.',
-    time: '2 hours ago',
-    unread: true,
-    icon: ShoppingBag,
-    color: 'bg-emerald-100 text-emerald-700'
-  },
-  {
-    id: 2,
-    type: 'promo',
-    title: 'Weekend Special Offer',
-    message: 'Get flat 20% OFF on all Organic Ghee and Honey. Valid until Sunday midnight.',
-    time: '5 hours ago',
-    unread: true,
-    icon: Tag,
-    color: 'bg-amber-100 text-amber-600'
-  },
-  {
-    id: 3,
-    type: 'info',
-    title: 'New Arrival',
-    message: 'Farm-fresh Malabar Peppercorns are back in stock. Direct from our Wayanad partners.',
-    time: '1 day ago',
-    unread: false,
-    icon: Info,
-    color: 'bg-blue-100 text-blue-600'
-  },
-  {
-    id: 4,
-    type: 'order',
-    title: 'Refund Processed',
-    message: 'Refund for order NOF-2024-001401 has been credited to your wallet.',
-    time: '2 days ago',
-    unread: false,
-    icon: Check,
-    color: 'bg-rose-100 text-rose-600'
-  },
-  {
-    id: 5,
-    type: 'promo',
-    title: 'Free Delivery Alert',
-    message: 'Enjoy free delivery on your next 3 orders using code NAMMAFREEDEL.',
-    time: '3 days ago',
-    unread: false,
-    icon: Bell,
-    color: 'bg-purple-100 text-purple-600'
-  }
-];
+const initialNotifications: any[] = [];
 
 export default function NotificationsPage() {
   const [notifications, setNotifications] = useState(initialNotifications);
@@ -104,7 +53,7 @@ export default function NotificationsPage() {
             </div>
             <h2 className="text-xl font-black text-slate-300 mb-2">No new notifications</h2>
             <p className="text-slate-300 text-sm mb-8">We'll let you know when something important happens.</p>
-            <Link href="/" className="inline-block px-8 py-3 bg-emerald-950 text-white rounded-2xl font-black text-[12px] uppercase tracking-widest hover:bg-emerald-800 transition-all">Back to Home</Link>
+            <Link href="/" className="inline-block px-8 py-3 bg-emerald-950 text-white !text-white rounded-2xl font-black text-[12px] uppercase tracking-widest hover:bg-emerald-800 transition-all">Back to Home</Link>
           </div>
         ) : (
           <div className="flex flex-col gap-5">

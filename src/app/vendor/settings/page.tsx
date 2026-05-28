@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { API_URL } from '@/lib/api';
 import useSWR from 'swr';
-import { Save, Lock, Image as ImageIcon, Camera } from 'lucide-react';
+import { Save, Lock, Image as ImageIcon, Camera, Loader2, Plus } from 'lucide-react';
+import VendorPayoutMethods from '@/components/vendor/VendorPayoutMethods';
 
 const fetcher = (url: string) => {
   const token = localStorage.getItem('token');
@@ -21,6 +22,36 @@ export default function VendorSettings() {
   const [logo, setLogo] = useState('');
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    const uploadData = new FormData();
+    uploadData.append('image', file);
+
+    try {
+      const res = await fetch(`${API_URL}/api/upload/image`, {
+        method: 'POST',
+        body: uploadData,
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setLogo(data.url);
+        setStatus({ type: 'success', msg: 'Image uploaded to draft. Click Save to apply.' });
+      } else {
+        setStatus({ type: 'error', msg: 'Image upload failed' });
+      }
+    } catch (err) {
+      setStatus({ type: 'error', msg: 'Network error during upload' });
+    } finally {
+      setIsUploading(false);
+    }
+  };
   
   const [status, setStatus] = useState<{type: 'success' | 'error' | null, msg: string}>({ type: null, msg: '' });
 
@@ -84,7 +115,7 @@ export default function VendorSettings() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-10">
+    <div className="w-full space-y-10">
        
       {status.type && (
          <div className={`p-4 rounded-2xl border text-sm font-bold uppercase tracking-widest ${
@@ -105,32 +136,31 @@ export default function VendorSettings() {
         
         <form onSubmit={handleUpdateProfile} className="space-y-8">
            
-          {/* Avatar Edit */}
-          <div className="flex flex-col md:flex-row gap-8 items-center">
-             <div className="h-32 w-32 rounded-full border-4 border-slate-50 dark:border-slate-800 bg-slate-100 dark:bg-slate-950 flex items-center justify-center overflow-hidden relative group shrink-0">
-               {logo ? (
-                 <img src={logo} alt="Store Logo" className="w-full h-full object-cover" />
-               ) : (
-                 <Camera size={32} className="text-slate-300 dark:text-slate-700" />
-               )}
-               <div className="absolute inset-0 bg-emerald-950/50 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                  <span className="text-[10px] font-black uppercase text-white tracking-widest mt-2 cursor-pointer">Edit</span>
-               </div>
-             </div>
-             
-             <div className="flex-1 space-y-2 w-full">
-                <label className="text-[12px] font-black uppercase tracking-widest text-[#022c22]/50 dark:text-slate-400 block mb-2">Profile Picture URL</label>
-                <div className="relative">
-                   <input 
-                     type="text" 
-                     value={logo}
-                     onChange={(e) => setLogo(e.target.value)}
-                     className="w-full h-14 pl-5 pr-5 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 focus:outline-none focus:border-amber-400 focus:ring-4 focus:ring-amber-400/10 transition-all font-medium text-slate-700 dark:text-slate-300"
-                     placeholder="/brand_logos/my_store.png"
-                   />
+          {/* Avatar Edit - Round Direct Upload */}
+          <div className="flex flex-col gap-2">
+            <label className="text-[12px] font-black uppercase tracking-widest text-[#022c22]/50 dark:text-slate-400 block mb-2">Store Profile Picture</label>
+            <div 
+              onClick={() => fileInputRef.current?.click()}
+              className="h-32 w-32 rounded-full border-4 border-slate-50 dark:border-slate-800 bg-slate-100 dark:bg-slate-950 flex items-center justify-center overflow-hidden shadow-inner hover:scale-[1.02] transition-transform duration-500 cursor-pointer relative group shrink-0"
+            >
+              <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleFileUpload} />
+              {isUploading ? (
+                <Loader2 className="h-8 w-8 text-amber-500 animate-spin" />
+              ) : logo ? (
+                <>
+                  <img src={logo} className="w-full h-full object-cover" alt="Store Logo Preview" />
+                  <div className="absolute inset-0 bg-emerald-950/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-all duration-300">
+                      <span className="text-white text-[10px] font-black uppercase tracking-widest bg-emerald-950/80 px-2 py-1 rounded-md">Change</span>
+                  </div>
+                </>
+              ) : (
+                <div className="flex flex-col items-center gap-1 text-slate-300 dark:text-slate-600 group-hover:text-amber-500 transition-colors">
+                  <Camera size={24} />
+                  <span className="text-[8px] font-black uppercase tracking-widest mt-1 text-center leading-tight">Upload<br/>Logo</span>
                 </div>
-                <p className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Provide a valid image URL or local path for your store's identity.</p>
-             </div>
+              )}
+            </div>
+            <p className="text-[10px] uppercase font-bold text-slate-400 tracking-wider mt-2">Recommended: 500 x 500px square image.</p>
           </div>
 
           <div className="space-y-3">
@@ -199,6 +229,8 @@ export default function VendorSettings() {
           </button>
         </form>
       </div>
+
+      <VendorPayoutMethods />
 
     </div>
   );

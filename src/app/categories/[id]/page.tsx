@@ -4,7 +4,7 @@ import { CATEGORIES } from '@/lib/staticData';
 import { API_URL } from '@/lib/api';
 import { Metadata } from 'next';
 
-export const dynamicParams = true;
+// export const dynamicParams = true;
 
 export async function generateStaticParams(): Promise<{ id: string }[]> {
   try {
@@ -12,7 +12,7 @@ export async function generateStaticParams(): Promise<{ id: string }[]> {
     if (!res.ok) throw new Error('API fetch failed');
     const data = await res.json();
     const categoriesList = Array.isArray(data) ? data : (data && Array.isArray(data.categories) ? data.categories : []);
-    
+
     if (categoriesList.length > 0) {
       return categoriesList.map((category: any) => ({
         id: category.id.toString(),
@@ -40,7 +40,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
       title: `${category.name} | Organic Collection`,
       description: `Explore our premium collection of ${category.name}. Authentic, organic, and farm-fresh essentials.`,
       openGraph: {
-        title: `${category.name} | Namma Orru Foods`,
+        title: `${category.name} | namma ooru Foods`,
         description: `High-quality ${category.name} sourced directly from local farmers.`,
       }
     };
