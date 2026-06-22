@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import React, { useRef, useState, useCallback, useEffect } from 'react';
@@ -17,8 +18,8 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCartStore } from '@/store/useCartStore';
-import { toast } from 'sonner';
-import confetti from 'canvas-confetti';
+import { useToast } from '@/context/ToastContext';
+import ProductDetailSuccessAnimation from '@/components/ProductDetailSuccessAnimation';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 interface Product {
@@ -37,6 +38,7 @@ interface Product {
    status?: string;
    subVendorId?: number;
    categoryId?: number;
+   gstRate?: number | null;
 }
 
 interface RecommendedProductsSectionProps {
@@ -74,10 +76,20 @@ function RecommendationCard({
    p: Product;
    fallbackImage: string;
 }) {
-   const { addToCart } = useCartStore();
+   const { addToCart, cart } = useCartStore();
+   const { addToast } = useToast();
    const [imgErr, setImgErr] = useState(false);
    const [isWishlisted, setIsWishlisted] = useState(false);
-   const [addingToCart, setAddingToCart] = useState(false);
+   const [justAdded, setJustAdded] = useState(false);
+   const [showSuccessAnimation, setShowSuccessAnimation] = useState(false);
+   const timerRef = React.useRef<NodeJS.Timeout | null>(null);
+   const btnContainerRef = useRef<HTMLDivElement>(null);
+
+   React.useEffect(() => {
+      return () => {
+         if (timerRef.current) clearTimeout(timerRef.current);
+      };
+   }, []);
 
    const price = Number(p.price || 0);
    const originalPrice = Number(p.originalPrice || 0);
@@ -85,10 +97,13 @@ function RecommendationCard({
    const img = imgErr ? fallbackImage : (p.image || (p.images?.[0]?.url) || fallbackImage);
    const rating = p.avgRating || p.averageRating || 0;
 
+   const cartItem = cart.find(item => item.productId === p.id);
+   const isInCart = !!cartItem;
+
    const handleAddToCart = (e: React.MouseEvent) => {
       e.preventDefault();
       e.stopPropagation();
-      setAddingToCart(true);
+      
       addToCart({
          productId: p.id,
          name: p.name,
@@ -96,16 +111,16 @@ function RecommendationCard({
          quantity: 1,
          image: img,
          variant: 'Standard Pack',
+         gstRate: p.gstRate
       });
-      confetti({
-         particleCount: 30,
-         spread: 50,
-         origin: { y: 0.8 },
-         colors: ['#16A34A', '#f59e0b'],
-         zIndex: 9999,
-      });
-      toast.success(`${p.name} added to cart!`);
-      setTimeout(() => setAddingToCart(false), 1200);
+      
+      addToast('Success', 'Added to Cart Successfully');
+      setShowSuccessAnimation(true);
+      setJustAdded(true);
+      if (timerRef.current) clearTimeout(timerRef.current);
+      timerRef.current = setTimeout(() => {
+         setJustAdded(false);
+      }, 4000);
    };
 
    return (
@@ -175,22 +190,41 @@ function RecommendationCard({
                   )}
 
                   {/* Price row */}
-                  <div className="flex items-center justify-between pt-1">
+                  <div className="flex items-center justify-between pt-1 relative" ref={btnContainerRef}>
+                     <AnimatePresence>
+                        {showSuccessAnimation && (
+                           <ProductDetailSuccessAnimation
+                              key="rec-success-anim"
+                              buttonRef={btnContainerRef}
+                              onComplete={() => setShowSuccessAnimation(false)}
+                           />
+                        )}
+                     </AnimatePresence>
                      <div className="flex items-baseline gap-1.5">
                         <span className="text-[15px] font-[900] text-slate-900 tracking-tight">₹{price}</span>
                         {originalPrice > price && (
                            <span className="text-[10px] text-slate-400 line-through font-semibold">₹{originalPrice}</span>
                         )}
                      </div>
-                     <button
-                        onClick={handleAddToCart}
-                        className={`w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 shadow-sm border ${addingToCart
-                              ? 'bg-emerald-600 border-emerald-600 text-white scale-90'
-                              : 'bg-white border-slate-200 text-slate-500 hover:bg-emerald-600 hover:border-emerald-600 hover:text-white hover:scale-110'
-                           }`}
-                     >
-                        <ShoppingCart size={13} strokeWidth={2.5} />
-                     </button>
+                     {isInCart || justAdded ? (
+                        <button
+                           onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              window.location.href = '/cart';
+                           }}
+                           className="text-[9px] font-black uppercase tracking-wider text-white bg-emerald-600 hover:bg-emerald-700 px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer whitespace-nowrap"
+                        >
+                           VIEW CART →
+                        </button>
+                     ) : (
+                        <button
+                           onClick={handleAddToCart}
+                           className="w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 shadow-sm border bg-white border-slate-200 text-slate-500 hover:bg-emerald-600 hover:border-emerald-600 hover:text-white hover:scale-110 cursor-pointer"
+                        >
+                           <ShoppingCart size={13} strokeWidth={2.5} />
+                        </button>
+                     )}
                   </div>
                </div>
             </div>
@@ -210,7 +244,7 @@ const SECTION_ICONS: Record<string, React.ElementType> = {
 
 // ─── Main Component ──────────────────────────────────────────────────────────
 export default function RecommendedProductsSection({
-   product,
+   product: _product,
    relatedProducts,
    isLoading,
    sectionTitle,
@@ -220,10 +254,59 @@ export default function RecommendedProductsSection({
    const scrollRef = useRef<HTMLDivElement>(null);
    const [canScrollLeft, setCanScrollLeft] = useState(false);
    const [canScrollRight, setCanScrollRight] = useState(true);
+   const [activeIndex, setActiveIndex] = useState(0);
+
+   // Mouse drag scrolling support
+   const [isMouseDown, setIsMouseDown] = useState(false);
+   const [startX, setStartX] = useState(0);
+   const [scrollLeftPos, setScrollLeftPos] = useState(0);
+
+   const onMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+      const el = scrollRef.current;
+      if (!el) return;
+      setIsMouseDown(true);
+      setStartX(e.pageX - el.offsetLeft);
+      setScrollLeftPos(el.scrollLeft);
+   };
+
+   const onMouseLeave = () => {
+      setIsMouseDown(false);
+   };
+
+   const onMouseUp = () => {
+      setIsMouseDown(false);
+   };
+
+   const onMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+      if (!isMouseDown) return;
+      e.preventDefault();
+      const el = scrollRef.current;
+      if (!el) return;
+      const x = e.pageX - el.offsetLeft;
+      const walk = (x - startX) * 1.5;
+      el.scrollLeft = scrollLeftPos - walk;
+   };
+
+   const onKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+      if (e.key === 'ArrowLeft') {
+         e.preventDefault();
+         scrollLeft();
+      } else if (e.key === 'ArrowRight') {
+         e.preventDefault();
+         scrollRight();
+      }
+   };
 
    const checkScroll = useCallback(() => {
       const el = scrollRef.current;
       if (!el) return;
+
+      // Mobile dots calculation
+      const itemWidth = el.children[0]?.clientWidth || 200;
+      const gap = 16;
+      const index = Math.round(el.scrollLeft / (itemWidth + gap));
+      setActiveIndex(index);
+
       setCanScrollLeft(el.scrollLeft > 8);
       setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 8);
    }, []);
@@ -236,11 +319,27 @@ export default function RecommendedProductsSection({
       return () => el.removeEventListener('scroll', checkScroll);
    }, [checkScroll, relatedProducts]);
 
-   const scroll = (dir: 'left' | 'right') => {
+   const getScrollStep = (el: HTMLElement) => el.clientWidth < 640 ? 216 : 236; // 200+16 or 220+16
+
+   const scrollLeft = useCallback(() => {
       const el = scrollRef.current;
       if (!el) return;
-      el.scrollBy({ left: dir === 'left' ? -450 : 450, behavior: 'smooth' });
-   };
+      if (el.scrollLeft <= 0) {
+         el.scrollTo({ left: el.scrollWidth, behavior: 'smooth' });
+      } else {
+         el.scrollBy({ left: -getScrollStep(el), behavior: 'smooth' });
+      }
+   }, []);
+
+   const scrollRight = useCallback(() => {
+      const el = scrollRef.current;
+      if (!el) return;
+      if (el.scrollLeft + el.clientWidth >= el.scrollWidth - 20) {
+         el.scrollTo({ left: 0, behavior: 'smooth' });
+      } else {
+         el.scrollBy({ left: getScrollStep(el), behavior: 'smooth' });
+      }
+   }, []);
 
    const SectionIcon = SECTION_ICONS[sectionTitle] || SECTION_ICONS['default'];
    const products = Array.isArray(relatedProducts) ? relatedProducts : [];
@@ -268,33 +367,39 @@ export default function RecommendedProductsSection({
                   </h2>
                </div>
 
-               {/* Desktop: Nav + View All */}
-               <div className="hidden md:flex items-center gap-3 shrink-0">
-                  <button
-                     onClick={() => scroll('left')}
-                     disabled={!canScrollLeft}
-                     className="h-9 w-9 rounded-full border border-slate-200 bg-white flex items-center justify-center text-slate-500 hover:bg-slate-50 hover:text-slate-900 disabled:opacity-30 disabled:cursor-not-allowed transition-all shadow-sm"
-                  >
-                     <ChevronLeft size={16} />
-                  </button>
-                  <button
-                     onClick={() => scroll('right')}
-                     disabled={!canScrollRight}
-                     className="h-9 w-9 rounded-full border border-slate-200 bg-white flex items-center justify-center text-slate-500 hover:bg-slate-50 hover:text-slate-900 disabled:opacity-30 disabled:cursor-not-allowed transition-all shadow-sm"
-                  >
-                     <ChevronRight size={16} />
-                  </button>
+               {/* Desktop controls: View All & Arrows */}
+               <div className="hidden md:flex items-center gap-4 shrink-0">
                   <Link
                      href="/products"
                      className="h-9 px-5 rounded-xl border border-slate-200 bg-white flex items-center gap-2 text-[10px] font-black uppercase tracking-widest hover:bg-slate-50 hover:border-slate-300 transition-all shadow-sm text-slate-600"
                   >
                      View All <ArrowRight size={13} />
                   </Link>
+
+                  {/* Redesigned Carousel Navigation Arrows */}
+                  <div className="flex items-center gap-2">
+                     <button
+                        type="button"
+                        onClick={scrollLeft}
+                        aria-label="Previous"
+                        className="w-11 h-11 rounded-full bg-white border border-[#E5E7EB] shadow-[0_8px_24px_rgba(0,0,0,0.08)] flex items-center justify-center text-slate-800 hover:bg-[#0F8A5F] hover:text-white hover:border-[#0F8A5F] transition-all duration-300 hover:scale-105 focus:outline-none shrink-0"
+                     >
+                        <ChevronLeft size={20} strokeWidth={2.5} />
+                     </button>
+                     <button
+                        type="button"
+                        onClick={scrollRight}
+                        aria-label="Next"
+                        className="w-11 h-11 rounded-full bg-white border border-[#E5E7EB] shadow-[0_8px_24px_rgba(0,0,0,0.08)] flex items-center justify-center text-slate-800 hover:bg-[#0F8A5F] hover:text-white hover:border-[#0F8A5F] transition-all duration-300 hover:scale-105 focus:outline-none shrink-0"
+                     >
+                        <ChevronRight size={20} strokeWidth={2.5} />
+                     </button>
+                  </div>
                </div>
             </div>
 
             {/* ─── SCROLL TRACK ────────────────────────────────────────── */}
-            <div className="relative">
+            <div className="relative group/carousel w-full">
                {/* Left fade gradient */}
                <AnimatePresence>
                   {canScrollLeft && (
@@ -322,7 +427,13 @@ export default function RecommendedProductsSection({
                {/* Scrollable row */}
                <div
                   ref={scrollRef}
-                  className="flex gap-4 overflow-x-auto no-scrollbar pb-4 scroll-smooth snap-x snap-mandatory"
+                  onMouseDown={onMouseDown}
+                  onMouseLeave={onMouseLeave}
+                  onMouseUp={onMouseUp}
+                  onMouseMove={onMouseMove}
+                  onKeyDown={onKeyDown}
+                  tabIndex={0}
+                  className="flex gap-4 overflow-x-auto no-scrollbar pb-4 scroll-smooth snap-x snap-mandatory px-[10px] md:px-[20px] xl:px-[70px] cursor-grab active:cursor-grabbing focus:outline-none"
                   style={{ WebkitOverflowScrolling: 'touch' }}
                >
                   {isLoading
@@ -334,6 +445,16 @@ export default function RecommendedProductsSection({
                      ))
                   }
                </div>
+            </div>
+
+            {/* Mobile Pagination Dots */}
+            <div className="md:hidden flex justify-center gap-1.5 mt-[-10px] mb-4">
+               {products.slice(0, 10).map((_, idx) => (
+                  <div 
+                     key={idx} 
+                     className={`h-1.5 rounded-full transition-all duration-300 ${idx === activeIndex ? 'w-4 bg-[#0f9d58]' : 'w-1.5 bg-slate-300'}`} 
+                  />
+               ))}
             </div>
 
             {/* Mobile: View All CTA */}

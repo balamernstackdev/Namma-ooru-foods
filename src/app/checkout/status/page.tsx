@@ -4,10 +4,10 @@ import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { CheckCircle, XCircle, ArrowRight, Package } from 'lucide-react';
-import { useEffect } from 'react';
+import { useEffect, Suspense } from 'react';
 import { useCartStore } from '@/store/useCartStore';
 
-export default function CheckoutStatusPage() {
+function CheckoutStatusContent() {
    const searchParams = useSearchParams();
    const orderId = searchParams.get('order');
    const status = searchParams.get('status');
@@ -71,5 +71,17 @@ export default function CheckoutStatusPage() {
             )}
          </motion.div>
       </div>
+   );
+}
+
+export default function CheckoutStatusPage() {
+   return (
+      <Suspense fallback={
+         <div className="min-h-[80vh] bg-[#f8f8f5] flex items-center justify-center p-4">
+            <div className="h-12 w-12 border-4 border-slate-100 border-t-emerald-600 rounded-full animate-spin" />
+         </div>
+      }>
+         <CheckoutStatusContent />
+      </Suspense>
    );
 }

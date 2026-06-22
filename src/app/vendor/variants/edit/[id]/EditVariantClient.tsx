@@ -9,8 +9,6 @@ import {
    Layers,
    Info,
    RefreshCw,
-   Hash,
-   Type,
    HelpCircle
 } from 'lucide-react';
 import { useToast } from '@/context/ToastContext';
@@ -22,13 +20,13 @@ const fetcher = (url: string) => fetch(url).then(res => res.json());
 const InputWrapper = ({ label, children, helpText, maxWidth = "max-w-full" }: any) => (
    <div className={`space-y-2 flex-1 ${maxWidth}`}>
       <div className="flex items-center justify-between">
-         <label className="text-[11px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+         <label className="text-[11px] font-black text-[#6B7280] uppercase tracking-wider">
             {label}
          </label>
          {helpText && (
             <div className="group relative">
-               <HelpCircle size={14} className="text-slate-300 cursor-help hover:text-emerald-500 transition-all shadow-sm" />
-               <div className="absolute bottom-full right-0 mb-2 w-48 p-2 bg-slate-800 text-white text-[10px] rounded shadow-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
+               <HelpCircle size={14} className="text-slate-300 cursor-help hover:text-[#0F7A4D] transition-all shadow-sm" />
+               <div className="absolute bottom-full right-0 mb-2 w-48 p-2 bg-[#111827] text-white text-[10px] rounded shadow-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
                   {helpText}
                </div>
             </div>
@@ -40,10 +38,10 @@ const InputWrapper = ({ label, children, helpText, maxWidth = "max-w-full" }: an
    </div>
 );
 
-const SectionHeader = ({ title, icon: Icon, colorClass = "text-emerald-600" }: any) => (
-   <div className="px-8 py-3.5 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 flex items-center gap-3">
+const SectionHeader = ({ title, icon: Icon, colorClass = "text-[#0F7A4D]" }: any) => (
+   <div className="px-8 py-3.5 border-b border-[#E5E7EB] bg-[#F8FAF7] flex items-center gap-3">
       <Icon size={16} className={colorClass} />
-      <h2 className="text-[10px] font-black text-slate-900 dark:text-slate-200 uppercase tracking-[0.2em]">{title}</h2>
+      <h2 className="text-[10px] font-black text-[#111827] uppercase tracking-[0.2em]">{title}</h2>
    </div>
 );
 
@@ -106,38 +104,38 @@ export default function EditVariantClient({ id }: { id: string }) {
    };
 
    if (!variant && !error) return (
-      <div className="flex flex-col items-center justify-center py-40 gap-6">
-         <RefreshCw size={48} className="text-emerald-950 animate-spin" />
-         <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Hydrating Scale Metadata...</p>
+      <div className="flex flex-col items-center justify-center py-40 gap-6 bg-[#F8FAF7] min-h-screen">
+         <RefreshCw size={48} className="text-[#0F7A4D] animate-spin" />
+         <p className="text-[10px] font-black uppercase tracking-widest text-[#6B7280]">Hydrating Scale Metadata...</p>
       </div>
    );
 
    return (
-      <div className="w-full pb-24 bg-[#f8fafc] dark:bg-slate-950 min-h-screen">
+      <div className="w-full pb-24 bg-[#F8FAF7] min-h-screen">
          {/* Sticky Header Navigation */}
-         <div className="sticky top-0 z-40 bg-[#f8fafc]/80 dark:bg-slate-950/80 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800 mb-8 py-6 px-8">
+         <div className="sticky top-0 z-40 bg-white/85 backdrop-blur-xl border-b border-[#E5E7EB] mb-8 py-6 px-8">
             <div className="w-full flex items-center justify-between">
                <div className="flex items-center gap-4">
                   <button
                      onClick={() => router.back()}
-                     className="h-10 w-10 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-center justify-center text-slate-500 hover:bg-slate-50 hover:text-emerald-600 transition-all shadow-sm"
+                     className="h-10 w-10 rounded-lg bg-white border border-[#E5E7EB] flex items-center justify-center text-slate-500 hover:bg-slate-50 hover:text-[#0F7A4D] transition-all shadow-sm"
                   >
                      <ArrowLeft size={18} />
                   </button>
                   <div>
-                     <h1 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">
+                     <h1 className="text-3xl font-black text-[#111827] tracking-tight">
                         Variant Overview
                      </h1>
-                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Refining Specification #{variantId} for Brand #{user?.brandId}</p>
+                     <p className="text-[10px] font-bold text-[#6B7280] uppercase tracking-widest mt-0.5">Refining Specification #{variantId} for Brand #{user?.brandId}</p>
                   </div>
                </div>
                <div className="flex items-center gap-3">
-                  <button onClick={() => router.back()} className="px-4 py-2 rounded-lg text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-900 transition-all">Discard</button>
+                  <button onClick={() => router.back()} type="button" className="px-4 py-2 rounded-lg text-xs font-bold text-[#6B7280] hover:bg-slate-100 transition-all">Discard</button>
                   <button
                      form="variant-form"
                      type="submit"
                      disabled={isLoading}
-                     className="px-6 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black flex items-center gap-2 shadow-lg shadow-emerald-500/20 disabled:opacity-50 transition-all active:scale-95 uppercase tracking-wider"
+                     className="px-6 py-2.5 rounded-lg bg-[#0F7A4D] hover:bg-[#0c623d] text-white text-xs font-black flex items-center gap-2 shadow-sm disabled:opacity-50 transition-all active:scale-95 uppercase tracking-wider"
                   >
                      <Save size={14} />
                      {isLoading ? 'Calibrating...' : 'Save Changes'}
@@ -149,8 +147,8 @@ export default function EditVariantClient({ id }: { id: string }) {
          <form id="variant-form" onSubmit={handleSubmit} className="w-full px-8 space-y-10">
 
             {/* 1. CORE MOLECULE CARD */}
-            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden w-full">
-               <SectionHeader title="Specification Intelligence" icon={Layers} colorClass="text-emerald-600" />
+            <div className="bg-white rounded-[20px] border border-[#E5E7EB] shadow-[0_4px_12px_rgba(0,0,0,0.05)] overflow-hidden w-full">
+               <SectionHeader title="Specification Intelligence" icon={Layers} colorClass="text-[#0F7A4D]" />
                <div className="p-8 space-y-8">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                      <InputWrapper label="Active Scale Label">
@@ -158,7 +156,7 @@ export default function EditVariantClient({ id }: { id: string }) {
                            required
                            type="text"
                            placeholder="e.g. 500g Jar / 1kg Pouch"
-                           className="w-full h-14 px-6 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:border-emerald-500 focus:ring-4 ring-emerald-500/5 outline-none font-bold text-slate-950 dark:text-white text-sm transition-all"
+                           className="w-full h-14 px-6 rounded-xl border border-[#E5E7EB] bg-white focus:border-[#0F7A4D] focus:ring-4 focus:ring-[#0F7A4D]/5 outline-none font-bold text-[#111827] text-sm transition-all"
                            value={form.name}
                            onChange={e => setForm({ ...form, name: e.target.value })}
                         />
@@ -169,7 +167,7 @@ export default function EditVariantClient({ id }: { id: string }) {
                            required
                            type="number"
                            placeholder="₹ Base Price"
-                           className="w-full h-14 px-6 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:border-emerald-500 outline-none font-black text-emerald-600 text-sm"
+                           className="w-full h-14 px-6 rounded-xl border border-[#E5E7EB] bg-white focus:border-[#0F7A4D] focus:ring-4 focus:ring-[#0F7A4D]/5 outline-none font-black text-[#0F7A4D] text-sm"
                            value={form.price}
                            onChange={e => setForm({ ...form, price: e.target.value })}
                         />
@@ -182,7 +180,7 @@ export default function EditVariantClient({ id }: { id: string }) {
                            required
                            type="number"
                            placeholder="Available SKU Count"
-                           className="w-full h-14 px-6 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:border-emerald-500 outline-none font-bold text-sm text-slate-950 dark:text-white"
+                           className="w-full h-14 px-6 rounded-xl border border-[#E5E7EB] bg-white focus:border-[#0F7A4D] focus:ring-4 focus:ring-[#0F7A4D]/5 outline-none font-bold text-sm text-[#111827]"
                            value={form.stock}
                            onChange={e => setForm({ ...form, stock: e.target.value })}
                         />
@@ -192,16 +190,16 @@ export default function EditVariantClient({ id }: { id: string }) {
                         <input
                            type="text"
                            placeholder="e.g. TM-SAUCE-500G"
-                           className="w-full h-14 px-6 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:border-emerald-500 outline-none font-bold text-sm text-slate-950 dark:text-white"
+                           className="w-full h-14 px-6 rounded-xl border border-[#E5E7EB] bg-white focus:border-[#0F7A4D] focus:ring-4 focus:ring-[#0F7A4D]/5 outline-none font-bold text-sm text-[#111827]"
                            value={form.sku}
                            onChange={e => setForm({ ...form, sku: e.target.value })}
                         />
                      </InputWrapper>
                   </div>
 
-                  <div className="p-6 rounded-xl bg-emerald-50 dark:bg-emerald-900/10 border border-emerald-100 dark:border-emerald-800 flex items-center gap-6">
-                     <Info className="text-emerald-600 shrink-0" size={20} />
-                     <p className="text-[11px] font-bold text-emerald-900 dark:text-emerald-400 uppercase tracking-widest leading-relaxed">
+                  <div className="p-6 rounded-xl bg-[#DCFCE7] border border-[#DCFCE7] flex items-center gap-6">
+                     <Info className="text-[#15803D] shrink-0" size={20} />
+                     <p className="text-[11px] font-bold text-[#15803D] uppercase tracking-widest leading-relaxed">
                         Changing these parameters will update the price and availability across all products currently using this specification tier.
                      </p>
                   </div>

@@ -16,65 +16,64 @@ interface BannerData {
   title: string | null;
   subtitle: string | null;
   tagline: string | null;
-  desktopImage: string;
+  banner_image: string;
   link: string | null;
   accentColor?: string;
 }
 
 const fetcher = (url: string) => fetch(url).then(res => res.json());
 
-const STATIC_BANNERS = [
-  {
-    id: 101,
-    title: "Nature's Freshest",
-    highlight: "Just for You",
-    subtitle: "Experience the purity of farm-to-home organic produce",
-    image: '/ai_images/banner_farm_fresh.png',
-    link: '/products',
-    accentColor: '#5cb338',
-  },
-  {
-    id: 102,
-    title: "Pure Heritage",
-    highlight: "Traditional Spices",
-    subtitle: "Hand-pounded spices from the heart of Tamil Nadu",
-    image: '/ai_images/banner_heritage_spices.png',
-    link: '/products?category=Authentic Spices',
-    accentColor: '#d97706',
-  },
-  {
-    id: 103,
-    title: "Cold Pressed",
-    highlight: "Pure Oils & Honey",
-    subtitle: "Nourish your family with nature's finest extracts",
-    image: '/ai_images/banner_natural_products.png',
-    link: '/products?category=Organic Oils',
-    accentColor: '#065f46',
-  }
-];
-
 export default function HomeBanner({ apiUrl }: HomeBannerProps) {
   const [current, setCurrent] = useState(0);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-  const { data: apiBanners, error } = useSWR(`${apiUrl}/api/banners`, fetcher);
+  const { data: apiBanners } = useSWR(`${apiUrl}/api/banners`, fetcher);
+  const { data: apiAnnouncements } = useSWR(
+    `${apiUrl}/api/offer-announcements?activeOnly=true`,
+    fetcher,
+    { refreshInterval: 30000 }
+  );
 
-  const banners = apiBanners && Array.isArray(apiBanners) && apiBanners.length > 0
+  // Image banners from admin
+  const imageBanners = apiBanners && Array.isArray(apiBanners) && apiBanners.length > 0
     ? apiBanners
-      .filter((b: any) => b.desktopImage && typeof b.desktopImage === 'string' && b.desktopImage.trim() !== '')
-      .map((b: BannerData) => ({
-        id: b.id,
-        title: b.title || "namma ooru",
-        highlight: b.tagline || "Special Offer",
-        subtitle: b.subtitle || "Premium quality products",
-        image: b.desktopImage,
-        link: b.link || '/products',
-        accentColor: b.accentColor || '#5cb338' // Default green
-      }))
-    : STATIC_BANNERS;
+        .filter((b: any) => b.banner_image && typeof b.banner_image === 'string' && b.banner_image.trim() !== '')
+        .map((b: BannerData) => ({
+          id: b.id,
+          title: b.title,
+          highlight: b.tagline || null,
+          subtitle: b.subtitle || null,
+          image: b.banner_image,
+          link: b.link || '/products',
+          accentColor: b.accentColor || '#5cb338',
+          isAnnouncement: false,
+        }))
+    : null;
 
-  // Final fallback if filtered API list is empty
-  const displayBanners = banners.length > 0 ? banners : STATIC_BANNERS;
+  // Approved announcements (admin + vendor) converted to banner slides
+  const announcementSlides = Array.isArray(apiAnnouncements)
+    ? apiAnnouncements
+        .filter((a: any) => a.publishHomepage === true || a.announcementType === 'HERO_BANNER')
+        .map((a: any) => ({
+          id: `ann_${a.id}`,
+          title: a.title,
+          highlight: a.couponCode ? `Use Code: ${a.couponCode}` : (a.offerType || 'Special Offer'),
+          subtitle: a.message,
+          image: null as any,
+          link: a.redirectUrl || '/products',
+          accentColor: a.bgColor || '#065f46',
+          bgColor: a.bgColor || '#014421',
+          textColor: a.textColor || '#FFFFFF',
+          isAnnouncement: true,
+        }))
+    : [];
+
+  const combinedBanners = [
+    ...(imageBanners || []),
+    ...announcementSlides,
+  ];
+
+  const displayBanners = combinedBanners;
 
   // Prevent out-of-bounds index when list of banners changes dynamically (e.g. SWR load)
   useEffect(() => {
@@ -83,28 +82,34 @@ export default function HomeBanner({ apiUrl }: HomeBannerProps) {
     }
   }, [displayBanners.length, current]);
 
-  const activeBanner = displayBanners[current] || displayBanners[0] || STATIC_BANNERS[0];
+  const activeBanner = displayBanners[current] || displayBanners[0];
 
   const next = useCallback(() => {
-    setCurrent(c => (c + 1) % displayBanners.length);
+    setCurrent(c => (c + 1) % (displayBanners.length || 1));
   }, [displayBanners.length]);
 
   const prev = useCallback(() => {
-    setCurrent(c => (c - 1 + displayBanners.length) % displayBanners.length);
+    setCurrent(c => (c - 1 + displayBanners.length) % (displayBanners.length || 1));
   }, [displayBanners.length]);
 
   useEffect(() => {
-    timerRef.current = setInterval(next, 6000);
+    if (displayBanners.length > 0) {
+      timerRef.current = setInterval(next, 6000);
+    }
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
-  }, [next]);
+  }, [next, displayBanners.length]);
+
+  if (displayBanners.length === 0) return null;
+
+  const hasOverlay = (activeBanner as any).isAnnouncement || !!(activeBanner.subtitle || activeBanner.highlight);
 
   return (
     <section className="w-full py-4 md:py-10">
       <div className="standard-container w-full px-4 md:px-0">
-        <div className="relative w-full h-[280px] sm:h-[350px] md:h-[420px] lg:h-[480px] rounded-[2rem] md:rounded-[3.5rem] overflow-hidden group shadow-2xl">
+        <div className="relative w-full aspect-[12/5] rounded-[2rem] md:rounded-[3.5rem] overflow-hidden group shadow-2xl bg-slate-100">
 
           {/* Background slides */}
-          {displayBanners.map((b, i) => (
+          {displayBanners.map((b: any, i) => (
             <div
               key={b.id}
               className="absolute inset-0 transition-all duration-[1200ms] ease-in-out"
@@ -113,58 +118,97 @@ export default function HomeBanner({ apiUrl }: HomeBannerProps) {
                 transform: i === current ? 'scale(1)' : 'scale(1.08)',
               }}
             >
-              <Image
-                src={b.image}
-                alt={b.title || "Banner"}
-                fill
-                className="object-cover"
-                priority={i === 0}
-                sizes="100vw"
-              />
+              {b.isAnnouncement ? (
+                // Announcement slide: color gradient background
+                <div
+                  className="absolute inset-0"
+                  style={{
+                    background: `linear-gradient(135deg, ${b.bgColor || '#014421'} 0%, ${b.accentColor || '#065f46'} 50%, #022c22 100%)`
+                  }}
+                >
+                  <div className="absolute inset-0 opacity-[0.06]"
+                    style={{ backgroundImage: 'radial-gradient(circle at 30% 60%, white 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
+                </div>
+              ) : (
+                <>
+                  {b.image && (
+                    <Image
+                      src={b.image}
+                      alt={b.title || "Banner"}
+                      fill
+                      className="w-full h-full object-cover"
+                      priority={i === 0}
+                      sizes="100vw"
+                      unoptimized={true}
+                    />
+                  )}
+                </>
+              )}
               {/* Rich overlays */}
-              <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/40 to-transparent" />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/20" />
+              {hasOverlay && (
+                <>
+                  <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/40 to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/20" />
+                </>
+              )}
             </div>
           ))}
 
           {/* Text content */}
-          <div className="relative z-10 h-full flex items-center px-8 md:px-16 lg:px-24">
-            <motion.div
-              key={current}
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8 }}
-              className="max-w-2xl"
-            >
-              <span
-                className="inline-block text-[10px] md:text-xs font-black uppercase tracking-[0.3em] mb-3 md:mb-5 px-4 py-1.5 rounded-full border"
-                style={{
-                  color: activeBanner.accentColor,
-                  borderColor: `${activeBanner.accentColor}50`,
-                  backgroundColor: `${activeBanner.accentColor}15`
-                }}
+          {hasOverlay && (
+            <div className="relative z-10 h-full flex items-center px-8 md:px-16 lg:px-24">
+              <motion.div
+                key={current}
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8 }}
+                className="max-w-2xl"
               >
-                namma ooru Foods
-              </span>
-              <h2 className="text-white text-2xl sm:text-3xl md:text-5xl lg:text-6xl font-black tracking-tight leading-[1.05] mb-2 md:mb-4 drop-shadow-lg">
-                {activeBanner.title} <br />
-                <span style={{ color: activeBanner.accentColor }}>
-                  {activeBanner.highlight}
+                <span
+                  className="inline-block text-[10px] md:text-xs font-black uppercase tracking-[0.3em] mb-3 md:mb-5 px-4 py-1.5 rounded-full border"
+                  style={{
+                    color: activeBanner.accentColor,
+                    borderColor: `${activeBanner.accentColor}50`,
+                    backgroundColor: `${activeBanner.accentColor}15`
+                  }}
+                >
+                  namma ooru Foods
                 </span>
-              </h2>
-              <p className="text-white/70 text-sm md:text-lg font-medium mb-6 md:mb-10 max-w-md">
-                {activeBanner.subtitle}
-              </p>
-              <Link
-                href={activeBanner.link || "/products"}
-                prefetch={false}
-                className="inline-flex h-11 md:h-14 px-8 md:px-14 rounded-full text-white text-[10px] md:text-xs font-black uppercase tracking-widest hover:scale-105 transition-all shadow-xl items-center justify-center"
-                style={{ backgroundColor: activeBanner.accentColor }}
-              >
-                Shop Now →
-              </Link>
-            </motion.div>
-          </div>
+                {activeBanner.title && (
+                  <h2 className="text-white text-2xl sm:text-3xl md:text-5xl lg:text-6xl font-black tracking-tight leading-[1.05] mb-2 md:mb-4 drop-shadow-lg">
+                    {activeBanner.title} <br />
+                    {activeBanner.highlight && (
+                      <span style={{ color: activeBanner.accentColor }}>
+                        {activeBanner.highlight}
+                      </span>
+                    )}
+                  </h2>
+                )}
+                {activeBanner.subtitle && (
+                  <p className="text-white/70 text-sm md:text-lg font-medium mb-6 md:mb-10 max-w-md">
+                    {activeBanner.subtitle}
+                  </p>
+                )}
+                <Link
+                  href={activeBanner.link || "/products"}
+                  prefetch={false}
+                  className="inline-flex h-11 md:h-14 px-8 md:px-14 rounded-full text-white text-[10px] md:text-xs font-black uppercase tracking-widest hover:scale-105 transition-all shadow-xl items-center justify-center"
+                  style={{ backgroundColor: activeBanner.accentColor }}
+                >
+                  Shop Now →
+                </Link>
+              </motion.div>
+            </div>
+          )}
+
+          {/* Full Banner Click Link if no text overlay */}
+          {!hasOverlay && activeBanner.link && (
+            <Link
+              href={activeBanner.link}
+              className="absolute inset-0 z-30 cursor-pointer"
+              aria-label={activeBanner.title || 'Promo Banner'}
+            />
+          )}
 
           {/* Navigation Arrows */}
           <button

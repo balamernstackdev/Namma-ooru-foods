@@ -12,39 +12,90 @@ import { API_URL } from '@/lib/api';
 const fetcher = (url: string) => fetch(url).then(res => res.json());
 
 export default function CategoriesCircles() {
-  const { data: responseData, error } = useSWR(`${API_URL}/api/categories?limit=100`, fetcher);
+  const { data: responseData, error } = useSWR(`${API_URL}/api/categories?limit=100&all=true`, fetcher);
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
 
+  // Mouse drag scrolling support
+  const [isMouseDown, setIsMouseDown] = useState(false);
+  const [startX, setStartX] = useState(0);
+  const [scrollLeftPos, setScrollLeftPos] = useState(0);
+
+  const onMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+    const el = scrollRef.current;
+    if (!el) return;
+    setIsMouseDown(true);
+    setStartX(e.pageX - el.offsetLeft);
+    setScrollLeftPos(el.scrollLeft);
+  };
+
+  const onMouseLeave = () => {
+    setIsMouseDown(false);
+  };
+
+  const onMouseUp = () => {
+    setIsMouseDown(false);
+  };
+
+  const onMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!isMouseDown) return;
+    e.preventDefault();
+    const el = scrollRef.current;
+    if (!el) return;
+    const x = e.pageX - el.offsetLeft;
+    const walk = (x - startX) * 1.5;
+    el.scrollLeft = scrollLeftPos - walk;
+  };
+
+  const onKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === 'ArrowLeft') {
+      e.preventDefault();
+      scrollLeft();
+    } else if (e.key === 'ArrowRight') {
+      e.preventDefault();
+      scrollRight();
+    }
+  };
+
   const apiCategories = responseData?.categories || [];
   const parentCategories = apiCategories.filter((cat: any) => !cat.parentId).slice(0, 12);
+
+  const [activeIndex, setActiveIndex] = useState(0);
 
   const checkScrollLimits = useCallback(() => {
     const el = scrollRef.current;
     if (!el) return;
+
+    // Mobile dots calculation
+    const itemWidth = el.children[0]?.clientWidth || 140;
+    const gap = window.innerWidth < 768 ? 24 : 40;
+    const index = Math.round(el.scrollLeft / (itemWidth + gap));
+    setActiveIndex(index);
+
     setCanScrollLeft(el.scrollLeft > 10);
     setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 10);
   }, []);
 
-  const scroll = (direction: 'left' | 'right') => {
-    const el = scrollRef.current;
-    if (!el) return;
-    const scrollAmount = el.clientWidth * 0.75;
-    el.scrollBy({
-      left: direction === 'left' ? -scrollAmount : scrollAmount,
-      behavior: 'smooth'
-    });
-  };
+  const getScrollStep = (el: HTMLElement) => el.clientWidth < 640 ? 164 : 220;
 
-  const autoScrollRight = useCallback(() => {
+  const scrollLeft = useCallback(() => {
     const el = scrollRef.current;
     if (!el) return;
-    const SCROLL_STEP = el.clientWidth < 640 ? 164 : 220; // 140 width + 24 gap, or 180 width + 40 gap
+    if (el.scrollLeft <= 10) {
+      el.scrollTo({ left: el.scrollWidth, behavior: 'smooth' });
+    } else {
+      el.scrollBy({ left: -getScrollStep(el), behavior: 'smooth' });
+    }
+  }, []);
+
+  const scrollRight = useCallback(() => {
+    const el = scrollRef.current;
+    if (!el) return;
     if (el.scrollLeft + el.clientWidth >= el.scrollWidth - 20) {
       el.scrollTo({ left: 0, behavior: 'smooth' });
     } else {
-      el.scrollBy({ left: SCROLL_STEP, behavior: 'smooth' });
+      el.scrollBy({ left: getScrollStep(el), behavior: 'smooth' });
     }
   }, []);
 
@@ -54,17 +105,8 @@ export default function CategoriesCircles() {
       el.addEventListener('scroll', checkScrollLimits);
       setTimeout(checkScrollLimits, 500);
     }
-
-    if (parentCategories.length > 0) {
-      const interval = setInterval(autoScrollRight, 3000);
-      return () => {
-        el?.removeEventListener('scroll', checkScrollLimits);
-        clearInterval(interval);
-      };
-    }
-
     return () => el?.removeEventListener('scroll', checkScrollLimits);
-  }, [parentCategories.length, checkScrollLimits, autoScrollRight]);
+  }, [checkScrollLimits]);
 
   if (error) return null;
   if (!responseData) {
@@ -103,7 +145,7 @@ export default function CategoriesCircles() {
           </div>
 
           {/* Clean Discovery Controls */}
-          <div className="flex items-center gap-5">
+          <div className="flex items-center gap-4">
             <Link
               href="/categories"
               className="hidden sm:flex items-center gap-1 text-[11px] font-black text-slate-400 hover:text-emerald-950 uppercase tracking-[0.2em] transition-colors"
@@ -111,14 +153,40 @@ export default function CategoriesCircles() {
               <span>View All</span>
               <ChevronRight size={14} />
             </Link>
+
+            {/* Redesigned Carousel Navigation Arrows */}
+            <div className="hidden md:flex items-center gap-2">
+              <button
+                type="button"
+                onClick={scrollLeft}
+                aria-label="Previous"
+                className="w-11 h-11 rounded-full bg-white border border-[#E5E7EB] shadow-[0_8px_24px_rgba(0,0,0,0.08)] flex items-center justify-center text-slate-800 hover:bg-[#0F8A5F] hover:text-white hover:border-[#0F8A5F] transition-all duration-300 hover:scale-105 focus:outline-none shrink-0"
+              >
+                <ChevronLeft size={20} strokeWidth={2.5} />
+              </button>
+              <button
+                type="button"
+                onClick={scrollRight}
+                aria-label="Next"
+                className="w-11 h-11 rounded-full bg-white border border-[#E5E7EB] shadow-[0_8px_24px_rgba(0,0,0,0.08)] flex items-center justify-center text-slate-800 hover:bg-[#0F8A5F] hover:text-white hover:border-[#0F8A5F] transition-all duration-300 hover:scale-105 focus:outline-none shrink-0"
+              >
+                <ChevronRight size={20} strokeWidth={2.5} />
+              </button>
+            </div>
           </div>
         </div>
 
         {/* --- THE PREMIUM SQUIRCLE DECK --- */}
-        <div className="relative -mx-6 md:-mx-8 px-6 md:px-8">
+        <div className="relative group/carousel w-full">
           <div
             ref={scrollRef}
-            className="flex overflow-x-auto no-scrollbar gap-6 md:gap-10 pb-4 snap-x snap-mandatory scroll-smooth items-start"
+            onMouseDown={onMouseDown}
+            onMouseLeave={onMouseLeave}
+            onMouseUp={onMouseUp}
+            onMouseMove={onMouseMove}
+            onKeyDown={onKeyDown}
+            tabIndex={0}
+            className="flex overflow-x-auto no-scrollbar pb-4 snap-x snap-mandatory scroll-smooth items-start px-[10px] md:px-[20px] xl:px-[70px] gap-6 md:gap-10 cursor-grab active:cursor-grabbing focus:outline-none"
           >
             {parentCategories.map((category: any, idx: number) => {
               const count = category._count?.products || 0;
@@ -134,7 +202,7 @@ export default function CategoriesCircles() {
                   className="snap-start shrink-0 w-[140px] md:w-[180px]"
                 >
                   <Link
-                    href={`/products?category=${encodeURIComponent(category.name)}`}
+                    href={`/categories/${category.slug || category.id}`}
                     prefetch={false}
                     className="group flex flex-col items-center text-center"
                   >
@@ -172,6 +240,18 @@ export default function CategoriesCircles() {
               );
             })}
           </div>
+
+          {/* Floating Navigation Arrows - Hidden on Mobile, styled as requested */}
+        </div>
+
+        {/* Mobile Pagination Dots */}
+        <div className="md:hidden flex justify-center gap-1.5 mt-[-10px] mb-4">
+          {parentCategories.slice(0, 10).map((_: any, idx: number) => (
+            <div 
+              key={idx} 
+              className={`h-1.5 rounded-full transition-all duration-300 ${idx === activeIndex ? 'w-4 bg-[#0f9d58]' : 'w-1.5 bg-slate-300'}`} 
+            />
+          ))}
         </div>
 
       </div>

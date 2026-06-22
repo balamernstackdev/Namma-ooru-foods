@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'namma ooru Collection',
     description: 'Explore the complete namma ooru traditional Product collection.',
-    url: 'https://namma-urru-foods.web.app/products',
+    url: 'https://nammaoorufoods.com/products',
   }
 };
 

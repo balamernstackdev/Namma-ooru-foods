@@ -1,11 +1,15 @@
+'use client';
+
 import React from 'react';
 import Image from 'next/image';
+import { usePlatformSettings } from '@/context/PlatformSettingsContext';
 
 interface PremiumLoaderProps {
   fullScreen?: boolean;
 }
 
 const PremiumLoader: React.FC<PremiumLoaderProps> = ({ fullScreen = true }) => {
+  const { settings } = usePlatformSettings();
   const containerClasses = fullScreen
     ? "fixed inset-0 z-[100] flex items-center justify-center bg-white/95 backdrop-blur-xl"
     : "w-full py-20 flex flex-col items-center justify-center bg-white/50 backdrop-blur-md rounded-[2rem]";
@@ -18,8 +22,8 @@ const PremiumLoader: React.FC<PremiumLoaderProps> = ({ fullScreen = true }) => {
           <div className="absolute h-32 w-32 md:h-48 md:w-48 bg-emerald-100/30 rounded-full animate-ping opacity-20" />
 
           <Image
-            src="/logo.webp"
-            alt="namma ooru Foods"
+            src={settings.logo || "/logo.webp"}
+            alt={settings.name || "Platform Logo"}
             width={280}
             height={80}
             priority

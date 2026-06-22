@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { API_URL } from '@/lib/api';
+import { ActionGroup, ViewButton, EvaluateButton, SuspendButton, UnlinkButton, ActionPanelButton } from '@/components/ui/ActionButtons';
 
 // Interfaces for our Database Models
 interface User {
@@ -28,6 +29,8 @@ interface Vendor {
   commissionRate: number;
   brandsCount: number;
   createdAt: string;
+  hubName?: string;
+  hubId?: number | null;
 }
 
 interface Brand {
@@ -39,6 +42,7 @@ interface Brand {
   status: 'APPROVED' | 'PENDING' | 'REJECTED' | 'SUSPENDED';
   createdAt: string;
   website: string;
+  userId?: string;
 }
 
 interface Product {
@@ -63,14 +67,265 @@ interface AuditLog {
   createdAt: string;
 }
 
+function VendorPayoutsTab({ selectedVendor, brands }: { selectedVendor: Vendor, brands: Brand[] }) {
+  const [payouts, setPayouts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchPayouts = async () => {
+      setLoading(true);
+      try {
+        const vendorBrand = brands.find(b => b.userId === selectedVendor.id);
+        if (!vendorBrand) {
+          setPayouts([]);
+          return;
+        }
+        
+        const res = await fetch(`${API_URL}/api/vendor/payouts/vendor/${vendorBrand.id}`);
+        if (res.ok) {
+          const data = await res.json();
+          setPayouts(data);
+        }
+      } catch (err) {
+        console.error('Failed to fetch payouts', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchPayouts();
+  }, [selectedVendor.id, brands]);
+
+  return (
+    <div className="space-y-6">
+      <h3 className="text-lg font-black text-slate-950 uppercase tracking-tight">
+        Vendor Settlement Ledger
+      </h3>
+      {/* Desktop View */}
+      <div className="hidden md:block bg-white border border-slate-200 rounded-[2rem] overflow-hidden p-6 shadow-sm">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-separate border-spacing-y-1 min-w-[1000px] admin-data-table">
+            <thead>
+              <tr className="bg-slate-50/50 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
+                <th className="py-4 px-6 rounded-l-xl">Payout Cycle</th>
+                <th className="py-4 px-6 text-right">Gross Sales</th>
+                <th className="py-4 px-6 text-right">Commission</th>
+                <th className="py-4 px-6 text-right">Net Payable</th>
+                <th className="py-4 px-6 text-center">Status</th>
+                <th className="py-4 px-6 text-center">Payout Date</th>
+                <th className="py-4 px-6 text-right rounded-r-xl">UTR Reference</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-50">
+              {loading ? (
+                <tr>
+                  <td colSpan={7} className="py-12 text-center text-slate-400 font-bold text-xs uppercase tracking-widest">
+                    Loading Ledgers...
+                  </td>
+                </tr>
+              ) : payouts.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="py-12 text-center text-slate-400 font-bold text-xs uppercase tracking-widest">
+                    No Payout Records Found
+                  </td>
+                </tr>
+              ) : (
+                payouts.map((payout, idx) => (
+                  <tr key={idx} className="hover:bg-slate-50/60 transition-colors">
+                    <td className="py-5 px-6 font-bold text-xs text-slate-800">
+                      {payout.payoutWeekStart ? new Date(payout.payoutWeekStart).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Custom Cycle'}
+                    </td>
+                    <td className="py-5 px-6 text-right font-mono text-xs text-slate-900">
+                      ₹{Number(payout.grossAmount).toFixed(2)}
+                    </td>
+                    <td className="py-5 px-6 text-right font-mono text-xs text-slate-900">
+                      ₹{Number(payout.commission).toFixed(2)}
+                    </td>
+                    <td className="py-5 px-6 text-right font-mono text-xs font-black text-slate-900">
+                      ₹{Number(payout.payableAmount).toFixed(2)}
+                    </td>
+                    <td className="py-5 px-6 text-center">
+                      {payout.status === 'SETTLED' ? (
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[9px] font-black tracking-widest border bg-emerald-50 text-emerald-700 border-emerald-100">
+                          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> SETTLED
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[9px] font-black tracking-widest border bg-amber-50 text-amber-700 border-amber-100">
+                          <span className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse" /> PENDING
+                        </span>
+                      )}
+                    </td>
+                    <td className="py-5 px-6 text-center text-xs text-slate-500">
+                      {payout.payoutDate ? new Date(payout.payoutDate).toLocaleDateString('en-CA') : '--'}
+                    </td>
+                    <td className="py-5 px-6 text-right font-mono text-xs text-slate-500">
+                      {payout.transactionRef || '--'}
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      {/* Mobile View - Settlement Ledger Card list */}
+      <div className="block md:hidden divide-y divide-slate-100 bg-white border border-slate-200 rounded-[2rem] p-6 shadow-sm space-y-4">
+        {loading ? (
+          <div className="py-12 text-center text-slate-400 font-bold text-xs uppercase tracking-widest">Loading Ledgers...</div>
+        ) : payouts.length === 0 ? (
+          <div className="py-12 text-center text-slate-400 font-bold text-xs uppercase tracking-widest">No Payout Records Found</div>
+        ) : payouts.map((payout, idx) => (
+          <div key={idx} className="py-4 space-y-3">
+            <div className="flex justify-between items-start">
+              <span className="font-bold text-xs text-slate-800">
+                {payout.payoutWeekStart ? new Date(payout.payoutWeekStart).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Custom Cycle'}
+              </span>
+              {payout.status === 'SETTLED' ? (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[9px] font-black tracking-widest border bg-emerald-50 text-emerald-700 border-emerald-100">
+                  SETTLED
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[9px] font-black tracking-widest border bg-amber-50 text-amber-700 border-amber-100">
+                  PENDING
+                </span>
+              )}
+            </div>
+            <div className="grid grid-cols-3 gap-2 bg-slate-50/50 rounded-2xl p-4 border border-slate-100/50 text-xs">
+              <div>
+                <span className="text-[9px] text-slate-400 font-black uppercase tracking-wider block">Gross Sales</span>
+                <span className="font-bold text-slate-800 font-mono">₹{Number(payout.grossAmount).toFixed(2)}</span>
+              </div>
+              <div>
+                <span className="text-[9px] text-slate-400 font-black uppercase tracking-wider block">Commission</span>
+                <span className="font-bold text-slate-800 font-mono">₹{Number(payout.commission).toFixed(2)}</span>
+              </div>
+              <div>
+                <span className="text-[9px] text-slate-400 font-black uppercase tracking-wider block">Net Payable</span>
+                <span className="font-black text-slate-900 font-mono">₹{Number(payout.payableAmount).toFixed(2)}</span>
+              </div>
+            </div>
+            <div className="flex justify-between items-center text-[10px] text-slate-400">
+              <span>Date: {payout.payoutDate ? new Date(payout.payoutDate).toLocaleDateString('en-CA') : '--'}</span>
+              <span>Ref: {payout.transactionRef || '--'}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function VendorSettingsTab({ selectedVendor, brands, fetchDatabaseData }: { selectedVendor: Vendor, brands: Brand[], fetchDatabaseData: () => void }) {
+  const [commRate, setCommRate] = useState(selectedVendor.commissionRate);
+  const [statusVal, setStatusVal] = useState(selectedVendor.status);
+  const [isUpdating, setIsUpdating] = useState(false);
+
+  useEffect(() => {
+    setCommRate(selectedVendor.commissionRate);
+    setStatusVal(selectedVendor.status);
+  }, [selectedVendor]);
+
+  const vendorBrand = brands.find(b => b.userId === selectedVendor.id);
+
+  const handleSaveSettings = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsUpdating(true);
+    try {
+      if (vendorBrand) {
+        const brandRes = await fetch(`${API_URL}/api/admin-ops/brands/${vendorBrand.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ commissionRate: commRate })
+        });
+        if (!brandRes.ok) throw new Error('Failed to update brand commission rate');
+      }
+
+      const userRes = await fetch(`${API_URL}/api/admin-ops/users/${selectedVendor.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          deletedAt: statusVal === 'SUSPENDED' ? new Date().toISOString() : null
+        })
+      });
+      if (!userRes.ok) throw new Error('Failed to update vendor user status');
+
+      toast.success('Vendor configuration saved successfully!', { icon: '🛡️' });
+      await fetchDatabaseData();
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err.message || 'Failed to update vendor settings');
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  return (
+    <div className="space-y-6 max-w-2xl bg-white border border-slate-200 rounded-[2.5rem] p-8 shadow-sm">
+      <h3 className="text-lg font-black text-slate-950 uppercase tracking-tight pb-3 border-b border-slate-100">
+        Vendor Operations Settings
+      </h3>
+      <form onSubmit={handleSaveSettings} className="space-y-6">
+        <div className="space-y-2">
+          <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 block">Commission Rate (%)</label>
+          <div className="flex items-center gap-4">
+            <input
+              type="range"
+              min="2"
+              max="25"
+              value={commRate}
+              onChange={e => setCommRate(Number(e.target.value))}
+              className="w-full accent-emerald-600"
+            />
+            <span className="h-10 w-16 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-center text-sm font-black font-mono text-slate-900">{commRate}%</span>
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 block">Moderation / Operating Status</label>
+          <select
+            value={statusVal}
+            onChange={e => setStatusVal(e.target.value as any)}
+            className="w-full h-12 bg-white border border-slate-200 rounded-xl px-4 text-xs font-bold text-slate-800 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 transition-all shadow-sm"
+          >
+            <option value="APPROVED">ACTIVE (Approved & Operating)</option>
+            <option value="SUSPENDED">SUSPENDED (Operating Blocked)</option>
+          </select>
+        </div>
+
+        <div className="pt-4 border-t border-slate-100 flex justify-end">
+          <button
+            type="submit"
+            disabled={isUpdating}
+            className="h-12 px-8 rounded-xl bg-slate-950 hover:bg-slate-900 text-white text-xs font-black uppercase tracking-widest flex items-center gap-2 transition-all shadow-lg active:scale-95 border-0 disabled:opacity-50"
+          >
+            {isUpdating ? 'Saving Configurations...' : 'Save Settings'}
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+}
+
 export default function MarketplaceGovernancePage() {
-  const [activeTab, setActiveTab] = useState<'vendors' | 'brands' | 'products' | 'credentials' | 'audit'>('vendors');
+  const [activeTab, setActiveTab] = useState<'vendors' | 'products' | 'credentials' | 'audit'>('vendors');
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
 
+  // Vendor Details View State
+  const [selectedVendor, setSelectedVendor] = useState<Vendor | null>(null);
+  const [vendorDetailsTab, setVendorDetailsTab] = useState<'overview' | 'brands' | 'products' | 'payouts' | 'documents' | 'settings'>('overview');
+
+  // Brand Creation state
+  const [isCreateBrandOpen, setIsCreateBrandOpen] = useState(false);
+  const [newBrandName, setNewBrandName] = useState('');
+  const [newBrandSlug, setNewBrandSlug] = useState('');
+  const [newBrandWebsite, setNewBrandWebsite] = useState('');
+  const [newBrandDesc, setNewBrandDesc] = useState('');
+  const [newBrandLogo, setNewBrandLogo] = useState('');
+  const [newBrandBanner, setNewBrandBanner] = useState('');
+  const [newBrandHubId, setNewBrandHubId] = useState<number | ''>('');
+
   // State for pagination
   const [vendorsPage, setVendorsPage] = useState(1);
-  const [brandsPage, setBrandsPage] = useState(1);
   const [productsPage, setProductsPage] = useState(1);
   const [auditLogsPage, setAuditLogsPage] = useState(1);
   const ITEMS_PER_PAGE = 8;
@@ -78,7 +333,6 @@ export default function MarketplaceGovernancePage() {
   // Reset page numbers when search filters or active tabs change
   useEffect(() => {
     setVendorsPage(1);
-    setBrandsPage(1);
     setProductsPage(1);
     setAuditLogsPage(1);
   }, [searchTerm, statusFilter, activeTab]);
@@ -95,7 +349,7 @@ export default function MarketplaceGovernancePage() {
   const [newOwnerEmail, setNewOwnerEmail] = useState('');
   const [newOwnerName, setNewOwnerName] = useState('');
   const [commissionRate, setCommissionRate] = useState(10);
-  const [generatedCredentials, setGeneratedCredentials] = useState<{ username: string, apiKey: string } | null>(null);
+  const [generatedCredentials, setGeneratedCredentials] = useState<{ username: string, password?: string, apiKey?: string } | null>(null);
   const [hubsList, setHubsList] = useState<any[]>([]);
   const [selectedHubId, setSelectedHubId] = useState<number | ''>('');
 
@@ -133,10 +387,12 @@ export default function MarketplaceGovernancePage() {
       const auditRes = await fetch(`${API_URL}/api/admin-ops/audit?take=100`);
       const auditData = await auditRes.json();
 
+      let mappedVendors: Vendor[] = [];
+
       // Map Users to governance console vendors tab representation
       if (usersData && usersData.users) {
         const allBrandsForCount = brandsData?.subVendors || [];
-        const mappedVendors: Vendor[] = usersData.users
+        mappedVendors = usersData.users
           .filter((u: any) => u.role === 'VENDOR')
           .map((u: any) => {
             const userBrands = allBrandsForCount.filter((sv: any) => sv.userId === u.id);
@@ -147,25 +403,33 @@ export default function MarketplaceGovernancePage() {
               ownerName: u.name || 'Unnamed User',
               ownerEmail: u.email,
               status: u.deletedAt ? 'SUSPENDED' : 'APPROVED',
-              commissionRate: 8.5,
+              commissionRate: u.subVendor?.commissionRate || 10.0,
               brandsCount: userBrands.length,
-              createdAt: u.createdAt
+              createdAt: u.createdAt,
+              hubName: u.subVendor?.headVendor?.name || 'No Hub Assigned',
+              hubId: u.subVendor?.headVendorId || null
             };
           });
         setVendors(mappedVendors);
+        setSelectedVendor(prev => {
+          if (!prev) return null;
+          const updated = mappedVendors.find(v => v.id === prev.id);
+          return updated || prev;
+        });
       }
 
       // Map SubVendors to governance console brands registry representation
       if (brandsData && brandsData.subVendors) {
         const mappedBrands: Brand[] = brandsData.subVendors.map((sv: any) => ({
           id: sv.id.toString(),
-          vendorId: sv.headVendorId?.toString() || 'v-hub',
-          vendorName: sv.headVendor?.name || 'Native Hub',
+          vendorId: sv.userId?.toString() || '',
+          vendorName: sv.owner?.name || sv.headVendor?.name || 'Native Hub',
           name: sv.name,
           slug: sv.slug || '',
           status: sv.deletedAt ? 'SUSPENDED' : 'APPROVED',
           createdAt: sv.createdAt,
-          website: sv.website || 'https://nammaoorufoods.com'
+          website: sv.website || 'https://nammaoorufoods.com',
+          userId: sv.userId?.toString() || ''
         }));
         setBrands(mappedBrands);
       }
@@ -347,7 +611,7 @@ export default function MarketplaceGovernancePage() {
 
       const createdBrand = await brandRes.json();
       if (!brandRes.ok) {
-        throw new Error(createdBrand.error || 'Failed to provision Brand Approvals');
+        throw new Error(createdBrand.error || 'Failed to provision Brand');
       }
 
       setGeneratedCredentials({
@@ -370,19 +634,17 @@ export default function MarketplaceGovernancePage() {
     }
   };
 
+  const handleSelectVendor = (vendor: Vendor) => {
+    setSelectedVendor(vendor);
+    setVendorDetailsTab('overview');
+  };
+
   // Filter computation
   const filteredVendors = vendors.filter(v => {
     const matchesSearch = v.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       v.ownerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       v.ownerEmail.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesFilter = statusFilter === 'ALL' || v.status === statusFilter;
-    return matchesSearch && matchesFilter;
-  });
-
-  const filteredBrands = brands.filter(b => {
-    const matchesSearch = b.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      b.vendorName.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesFilter = statusFilter === 'ALL' || b.status === statusFilter;
     return matchesSearch && matchesFilter;
   });
 
@@ -394,24 +656,12 @@ export default function MarketplaceGovernancePage() {
     return matchesSearch && matchesFilter;
   });
 
-  const filteredLogs = auditLogs.filter(l => {
-    return l.remarks.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      l.action.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      l.performedBy.toLowerCase().includes(searchTerm.toLowerCase());
-  });
-
   // Paginated Slices & Page Calculations
   const vendorsTotalPages = Math.ceil(filteredVendors.length / ITEMS_PER_PAGE) || 1;
   const paginatedVendors = filteredVendors.slice((vendorsPage - 1) * ITEMS_PER_PAGE, vendorsPage * ITEMS_PER_PAGE);
 
-  const brandsTotalPages = Math.ceil(filteredBrands.length / ITEMS_PER_PAGE) || 1;
-  const paginatedBrands = filteredBrands.slice((brandsPage - 1) * ITEMS_PER_PAGE, brandsPage * ITEMS_PER_PAGE);
-
   const productsTotalPages = Math.ceil(filteredProducts.length / ITEMS_PER_PAGE) || 1;
   const paginatedProducts = filteredProducts.slice((productsPage - 1) * ITEMS_PER_PAGE, productsPage * ITEMS_PER_PAGE);
-
-  const logsTotalPages = Math.ceil(filteredLogs.length / ITEMS_PER_PAGE) || 1;
-  const paginatedLogs = filteredLogs.slice((auditLogsPage - 1) * ITEMS_PER_PAGE, auditLogsPage * ITEMS_PER_PAGE);
 
   return (
     <div className="space-y-10 pb-20 animate-in fade-in slide-in-from-bottom-5 duration-700 font-sans">
@@ -419,303 +669,923 @@ export default function MarketplaceGovernancePage() {
       {/* ─── CENTRALIZED TITLE BAR ─────────────────────────────────────── */}
       <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6 border-b border-slate-200 pb-8">
         <div>
-          <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-2xl bg-emerald-600 flex items-center justify-center text-white shadow-xl shadow-emerald-500/20">
-              <Shield size={22} className="animate-pulse" />
-            </div>
-            <span className="text-[10px] font-black uppercase tracking-[0.4em] text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-100">Super Admin Console</span>
-          </div>
-          <h2 className="text-4xl font-black text-slate-950 tracking-tighter uppercase mt-3">Platform Management Dashboard</h2>
-          <p className="text-slate-400 font-medium text-sm mt-1">Manage vendors, products, approvals, and platform operations from one place.</p>
+          <h1 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tighter uppercase italic mt-3">Management <span className="text-emerald-600">Dashboard</span></h1>
+          <p className="text-slate-400 font-bold uppercase tracking-[0.2em] text-[10px] mt-2">Manage vendors, products, approvals, and platform operations from one place.</p>
         </div>
-        <div className="flex flex-wrap gap-3">
-          {/* Add New Vendor button removed as requested */}
-        </div>
+        <button
+          onClick={() => {
+            const dialog = document.getElementById('provision_modal') as any;
+            if (dialog) dialog.showModal();
+          }}
+          className="h-12 px-6 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black uppercase tracking-widest flex items-center gap-2 transition-all shadow-lg active:scale-95 border-0 self-start xl:self-auto"
+        >
+          + Add New Vendor
+        </button>
       </div>
 
-      {/* ─── GOVERNANCE HIGHLIGHT CARDS ────────────────────────────────── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatCard
-          title="Total Active Vendors"
-          value={vendors.filter(v => v.status === 'APPROVED').length}
-          subtitle="Registered vendors on platform"
-          color="bg-blue-600"
-          Icon={Users}
-        />
-        <StatCard
-          title="Pending Brand Requests"
-          value={brands.filter(b => b.status === 'PENDING').length}
-          subtitle="Awaiting admin approval"
-          color="bg-amber-600"
-          Icon={Tag}
-        />
-        <StatCard
-          title="products Awaiting Review"
-          value={products.filter(p => p.status === 'PENDING_ADMIN').length}
-          subtitle="Verification required"
-          color="bg-indigo-600"
-          Icon={Package}
-        />
-        <StatCard
-          title="Platform Health Score"
-          value="98.4%"
-          subtitle="Platform status overview"
-          color="bg-emerald-600"
-          Icon={CheckCircle}
-        />
-      </div>
-
-      {/* ─── NAVIGATION TABS & FILTER BAR ─────────────────────────────── */}
-      <div className="bg-white rounded-[2.5rem] border border-slate-200 shadow-sm overflow-hidden p-4">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 border-b border-slate-100 pb-4 mb-6">
-          <div className="flex flex-wrap gap-1 bg-slate-50 p-1.5 rounded-2xl">
-            <TabButton active={activeTab === 'vendors'} onClick={() => { setActiveTab('vendors'); setStatusFilter('ALL'); }} label="Vendors" Icon={Users} />
-            <TabButton active={activeTab === 'brands'} onClick={() => { setActiveTab('brands'); setStatusFilter('ALL'); }} label="Brand Approvals" Icon={Tag} />
-            <TabButton active={activeTab === 'products'} onClick={() => { setActiveTab('products'); setStatusFilter('ALL'); }} label="Product Review" Icon={Package} />
-          </div>
-
-          {/* Sticky Filters */}
-          <div className="flex flex-wrap items-center gap-3">
-            <div className="relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-              <input
-                type="text"
-                placeholder="Search vendors, brands, products..."
-                value={searchTerm}
-                onChange={e => setSearchTerm(e.target.value)}
-                className="h-11 w-64 bg-slate-50 border border-slate-100 rounded-xl pl-11 pr-4 text-xs font-bold outline-none focus:border-emerald-500 focus:bg-white transition-all shadow-inner"
-              />
-            </div>
-            {activeTab !== 'audit' && (
-              <div className="flex items-center gap-2">
-                <Filter size={14} className="text-slate-400" />
-                <select
-                  value={statusFilter}
-                  onChange={e => setStatusFilter(e.target.value)}
-                  className="h-11 bg-slate-50 border border-slate-100 rounded-xl px-4 text-xs font-bold outline-none cursor-pointer hover:bg-slate-100 transition-all focus:border-emerald-500 focus:bg-white"
-                >
-                  <option value="ALL">Filter by Status</option>
-                  <option value="APPROVED">Approved / Published</option>
-                  <option value="PENDING">Pending Approval</option>
-                  <option value="REJECTED">Rejected</option>
-                  <option value="SUSPENDED">Suspended / Blocked</option>
-                </select>
+      {selectedVendor ? (
+        /* ─── VENDOR DETAILS VIEW ─────────────────────────────────────── */
+        <div className="space-y-8 animate-in fade-in duration-500">
+          <div className="flex items-center justify-between border-b border-slate-100 pb-6">
+            <div className="space-y-2">
+              <button
+                onClick={() => setSelectedVendor(null)}
+                className="flex items-center gap-1.5 text-xs font-black uppercase tracking-widest text-emerald-600 hover:text-emerald-700 transition-colors"
+              >
+                ← Back to Dashboard
+              </button>
+              <div className="flex items-center gap-3 mt-2">
+                <h2 className="text-3xl font-black text-slate-900 tracking-tight uppercase italic">{selectedVendor.name}</h2>
+                <StatusBadge status={selectedVendor.status} />
               </div>
-            )}
-          </div>
-        </div>
-
-        {/* ─── TAB CONTENTS ────────────────────────────────────────────── */}
-        <div className="animate-in fade-in duration-300">
-          {isLoading ? (
-            <div className="py-24 flex flex-col items-center justify-center gap-4">
-              <RefreshCw className="h-10 w-10 text-emerald-600 animate-spin" />
-              <span className="text-xs font-black uppercase tracking-[0.2em] text-slate-400">Syncing with Platform Node Registry...</span>
+              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
+                Owner: {selectedVendor.ownerName} • Email: {selectedVendor.ownerEmail}
+              </p>
             </div>
-          ) : (
-            <>
-              {/* A. VENDORS PANEL */}
-              {activeTab === 'vendors' && (
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left border-separate border-spacing-y-1">
-                    <thead>
-                      <tr className="bg-slate-50/50 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
-                        <th className="py-4 px-6 rounded-l-xl">Vendor Name</th>
-                        <th className="py-4 px-6">Contact Information</th>
-                        <th className="py-4 px-6 text-center">Approved Brands</th>
-                        <th className="py-4 px-6 text-center">Status</th>
-                        <th className="py-4 px-6 text-center">Fee Rate</th>
-                        <th className="py-4 px-6 text-right rounded-r-xl">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-50">
-                      {paginatedVendors.map(vendor => (
-                        <tr key={vendor.id} className="hover:bg-slate-50/60 transition-colors group">
-                          <td className="py-5 px-6 font-bold">
-                            <span className="text-sm font-black text-slate-900 block">{vendor.name}</span>
-                            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1.5 block">slug: {vendor.slug}</span>
-                          </td>
-                          <td className="py-5 px-6">
-                            <span className="text-xs font-black text-slate-700 block">{vendor.ownerName}</span>
-                            <span className="text-[10px] text-slate-400 mt-1 block">{vendor.ownerEmail}</span>
-                          </td>
-                          <td className="py-5 px-6 text-center">
-                            <span className="px-3 py-1 rounded-full bg-blue-50 text-blue-600 text-[10px] font-black tracking-wider">
-                              {vendor.brandsCount} Brands
-                            </span>
-                          </td>
-                          <td className="py-5 px-6 text-center">
-                            <StatusBadge status={vendor.status} />
-                          </td>
-                          <td className="py-5 px-6 text-center">
-                            <span className="text-xs font-black text-slate-900 font-mono">{vendor.commissionRate}%</span>
-                          </td>
-                          <td className="py-5 px-6">
-                            <div className="flex items-center justify-end gap-2">
+          </div>
+
+          {/* Details Tabs */}
+          <div className="bg-white rounded-[2.5rem] border border-slate-200 shadow-sm overflow-hidden p-6">
+            <div className="flex flex-wrap gap-1.5 bg-slate-50 p-1.5 rounded-2xl mb-8">
+              {(['overview', 'brands', 'products', 'payouts', 'settings'] as const).map((tab) => (
+                <button
+                  key={tab}
+                  onClick={() => setVendorDetailsTab(tab)}
+                  className={`h-10 px-5 rounded-xl text-xs font-black uppercase tracking-widest flex items-center gap-2 border-0 transition-all duration-300 ${
+                    vendorDetailsTab === tab
+                      ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-500/25 active:scale-95 scale-[1.02]'
+                      : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100'
+                  }`}
+                >
+                  {tab}
+                </button>
+              ))}
+            </div>
+
+            {/* Sub-tab Contents */}
+            <div className="animate-in fade-in duration-300">
+              {vendorDetailsTab === 'overview' && (
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                  {/* Profile Card */}
+                  <div className="lg:col-span-2 bg-slate-50/50 border border-slate-100 rounded-3xl p-8 space-y-6">
+                    <h3 className="text-lg font-black text-slate-950 uppercase tracking-tight pb-3 border-b border-slate-200/60">
+                      Corporate Profile
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Corporate Entity Name</span>
+                        <span className="text-sm font-bold text-slate-800">{selectedVendor.name}</span>
+                      </div>
+                      <div>
+                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">URL Slug Path</span>
+                        <span className="text-sm font-mono text-slate-800">/{selectedVendor.slug || 'n/a'}</span>
+                      </div>
+                      <div>
+                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Contact Owner</span>
+                        <span className="text-sm font-bold text-slate-800">{selectedVendor.ownerName}</span>
+                      </div>
+                      <div>
+                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Corporate Email</span>
+                        <span className="text-sm font-bold text-slate-800">{selectedVendor.ownerEmail}</span>
+                      </div>
+                      <div>
+                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Regional Hub Assignment</span>
+                        <span className="text-sm font-bold text-slate-800">{selectedVendor.hubName || 'No Hub Assigned'}</span>
+                      </div>
+                      <div>
+                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Platform Fee Rate</span>
+                        <span className="text-sm font-mono font-bold text-slate-800">{selectedVendor.commissionRate}%</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Quick Stats */}
+                  <div className="bg-slate-50/50 border border-slate-100 rounded-3xl p-8 space-y-6 flex flex-col justify-between">
+                    <h3 className="text-lg font-black text-slate-950 uppercase tracking-tight pb-3 border-b border-slate-200/60">
+                      Operations Stats
+                    </h3>
+                    <div className="space-y-4 flex-grow mt-4">
+                      <div className="flex justify-between items-center bg-white border border-slate-100 p-4 rounded-xl shadow-sm">
+                        <span className="text-xs font-bold text-slate-500 uppercase">Artisanal Brands</span>
+                        <span className="text-lg font-black text-slate-900">{brands.filter(b => b.userId === selectedVendor.id).length}</span>
+                      </div>
+                      <div className="flex justify-between items-center bg-white border border-slate-100 p-4 rounded-xl shadow-sm">
+                        <span className="text-xs font-bold text-slate-500 uppercase">Total Catalog Items</span>
+                        <span className="text-lg font-black text-slate-900">
+                          {products.filter(p => {
+                            const vendorBrands = brands.filter(b => b.userId === selectedVendor.id);
+                            const vendorBrandIds = vendorBrands.map(b => b.id);
+                            return vendorBrandIds.includes(p.brandId);
+                          }).length}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center bg-white border border-slate-100 p-4 rounded-xl shadow-sm">
+                        <span className="text-xs font-bold text-slate-500 uppercase">Platform Status</span>
+                        <StatusBadge status={selectedVendor.status} />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {vendorDetailsTab === 'brands' && (
+                <div className="space-y-6">
+                  {(() => {
+                    const vendorBrands = brands.filter(b => b.userId === selectedVendor.id);
+                    return (
+                      <>
+                        <div className="flex justify-between items-center">
+                          <h3 className="text-lg font-black text-slate-955 uppercase tracking-tight">
+                            Artisanal Brands Registry
+                          </h3>
+                          {vendorBrands.length === 0 && (
+                            <div className="flex gap-2">
+                              {brands.filter(b => !b.userId).length > 0 && (
+                                <div className="flex items-center gap-2 bg-slate-50 p-2 rounded-xl border border-slate-200">
+                                  <select
+                                    id="link_brand_select"
+                                    className="bg-transparent text-xs font-bold outline-none cursor-pointer"
+                                  >
+                                    <option value="">Select unassigned brand...</option>
+                                    {brands.filter(b => !b.userId).map(b => (
+                                      <option key={b.id} value={b.id}>{b.name}</option>
+                                    ))}
+                                  </select>
+                                  <button
+                                    onClick={async () => {
+                                      const selectEl = document.getElementById('link_brand_select') as HTMLSelectElement;
+                                      if (!selectEl || !selectEl.value) {
+                                        toast.error('Please select a brand to link');
+                                        return;
+                                      }
+                                      const brandId = selectEl.value;
+                                      try {
+                                        const res = await fetch(`${API_URL}/api/admin-ops/brands/${brandId}`, {
+                                          method: 'PUT',
+                                          headers: { 'Content-Type': 'application/json' },
+                                          body: JSON.stringify({ userId: parseInt(selectedVendor.id) })
+                                        });
+                                        if (!res.ok) throw new Error();
+                                        toast.success('Brand linked successfully!');
+                                        await fetchDatabaseData();
+                                      } catch (err) {
+                                        toast.error('Failed to link brand');
+                                      }
+                                    }}
+                                    className="h-7 px-3 bg-emerald-600 text-white text-[10px] font-black uppercase rounded-lg hover:bg-emerald-700"
+                                  >
+                                    Link
+                                  </button>
+                                </div>
+                              )}
                               <button
-                                onClick={() => handleToggleSuspension('vendor', vendor.id, vendor.status)}
-                                className={`h-9 px-4 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-1.5 active:scale-95 border border-transparent ${vendor.status === 'SUSPENDED'
-                                  ? 'bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white shadow-sm shadow-emerald-500/10'
-                                  : 'bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white shadow-sm shadow-rose-500/10'
-                                  }`}
+                                onClick={() => setIsCreateBrandOpen(true)}
+                                className="h-10 px-4 bg-slate-950 text-white text-xs font-black uppercase tracking-widest rounded-xl hover:bg-slate-900 flex items-center gap-1.5"
                               >
-                                <Power size={11} /> {vendor.status === 'SUSPENDED' ? 'Activate' : 'Suspend'}
+                                <PlusCircle size={14} /> Create Brand
                               </button>
                             </div>
-                          </td>
-                        </tr>
-                      ))}
-                      {filteredVendors.length === 0 && (
-                        <tr>
-                          <td colSpan={6} className="py-20 text-center text-slate-400 font-bold">No vendors registered in registry matching filters.</td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </table>
-                  <PaginationControls currentPage={vendorsPage} totalPages={vendorsTotalPages} onPageChange={setVendorsPage} />
-                </div>
-              )}
+                          )}
+                        </div>
 
-              {/* B. Brand Approvals */}
-              {activeTab === 'brands' && (
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left border-separate border-spacing-y-1">
-                    <thead>
-                      <tr className="bg-slate-50/50 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
-                        <th className="py-4 px-6 rounded-l-xl">Brand Identifier</th>
-                        <th className="py-4 px-6">Parent Vendor Node</th>
-                        <th className="py-4 px-6">E-Commerce Trace</th>
-                        <th className="py-4 px-6 text-center">Registry Status</th>
-                        <th className="py-4 px-6 text-right rounded-r-xl">Operations Moderation</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-50">
-                      {paginatedBrands.map(brand => (
-                        <tr key={brand.id} className="hover:bg-slate-50/60 transition-colors">
-                          <td className="py-5 px-6">
-                            <span className="text-sm font-black text-slate-900 block">{brand.name}</span>
-                            <span className="text-[10px] text-slate-400 mt-1 block italic">{brand.website}</span>
-                          </td>
-                          <td className="py-5 px-6">
-                            <span className="text-xs font-black text-slate-700 block">{brand.vendorName}</span>
-                            <span className="text-[9px] text-slate-400 uppercase tracking-widest mt-1 block">node id: {brand.vendorId}</span>
-                          </td>
-                          <td className="py-5 px-6">
-                            <span className="text-[10px] text-slate-400 font-bold block">{new Date(brand.createdAt).toLocaleDateString('en-IN')}</span>
-                          </td>
-                          <td className="py-5 px-6 text-center">
-                            <StatusBadge status={brand.status} />
-                          </td>
-                          <td className="py-5 px-6">
-                            <div className="flex items-center justify-end gap-2">
-                              {brand.status === 'PENDING' ? (
-                                <>
+                        {isCreateBrandOpen && (
+                          <div className="bg-slate-50 border border-slate-200 rounded-[2rem] p-6 space-y-6 animate-in slide-in-from-top-5 duration-300">
+                            <h4 className="text-sm font-black text-slate-900 uppercase tracking-wider">Register Brand Directly under {selectedVendor.name}</h4>
+                            <form onSubmit={async (e) => {
+                              e.preventDefault();
+                              if (!newBrandName) {
+                                toast.error('Brand name is required');
+                                return;
+                              }
+                              try {
+                                let finalHubId = newBrandHubId || selectedVendor.hubId;
+                                if (!finalHubId && hubsList.length > 0) {
+                                  finalHubId = hubsList[0].id;
+                                }
+                                if (!finalHubId) {
+                                  toast.error('A Hub is required. Please create a Hub first.');
+                                  return;
+                                }
+                                const res = await fetch(`${API_URL}/api/admin-ops/brands`, {
+                                  method: 'POST',
+                                  headers: { 'Content-Type': 'application/json' },
+                                  body: JSON.stringify({
+                                    name: newBrandName,
+                                    slug: newBrandSlug || newBrandName.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+                                    website: newBrandWebsite || 'https://nammaoorufoods.com',
+                                    description: newBrandDesc || `${newBrandName} - premium food brand.`,
+                                    logo: newBrandLogo || null,
+                                    banner: newBrandBanner || null,
+                                    headVendorId: finalHubId,
+                                    userId: parseInt(selectedVendor.id)
+                                  })
+                                });
+                                if (!res.ok) {
+                                  const errData = await res.json();
+                                  throw new Error(errData.error || 'Failed to create brand');
+                                }
+                                toast.success('Brand created successfully!');
+                                setIsCreateBrandOpen(false);
+                                setNewBrandName('');
+                                setNewBrandSlug('');
+                                setNewBrandWebsite('');
+                                setNewBrandDesc('');
+                                setNewBrandLogo('');
+                                setNewBrandBanner('');
+                                await fetchDatabaseData();
+                              } catch (err: any) {
+                                toast.error(err.message || 'Failed to create brand');
+                              }
+                            }} className="space-y-4">
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="space-y-1">
+                                  <label className="text-[10px] font-black uppercase text-slate-500">Brand Name</label>
+                                  <input
+                                    type="text"
+                                    required
+                                    value={newBrandName}
+                                    onChange={e => {
+                                      setNewBrandName(e.target.value);
+                                      setNewBrandSlug(e.target.value.toLowerCase().replace(/[^a-z0-9]+/g, '-'));
+                                    }}
+                                    className="w-full h-10 px-3 bg-white border border-slate-200 rounded-lg text-xs font-bold"
+                                  />
+                                </div>
+                                <div className="space-y-1">
+                                  <label className="text-[10px] font-black uppercase text-slate-500">Slug</label>
+                                  <input
+                                    type="text"
+                                    value={newBrandSlug}
+                                    onChange={e => setNewBrandSlug(e.target.value)}
+                                    className="w-full h-10 px-3 bg-white border border-slate-200 rounded-lg text-xs font-bold"
+                                  />
+                                </div>
+                                <div className="space-y-1">
+                                  <label className="text-[10px] font-black uppercase text-slate-500">Website</label>
+                                  <input
+                                    type="text"
+                                    value={newBrandWebsite}
+                                    onChange={e => setNewBrandWebsite(e.target.value)}
+                                    className="w-full h-10 px-3 bg-white border border-slate-200 rounded-lg text-xs font-bold"
+                                    placeholder="https://example.com"
+                                  />
+                                </div>
+                                <div className="space-y-1">
+                                  <label className="text-[10px] font-black uppercase text-slate-500">Regional Hub</label>
+                                  <select
+                                    value={newBrandHubId}
+                                    onChange={e => setNewBrandHubId(e.target.value ? Number(e.target.value) : '')}
+                                    className="w-full h-10 px-3 bg-white border border-slate-200 rounded-lg text-xs font-bold"
+                                  >
+                                    <option value="">Use Vendor's Hub or Select...</option>
+                                    {hubsList.map(hub => (
+                                      <option key={hub.id} value={hub.id}>{hub.name}</option>
+                                    ))}
+                                  </select>
+                                </div>
+                              </div>
+                              <div className="space-y-1">
+                                <label className="text-[10px] font-black uppercase text-slate-500">Description</label>
+                                <textarea
+                                  value={newBrandDesc}
+                                  onChange={e => setNewBrandDesc(e.target.value)}
+                                  className="w-full p-3 bg-white border border-slate-200 rounded-lg text-xs font-bold"
+                                  rows={2}
+                                />
+                              </div>
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="space-y-1">
+                                  <label className="text-[10px] font-black uppercase text-slate-500">Logo Image URL</label>
+                                  <input
+                                    type="text"
+                                    value={newBrandLogo}
+                                    onChange={e => setNewBrandLogo(e.target.value)}
+                                    className="w-full h-10 px-3 bg-white border border-slate-200 rounded-lg text-xs font-bold"
+                                    placeholder="/brand_logos/custom_logo.webp"
+                                  />
+                                </div>
+                                <div className="space-y-1">
+                                  <label className="text-[10px] font-black uppercase text-slate-500">Banner Image URL</label>
+                                  <input
+                                    type="text"
+                                    value={newBrandBanner}
+                                    onChange={e => setNewBrandBanner(e.target.value)}
+                                    className="w-full h-10 px-3 bg-white border border-slate-200 rounded-lg text-xs font-bold"
+                                    placeholder="/banners/custom_banner.webp"
+                                  />
+                                </div>
+                              </div>
+                              <div className="flex gap-2 justify-end pt-2">
+                                <button
+                                  type="button"
+                                  onClick={() => setIsCreateBrandOpen(false)}
+                                  className="h-10 px-4 bg-slate-200 text-slate-600 rounded-lg text-xs font-black uppercase"
+                                >
+                                  Cancel
+                                </button>
+                                <button
+                                  type="submit"
+                                  className="h-10 px-6 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-black uppercase"
+                                >
+                                  Submit Brand
+                                </button>
+                              </div>
+                            </form>
+                          </div>
+                        )}
+
+                        {/* Desktop View */}
+                        <div className="hidden md:block bg-white border border-slate-200 rounded-[2rem] overflow-hidden p-6 shadow-sm">
+                          <table className="w-full text-left border-separate border-spacing-y-1 min-w-[1000px] admin-data-table">
+                            <thead>
+                              <tr className="bg-slate-50/50 text-[13px] font-black text-slate-500 uppercase tracking-[0.15em]">
+                                <th className="py-4 px-6 rounded-l-xl">Brand Identifier</th>
+                                <th className="py-4 px-6">Slug Path</th>
+                                <th className="py-4 px-6">E-Commerce Trace</th>
+                                <th className="py-4 px-6 text-center">Status</th>
+                                <th className="py-4 px-6 text-right rounded-r-xl">Operations</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-50">
+                              {vendorBrands.map(brand => (
+                                <tr key={brand.id} className="hover:bg-slate-50/60 transition-colors">
+                                  <td className="py-5 px-6">
+                                    <span className="text-base font-black text-slate-900 block">{brand.name}</span>
+                                    <span className="text-xs text-slate-400 mt-1 block italic">{brand.website}</span>
+                                  </td>
+                                  <td className="py-5 px-6 font-mono text-sm text-slate-700">
+                                    /{brand.slug}
+                                  </td>
+                                  <td className="py-5 px-6">
+                                    <span className="text-[13px] text-slate-500 font-bold block">{new Date(brand.createdAt).toLocaleDateString('en-IN')}</span>
+                                  </td>
+                                  <td className="py-5 px-6 text-center">
+                                    <StatusBadge status={brand.status} />
+                                  </td>
+                                  <td className="py-5 px-6">
+                                    <ActionGroup>
+                                      {brand.status === 'PENDING' ? (
+                                        <EvaluateButton onClick={() => handleOpenApprovalModal(brand, 'brand')} />
+                                      ) : (
+                                        <SuspendButton 
+                                          isSuspended={brand.status === 'SUSPENDED'} 
+                                          onClick={() => handleToggleSuspension('brand', brand.id, brand.status)} 
+                                        />
+                                      )}
+                                      <UnlinkButton
+                                        onClick={async () => {
+                                          if (!confirm('Are you sure you want to unlink this brand from the vendor? It will become an unassigned brand.')) return;
+                                          try {
+                                            const res = await fetch(`${API_URL}/api/admin-ops/brands/${brand.id}`, {
+                                              method: 'PUT',
+                                              headers: { 'Content-Type': 'application/json' },
+                                              body: JSON.stringify({ userId: null })
+                                            });
+                                            if (!res.ok) throw new Error();
+                                            toast.success('Brand unlinked successfully!');
+                                            await fetchDatabaseData();
+                                          } catch (err) {
+                                            toast.error('Failed to unlink brand');
+                                          }
+                                        }}
+                                      />
+                                    </ActionGroup>
+                                  </td>
+                                </tr>
+                              ))}
+                              {vendorBrands.length === 0 && (
+                                <tr>
+                                  <td colSpan={5} className="py-20 text-center text-slate-400 font-bold">
+                                    No brands linked to this vendor. Click "+ Create Brand" or link an existing one.
+                                  </td>
+                                </tr>
+                              )}
+                            </tbody>
+                          </table>
+                        </div>
+
+                        {/* Mobile View */}
+                        <div className="block md:hidden divide-y divide-slate-100 bg-white border border-slate-200 rounded-[2rem] p-6 shadow-sm space-y-4">
+                          {vendorBrands.map(brand => (
+                            <div key={brand.id} className="py-4 space-y-3">
+                              <div className="flex justify-between items-start gap-4">
+                                <div className="space-y-0.5">
+                                  <span className="text-sm font-black text-slate-900 block">{brand.name}</span>
+                                  <span className="text-xs text-slate-400 block break-all">{brand.website}</span>
+                                </div>
+                                <StatusBadge status={brand.status} />
+                              </div>
+                              <div className="grid grid-cols-2 gap-2 bg-slate-50/50 rounded-2xl p-4 border border-slate-100/50 text-xs">
+                                <div>
+                                  <span className="text-[9px] text-slate-400 font-black uppercase tracking-wider block">Slug Path</span>
+                                  <span className="font-mono text-slate-700">/{brand.slug}</span>
+                                </div>
+                                <div>
+                                  <span className="text-[9px] text-slate-400 font-black uppercase tracking-wider block">Created Date</span>
+                                  <span className="font-bold text-slate-700">{new Date(brand.createdAt).toLocaleDateString('en-IN')}</span>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-2 justify-end pt-1">
+                                {brand.status === 'PENDING' ? (
                                   <button
                                     onClick={() => handleOpenApprovalModal(brand, 'brand')}
-                                    className="h-9 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-black uppercase tracking-widest flex items-center gap-1 active:scale-95 shadow-lg shadow-emerald-500/10 border-0"
+                                    className="h-9 px-3 rounded-lg bg-emerald-600 text-white text-[10px] font-black uppercase tracking-wider flex items-center justify-center gap-1"
                                   >
-                                    <Check size={12} /> Evaluate
+                                    Evaluate Brand
                                   </button>
-                                </>
-                              ) : (
-                                <button
-                                  onClick={() => handleToggleSuspension('brand', brand.id, brand.status)}
-                                  className={`h-9 px-4 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-1.5 active:scale-95 border border-transparent ${brand.status === 'SUSPENDED'
-                                    ? 'bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white shadow-sm shadow-emerald-500/10'
-                                    : 'bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white shadow-sm shadow-rose-500/10'
+                                ) : (
+                                  <button
+                                    onClick={() => handleToggleSuspension('brand', brand.id, brand.status)}
+                                    className={`h-9 px-3 rounded-lg border text-[10px] font-black uppercase tracking-wider flex items-center justify-center gap-1 ${
+                                      brand.status === 'SUSPENDED' ? 'bg-emerald-50 border-emerald-100 text-emerald-600' : 'bg-red-50 border-red-100 text-red-600'
                                     }`}
+                                  >
+                                    {brand.status === 'SUSPENDED' ? 'Activate' : 'Suspend'}
+                                  </button>
+                                )}
+                                <button
+                                  onClick={async () => {
+                                    if (!confirm('Are you sure you want to unlink this brand from the vendor? It will become an unassigned brand.')) return;
+                                    try {
+                                      const res = await fetch(`${API_URL}/api/admin-ops/brands/${brand.id}`, {
+                                        method: 'PUT',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({ userId: null })
+                                      });
+                                      if (!res.ok) throw new Error();
+                                      toast.success('Brand unlinked successfully!');
+                                      await fetchDatabaseData();
+                                    } catch (err) {
+                                      toast.error('Failed to unlink brand');
+                                    }
+                                  }}
+                                  className="h-9 w-9 flex items-center justify-center rounded-lg border border-slate-200 text-slate-400 hover:bg-slate-100 transition-colors"
+                                  title="Unlink Brand"
                                 >
-                                  <Power size={11} /> {brand.status === 'SUSPENDED' ? 'Restore' : 'Suspend'}
+                                  <X size={14} />
                                 </button>
-                              )}
+                              </div>
                             </div>
-                          </td>
-                        </tr>
-                      ))}
-                      {filteredBrands.length === 0 && (
-                        <tr>
-                          <td colSpan={5} className="py-20 text-center text-slate-400 font-bold">No brands requested matching criteria.</td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </table>
-                  <PaginationControls currentPage={brandsPage} totalPages={brandsTotalPages} onPageChange={setBrandsPage} />
+                          ))}
+                          {vendorBrands.length === 0 && (
+                            <div className="py-12 text-center text-slate-400 font-bold text-xs uppercase tracking-widest">
+                              No brands linked to this vendor. Click "+ Create Brand" or link an existing one.
+                            </div>
+                          )}
+                        </div>
+                      </>
+                    );
+                  })()}
                 </div>
               )}
 
-              {/* C. Product Review */}
-              {activeTab === 'products' && (
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left border-separate border-spacing-y-1">
-                    <thead>
-                      <tr className="bg-slate-50/50 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
-                        <th className="py-4 px-6 rounded-l-xl">SKU Name</th>
-                        <th className="py-4 px-6">Brand Owner</th>
-                        <th className="py-4 px-6 text-center">Unit Price</th>
-                        <th className="py-4 px-6 text-center">Stock</th>
-                        <th className="py-4 px-6 text-center">Status</th>
-                        <th className="py-4 px-6 text-right rounded-r-xl">Governance Sign-off</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-50">
-                      {paginatedProducts.map(product => (
-                        <tr key={product.id} className="hover:bg-slate-50/60 transition-colors">
-                          <td className="py-5 px-6">
-                            <span className="text-sm font-black text-slate-900 block">{product.name}</span>
-                            <span className="text-[10px] text-slate-400 font-mono tracking-wider mt-1.5 block">SKU: {product.sku}</span>
-                          </td>
-                          <td className="py-5 px-6">
-                            <span className="text-xs font-black text-slate-700 block">{product.brandName}</span>
-                          </td>
-                          <td className="py-5 px-6 text-center font-bold text-xs text-slate-900 font-mono">
-                            ₹{product.price.toFixed(2)}
-                          </td>
-                          <td className="py-5 px-6 text-center">
-                            <span className={`text-xs font-bold ${product.stock <= 50 ? 'text-amber-600' : 'text-slate-500'}`}>
-                              {product.stock} units
-                            </span>
-                          </td>
-                          <td className="py-5 px-6 text-center">
+              {vendorDetailsTab === 'products' && (() => {
+                const vendorBrands = brands.filter(b => b.userId === selectedVendor.id);
+                const vendorBrandIds = vendorBrands.map(b => b.id);
+                const vendorProducts = products.filter(p => vendorBrandIds.includes(p.brandId));
+
+                return (
+                  <div className="space-y-6">
+                    <h3 className="text-lg font-black text-slate-950 uppercase tracking-tight">
+                      Catalog Moderation Queue
+                    </h3>
+                    {/* Desktop View */}
+                    <div className="hidden md:block bg-white border border-slate-200 rounded-[2rem] overflow-hidden p-6 shadow-sm">
+                      <table className="w-full text-left border-separate border-spacing-y-1 min-w-[1000px] admin-data-table">
+                        <thead>
+                          <tr className="bg-slate-50/50 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
+                            <th className="py-4 px-6 rounded-l-xl">SKU Name</th>
+                            <th className="py-4 px-6">Brand Owner</th>
+                            <th className="py-4 px-6 text-center">Unit Price</th>
+                            <th className="py-4 px-6 text-center">Stock</th>
+                            <th className="py-4 px-6 text-center">Status</th>
+                            <th className="py-4 px-6 text-right rounded-r-xl">Governance Sign-off</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-50">
+                          {vendorProducts.map(product => (
+                            <tr key={product.id} className="hover:bg-slate-50/60 transition-colors">
+                              <td className="py-5 px-6">
+                                <span className="text-sm font-black text-slate-900 block">{product.name}</span>
+                                <span className="text-[10px] text-slate-400 font-mono tracking-wider mt-1.5 block">SKU: {product.sku}</span>
+                              </td>
+                              <td className="py-5 px-6">
+                                <span className="text-xs font-black text-slate-700 block">{product.brandName}</span>
+                              </td>
+                              <td className="py-5 px-6 text-center font-bold text-xs text-slate-900 font-mono">
+                                ₹{product.price.toFixed(2)}
+                              </td>
+                              <td className="py-5 px-6 text-center">
+                                <span className={`text-xs font-bold ${product.stock <= 50 ? 'text-amber-600' : 'text-slate-500'}`}>
+                                  {product.stock} units
+                                </span>
+                              </td>
+                              <td className="py-5 px-6 text-center">
+                                <StatusBadge status={product.status} />
+                              </td>
+                              <td className="py-5 px-6">
+                                <ActionGroup>
+                                  {product.status === 'PENDING_ADMIN' ? (
+                                    <ActionPanelButton onClick={() => handleOpenApprovalModal(product, 'product')} />
+                                  ) : (
+                                    <SuspendButton
+                                      isSuspended={product.status === 'BLOCKED'}
+                                      tooltip={product.status === 'BLOCKED' ? 'Unblock' : 'Block'}
+                                      onClick={() => handleToggleSuspension('product', product.id, product.status)}
+                                    />
+                                  )}
+                                </ActionGroup>
+                              </td>
+                            </tr>
+                          ))}
+                          {vendorProducts.length === 0 && (
+                            <tr>
+                              <td colSpan={6} className="py-20 text-center text-slate-400 font-bold">
+                                No products registered under this vendor's brands.
+                              </td>
+                            </tr>
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+
+                    {/* Mobile View */}
+                    <div className="block md:hidden divide-y divide-slate-100 bg-white border border-slate-200 rounded-[2rem] p-6 shadow-sm space-y-4">
+                      {vendorProducts.map(product => (
+                        <div key={product.id} className="py-4 space-y-3">
+                          <div className="flex justify-between items-start gap-4">
+                            <div className="space-y-0.5">
+                              <span className="text-sm font-black text-slate-900 block">{product.name}</span>
+                              <span className="text-[10px] text-slate-400 block font-mono">SKU: {product.sku}</span>
+                            </div>
                             <StatusBadge status={product.status} />
-                          </td>
-                          <td className="py-5 px-6">
-                            <div className="flex items-center justify-end gap-2">
+                          </div>
+                          <div className="grid grid-cols-3 gap-2 bg-slate-50/50 rounded-2xl p-4 border border-slate-100/50 text-xs">
+                            <div>
+                              <span className="text-[9px] text-slate-400 font-black uppercase tracking-wider block">Brand Owner</span>
+                              <span className="font-bold text-slate-800">{product.brandName}</span>
+                            </div>
+                            <div>
+                              <span className="text-[9px] text-slate-400 font-black uppercase tracking-wider block">Price</span>
+                              <span className="font-bold text-slate-850 font-mono">₹{product.price.toFixed(2)}</span>
+                            </div>
+                            <div>
+                              <span className="text-[9px] text-slate-400 font-black uppercase tracking-wider block">Stock Level</span>
+                              <span className={`font-bold ${product.stock <= 50 ? 'text-amber-600' : 'text-slate-850'}`}>
+                                {product.stock} units
+                              </span>
+                            </div>
+                          </div>
+                          <div className="flex items-center justify-end pt-1">
+                            {product.status === 'PENDING_ADMIN' ? (
+                              <button
+                                onClick={() => handleOpenApprovalModal(product, 'product')}
+                                className="h-9 px-3 rounded-lg bg-emerald-600 text-white text-[10px] font-black uppercase tracking-wider flex items-center justify-center gap-1"
+                              >
+                                Evaluate Product
+                              </button>
+                            ) : (
+                              <button
+                                onClick={() => handleToggleSuspension('product', product.id, product.status)}
+                                className={`h-9 px-3 rounded-lg border text-[10px] font-black uppercase tracking-wider flex items-center justify-center gap-1 ${
+                                  product.status === 'BLOCKED' ? 'bg-emerald-50 border-emerald-100 text-emerald-600' : 'bg-red-50 border-red-100 text-red-600'
+                                }`}
+                              >
+                                {product.status === 'BLOCKED' ? 'Unblock' : 'Block'}
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                      {vendorProducts.length === 0 && (
+                        <div className="py-12 text-center text-slate-400 font-bold text-xs uppercase tracking-widest">
+                          No products registered under this vendor's brands.
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {vendorDetailsTab === 'payouts' && (
+                <VendorPayoutsTab 
+                  selectedVendor={selectedVendor} 
+                  brands={brands} 
+                />
+              )}
+
+              {vendorDetailsTab === 'settings' && (
+                <VendorSettingsTab 
+                  selectedVendor={selectedVendor} 
+                  brands={brands} 
+                  fetchDatabaseData={fetchDatabaseData} 
+                />
+              )}
+            </div>
+          </div>
+        </div>
+      ) : (
+        /* ─── MAIN DASHBOARD VIEW ─────────────────────────────────────── */
+        <>
+          {/* ─── NAVIGATION TABS & FILTER BAR ─────────────────────────────── */}
+          <div className="bg-white rounded-[2.5rem] border border-slate-200 shadow-sm overflow-hidden p-4">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 border-b border-slate-100 pb-4 mb-6">
+              <div className="flex flex-col sm:flex-row gap-1 bg-slate-50 p-1.5 rounded-2xl w-full lg:w-auto">
+                <TabButton active={activeTab === 'vendors'} onClick={() => { setActiveTab('vendors'); setStatusFilter('ALL'); }} label="Vendors" Icon={Users} />
+                <TabButton active={activeTab === 'products'} onClick={() => { setActiveTab('products'); setStatusFilter('ALL'); }} label="Product Review" Icon={Package} />
+              </div>
+
+              {/* Sticky Filters */}
+              <div className="flex flex-col sm:flex-row sm:items-center gap-3 w-full lg:w-auto">
+                <div className="relative w-full sm:w-64">
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                  <input
+                    type="text"
+                    placeholder="Search vendors, products..."
+                    value={searchTerm}
+                    onChange={e => setSearchTerm(e.target.value)}
+                    className="h-11 w-full bg-slate-50 border border-slate-100 rounded-xl pl-11 pr-4 text-xs font-bold outline-none focus:border-emerald-500 focus:bg-white transition-all shadow-inner"
+                  />
+                </div>
+                {activeTab !== 'audit' && (
+                  <div className="flex items-center gap-2 w-full sm:w-auto">
+                    <Filter size={14} className="text-slate-400 shrink-0" />
+                    <select
+                      value={statusFilter}
+                      onChange={e => setStatusFilter(e.target.value)}
+                      className="h-11 w-full sm:w-auto bg-slate-50 border border-slate-100 rounded-xl px-4 text-xs font-bold outline-none cursor-pointer hover:bg-slate-100 transition-all focus:border-emerald-500 focus:bg-white"
+                    >
+                      <option value="ALL">Filter by Status</option>
+                      <option value="APPROVED">Approved / Published</option>
+                      <option value="PENDING">Pending Approval</option>
+                      <option value="REJECTED">Rejected</option>
+                      <option value="SUSPENDED">Suspended / Blocked</option>
+                    </select>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* ─── TAB CONTENTS ────────────────────────────────────────────── */}
+            <div className="animate-in fade-in duration-300">
+              {isLoading ? (
+                <div className="py-24 flex flex-col items-center justify-center gap-4">
+                  <RefreshCw className="h-10 w-10 text-emerald-600 animate-spin" />
+                  <span className="text-xs font-black uppercase tracking-[0.2em] text-slate-400">Syncing with Platform Node Registry...</span>
+                </div>
+              ) : (
+                <>
+                  {/* A. VENDORS PANEL */}
+                  {activeTab === 'vendors' && (
+                    <>
+                      {/* Desktop View */}
+                      <div className="hidden md:block overflow-x-auto min-h-[280px]">
+                        <table className="w-full text-left border-separate border-spacing-y-1 min-w-[1000px] admin-data-table">
+                          <thead>
+                            <tr className="bg-slate-50/50 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
+                              <th className="py-4 px-6 rounded-l-xl">Vendor Name</th>
+                              <th className="py-4 px-6">Contact Information</th>
+                              <th className="py-4 px-6 text-center">Approved Brands</th>
+                              <th className="py-4 px-6 text-center">Status</th>
+                              <th className="py-4 px-6 text-center">Fee Rate</th>
+                              <th className="py-4 px-6 text-right rounded-r-xl">Actions</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-slate-50">
+                            {paginatedVendors.map(vendor => (
+                              <tr key={vendor.id} className="hover:bg-slate-50/60 transition-colors group">
+                                <td className="py-5 px-6 font-bold">
+                                  <span className="text-sm font-black text-slate-900 block">{vendor.name}</span>
+                                  <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1.5 block">slug: {vendor.slug}</span>
+                                </td>
+                                <td className="py-5 px-6">
+                                  <span className="text-xs font-black text-slate-700 block">{vendor.ownerName}</span>
+                                  <span className="text-[10px] text-slate-400 mt-1 block">{vendor.ownerEmail}</span>
+                                </td>
+                                <td className="py-5 px-6 text-center">
+                                  <span className="px-3 py-1 rounded-full bg-blue-50 text-blue-600 text-[10px] font-black tracking-wider">
+                                    {vendor.brandsCount} Brands
+                                  </span>
+                                </td>
+                                <td className="py-5 px-6 text-center">
+                                  <StatusBadge status={vendor.status} />
+                                </td>
+                                <td className="py-5 px-6 text-center">
+                                  <span className="text-xs font-black text-slate-900 font-mono">{vendor.commissionRate}%</span>
+                                </td>
+                                <td className="py-5 px-6">
+                                  <ActionGroup>
+                                    <ViewButton onClick={() => handleSelectVendor(vendor)} />
+                                    <SuspendButton
+                                      isSuspended={vendor.status === 'SUSPENDED'}
+                                      tooltip={vendor.status === 'SUSPENDED' ? 'Activate' : 'Suspend'}
+                                      onClick={() => handleToggleSuspension('vendor', vendor.id, vendor.status)}
+                                    />
+                                  </ActionGroup>
+                                </td>
+                              </tr>
+                            ))}
+                            {filteredVendors.length === 0 && (
+                              <tr>
+                                <td colSpan={6} className="py-20 text-center text-slate-400 font-bold">No vendors registered in registry matching filters.</td>
+                              </tr>
+                            )}
+                          </tbody>
+                        </table>
+                      </div>
+
+                      {/* Mobile View - Card Layout */}
+                      <div className="block md:hidden divide-y divide-slate-100">
+                        {paginatedVendors.map(vendor => (
+                          <div key={vendor.id} className="py-5 space-y-4">
+                            <div className="flex items-start justify-between gap-4">
+                              <div className="space-y-0.5">
+                                <span className="text-sm font-black text-slate-900 block">{vendor.name}</span>
+                                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1.5 block">slug: {vendor.slug}</span>
+                              </div>
+                              <StatusBadge status={vendor.status} />
+                            </div>
+
+                            <div className="space-y-2 bg-slate-50/50 rounded-2xl p-4 border border-slate-100/50 text-xs text-slate-500 font-semibold">
+                              <div>
+                                <span className="text-[9px] text-slate-400 font-black uppercase tracking-wider block">Owner Contact</span>
+                                <p className="text-slate-800 font-bold mt-0.5">{vendor.ownerName}</p>
+                                <p className="text-[10px] text-slate-400 font-medium mt-0.5">{vendor.ownerEmail}</p>
+                              </div>
+                              
+                              <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100">
+                                <div>
+                                  <span className="text-[9px] text-slate-400 font-black uppercase tracking-wider block">Brands</span>
+                                  <span className="px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-600 text-[10px] font-black tracking-wider block w-fit mt-1">
+                                    {vendor.brandsCount} Brands
+                                  </span>
+                                </div>
+                                <div>
+                                  <span className="text-[9px] text-slate-400 font-black uppercase tracking-wider block">Commission</span>
+                                  <span className="text-slate-800 text-[11px] font-bold block mt-1">{vendor.commissionRate}%</span>
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center gap-2 justify-end pt-1">
+                              <button
+                                onClick={() => handleSelectVendor(vendor)}
+                                className="h-11 flex-1 flex items-center justify-center gap-1.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-700 hover:text-slate-900 text-xs font-bold transition-all"
+                              >
+                                <Eye size={13} /> View Hub
+                              </button>
+                              <button
+                                onClick={() => handleToggleSuspension('vendor', vendor.id, vendor.status)}
+                                className={`h-11 px-4 flex items-center justify-center rounded-xl border transition-all ${
+                                  vendor.status === 'SUSPENDED' 
+                                    ? 'bg-emerald-50 border-emerald-100 text-emerald-600 hover:bg-emerald-500 hover:text-white' 
+                                    : 'bg-red-50 border-red-100 text-red-600 hover:bg-red-500 hover:text-white'
+                                }`}
+                              >
+                                <Power size={14} />
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                        {filteredVendors.length === 0 && (
+                          <div className="py-20 text-center text-slate-400 font-bold text-xs uppercase tracking-widest">No vendors registered in registry matching filters.</div>
+                        )}
+                      </div>
+
+                      <PaginationControls currentPage={vendorsPage} totalPages={vendorsTotalPages} onPageChange={setVendorsPage} />
+                    </>
+                  )}
+
+                  {/* C. Product Review */}
+                  {activeTab === 'products' && (
+                    <>
+                      {/* Desktop View */}
+                      <div className="hidden md:block overflow-x-auto min-h-[280px]">
+                        <table className="w-full text-left border-separate border-spacing-y-1 min-w-[1000px] admin-data-table">
+                          <thead>
+                            <tr className="bg-slate-50/50 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
+                              <th className="py-4 px-6 rounded-l-xl">SKU Name</th>
+                              <th className="py-4 px-6">Brand Owner</th>
+                              <th className="py-4 px-6 text-center">Unit Price</th>
+                              <th className="py-4 px-6 text-center">Stock</th>
+                              <th className="py-4 px-6 text-center">Status</th>
+                              <th className="py-4 px-6 text-right rounded-r-xl">Governance Sign-off</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-slate-50">
+                            {paginatedProducts.map(product => (
+                              <tr key={product.id} className="hover:bg-slate-50/60 transition-colors">
+                                <td className="py-5 px-6">
+                                  <span className="text-sm font-black text-slate-900 block">{product.name}</span>
+                                  <span className="text-[10px] text-slate-400 font-mono tracking-wider mt-1.5 block">SKU: {product.sku}</span>
+                                </td>
+                                <td className="py-5 px-6">
+                                  <span className="text-xs font-black text-slate-700 block">{product.brandName}</span>
+                                </td>
+                                <td className="py-5 px-6 text-center font-bold text-xs text-slate-900 font-mono">
+                                  ₹{product.price.toFixed(2)}
+                                </td>
+                                <td className="py-5 px-6 text-center">
+                                  <span className={`text-xs font-bold ${product.stock <= 50 ? 'text-amber-600' : 'text-slate-500'}`}>
+                                    {product.stock} units
+                                  </span>
+                                </td>
+                                <td className="py-5 px-6 text-center">
+                                  <StatusBadge status={product.status} />
+                                </td>
+                                <td className="py-5 px-6">
+                                  <ActionGroup>
+                                    {product.status === 'PENDING_ADMIN' ? (
+                                      <ActionPanelButton onClick={() => handleOpenApprovalModal(product, 'product')} />
+                                    ) : (
+                                      <SuspendButton
+                                        isSuspended={product.status === 'BLOCKED'}
+                                        tooltip={product.status === 'BLOCKED' ? 'Unblock' : 'Block'}
+                                        onClick={() => handleToggleSuspension('product', product.id, product.status)}
+                                      />
+                                    )}
+                                  </ActionGroup>
+                                </td>
+                              </tr>
+                            ))}
+                            {filteredProducts.length === 0 && (
+                              <tr>
+                                <td colSpan={6} className="py-20 text-center text-slate-400 font-bold">No product models matching criteria.</td>
+                              </tr>
+                            )}
+                          </tbody>
+                        </table>
+                      </div>
+
+                      {/* Mobile View - Card Layout */}
+                      <div className="block md:hidden divide-y divide-slate-100">
+                        {paginatedProducts.map(product => (
+                          <div key={product.id} className="py-5 space-y-4">
+                            <div className="flex items-start justify-between gap-4">
+                              <div className="space-y-0.5">
+                                <span className="text-sm font-black text-slate-900 block">{product.name}</span>
+                                <span className="text-[10px] text-slate-400 font-mono tracking-wider mt-1.5 block">SKU: {product.sku}</span>
+                              </div>
+                              <StatusBadge status={product.status} />
+                            </div>
+
+                            <div className="space-y-2 bg-slate-50/50 rounded-2xl p-4 border border-slate-100/50 text-xs text-slate-500 font-semibold">
+                              <div>
+                                <span className="text-[9px] text-slate-400 font-black uppercase tracking-wider block">Brand Owner</span>
+                                <span className="text-slate-850 font-bold mt-0.5 block">{product.brandName}</span>
+                              </div>
+                              
+                              <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100">
+                                <div>
+                                  <span className="text-[9px] text-slate-400 font-black uppercase tracking-wider block">Stock Level</span>
+                                  <span className={`text-[11px] font-bold block mt-1 ${product.stock <= 50 ? 'text-amber-600' : 'text-slate-800'}`}>
+                                    {product.stock} units
+                                  </span>
+                                </div>
+                                <div>
+                                  <span className="text-[9px] text-slate-400 font-black uppercase tracking-wider block">Unit Price</span>
+                                  <span className="text-slate-800 text-[11px] font-bold block mt-1 font-mono">₹{product.price.toFixed(2)}</span>
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center gap-2 justify-end pt-1">
                               {product.status === 'PENDING_ADMIN' ? (
                                 <button
                                   onClick={() => handleOpenApprovalModal(product, 'product')}
-                                  className="h-9 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-black uppercase tracking-widest flex items-center gap-1 active:scale-95 shadow-lg shadow-indigo-500/10 border-0"
+                                  className="h-11 flex-1 flex items-center justify-center gap-1.5 rounded-xl bg-emerald-600 text-white hover:bg-emerald-700 text-xs font-black uppercase tracking-wider transition-all shadow-md shadow-emerald-500/10"
                                 >
-                                  <ShieldAlert size={12} /> Action Panel
+                                  <CheckCircle size={14} /> Evaluate Product
                                 </button>
                               ) : (
                                 <button
                                   onClick={() => handleToggleSuspension('product', product.id, product.status)}
-                                  className={`h-9 px-4 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-1.5 active:scale-95 border border-transparent ${product.status === 'BLOCKED'
-                                    ? 'bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white shadow-sm shadow-emerald-500/10'
-                                    : 'bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white shadow-sm shadow-rose-500/10'
-                                    }`}
+                                  className={`h-11 flex-1 flex items-center justify-center gap-1.5 rounded-xl border text-xs font-bold transition-all ${
+                                    product.status === 'BLOCKED'
+                                      ? 'bg-emerald-50 border-emerald-100 text-emerald-600 hover:bg-emerald-500 hover:text-white'
+                                      : 'bg-red-50 border-red-100 text-red-600 hover:bg-red-500 hover:text-white'
+                                  }`}
                                 >
-                                  <Power size={11} /> {product.status === 'BLOCKED' ? 'Unblock' : 'Block'}
+                                  <Power size={14} /> {product.status === 'BLOCKED' ? 'Unblock Product' : 'Block Product'}
                                 </button>
                               )}
                             </div>
-                          </td>
-                        </tr>
-                      ))}
-                      {filteredProducts.length === 0 && (
-                        <tr>
-                          <td colSpan={6} className="py-20 text-center text-slate-400 font-bold">No product models matching criteria.</td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </table>
-                  <PaginationControls currentPage={productsPage} totalPages={productsTotalPages} onPageChange={setProductsPage} />
-                </div>
+                          </div>
+                        ))}
+                        {filteredProducts.length === 0 && (
+                          <div className="py-20 text-center text-slate-400 font-bold text-xs uppercase tracking-widest">No product models matching criteria.</div>
+                        )}
+                      </div>
+
+                      <PaginationControls currentPage={productsPage} totalPages={productsTotalPages} onPageChange={setProductsPage} />
+                    </>
+                  )}
+                </>
               )}
-            </>
-          )}
-        </div>
-      </div>
+            </div>
+          </div>
+        </>
+      )}
 
       {/* ─── BLUR OVERLAY MODAL: PRODUCT/BRAND GOVERNANCE DECISION ─────── */}
       {isApprovalModalOpen && selectedEntity && (
@@ -956,19 +1826,40 @@ export default function MarketplaceGovernancePage() {
 }
 
 // Subcomponents with elite, high-density ERDS aesthetics
+function DocumentCard({ name, docNum, expiry, status }: { name: string; docNum: string; expiry: string; status: string }) {
+  return (
+    <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-4">
+      <div className="flex justify-between items-start">
+        <div className="h-10 w-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-600">
+          <FileText size={18} />
+        </div>
+        <span className="px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-100 text-[8px] font-black uppercase tracking-widest">{status}</span>
+      </div>
+      <div>
+        <h4 className="text-sm font-black text-slate-900 block truncate">{name}</h4>
+        <span className="text-[10px] text-slate-400 font-bold mt-1 block">ID/No: {docNum}</span>
+      </div>
+      <div className="flex justify-between items-center pt-3 border-t border-slate-100 text-[10px] font-bold text-slate-500">
+        <span>Expiry: {expiry}</span>
+        <a href="#" onClick={(e) => { e.preventDefault(); toast.success('Mock Document View Initiated'); }} className="text-emerald-600 hover:underline">View PDF</a>
+      </div>
+    </div>
+  );
+}
+
 function StatCard({ title, value, subtitle, color, Icon }: any) {
   return (
-    <div className="bg-white rounded-[2rem] border border-slate-200/80 p-6 shadow-sm hover:shadow-xl hover:shadow-slate-200/40 transition-all group relative overflow-hidden flex flex-col justify-between min-h-[140px]">
+    <div className="bg-white rounded-2xl border border-slate-200/80 p-4 shadow-sm hover:shadow-xl hover:shadow-slate-200/40 transition-all group relative overflow-hidden flex flex-col justify-between">
       <div className="flex items-center justify-between">
-        <div className={`h-11 w-11 rounded-2xl flex items-center justify-center text-white shadow-lg ${color} shadow-slate-200`}>
-          <Icon size={18} />
+        <div className={`h-9 w-9 rounded-xl flex items-center justify-center text-white shadow-md ${color} shadow-slate-200`}>
+          <Icon size={16} />
         </div>
-        <ChevronRight size={14} className="text-slate-300 group-hover:translate-x-1 transition-transform" />
+        <ChevronRight size={12} className="text-slate-300 group-hover:translate-x-1 transition-transform" />
       </div>
-      <div className="space-y-1 mt-4">
-        <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">{title}</span>
-        <h3 className="text-2xl font-black text-slate-950 tracking-tighter leading-none">{value}</h3>
-        <p className="text-[10px] text-slate-400 font-bold mt-1 tracking-wide">{subtitle}</p>
+      <div className="space-y-0.5 mt-3">
+        <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">{title}</span>
+        <h3 className="text-xl font-black text-slate-950 tracking-tighter leading-none">{value}</h3>
+        <p className="text-[9px] text-slate-400 font-bold mt-0.5 tracking-wide">{subtitle}</p>
       </div>
     </div>
   );

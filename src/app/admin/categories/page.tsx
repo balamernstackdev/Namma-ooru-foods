@@ -9,6 +9,7 @@ import { useToast } from '@/context/ToastContext';
 import PremiumLoader from '@/components/ui/PremiumLoader';
 import AdminPagination from '@/components/admin/AdminPagination';
 import AdminListToolbar from '@/components/admin/AdminListToolbar';
+import { ActionGroup, ViewButton, EditButton, DeleteButton } from '@/components/ui/ActionButtons';
 
 export default function AdminCategoriesPage() {
   const router = useRouter();
@@ -16,7 +17,6 @@ export default function AdminCategoriesPage() {
   const [categories, setCategories] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState('ALL');
   const [sortOrder, setSortOrder] = useState('latest');
   const [activeMenuId, setActiveMenuId] = useState<number | null>(null);
 
@@ -28,16 +28,20 @@ export default function AdminCategoriesPage() {
   const [categoryToDelete, setCategoryToDelete] = useState<number | null>(null);
 
   useEffect(() => {
-    fetchCategories(currentPage);
-  }, [currentPage]);
+    fetchCategories();
+  }, []);
 
-  const fetchCategories = (page: number) => {
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery]);
+
+  const fetchCategories = () => {
     setLoading(true);
-    fetch(`${API_URL}/api/admin-ops/categories?page=${page}&limit=${itemsPerPage}&all=true`)
+    // parentOnly=true ensures backend returns only top-level categories (parentId IS NULL)
+    fetch(`${API_URL}/api/admin-ops/categories?limit=1000&all=true&parentOnly=true`)
       .then(r => r.json())
       .then(data => {
         setCategories(data.categories || []);
-        setTotalPages(data.totalPages || 1);
       })
       .finally(() => setLoading(false));
   };
@@ -103,14 +107,9 @@ export default function AdminCategoriesPage() {
 
   const filteredCategories = categories
     .filter(c => {
-      const matchesSearch = c.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+      // All fetched categories are parent-only; just apply search
+      return c.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
         (c.description && c.description.toLowerCase().includes(searchQuery.toLowerCase()));
-
-      const matchesStatus = statusFilter === 'ALL' ||
-        (statusFilter === 'MAIN' && !c.parent) ||
-        (statusFilter === 'SUB' && c.parent);
-
-      return matchesSearch && matchesStatus;
     })
     .sort((a, b) => {
       if (sortOrder === 'latest') return b.id - a.id;
@@ -119,37 +118,36 @@ export default function AdminCategoriesPage() {
       return 0;
     });
 
-  // Calculate quick stats
+  // Quick stats — all categories here are top-level only
   const statTotal = categories.length;
-  const statMain = categories.filter(c => !c.parent).length;
-  const statSub = categories.filter(c => c.parent).length;
+  const statWithProducts = categories.filter(c => (c._count?.products || 0) > 0).length;
+  const statWithChildren = categories.filter(c => (c.children?.length || 0) > 0).length;
 
   const quickStats = [
     { label: 'Total Categories', value: statTotal, gradient: 'from-slate-800 to-slate-900', icon: <Tag size={24} /> },
-    { label: 'Main Categories', value: statMain, gradient: 'from-emerald-600 to-emerald-700', icon: <Database size={24} /> },
-    { label: 'Sub-Categories', value: statSub, gradient: 'from-blue-600 to-blue-700', icon: <AlignLeft size={24} /> },
+    { label: 'Has Products', value: statWithProducts, gradient: 'from-emerald-600 to-emerald-700', icon: <Database size={24} /> },
+    { label: 'Has Sub-Categories', value: statWithChildren, gradient: 'from-blue-600 to-blue-700', icon: <AlignLeft size={24} /> },
   ];
 
+  const calculatedTotalPages = Math.max(1, Math.ceil(filteredCategories.length / itemsPerPage));
+  const paginatedCategories = filteredCategories.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
   return (
-    <div className="space-y-8 animate-in fade-in duration-1000 pb-20 max-w-7xl mx-auto p-4 md:p-8">
+    <div className="space-y-8 animate-in fade-in duration-1000 pb-20">
       {/* HEADER */}
       <div>
-        <h2 className="text-4xl font-black text-slate-900 tracking-tighter">Category Management</h2>
-        <p className="text-slate-400 font-medium text-sm mt-1">Configure organic marketplace sections, setup classification mapping, and configure taxonomy tags.</p>
+        <h1 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tighter italic">Category <span className="text-emerald-600">Management</span></h1>
+        <p className="text-slate-400 font-bold uppercase tracking-[0.2em] text-[10px] mt-2">Configure organic marketplace sections, setup classification mapping, and configure taxonomy tags.</p>
       </div>
 
       {/* Advanced filter toolbar */}
       <AdminListToolbar
-        searchPlaceholder="Search catalog taxonomy sections..."
+        searchPlaceholder="Search top-level categories..."
         searchTerm={searchQuery}
         onSearchChange={setSearchQuery}
-        statusOptions={[
-          { label: 'All Categories', value: 'ALL' },
-          { label: 'Main Categories Only', value: 'MAIN' },
-          { label: 'Sub-Categories Only', value: 'SUB' },
-        ]}
-        selectedStatus={statusFilter}
-        onStatusChange={setStatusFilter}
         sortOptions={[
           { label: 'Latest First', value: 'latest' },
           { label: 'Oldest First', value: 'oldest' },
@@ -170,92 +168,67 @@ export default function AdminCategoriesPage() {
             <PremiumLoader fullScreen={false} />
           </div>
         ) : filteredCategories.length > 0 ? (
-          <div className="space-y-4">
-            {filteredCategories.map(cat => (
-              <div
-                key={cat.id}
-                className="group bg-white rounded-[2rem] border border-slate-200 p-5 flex flex-col sm:flex-row items-center gap-6 hover:border-emerald-200 hover:shadow-xl hover:shadow-slate-200/20 transition-all duration-300"
-              >
-                {/* Visual Identity */}
-                <div className="h-16 w-16 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center overflow-hidden shrink-0 shadow-inner group-hover:scale-105 transition-transform duration-500">
-                  {cat.image ? (
-                    <img src={cat.image} className="w-full h-full object-cover" alt="" />
-                  ) : (
-                    <Tag className="text-slate-300" size={20} />
-                  )}
-                </div>
-
-                {/* Info Content */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-3 mb-1">
-                    <h3 className="text-base font-extrabold text-slate-900 truncate">
-                      {cat.name}
-                    </h3>
-                    {cat.parent && (
-                      <div className="flex items-center gap-1 px-2.5 py-0.5 bg-blue-50 border border-blue-100/50 rounded-full">
-                        <Database size={9} className="text-blue-500" />
-                        <span className="text-[8px] font-black text-blue-500 uppercase tracking-widest">
-                          {cat.parent.name} Sub-category
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                  <p className="text-xs text-slate-400 font-bold line-clamp-1 max-w-2xl">
-                    {cat.description || 'No operational metadata provided for this catalog section.'}
-                  </p>
-                </div>
-
-                {/* Stats & Actions */}
-                <div className="flex items-center gap-6 shrink-0 w-full sm:w-auto justify-between sm:justify-end">
-                  <div className="flex flex-col items-start sm:items-end">
-                    <p className="text-[9px] font-black text-slate-300 uppercase tracking-widest mb-0.5">Products</p>
-                    <div className="flex items-center gap-1">
-                      <AlignLeft size={11} className="text-slate-400" />
-                      <span className="text-xs font-black text-slate-800">{cat._count?.products || 0} items</span>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2 relative">
-                    <Link
-                      href={`/admin/categories/edit/${cat.id}`}
-                      className="h-10 px-4 rounded-xl border border-slate-200 text-slate-500 hover:text-slate-900 bg-white hover:bg-slate-50 flex items-center gap-1.5 text-xs transition-all no-underline font-bold"
-                    >
-                      <Edit2 size={13} /> Edit
-                    </Link>
-
-                    {/* Action Dropdown Menu */}
-                    <div className="relative">
-                      <button
-                        onClick={() => setActiveMenuId(activeMenuId === cat.id ? null : cat.id)}
-                        className="h-9 w-9 flex items-center justify-center rounded-xl hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors"
-                      >
-                        <MoreHorizontal size={16} />
-                      </button>
-
-                      {activeMenuId === cat.id && (
-                        <>
-                          <div className="fixed inset-0 z-40" onClick={() => setActiveMenuId(null)} />
-                          <div className="absolute right-0 mt-2 w-44 bg-white border border-slate-100 rounded-2xl shadow-xl p-2 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
-                            <button
-                              onClick={() => { window.open(`/categories/${cat.id}`, '_blank'); setActiveMenuId(null); }}
-                              className="w-full text-left px-4 py-2.5 rounded-xl text-xs font-bold text-slate-600 hover:bg-emerald-50 hover:text-emerald-800 transition-colors flex items-center gap-2"
-                            >
-                              <ChevronRight size={14} /> View on Site
-                            </button>
-                            <button
-                              onClick={() => { setCategoryToDelete(cat.id); setActiveMenuId(null); }}
-                              className="w-full text-left px-4 py-2.5 rounded-xl text-xs font-bold text-red-600 hover:bg-red-50 transition-colors flex items-center gap-2"
-                            >
-                              <Trash2 size={14} /> Delete Category
-                            </button>
+          <div className="bg-white rounded-[2.5rem] border border-slate-200 shadow-sm overflow-hidden mt-6">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse min-w-[1000px] admin-data-table">
+                <thead>
+                  <tr className="bg-slate-50/50">
+                    <th className="px-6 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100">Category Identity</th>
+                    <th className="px-6 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100">Description</th>
+                    <th className="px-6 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100">Products Pulse</th>
+                    <th className="px-6 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 text-slate-700 font-bold text-sm">
+                  {paginatedCategories.map(cat => (
+                    <tr key={cat.id} className="group hover:bg-slate-50/40 transition-colors">
+                      <td className={`px-6 py-4 border-b border-slate-50 relative`}>
+                        <div className="flex items-center gap-4">
+                          <div className="h-12 w-12 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center overflow-hidden shrink-0 shadow-inner group-hover:scale-105 transition-transform duration-500">
+                            {cat.image ? (
+                              <img src={cat.image} className="w-full h-full object-cover" alt="" />
+                            ) : (
+                              <Tag className="text-slate-300" size={20} />
+                            )}
                           </div>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
+                          <div>
+                            <span className="text-sm font-extrabold text-slate-900 leading-none">{cat.name}</span>
+                            {(cat.children?.length || 0) > 0 && (
+                              <div className="flex items-center gap-1.5 mt-2">
+                                <AlignLeft size={11} className="text-emerald-500" />
+                                <span className="text-[9px] font-black text-emerald-600 uppercase tracking-widest leading-none">
+                                  {cat.children.length} sub-categor{cat.children.length === 1 ? 'y' : 'ies'}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </td>
+
+                      <td className="px-6 py-4 border-b border-slate-50 max-w-sm">
+                        <p className="text-xs text-slate-500 font-bold leading-relaxed line-clamp-2">
+                          {cat.description || 'No operational metadata provided for this catalog section.'}
+                        </p>
+                      </td>
+
+                      <td className="px-6 py-4 border-b border-slate-50">
+                        <span className="inline-block text-[10px] font-black uppercase tracking-wider text-emerald-700 px-3 py-1.5 bg-emerald-50 border border-emerald-100/50 rounded-xl whitespace-nowrap">
+                          {cat._count?.products || 0} Products
+                        </span>
+                      </td>
+
+                      <td className="px-6 py-4 text-right border-b border-slate-50 relative">
+                        <ActionGroup>
+                          <ViewButton tooltip="View on Site" onClick={() => window.open(`/categories/${cat.id}`, '_blank')} />
+                          <EditButton onClick={() => router.push(`/admin/categories/edit/${cat.id}`)} />
+                          <DeleteButton onClick={() => setCategoryToDelete(cat.id)} />
+                        </ActionGroup>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         ) : (
           <div className="py-20 text-center bg-white rounded-[2.5rem] border border-slate-200 shadow-sm">
@@ -267,11 +240,11 @@ export default function AdminCategoriesPage() {
       </div>
 
       {/* PAGINATION */}
-      {totalPages > 1 && (
+      {calculatedTotalPages > 1 && (
         <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm">
           <AdminPagination
             currentPage={currentPage}
-            totalPages={totalPages}
+            totalPages={calculatedTotalPages}
             onPageChange={setCurrentPage}
           />
         </div>

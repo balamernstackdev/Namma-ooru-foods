@@ -18,6 +18,7 @@ const fetcher = (url: string) => fetch(url).then(res => res.json());
 function ProductsContent() {
    const searchParams = useSearchParams();
    const categoryParam = searchParams.get('category');
+   const deliveryParam = searchParams.get('delivery');
 
    const { data: products, error: productsError } = useSWR(`${API_URL}/api/products?limit=100`, fetcher);
    const { data: categoriesData } = useSWR(`${API_URL}/api/categories?limit=100`, fetcher);
@@ -25,6 +26,7 @@ function ProductsContent() {
    const [activeCategory, setActiveCategory] = useState<string>('All');
    const [priceFilter, setPriceFilter] = useState<string>('all');
    const [ratingFilter, setRatingFilter] = useState<number>(0);
+   const [deliveryFilter, setDeliveryFilter] = useState<string>('all');
    const [showFilters, setShowFilters] = useState(false);
    const [currentPage, setCurrentPage] = useState(1);
    const [sortOrder, setSortOrder] = useState<'rating' | 'price_asc' | 'price_desc' | 'newest'>('rating');
@@ -66,12 +68,19 @@ function ProductsContent() {
       } else {
          setActiveCategory('All');
       }
-   }, [categoryParam, categoriesData]);
+
+      if (deliveryParam === 'fast') {
+         setDeliveryFilter('fast');
+      } else {
+         setDeliveryFilter('all');
+      }
+   }, [categoryParam, deliveryParam, categoriesData]);
 
    const resetFilters = () => {
       setActiveCategory('All');
       setPriceFilter('all');
       setRatingFilter(0);
+      setDeliveryFilter('all');
       setCurrentPage(1);
    };
 
@@ -94,8 +103,23 @@ function ProductsContent() {
       const pRating = p.rating || p.avgRating || 4.5;
       if (ratingFilter > 0 && pRating < ratingFilter) return false;
 
+      // Delivery Filter
+      if (deliveryFilter === 'fast' && !p.isFastDelivery) return false;
+
       return true;
    });
+
+   useEffect(() => {
+      console.log('Products API response received:', products);
+   }, [products]);
+
+   useEffect(() => {
+      console.log('Active filters & count updated:', {
+         selectedCategory: activeCategory,
+         filters: { priceFilter, ratingFilter, deliveryFilter },
+         filteredCount: filteredProducts.length
+      });
+   }, [activeCategory, priceFilter, ratingFilter, deliveryFilter, filteredProducts.length]);
 
    // Sorting Logic
    const sortedProducts = [...filteredProducts].sort((a, b) => {
@@ -153,7 +177,7 @@ function ProductsContent() {
                         <h2 className="text-sm font-black text-slate-900 uppercase tracking-wider flex items-center gap-2">
                            <SlidersHorizontal size={14} className="text-emerald-600" /> Filters
                         </h2>
-                        {(activeCategory !== 'All' || priceFilter !== 'all' || ratingFilter > 0) && (
+                        {(activeCategory !== 'All' || priceFilter !== 'all' || ratingFilter > 0 || deliveryFilter !== 'all') && (
                            <button onClick={resetFilters} className="text-[11px] font-bold text-emerald-600 hover:underline">
                               CLEAR ALL
                            </button>
@@ -289,7 +313,7 @@ function ProductsContent() {
                   </div>
 
                   {/* CHIPS ROW */}
-                  {(activeCategory !== 'All' || priceFilter !== 'all' || ratingFilter > 0) && (
+                  {(activeCategory !== 'All' || priceFilter !== 'all' || ratingFilter > 0 || deliveryFilter !== 'all') && (
                      <div className="flex flex-wrap items-center gap-2 py-1">
                         <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 mr-1">Filtered By:</span>
                         {activeCategory !== 'All' && (
@@ -308,6 +332,12 @@ function ProductsContent() {
                            <div className="flex items-center gap-1.5 bg-emerald-50 text-emerald-900 px-3 py-1.5 rounded-full text-[11px] font-bold border border-emerald-100 shadow-sm">
                               {ratingFilter}★ & Above
                               <button onClick={() => setRatingFilter(0)} className="hover:text-rose-500 ml-1"><X size={12} /></button>
+                           </div>
+                        )}
+                        {deliveryFilter === 'fast' && (
+                           <div className="flex items-center gap-1.5 bg-emerald-50 text-emerald-900 px-3 py-1.5 rounded-full text-[11px] font-bold border border-emerald-100 shadow-sm">
+                              Fast Delivery
+                              <button onClick={() => setDeliveryFilter('all')} className="hover:text-rose-500 ml-1"><X size={12} /></button>
                            </div>
                         )}
                         <button onClick={resetFilters} className="text-[11px] font-black text-emerald-600 underline uppercase tracking-wider ml-1 hover:text-emerald-800">Clear All</button>
@@ -375,16 +405,25 @@ function ProductsContent() {
             </div>
          </div>
 
-         {/* FLOATING MOBILE TRIGGERS */}
-         <div className="lg:hidden fixed bottom-24 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 bg-slate-900 text-white px-2.5 py-2 rounded-full shadow-2xl shadow-slate-950/50 border border-slate-700/40 font-black uppercase tracking-widest text-[10px]">
+         {/* STICKY MOBILE BOTTOM ACTIONS BAR (ELEGANTLY ALIGNED ABOVE BOTTOM NAV) */}
+         <div className="lg:hidden fixed bottom-[80px] left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200 px-4 py-3.5 shadow-[0_-10px_30px_rgba(0,0,0,0.04)] flex items-center justify-between gap-3 select-none">
             <button
                onClick={() => setShowFilters(true)}
-               className="flex items-center gap-2 py-2.5 px-5 bg-emerald-800 text-white rounded-full border border-emerald-700 active:scale-95"
+               className="flex-1 h-11 bg-emerald-900 text-white rounded-xl font-black uppercase text-[11px] tracking-widest flex items-center justify-center gap-2 active:scale-95 transition-all shadow-md shadow-emerald-900/10"
             >
-               <SlidersHorizontal size={12} /> Filters
+               <SlidersHorizontal size={13} /> Filters
+               <span className="bg-white/20 px-2 py-0.5 rounded-full text-[9px] font-bold text-white ml-1">
+                  {sortedProducts.length}
+               </span>
             </button>
-            <div className="w-[1px] h-5 bg-slate-700" />
-            <span className="px-3 text-slate-300">{sortedProducts.length} Total</span>
+            {(activeCategory !== 'All' || priceFilter !== 'all' || ratingFilter > 0 || deliveryFilter !== 'all') && (
+               <button 
+                  onClick={resetFilters} 
+                  className="px-5 h-11 border border-slate-200 text-slate-500 hover:text-rose-500 hover:border-rose-200 active:scale-95 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all bg-slate-50"
+               >
+                  Reset
+               </button>
+            )}
          </div>
 
          {/* MOBILE FILTER DRAWER */}

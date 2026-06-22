@@ -58,8 +58,8 @@ export default function AdminAnalyticsPage() {
     <div className="space-y-10 animate-in fade-in slide-in-from-bottom-5 duration-1000">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-          <h2 className="text-4xl font-black text-[var(--admin-sidebar)] tracking-tighter">Business Analytics</h2>
-          <p className="text-slate-400 font-medium text-sm mt-1">Real-time performance metrics for namma ooru ecosystem.</p>
+          <h1 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tighter italic">Business <span className="text-emerald-600">Analytics</span></h1>
+          <p className="text-slate-400 font-bold uppercase tracking-[0.2em] text-[10px] mt-2">Real-time performance metrics for namma ooru ecosystem.</p>
         </div>
         <div className="flex items-center gap-3">
           <button className="h-14 px-6 rounded-2xl border-2 border-slate-100 flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:bg-slate-50 transition-all">

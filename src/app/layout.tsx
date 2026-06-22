@@ -1,5 +1,5 @@
-import type { Metadata } from "next";
-import { Inter, Jost, Manrope } from "next/font/google";
+import type { Metadata, Viewport } from "next";
+import { Inter, Jost, Manrope, Mulish } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -26,8 +26,20 @@ const manrope = Manrope({
   variable: "--font-manrope",
 });
 
+const mulish = Mulish({
+  subsets: ["latin"],
+  variable: "--font-mulish",
+});
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+};
+
 export const metadata: Metadata = {
-  metadataBase: new URL("https://namma-urru-foods.web.app"),
+  metadataBase: new URL("https://nammaoorufoods.com"),
   title: {
     default: "namma ooru Foods | Premium Organic & Local Essentials",
     template: "%s | namma ooru Foods"
@@ -39,7 +51,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_IN",
-    url: "https://namma-urru-foods.web.app",
+    url: "https://nammaoorufoods.com",
     title: "namma ooru Foods | Premium Organic & Local Essentials",
     description: "Pure, local, and organic essentials delivered from our community to your kitchen.",
     siteName: "namma ooru Foods",
@@ -68,13 +80,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${inter.variable} ${jost.variable} ${manrope.variable}`}>
+    <html lang="en" className={`${inter.variable} ${jost.variable} ${manrope.variable} ${mulish.variable}`}>
       <body className={`antialiased font-sans transition-colors duration-500`}>
         <Providers>
           <ClientLayout>
             {children}
           </ClientLayout>
-          <FloatingCartBar />
           <CartDrawer />
         </Providers>
         <Toaster

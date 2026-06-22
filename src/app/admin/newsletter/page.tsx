@@ -17,7 +17,7 @@ export default function AdminNewsletterPage() {
   const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
-    fetch(`${API_URL}/api/newsletter/admin/subscribers`)
+    fetch(`${API_URL}/api/community-join/admin/subscribers`)
       .then(r => r.json())
       .then(data => setSubscribers(data.subscribers || []))
       .catch(console.error)
@@ -42,7 +42,7 @@ export default function AdminNewsletterPage() {
   const handleDelete = async (id: number) => {
     if (!confirm('Remove this email from the subscriber list?')) return;
     try {
-      const res = await fetch(`${API_URL}/api/newsletter/admin/subscribers/${id}`, { method: 'DELETE' });
+      const res = await fetch(`${API_URL}/api/community-join/admin/subscribers/${id}`, { method: 'DELETE' });
       if (res.ok) {
         setSubscribers(prev => prev.filter(s => s.id !== id));
       }
@@ -57,8 +57,8 @@ export default function AdminNewsletterPage() {
     <div className="space-y-8 animate-in fade-in duration-700">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-          <h2 className="text-4xl font-black text-[var(--admin-sidebar)] tracking-tighter">Newsletter Leads</h2>
-          <p className="text-slate-400 font-medium text-sm mt-1">{subscribers.length} active newsletter subscribers.</p>
+          <h1 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tighter italic">Newsletter <span className="text-emerald-600">Leads</span></h1>
+          <p className="text-slate-400 font-bold uppercase tracking-[0.2em] text-[10px] mt-2">{subscribers.length} active newsletter subscribers.</p>
         </div>
         <button
           onClick={downloadCSV}
@@ -83,7 +83,7 @@ export default function AdminNewsletterPage() {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full text-left">
+          <table className="w-full text-left min-w-[1000px] admin-data-table">
             <thead>
               <tr className="bg-slate-50/50">
                 <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100">Subscriber</th>

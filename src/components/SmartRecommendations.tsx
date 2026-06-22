@@ -15,17 +15,21 @@ const SmartRecommendations = () => {
    const [recommendations, setRecommendations] = useState<any[]>([]);
    const [intent, setIntent] = useState('Organic Essentials');
 
+   const liveProductsList = Array.isArray(products)
+      ? products
+      : (products && Array.isArray((products as any).products) ? (products as any).products : []);
+
    useEffect(() => {
-      if (products && products.length > 0) {
+      if (liveProductsList && liveProductsList.length > 0) {
          // Logic: Mix of random and a "themed" selection to simulate AI intent
-         const shuffled = [...products].sort(() => 0.5 - Math.random());
+         const shuffled = [...liveProductsList].sort(() => 0.5 - Math.random());
          const selectedIntent = Math.random() > 0.5 ? 'Regional Favorites' : 'High Curcumin Boosters';
          setIntent(selectedIntent);
          setRecommendations(shuffled.slice(0, 4));
       }
    }, [products]);
 
-   if (!products || recommendations.length === 0) return null;
+   if (liveProductsList.length === 0 || recommendations.length === 0) return null;
 
    return (
       <section className="py-10 md:py-20 flex justify-center overflow-hidden">

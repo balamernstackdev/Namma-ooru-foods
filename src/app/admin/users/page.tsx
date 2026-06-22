@@ -61,15 +61,15 @@ export default function AdminUsersPage() {
 
   return (
     <div className="space-y-8 animate-in fade-in duration-700">
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
         <div>
-          <h2 className="text-4xl font-black text-slate-900 tracking-tighter">Users Management</h2>
-          <p className="text-slate-400 font-medium text-sm mt-1">Onboard and manage customers, administrators, and marketplace vendors.</p>
+          <h1 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tighter italic">Users <span className="text-emerald-600">Management</span></h1>
+          <p className="text-slate-400 font-bold uppercase tracking-[0.2em] text-[10px] mt-2">Onboard and manage customers, administrators, and marketplace vendors.</p>
         </div>
-        <div className="flex flex-wrap gap-4">
+        <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
           <Link
             href="/admin/users/new"
-            className="h-14 px-8 rounded-2xl bg-emerald-600 !text-white text-[11px] font-black uppercase tracking-widest flex items-center gap-3 hover:bg-emerald-700 transition-all shadow-xl shadow-emerald-500/20 active:scale-95 no-underline"
+            className="h-14 px-8 rounded-2xl bg-emerald-600 !text-white text-[11px] font-black uppercase tracking-widest flex items-center justify-center gap-3 hover:bg-emerald-700 transition-all shadow-xl shadow-emerald-500/20 active:scale-95 no-underline w-full sm:w-auto"
           >
             <Plus size={18} className="!text-white" /> Register New User
           </Link>
@@ -120,8 +120,9 @@ export default function AdminUsersPage() {
           </div>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left">
+        {/* Desktop View */}
+        <div className="hidden md:block overflow-x-auto min-h-[280px]">
+          <table className="w-full text-left min-w-[1000px] admin-data-table">
             <thead>
               <tr className="bg-slate-50/50">
                 <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100">User Name</th>
@@ -198,6 +199,71 @@ export default function AdminUsersPage() {
             </tbody>
           </table>
         </div>
+
+        {/* Mobile View - Card Layout */}
+        <div className="block md:hidden divide-y divide-slate-100">
+          {loading ? (
+            <div className="py-20 text-center"><Loader2 className="h-10 w-10 animate-spin mx-auto text-slate-200" /></div>
+          ) : users.filter(u => u.name?.toLowerCase().includes(searchTerm.toLowerCase()) || u.email?.toLowerCase().includes(searchTerm.toLowerCase())).map(user => (
+            <div key={user.id} className="p-6 space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className={`h-11 w-11 rounded-xl flex items-center justify-center text-[10px] font-black border ${user.role === 'VENDOR' ? 'bg-amber-50 text-amber-600 border-amber-100' : 'bg-slate-50 text-slate-500 border-slate-200'}`}>
+                    {user.name?.[0] || 'U'}
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-[13px] font-black text-slate-900 leading-tight">{user.name}</span>
+                    <span className="text-[9px] text-slate-400 font-bold uppercase tracking-widest mt-1">ID: PV-20{user.id}</span>
+                  </div>
+                </div>
+                <span className={`px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest ${user.role === 'ADMIN' ? 'bg-purple-100 text-purple-700' :
+                  user.role === 'VENDOR' ? 'bg-emerald-100 text-emerald-700' :
+                    'bg-blue-100 text-blue-700'
+                  }`}>
+                  {user.role}
+                </span>
+              </div>
+
+              <div className="space-y-2 text-xs font-bold text-slate-500 bg-slate-50/50 rounded-2xl p-4 border border-slate-100/50">
+                <div className="flex items-center gap-2">
+                  <Mail className="h-3.5 w-3.5 text-slate-300 shrink-0" />
+                  <span className="truncate">{user.email}</span>
+                </div>
+                {user.phone && (
+                  <div className="flex items-center gap-2">
+                    <Phone className="h-3.5 w-3.5 text-slate-300 shrink-0" />
+                    <span>{user.phone}</span>
+                  </div>
+                )}
+                <div className="flex items-center justify-between pt-2 border-t border-slate-100">
+                  <span className="text-[10px] text-slate-400 uppercase tracking-wider">Metrics</span>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-100">
+                    {user._count?.orders || 0} Orders
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 justify-end pt-1">
+                <Link
+                  href={`/admin/users/edit/${user.id}`}
+                  className="h-11 flex-1 flex items-center justify-center gap-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-600 hover:bg-blue-600 hover:text-white transition-all text-xs font-bold no-underline"
+                >
+                  <Edit2 size={14} /> Edit Profile
+                </Link>
+                <button
+                  onClick={() => deleteUser(user.id)}
+                  className="h-11 px-4 flex items-center justify-center rounded-xl bg-red-50 border border-red-100 text-red-600 hover:bg-red-500 hover:text-white hover:border-red-500 transition-all"
+                >
+                  <Trash2 size={14} />
+                </button>
+              </div>
+            </div>
+          ))}
+          {!loading && users.length === 0 && (
+            <div className="py-20 text-center font-bold text-slate-300 uppercase tracking-widest text-xs">No registries matching criteria.</div>
+          )}
+        </div>
+
         <AdminPagination
           currentPage={currentPage}
           totalPages={totalPages}

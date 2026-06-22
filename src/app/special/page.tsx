@@ -13,10 +13,14 @@ const categories = ['All', 'Grains & Pulses', 'Organic Oils', 'Authentic Spices'
 const fetcher = (url: string) => fetch(url).then(res => res.json());
 
 export default function OrganicSpecialPage() {
-  const { data: products, error } = useSWR(`${API_URL}/api/products`, fetcher);
+  const { data: productsData, error } = useSWR(`${API_URL}/api/products?limit=1000`, fetcher);
   const [activeCategory, setActiveCategory] = useState('All');
 
-  const organicProducts = products?.filter((p: any) => p.tags?.includes('organic-special')) || [];
+  const liveProductsList = Array.isArray(productsData)
+    ? productsData
+    : (productsData && Array.isArray((productsData as any).products) ? (productsData as any).products : []);
+
+  const organicProducts = liveProductsList.filter((p: any) => p.isOrganic === true || p.tags?.includes('organic-special'));
 
   const filteredProducts = activeCategory === 'All'
     ? organicProducts

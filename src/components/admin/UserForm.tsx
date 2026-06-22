@@ -218,7 +218,7 @@ export default function UserForm({ initialData, mode }: UserFormProps) {
                         <ChevronDown size={14} className="absolute right-6 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
                       </div>
                     </InputWrapper>
-                    
+
                     {formData.role === 'VENDOR' && (
                       <InputWrapper label="Assign to Regional Hub" helpText="The top-level collective this vendor belongs to.">
                         <div className="relative">
@@ -278,7 +278,7 @@ export default function UserForm({ initialData, mode }: UserFormProps) {
                           maxLength={15}
                           value={formData.phone}
                           onChange={e => setFormData({ ...formData, phone: e.target.value.replace(/[^\d+]/g, '') })}
-                          placeholder="Mobile number (e.g. +919876543210)"
+                          placeholder="Mobile number (e.g. +919000896898)"
                           className="w-full h-14 pl-14 pr-6 rounded-xl border border-slate-200 focus:border-blue-500 outline-none font-bold text-slate-900 text-sm transition-all"
                         />
                       </div>
@@ -317,7 +317,7 @@ export default function UserForm({ initialData, mode }: UserFormProps) {
                     <div className="bg-emerald-50/50 border border-emerald-100 rounded-xl p-4 flex items-start gap-3">
                       <ShieldCheck size={16} className="text-emerald-600 mt-0.5 shrink-0" />
                       <p className="text-[11px] font-bold text-emerald-800 leading-relaxed">
-                        A new brand store will be automatically created under the selected Regional Hub. 
+                        A new brand store will be automatically created under the selected Regional Hub.
                         Fill in the brand details below, or leave defaults to use auto-generated values.
                       </p>
                     </div>

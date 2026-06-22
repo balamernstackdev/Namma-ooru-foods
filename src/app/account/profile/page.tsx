@@ -5,6 +5,7 @@ import { User, Mail, Phone, MapPin, Edit3, Save, X, Camera, ShieldCheck, Calenda
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
 import { Skeleton } from '@/components/Skeleton';
+import { API_URL } from '@/lib/api';
 
 export default function ProfilePage() {
   const { user, isLoading } = useAuth();
@@ -26,10 +27,23 @@ export default function ProfilePage() {
   // Sync local form state with user data when it loads
   useEffect(() => {
     if (user) {
+      console.log('[ProfilePage] Loaded user profile data:', {
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        address: user.defaultAddress
+      });
+
+      // Console validation check
+      if (!user.name) console.warn('[ProfilePage Validation] Name is missing');
+      if (!user.email) console.warn('[ProfilePage Validation] Email is missing');
+      if (!user.phone) console.warn('[ProfilePage Validation] Phone is missing');
+      if (!user.defaultAddress) console.warn('[ProfilePage Validation] Default address is missing');
+
       setForm({
         name: user.name || '',
         email: user.email || '',
-        phone: user.phone || 'Not provided',
+        phone: user.phone || '',
         dob: '',
         address: user.defaultAddress?.line1 || '',
         city: user.defaultAddress?.city || '',
@@ -44,15 +58,46 @@ export default function ProfilePage() {
 
   const handleSave = async () => {
     if (!user) return;
+
+    // Console/API validation to verify fields before request
+    console.log('[ProfilePage] Validating profile data before save:', {
+      name: form.name,
+      email: form.email,
+      phone: form.phone,
+      address: {
+        line1: form.address,
+        city: form.city,
+        state: form.state,
+        pincode: form.pincode
+      }
+    });
+
+    if (!form.name.trim()) {
+      alert('Full Name cannot be empty');
+      return;
+    }
+    if (!form.email.trim()) {
+      alert('Email Address cannot be empty');
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
+      alert('Please enter a valid email address');
+      return;
+    }
+    if (!form.phone.trim()) {
+      alert('Mobile Number cannot be empty');
+      return;
+    }
+
     setIsSaving(true);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/users/${user.id}`, {
+      const res = await fetch(`${API_URL}/api/users/${user.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          name: form.name,
-          email: form.email,
-          phone: form.phone,
+          name: form.name.trim(),
+          email: form.email.trim().toLowerCase(), // Normalize email to lowercase
+          phone: form.phone.trim(),
         })
       });
 
@@ -75,13 +120,13 @@ export default function ProfilePage() {
 
       let addressRes;
       if (form.addressId) {
-        addressRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/addresses/${form.addressId}`, {
+        addressRes = await fetch(`${API_URL}/api/addresses/${form.addressId}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(addressPayload)
         });
       } else if (form.address || form.city || form.pincode) {
-        addressRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/addresses/`, {
+        addressRes = await fetch(`${API_URL}/api/addresses/`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(addressPayload)
@@ -157,14 +202,21 @@ export default function ProfilePage() {
                   {editing ? (
                     <input
                       type={type}
-                      value={form[key as keyof typeof form]}
+                      value={form[key as keyof typeof form] ?? ''}
                       onChange={e => setForm((f: any) => ({ ...f, [key]: e.target.value }))}
                       className="w-full h-11 px-4 rounded-xl border-2 border-slate-100 focus:border-emerald-500 outline-none text-[13px] font-bold text-emerald-950 bg-slate-50 transition-all"
                     />
                   ) : (
                     <div className="flex items-center gap-3">
                       <Icon className="h-4 w-4 text-emerald-600 shrink-0" strokeWidth={2.5} />
-                      <span className="text-[13px] font-bold text-emerald-950 capitalize">{form[key as keyof typeof form]}</span>
+                      <span className={`text-[13px] font-bold text-emerald-950 ${key === 'name' ? 'capitalize' : ''}`}>
+                        {key === 'email' 
+                          ? (form.email ? form.email.toLowerCase() : 'Email not available') 
+                          : key === 'phone' 
+                            ? (form.phone ? form.phone : 'Mobile number not added')
+                            : (form.name || 'N/A')
+                        }
+                      </span>
                     </div>
                   )}
                 </div>
@@ -187,7 +239,7 @@ export default function ProfilePage() {
                   {editing ? (
                     <input
                       type={type}
-                      value={form[key as keyof typeof form]}
+                      value={form[key as keyof typeof form] ?? ''}
                       onChange={e => setForm((f: any) => ({ ...f, [key]: e.target.value }))}
                       className="w-full h-11 px-4 rounded-xl border-2 border-slate-100 focus:border-emerald-500 outline-none text-[13px] font-bold text-emerald-950 bg-slate-50 transition-all"
                     />

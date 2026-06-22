@@ -85,20 +85,20 @@ export default function AdminTrackingPage() {
   return (
     <div className="space-y-8 animate-in fade-in duration-700">
       <div>
-        <h2 className="text-4xl font-black text-[var(--admin-sidebar)] tracking-tighter">Shipment Management</h2>
-        <p className="text-slate-400 font-medium text-sm mt-1">Assign carrier tracking details to orders and update shipment status.</p>
+        <h1 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tighter italic">Shipment <span className="text-emerald-600">Management</span></h1>
+        <p className="text-slate-400 font-bold uppercase tracking-[0.2em] text-[10px] mt-2">Assign carrier tracking details to orders and update shipment status.</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Order List */}
-        <div className="lg:col-span-1 space-y-3">
+        <div className={`${selectedOrderId ? 'hidden lg:block' : 'block'} lg:col-span-1 space-y-3`}>
           <div className="bg-white rounded-2xl border border-slate-100 px-5 py-3 flex items-center gap-3 shadow-sm">
             <Package className="h-4 w-4 text-slate-300" />
             <input type="text" placeholder="Search order ID or customer..."
               value={searchTerm} onChange={e => setSearchTerm(e.target.value)}
               className="flex-1 text-sm font-bold outline-none text-[var(--admin-sidebar)] placeholder:text-slate-300 bg-transparent" />
           </div>
-
+ 
           {/* Status Tabs */}
           <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
             {[
@@ -123,7 +123,7 @@ export default function AdminTrackingPage() {
               </button>
             ))}
           </div>
-
+ 
           {isLoading && <div className="text-center py-12"><div className="h-8 w-8 border-2 border-slate-100 border-t-[var(--admin-accent)] rounded-full animate-spin mx-auto" /></div>}
           {filtered.map((order: any) => (
             <button key={order.id} id={`admin-track-order-${order.id}`} onClick={() => setSelectedOrderId(order.id)}
@@ -152,21 +152,27 @@ export default function AdminTrackingPage() {
             />
           </div>
         </div>
-
+ 
         {/* Tracking Form */}
-        <div className="lg:col-span-2">
+        <div className={`${selectedOrderId ? 'block' : 'hidden lg:block'} lg:col-span-2`}>
           {selectedOrder ? (
-            <div className="bg-white rounded-[2rem] border border-slate-100 shadow-sm p-10">
+            <div className="bg-white rounded-[2rem] border border-slate-100 shadow-sm p-5 sm:p-10">
               <div className="flex items-center gap-4 mb-8">
-                <div className="h-12 w-12 rounded-2xl bg-emerald-50 flex items-center justify-center">
+                <button
+                  onClick={() => setSelectedOrderId(null)}
+                  className="lg:hidden p-2.5 rounded-xl border border-slate-200 text-slate-500 hover:text-slate-900 bg-white shrink-0"
+                >
+                  ← Back
+                </button>
+                <div className="h-12 w-12 rounded-2xl bg-emerald-50 flex items-center justify-center shrink-0">
                   <Truck className="h-6 w-6 text-emerald-600" />
                 </div>
-                <div>
-                  <h3 className="font-black text-[var(--admin-sidebar)] text-lg">Order #{selectedOrder.id} — Shipment Details</h3>
-                  <p className="text-xs text-slate-400 font-medium">{selectedOrder.user?.name} · ₹{Number(selectedOrder.totalAmount).toLocaleString()}</p>
+                <div className="min-w-0">
+                  <h3 className="font-black text-[var(--admin-sidebar)] text-base sm:text-lg truncate">Order #{selectedOrder.id} — Shipment Details</h3>
+                  <p className="text-xs text-slate-400 font-medium truncate">{selectedOrder.user?.name} · ₹{Number(selectedOrder.totalAmount).toLocaleString()}</p>
                 </div>
               </div>
-
+ 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-8">
                 {[
                   { label: 'Carrier Name', key: 'carrierName', placeholder: 'Delhivery, Shiprocket, DTDC...' },
@@ -182,20 +188,20 @@ export default function AdminTrackingPage() {
                   </div>
                 ))}
               </div>
-
-              <div className="flex items-center gap-3">
+ 
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
                 <button id="save-tracking-btn" onClick={handleSave} disabled={saving}
-                  className="flex items-center gap-2 px-8 py-3 rounded-xl bg-[var(--admin-sidebar)] text-white text-xs font-black uppercase tracking-widest hover:bg-slate-800 transition-all disabled:opacity-50">
+                  className="flex items-center justify-center gap-2 px-8 py-3 rounded-xl bg-[var(--admin-sidebar)] text-white text-xs font-black uppercase tracking-widest hover:bg-slate-800 transition-all disabled:opacity-50 w-full sm:w-auto">
                   {saved ? <><CheckCircle className="h-4 w-4 text-emerald-400" /> Saved!</> : saving ? 'Saving...' : <><Save className="h-4 w-4" /> Save & Mark Shipped</>}
                 </button>
                 {selectedOrder.status !== 'DELIVERED' && (
                   <button id="mark-delivered-btn" onClick={handleMarkDelivered} disabled={markingDelivered}
-                    className="flex items-center gap-2 px-8 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black uppercase tracking-widest transition-all disabled:opacity-50">
+                    className="flex items-center justify-center gap-2 px-8 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black uppercase tracking-widest transition-all disabled:opacity-50 w-full sm:w-auto">
                     {markingDelivered ? 'Updating...' : <><CheckCircle className="h-4 w-4" /> Mark Delivered</>}
                   </button>
                 )}
                 {form.trackingUrl && (
-                  <a href={form.trackingUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-6 py-3 rounded-xl border-2 border-slate-100 text-xs font-black uppercase tracking-widest text-slate-400 hover:bg-slate-50 transition-all">
+                  <a href={form.trackingUrl} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl border-2 border-slate-100 text-xs font-black uppercase tracking-widest text-slate-400 hover:bg-slate-50 transition-all w-full sm:w-auto">
                     Preview Link <ExternalLink className="h-3.5 w-3.5" />
                   </a>
                 )}

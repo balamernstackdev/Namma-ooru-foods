@@ -31,17 +31,22 @@ export default function AdminSubcategoriesPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
+  const itemsPerPage = 10;
+
   useEffect(() => {
     fetchSubcategories();
-  }, [currentPage]);
+  }, []);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery]);
 
   const fetchSubcategories = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${API_URL}/api/subcategories?page=${currentPage}&limit=10`);
+      const res = await fetch(`${API_URL}/api/subcategories?limit=1000`);
       const data = await res.json();
       setSubcategories(data.subcategories || []);
-      setTotalPages(data.totalPages || 1);
     } catch (err) {
       console.error(err);
       addToast('Error', 'Failed to load subcategories');
@@ -70,28 +75,34 @@ export default function AdminSubcategoriesPage() {
     s.category?.name?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  const calculatedTotalPages = Math.max(1, Math.ceil(filteredSubcategories.length / itemsPerPage));
+  const paginatedSubcategories = filteredSubcategories.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
   return (
-    <div className="space-y-10 animate-in fade-in duration-1000 pb-20 bg-[#f8fafc] min-h-screen">
+    <div className="space-y-8 animate-in fade-in duration-1000 pb-20">
 
       {/* ─── HEADER SECTION ───────────────────────────────────────────── */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 px-6 pt-8 border-b border-slate-200/50 pb-8 bg-white/50 backdrop-blur-md sticky top-0 z-30">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-          <h2 className="text-4xl font-black text-slate-900 tracking-tighter  leading-none">Sub Categories Management</h2>
-          {/* <p className="text-slate-400 font-medium text-sm mt-2">Architect and manage granular mapping tiers across your catalog.</p> */}
+          <h1 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tighter italic">Sub Categories <span className="text-emerald-600">Management</span></h1>
+          {/* <p className="text-slate-400 font-bold uppercase tracking-[0.2em] text-[10px] mt-2">Architect and manage granular mapping tiers across your catalog.</p> */}
         </div>
         <button
           onClick={() => router.push('/admin/subcategories/new')}
           className="px-8 h-14 bg-emerald-600 hover:bg-emerald-700 text-white font-black uppercase tracking-widest text-xs rounded-2xl flex items-center gap-3 transition-all active:scale-95 shadow-xl shadow-emerald-500/20 group hover:-translate-y-0.5"
         >
           <Plus size={18} className="group-hover:rotate-90 transition-transform duration-300" />
-          <span>Add Mapping</span>
+          <span>Add SubCategory</span>
         </button>
       </div>
 
-      <div className="px-6 grid grid-cols-1 lg:grid-cols-12 gap-8">
+      <div>
 
         {/* ─── SEARCH & LISTING MODULE (Now Full Span) ─────────────────── */}
-        <div className="lg:col-span-12 space-y-6">
+        <div className="space-y-6">
 
           {/* Responsive Global Filter */}
           <div className="bg-white rounded-3xl p-4 border border-slate-200/60 shadow-xl shadow-slate-100/50 flex items-center">
@@ -119,17 +130,17 @@ export default function AdminSubcategoriesPage() {
             <>
               <div className="bg-white rounded-[3rem] border border-slate-200 shadow-xl shadow-slate-200/20 overflow-hidden">
                 <div className="overflow-x-auto">
-                  <table className="w-full text-left border-collapse">
+                  <table className="w-full text-left border-collapse min-w-[1000px] admin-data-table">
                     <thead>
                       <tr className="bg-slate-50/50 border-b border-slate-100">
-                        <th className="px-10 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Subcategory & Identity</th>
-                        <th className="px-10 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Structural Parent</th>
+                        <th className="px-10 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Subcategory Name</th>
+                        <th className="px-10 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]"> Parent Category</th>
                         <th className="px-10 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] text-center">Assigned SKU Count</th>
                         <th className="px-10 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] text-right">Actions</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-50">
-                      {filteredSubcategories.map(sub => (
+                      {paginatedSubcategories.map(sub => (
                         <tr key={sub.id} className="hover:bg-slate-50/70 transition-colors group">
                           <td className="px-10 py-6">
                             <div className="flex items-center gap-4">
@@ -186,11 +197,11 @@ export default function AdminSubcategoriesPage() {
                 </div>
               </div>
 
-              {totalPages > 1 && (
+              {calculatedTotalPages > 1 && (
                 <div className="flex justify-center mt-10">
                   <AdminPagination
                     currentPage={currentPage}
-                    totalPages={totalPages}
+                    totalPages={calculatedTotalPages}
                     onPageChange={setCurrentPage}
                   />
                 </div>

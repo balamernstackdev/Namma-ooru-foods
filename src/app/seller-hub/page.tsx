@@ -3,7 +3,9 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
+import Link from 'next/link';
 import { API_URL } from '@/lib/api';
+import { UserPlus, LayoutDashboard, PackageCheck, Megaphone, ShieldCheck, Headset } from 'lucide-react';
 
 export default function SellerHubPage() {
   const [formData, setFormData] = useState({
@@ -172,16 +174,16 @@ export default function SellerHubPage() {
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {[
-              { title: 'Easy Onboarding', desc: 'Get your store up and running in less than 48 hours with our guided setup.' },
-              { title: 'Vendor Dashboard', desc: 'Track sales, manage inventory, and view analytics in real-time.' },
-              { title: 'Order Management', desc: 'Seamlessly process orders, print labels, and track shipments.' },
-              { title: 'Marketing Support', desc: 'Participate in sitewide promotions and get featured on our homepage.' },
-              { title: 'Secure Payments', desc: 'Receive fast, reliable payouts directly to your bank account.' },
-              { title: 'Dedicated Support', desc: 'Get 24/7 help from our vendor success team to grow your business.' }
+              { title: 'Easy Onboarding', desc: 'Get your store up and running in less than 48 hours with our guided setup.', icon: UserPlus },
+              { title: 'Vendor Dashboard', desc: 'Track sales, manage inventory, and view analytics in real-time.', icon: LayoutDashboard },
+              { title: 'Order Management', desc: 'Seamlessly process orders, print labels, and track shipments.', icon: PackageCheck },
+              { title: 'Marketing Support', desc: 'Participate in sitewide promotions and get featured on our homepage.', icon: Megaphone },
+              { title: 'Secure Payments', desc: 'Receive fast, reliable payouts directly to your bank account.', icon: ShieldCheck },
+              { title: 'Dedicated Support', desc: 'Get 24/7 help from our vendor success team to grow your business.', icon: Headset }
             ].map((benefit, i) => (
               <div key={i} className="p-8 rounded-3xl bg-[#fdfbf7] border border-emerald-900/5 hover:shadow-xl hover:border-amber-200 transition-all duration-300 group">
-                <div className="w-12 h-12 bg-emerald-100 rounded-2xl mb-6 flex items-center justify-center group-hover:bg-amber-100 transition-colors">
-                  <div className="w-6 h-6 bg-emerald-600 rounded-full group-hover:bg-amber-600 transition-colors"></div>
+                <div className="w-14 h-14 bg-emerald-100 rounded-2xl mb-6 flex items-center justify-center group-hover:bg-amber-100 transition-colors">
+                  <benefit.icon size={28} className="text-emerald-600 group-hover:text-amber-600 transition-all duration-300 group-hover:scale-110" />
                 </div>
                 <h3 className="text-xl font-bold text-emerald-950 mb-3">{benefit.title}</h3>
                 <p className="text-emerald-900/70 font-medium leading-relaxed">{benefit.desc}</p>
@@ -354,11 +356,11 @@ export default function SellerHubPage() {
                   <input type="checkbox" name="agreedToPolicies" checked={formData.agreedToPolicies} onChange={handleInputChange} className="w-5 h-5 accent-amber-600 rounded border-emerald-900/20" />
                 </div>
                 <p className="text-sm font-medium text-emerald-900/80 group-hover:text-emerald-950 transition-colors">
-                  I agree to the <span className="text-amber-600 underline">marketplace vendor policies</span> and understand that my account is subject to a verification process before approval.
+                  I agree to the <Link href="/vendor-policy" target="_blank" className="text-amber-600 underline hover:text-amber-700">marketplace vendor policies</Link> and understand that my account is subject to a verification process before approval.
                 </p>
               </label>
 
-              <button disabled={isSubmitting} type="submit" className="w-full bg-emerald-950 text-white py-4 rounded-2xl font-bold uppercase tracking-widest hover:bg-amber-600 transition-all shadow-xl hover:shadow-2xl disabled:opacity-50 disabled:cursor-not-allowed">
+              <button disabled={isSubmitting || !formData.agreedToPolicies} type="submit" className="w-full bg-emerald-950 text-white py-4 rounded-2xl font-bold uppercase tracking-widest hover:bg-amber-600 transition-all shadow-xl hover:shadow-2xl disabled:opacity-50 disabled:cursor-not-allowed" title={!formData.agreedToPolicies ? "Please accept the Vendor Marketplace Policies before submitting your request." : ""}>
                 {isSubmitting ? 'Submitting...' : 'Submit Vendor Request'}
               </button>
             </div>

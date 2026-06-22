@@ -15,14 +15,14 @@ export default function NewsletterWidget() {
 
   const fetchCaptcha = async () => {
     try {
-      const res = await fetch(`${API_URL}/api/newsletter/captcha`);
+      const res = await fetch(`${API_URL}/api/community-join/captcha`);
       const data = await res.json();
       if (res.ok) {
         setCaptchaQuestion(data.question);
         setCaptchaToken(data.token);
       }
-    } catch (err) {
-      console.error('Failed to load captcha', err);
+    } catch (err: any) {
+      console.warn('Failed to load captcha. This may be due to an adblocker.', err.message || '');
     }
   };
 
@@ -36,7 +36,7 @@ export default function NewsletterWidget() {
     if (!captchaAnswer) return setError('Please solve the security captcha');
     setLoading(true); setError('');
     try {
-      const res = await fetch(`${API_URL}/api/newsletter/subscribe`, {
+      const res = await fetch(`${API_URL}/api/community-join/subscribe`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, captchaAnswer, captchaToken })

@@ -9,6 +9,7 @@ import { Shield, Users, CheckCircle, FileText, MoreHorizontal, Square, CheckSqua
 
 export default function AdminVendorRequestsPage() {
   const { user } = useAuth();
+  const token = typeof window !== 'undefined' ? localStorage.getItem('namma_orru_token') || '' : '';
   const { addToast } = useToast();
   const [requests, setRequests] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -33,7 +34,7 @@ export default function AdminVendorRequestsPage() {
   const fetchRequests = async () => {
     try {
       const res = await fetch(`${API_URL}/api/vendor-requests`, {
-        headers: { 'Authorization': `Bearer ${user?.token || ''}` }
+        headers: { 'Authorization': `Bearer ${token}` }
       });
       if (res.ok) {
         const data = await res.json();
@@ -53,7 +54,7 @@ export default function AdminVendorRequestsPage() {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${user?.token || ''}`
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
           status: status,
@@ -87,7 +88,7 @@ export default function AdminVendorRequestsPage() {
           // Standard delete request
           const res = await fetch(`${API_URL}/api/vendor-requests/${id}`, {
             method: 'DELETE',
-            headers: { 'Authorization': `Bearer ${user?.token || ''}` }
+            headers: { 'Authorization': `Bearer ${token}` }
           });
           if (res.ok) successCount++;
         } else {
@@ -97,7 +98,7 @@ export default function AdminVendorRequestsPage() {
             method: 'PUT',
             headers: {
               'Content-Type': 'application/json',
-              'Authorization': `Bearer ${user?.token || ''}`
+              'Authorization': `Bearer ${token}`
             },
             body: JSON.stringify({ status: newStatus, adminNotes: 'Bulk updated via admin list action.' })
           });
@@ -211,11 +212,11 @@ export default function AdminVendorRequestsPage() {
   }
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-700 max-w-7xl mx-auto p-4 md:p-8">
+    <div className="space-y-8 animate-in fade-in duration-700 pb-16">
       {/* Title */}
       <div>
-        <h2 className="text-4xl font-black text-slate-900 tracking-tighter">Vendor Registrations</h2>
-        <p className="text-slate-400 font-medium text-sm mt-1">Review, filter, and onboard new farmer registries and vendor profiles.</p>
+        <h1 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tighter italic">Vendor <span className="text-emerald-600">Registrations</span></h1>
+        <p className="text-slate-400 font-bold uppercase tracking-[0.2em] text-[10px] mt-2">Review, filter, and onboard new farmer registries and vendor profiles.</p>
       </div>
 
       {/* Advanced Filter Toolbar */}
@@ -247,8 +248,9 @@ export default function AdminVendorRequestsPage() {
 
       {/* TABLE */}
       <div className="bg-white rounded-[2.5rem] border border-slate-200 shadow-sm overflow-hidden mt-6">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+        {/* Desktop View */}
+        <div className="hidden md:block overflow-x-auto min-h-[280px]">
+          <table className="w-full text-left border-collapse min-w-[1000px] admin-data-table">
             <thead>
               <tr className="bg-slate-50/50">
                 <th className="px-6 py-5 w-12 border-b border-slate-100 text-center">
@@ -308,7 +310,7 @@ export default function AdminVendorRequestsPage() {
                       {req.status}
                     </span>
                   </td>
-                  <td className="px-6 py-4 text-right border-b border-slate-50 relative">
+                  <td className={`px-6 py-4 text-right border-b border-slate-50 relative ${activeMenuId === req.id ? '!z-[60]' : ''}`}>
                     <div className="flex items-center justify-end gap-1">
                       <button
                         onClick={() => { setSelectedRequest(req); setStatusUpdate(req.status); setAdminNotes(req.adminNotes || ''); }}
@@ -316,7 +318,7 @@ export default function AdminVendorRequestsPage() {
                       >
                         <Eye size={13} /> View
                       </button>
-
+ 
                       {/* Three dots Action dropdown */}
                       <div className="relative">
                         <button
@@ -325,7 +327,7 @@ export default function AdminVendorRequestsPage() {
                         >
                           <MoreHorizontal size={16} />
                         </button>
-
+ 
                         {activeMenuId === req.id && (
                           <>
                             <div className="fixed inset-0 z-40" onClick={() => setActiveMenuId(null)} />
@@ -356,7 +358,7 @@ export default function AdminVendorRequestsPage() {
                   </td>
                 </tr>
               ))}
-
+ 
               {filteredAndSortedRequests.length === 0 && (
                 <tr>
                   <td colSpan={7} className="px-6 py-20 text-center border-b border-slate-50">
@@ -374,6 +376,112 @@ export default function AdminVendorRequestsPage() {
               )}
             </tbody>
           </table>
+        </div>
+
+        {/* Mobile View - Card Layout */}
+        <div className="block md:hidden divide-y divide-slate-100">
+          {filteredAndSortedRequests.map(req => (
+            <div key={req.id} className="p-6 space-y-4">
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex items-center gap-2">
+                  <button onClick={() => toggleSelectRow(req.id)} className="text-slate-400 hover:text-slate-600 transition-colors shrink-0">
+                    {selectedIds.includes(req.id) ? (
+                      <CheckSquare size={16} className="text-emerald-600" />
+                    ) : (
+                      <Square size={16} />
+                    )}
+                  </button>
+                  <div className="space-y-0.5">
+                    <p className="font-extrabold text-slate-900 text-sm leading-snug">{req.businessName}</p>
+                    <p className="text-[10px] text-slate-400 font-medium">Submitted {new Date(req.createdAt).toLocaleDateString()}</p>
+                  </div>
+                </div>
+                <span className={`inline-flex px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-wider shrink-0 ${
+                  req.status === 'Approved' ? 'bg-emerald-100 text-emerald-700' :
+                  req.status === 'Rejected' ? 'bg-red-100 text-red-700' :
+                  req.status === 'Under Review' ? 'bg-blue-100 text-blue-700' :
+                  'bg-amber-100 text-amber-700'
+                }`}>
+                  {req.status}
+                </span>
+              </div>
+
+              <div className="space-y-2.5 bg-slate-50/50 rounded-2xl p-4 border border-slate-100/50 text-xs text-slate-500 font-semibold">
+                <div>
+                  <span className="text-[9px] text-slate-400 font-black uppercase tracking-wider block">Owner Details</span>
+                  <p className="text-slate-800 font-bold mt-0.5">{req.ownerName}</p>
+                  <p className="text-[10px] text-slate-400 font-medium mt-0.5">{req.email} • {req.mobileNumber}</p>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100">
+                  <div>
+                    <span className="text-[9px] text-slate-400 font-black uppercase tracking-wider block">Business Type</span>
+                    <span className="text-slate-800 text-[11px] font-bold">{req.businessType}</span>
+                  </div>
+                  <div>
+                    <span className="text-[9px] text-slate-400 font-black uppercase tracking-wider block">Taxation</span>
+                    <span className="text-amber-600 text-[10px] font-extrabold">{req.gstNumber || 'No GST'}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 justify-end pt-1">
+                <button
+                  onClick={() => { setSelectedRequest(req); setStatusUpdate(req.status); setAdminNotes(req.adminNotes || ''); }}
+                  className="h-11 flex-1 flex items-center justify-center gap-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-600 hover:bg-slate-100 text-xs font-bold transition-all"
+                >
+                  <Eye size={13} /> View Details
+                </button>
+                <div className="relative">
+                  <button
+                    onClick={() => setActiveMenuId(activeMenuId === req.id ? null : req.id)}
+                    className="h-11 w-11 flex items-center justify-center rounded-xl border border-slate-200 text-slate-400 hover:text-slate-600 transition-colors"
+                  >
+                    <MoreHorizontal size={16} />
+                  </button>
+                  {activeMenuId === req.id && (
+                    <>
+                      <div className="fixed inset-0 z-40" onClick={() => setActiveMenuId(null)} />
+                      <div className="absolute right-0 bottom-full mb-2 w-44 bg-white border border-slate-100 rounded-2xl shadow-xl p-2 z-50 animate-in fade-in slide-in-from-bottom-2 duration-200">
+                        <button
+                          onClick={() => { handleStatusUpdate(req.id, 'Approved', 'Quick approved from action.'); setActiveMenuId(null); }}
+                          className="w-full text-left px-4 py-2.5 rounded-xl text-xs font-bold text-slate-600 hover:bg-emerald-50 hover:text-emerald-800 transition-colors flex items-center gap-2"
+                        >
+                          <Check size={14} /> Approve Request
+                        </button>
+                        <button
+                          onClick={() => { handleStatusUpdate(req.id, 'Rejected', 'Rejected from action.'); setActiveMenuId(null); }}
+                          className="w-full text-left px-4 py-2.5 rounded-xl text-xs font-bold text-slate-600 hover:bg-red-50 hover:text-red-800 transition-colors flex items-center gap-2"
+                        >
+                          <X size={14} /> Reject Request
+                        </button>
+                        <button
+                          onClick={() => { handleStatusUpdate(req.id, 'Under Review', 'Marked under review.'); setActiveMenuId(null); }}
+                          className="w-full text-left px-4 py-2.5 rounded-xl text-xs font-bold text-slate-600 hover:bg-blue-50 hover:text-blue-800 transition-colors flex items-center gap-2"
+                        >
+                          <Shield size={14} /> Under Review
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))}
+
+          {filteredAndSortedRequests.length === 0 && (
+            <div className="py-20 text-center">
+              <div className="max-w-md mx-auto flex flex-col items-center gap-3 px-6">
+                <div className="h-12 w-12 bg-slate-50 rounded-full flex items-center justify-center text-slate-400">
+                  <FileText size={20} />
+                </div>
+                <h4 className="text-xs font-black text-slate-800 uppercase tracking-wider">No registrations found</h4>
+                <p className="text-[10px] text-slate-400 font-bold text-center">
+                  We couldn't locate any registrations matching the active criteria.
+                </p>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

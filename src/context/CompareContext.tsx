@@ -64,6 +64,15 @@ export function CompareProvider({ children }: { children: React.ReactNode }) {
 export function useCompare() {
   const context = useContext(CompareContext);
   if (context === undefined) {
+    if (typeof window === 'undefined') {
+      return {
+        compareItems: [],
+        addToCompare: () => {},
+        removeFromCompare: () => {},
+        clearCompare: () => {},
+        isInCompare: () => false
+      };
+    }
     throw new Error('useCompare must be used within a CompareProvider');
   }
   return context;

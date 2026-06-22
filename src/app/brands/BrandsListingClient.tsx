@@ -7,11 +7,26 @@ import { motion } from 'framer-motion';
 import useSWR from 'swr';
 import { API_URL } from '@/lib/api';
 import OptimizedImage from '@/components/ui/OptimizedImage';
+import { usePlatformSettings } from '@/context/PlatformSettingsContext';
+
+const formatBrandName = (name: string) => {
+  if (!name) return '';
+  return name
+    .replace(/[-_]+/g, ' ')
+    .split(' ')
+    .map(w => {
+      let cleaned = w.charAt(0).toUpperCase() + w.slice(1).toLowerCase();
+      if (cleaned === 'Prod' || cleaned === 'Prods') return 'Products';
+      return cleaned;
+    })
+    .join(' ');
+};
 
 const fetcher = (url: string) => fetch(url).then(res => res.json());
 
 export default function BrandsListingClient() {
   const [searchQuery, setSearchQuery] = useState('');
+  const { settings } = usePlatformSettings();
 
   const { data: responseData, isLoading } = useSWR(`${API_URL}/api/sub-vendors?limit=100`, fetcher);
   const brands = responseData?.subVendors || [];
@@ -64,59 +79,66 @@ export default function BrandsListingClient() {
         </div>
 
         {/* --- High Density Brand Grid --- */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
-          {filteredBrands.map((brand: any, idx: number) => (
-            <motion.div
-              key={brand.id}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: idx % 10 * 0.05 }}
-            >
-              <Link
-                href={`/brands/${encodeURIComponent(brand.slug || brand.id)}`}
-                className="group block bg-white rounded-[2.5rem] p-6 transition-all hover:shadow-xl hover:-translate-y-2 border border-transparent hover:border-emerald-50 shadow-sm"
+        {filteredBrands.length > 0 ? (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 lg:gap-8">
+            {filteredBrands.map((brand: any, idx: number) => (
+              <motion.div
+                key={brand.id}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: idx % 10 * 0.05 }}
               >
-                {/* Brand Logo Squircle */}
-                <div className="relative aspect-square rounded-[2rem] overflow-hidden bg-slate-50 flex items-center justify-center p-8 transition-colors group-hover:bg-emerald-50/30">
-                  <OptimizedImage
-                    src={brand.logo || '/brand_logos/reseller_logo.webp'}
-                    alt={brand.name}
-                    fill
-                    className="object-contain p-8 group-hover:scale-110 transition-transform duration-700"
-                  />
-                  <div className="absolute top-4 right-4 h-8 w-8 rounded-full bg-white shadow-sm flex items-center justify-center text-emerald-600 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <ShieldCheck size={16} />
-                  </div>
-                </div>
-
-                <div className="mt-8 space-y-4">
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-1.5">
-                      <Award size={12} className="text-amber-500" />
-                      <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest truncate">
-                        {brand.headVendor?.name || 'Native Collective'}
-                      </span>
+                <Link
+                  href={`/brands/${encodeURIComponent(brand.slug || brand.id)}`}
+                  className="group block bg-white rounded-[1.8rem] md:rounded-[2.5rem] p-4 md:p-6 transition-all hover:shadow-xl hover:-translate-y-2 border border-transparent hover:border-emerald-50 shadow-sm min-w-[180px] md:min-w-[240px] lg:min-w-[300px] min-h-[250px] md:min-h-[300px]"
+                >
+                  {/* Brand Logo Squircle */}
+                  <div className="relative aspect-square rounded-[1.3rem] md:rounded-[2rem] overflow-hidden bg-slate-50 flex items-center justify-center p-4 md:p-8 transition-colors group-hover:bg-emerald-50/30">
+                    <OptimizedImage
+                      src={brand.logo || settings.logo || '/logo.webp'}
+                      alt={brand.name}
+                      fill
+                      className="object-contain p-4 md:p-8 group-hover:scale-110 transition-transform duration-700"
+                    />
+                    <div className="absolute top-4 right-4 h-8 w-8 rounded-full bg-white shadow-sm flex items-center justify-center text-emerald-600 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <ShieldCheck size={16} />
                     </div>
-                    <h3 className="text-lg md:text-2xl font-black text-emerald-950 uppercase tracking-tight line-clamp-1">
-                      {brand.name}
-                    </h3>
                   </div>
 
-                  <div className="flex items-center justify-between pt-4 border-t border-slate-50">
-                    <div className="flex items-center gap-2">
-                      <Package size={14} className="text-slate-300" />
-                      <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{brand._count?.products || 0} Products</span>
+                  <div className="mt-4 md:mt-8 space-y-3 md:space-y-4">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-1.5">
+                        <Award size={12} className="text-amber-500 shrink-0" />
+                        <span className="text-[9px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest truncate">
+                          {brand.headVendor?.name || 'Native Collective'}
+                        </span>
+                      </div>
+                      <h3 className="text-xs md:text-xl font-black text-emerald-950 tracking-tight line-clamp-2 min-h-[40px] md:min-h-[48px] leading-snug md:leading-normal">
+                        {formatBrandName(brand.name)}
+                      </h3>
                     </div>
-                    <div className="h-8 w-8 rounded-full flex items-center justify-center text-slate-200 group-hover:text-emerald-950 transition-colors">
-                      <ChevronRight size={18} />
+
+                    <div className="flex items-center justify-between pt-3 md:pt-4 border-t border-slate-50">
+                      <div className="flex items-center gap-2">
+                        <Package size={14} className="text-slate-300 shrink-0" />
+                        <span className="text-[9px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest">{brand._count?.products || 0} Products</span>
+                      </div>
+                      <div className="h-6 w-6 md:h-8 md:w-8 rounded-full flex items-center justify-center text-slate-200 group-hover:text-emerald-950 transition-colors shrink-0">
+                        <ChevronRight size={16} />
+                      </div>
                     </div>
                   </div>
-                </div>
-              </Link>
-            </motion.div>
-          ))}
-        </div>
+                </Link>
+              </motion.div>
+            ))}
+          </div>
+        ) : (
+          <div className="py-20 text-center text-slate-400 font-bold bg-white rounded-[2.5rem] border border-slate-100 shadow-sm p-8 flex flex-col items-center justify-center gap-3">
+            <Package size={36} className="text-slate-300" />
+            <span className="text-sm font-black uppercase tracking-[0.2em] text-slate-400">No approved brands available</span>
+          </div>
+        )}
       </div>
     </div>
   );

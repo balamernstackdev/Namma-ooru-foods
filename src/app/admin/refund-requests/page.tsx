@@ -84,20 +84,20 @@ export default function AdminRefundRequestsPage() {
   };
 
   return (
-    <div className="p-8 max-w-7xl mx-auto min-h-screen">
+    <div className="pb-16 min-h-screen">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-2xl font-black text-slate-800 tracking-tight flex items-center gap-2">
-            <RefreshCcw className="h-6 w-6 text-emerald-600" /> Refund Requests
+          <h1 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tighter italic flex items-center gap-3">
+            <RefreshCcw className="h-8 w-8 text-emerald-600" /> Refund <span className="text-emerald-600">Requests</span>
           </h1>
-          <p className="text-[13px] text-slate-500 font-medium mt-1">
+          <p className="text-slate-400 font-bold uppercase tracking-[0.2em] text-[10px] mt-2">
             Manage customer complaints, returns, and refund resolutions.
           </p>
         </div>
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-4 mb-6 flex flex-wrap gap-4 items-center">
+      <div className="bg-white rounded-2xl border border-slate-200 p-4 mb-6 flex flex-col sm:flex-row gap-4 items-stretch sm:items-center">
         <div className="flex items-center gap-2">
           <Filter className="h-4 w-4 text-slate-400" />
           <span className="text-xs font-black uppercase tracking-widest text-slate-500">Filter Status:</span>
@@ -105,7 +105,7 @@ export default function AdminRefundRequestsPage() {
         <select 
           value={statusFilter} 
           onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
-          className="text-xs font-bold text-slate-700 bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 outline-none focus:border-emerald-500 transition-colors"
+          className="text-xs font-bold text-slate-700 bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 outline-none focus:border-emerald-500 transition-colors w-full sm:w-auto"
         >
           <option value="">All Statuses</option>
           <option value="PENDING_REVIEW">Pending Review</option>
@@ -123,45 +123,86 @@ export default function AdminRefundRequestsPage() {
         ) : requests.length === 0 ? (
           <div className="p-20 text-center text-slate-500 text-sm font-medium">No refund requests found.</div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="bg-slate-50/50 border-b border-slate-100">
-                  <th className="p-4 text-[10px] font-black text-slate-500 uppercase tracking-widest whitespace-nowrap">Ticket ID</th>
-                  <th className="p-4 text-[10px] font-black text-slate-500 uppercase tracking-widest">Customer</th>
-                  <th className="p-4 text-[10px] font-black text-slate-500 uppercase tracking-widest">Issue</th>
-                  <th className="p-4 text-[10px] font-black text-slate-500 uppercase tracking-widest">Amount</th>
-                  <th className="p-4 text-[10px] font-black text-slate-500 uppercase tracking-widest">Status</th>
-                  <th className="p-4 text-[10px] font-black text-slate-500 uppercase tracking-widest text-right">Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {requests.map(req => (
-                  <tr key={req.id} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
-                    <td className="p-4 font-mono text-xs font-black text-slate-700">{req.ticketId}</td>
-                    <td className="p-4">
-                      <p className="text-xs font-bold text-slate-800">{req.user?.name || 'User'}</p>
-                      <p className="text-[10px] text-slate-500 truncate max-w-[150px]">{req.user?.email}</p>
-                    </td>
-                    <td className="p-4">
-                      <p className="text-xs font-black text-slate-700">{req.issueType.replace('_', ' ')}</p>
-                      <p className="text-[10px] text-slate-500">Order #{req.orderId}</p>
-                    </td>
-                    <td className="p-4 text-xs font-black text-emerald-600">₹{req.totalAmount}</td>
-                    <td className="p-4">{getStatusBadge(req.status)}</td>
-                    <td className="p-4 text-right">
-                      <button 
-                        onClick={() => fetchRequestDetails(req.id)}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-[10px] font-black uppercase tracking-widest rounded-lg transition-colors"
-                      >
-                        <Eye className="h-3 w-3" /> Review
-                      </button>
-                    </td>
+          <>
+            {/* Desktop View */}
+            <div className="hidden md:block overflow-x-auto min-h-[280px]">
+              <table className="w-full text-left border-collapse min-w-[1000px] admin-data-table">
+                <thead>
+                  <tr className="bg-slate-50/50 border-b border-slate-100">
+                    <th className="p-4 text-[10px] font-black text-slate-500 uppercase tracking-widest whitespace-nowrap">Ticket ID</th>
+                    <th className="p-4 text-[10px] font-black text-slate-500 uppercase tracking-widest">Customer</th>
+                    <th className="p-4 text-[10px] font-black text-slate-500 uppercase tracking-widest">Issue</th>
+                    <th className="p-4 text-[10px] font-black text-slate-500 uppercase tracking-widest">Amount</th>
+                    <th className="p-4 text-[10px] font-black text-slate-500 uppercase tracking-widest">Status</th>
+                    <th className="p-4 text-[10px] font-black text-slate-500 uppercase tracking-widest text-right">Action</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {requests.map(req => (
+                    <tr key={req.id} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
+                      <td className="p-4 font-mono text-xs font-black text-slate-700">{req.ticketId}</td>
+                      <td className="p-4">
+                        <p className="text-xs font-bold text-slate-800">{req.user?.name || 'User'}</p>
+                        <p className="text-[10px] text-slate-500 truncate max-w-[150px]">{req.user?.email}</p>
+                      </td>
+                      <td className="p-4">
+                        <p className="text-xs font-black text-slate-700">{req.issueType.replace('_', ' ')}</p>
+                        <p className="text-[10px] text-slate-500">Order #{req.orderId}</p>
+                      </td>
+                      <td className="p-4 text-xs font-black text-emerald-600">₹{req.totalAmount}</td>
+                      <td className="p-4">{getStatusBadge(req.status)}</td>
+                      <td className="p-4 text-right">
+                        <button 
+                          onClick={() => fetchRequestDetails(req.id)}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-[10px] font-black uppercase tracking-widest rounded-lg transition-colors"
+                        >
+                          <Eye className="h-3 w-3" /> Review
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile View - Card Layout */}
+            <div className="block md:hidden divide-y divide-slate-100">
+              {requests.map(req => (
+                <div key={req.id} className="p-6 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <span className="font-mono text-xs font-black text-slate-700">{req.ticketId}</span>
+                    {getStatusBadge(req.status)}
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3 bg-slate-50/50 rounded-2xl p-4 border border-slate-100/50 text-xs">
+                    <div className="space-y-1">
+                      <span className="text-[9px] text-slate-400 uppercase tracking-wider block font-bold">Customer</span>
+                      <span className="font-extrabold text-slate-800 block truncate">{req.user?.name || 'User'}</span>
+                      <span className="text-[10px] text-slate-500 block truncate lowercase">{req.user?.email}</span>
+                    </div>
+                    <div className="space-y-1">
+                      <span className="text-[9px] text-slate-400 uppercase tracking-wider block font-bold">Amount</span>
+                      <span className="font-extrabold text-emerald-600 block text-sm">₹{req.totalAmount}</span>
+                    </div>
+                    <div className="col-span-2 pt-2 border-t border-slate-100 space-y-1">
+                      <span className="text-[9px] text-slate-400 uppercase tracking-wider block font-bold">Issue Details</span>
+                      <span className="font-extrabold text-slate-700 block">{req.issueType.replace('_', ' ')}</span>
+                      <span className="text-[10px] text-slate-400 font-bold block">Order #{req.orderId}</span>
+                    </div>
+                  </div>
+
+                  <div className="pt-1">
+                    <button 
+                      onClick={() => fetchRequestDetails(req.id)}
+                      className="h-11 w-full inline-flex items-center justify-center gap-1.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 text-xs font-black uppercase tracking-widest rounded-xl transition-colors"
+                    >
+                      <Eye className="h-4 w-4" /> Review Request
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
         )}
         
         {/* Pagination */}
@@ -180,7 +221,7 @@ export default function AdminRefundRequestsPage() {
           <div className="bg-white rounded-[2rem] w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl border border-slate-100 flex flex-col md:flex-row">
             
             {/* Left Side: Request Details */}
-            <div className="w-full md:w-3/5 p-8 border-r border-slate-100 bg-slate-50/30">
+            <div className="w-full md:w-3/5 p-5 sm:p-8 border-b md:border-b-0 md:border-r border-slate-100 bg-slate-50/30">
               <div className="flex items-center justify-between mb-6">
                 <div>
                   <h3 className="text-xl font-black text-slate-800">Ticket {selectedRequest.ticketId}</h3>
@@ -188,8 +229,8 @@ export default function AdminRefundRequestsPage() {
                 </div>
                 {getStatusBadge(selectedRequest.status)}
               </div>
-
-              <div className="grid grid-cols-2 gap-4 mb-6">
+ 
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
                 <div className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm">
                   <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Customer</p>
                   <p className="text-xs font-bold text-slate-800">{selectedRequest.user?.name}</p>
@@ -203,14 +244,14 @@ export default function AdminRefundRequestsPage() {
                   <p className="text-xs font-bold text-emerald-600">{selectedRequest.preference.replace('_', ' ')}</p>
                 </div>
               </div>
-
+ 
               <div className="mb-6">
                 <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Customer Description</p>
                 <div className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm text-xs text-slate-700 whitespace-pre-wrap">
                   {selectedRequest.description || 'No description provided.'}
                 </div>
               </div>
-
+ 
               <div className="mb-6">
                 <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Affected Items</p>
                 <div className="flex flex-col gap-2">
@@ -235,9 +276,9 @@ export default function AdminRefundRequestsPage() {
                 </div>
               </div>
             </div>
-
+ 
             {/* Right Side: Resolution Action */}
-            <div className="w-full md:w-2/5 p-8 flex flex-col bg-white relative">
+            <div className="w-full md:w-2/5 p-5 sm:p-8 flex flex-col bg-white relative">
               <button onClick={() => setSelectedRequest(null)} className="absolute top-4 right-4 h-8 w-8 bg-slate-100 hover:bg-slate-200 rounded-full flex items-center justify-center transition-colors">
                 <XCircle className="h-5 w-5 text-slate-500" />
               </button>

@@ -8,6 +8,8 @@ import MarketplaceCategoryGrid from '@/components/MarketplaceCategoryGrid';
 import useSWR from 'swr';
 import { motion } from 'framer-motion';
 
+import { useBanners } from '@/hooks/useBanners';
+
 const fetcher = (url: string) => fetch(url).then(res => res.json());
 
 const CategoriesPage = () => {
@@ -17,6 +19,7 @@ const CategoriesPage = () => {
 
   // Fetch categories
   const { data: responseData, error, isLoading } = useSWR(`${API_URL}/api/categories?page=${currentPage}&limit=${itemsPerPage}`, fetcher);
+  const { categoryBanners } = useBanners();
 
   const categories = responseData?.categories || [];
   const totalPages = responseData?.totalPages || 1;
@@ -32,21 +35,30 @@ const CategoriesPage = () => {
     );
   }
 
+  const activeCategoryBanners = categoryBanners.filter(b => b.isActive !== false);
+  const bannerImages = activeCategoryBanners.map(b => b.banner_image);
+  const firstBanner = activeCategoryBanners[0];
+  const bannerTitle = firstBanner?.title ? <>{firstBanner.title}</> : <>Curated <br /><span className="text-emerald-600 italic">Marketplace</span></>;
+  const bannerSubtitle = firstBanner?.subtitle || "Explore our scientifically sourced organic collections, built to connect traditional artisans with modern wellness.";
+  const bannerTagline = firstBanner?.tagline || "Premium Categories";
+
   return (
     <div className="w-full bg-slate-50/30 min-h-screen">
-      <HeroCarousel
-        images={['banners/categories_1.png', 'banners/categories_2.png']}
-        title={<>Curated <br /><span className="text-emerald-600 italic">Marketplace</span></>}
-        subtitle="Explore our scientifically sourced organic collections, built to connect traditional artisans with modern wellness."
-        badges={
-          <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-full bg-emerald-600/10 backdrop-blur-md flex items-center justify-center border border-emerald-600/20">
-              <Sparkles className="h-5 w-5 text-emerald-600" />
+      {activeCategoryBanners.length > 0 ? (
+        <HeroCarousel
+          images={bannerImages}
+          title={bannerTitle}
+          subtitle={bannerSubtitle}
+          badges={
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-full bg-emerald-600/10 backdrop-blur-md flex items-center justify-center border border-emerald-600/20">
+                <Sparkles className="h-5 w-5 text-emerald-600" />
+              </div>
+              <span className="text-[11px] font-black uppercase tracking-[0.4em] text-emerald-600">{bannerTagline}</span>
             </div>
-            <span className="text-[11px] font-black uppercase tracking-[0.4em] text-emerald-600">Premium Categories</span>
-          </div>
-        }
-      />
+          }
+        />
+      ) : null}
 
       <div className="w-full py-12 md:py-20 flex justify-center overflow-hidden">
         <div className="standard-container px-4">
@@ -99,8 +111,8 @@ const CategoriesPage = () => {
                     key={page}
                     onClick={() => { setCurrentPage(page); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
                     className={`h-10 w-10 md:h-12 md:w-12 rounded-full text-[12px] font-black transition-all ${currentPage === page
-                        ? 'bg-emerald-600 text-white shadow-xl shadow-emerald-600/20'
-                        : 'text-slate-400 hover:bg-emerald-50 hover:text-emerald-700 border border-transparent hover:border-emerald-100'
+                      ? 'bg-emerald-600 text-white shadow-xl shadow-emerald-600/20'
+                      : 'text-slate-400 hover:bg-emerald-50 hover:text-emerald-700 border border-transparent hover:border-emerald-100'
                       }`}
                   >
                     {page}
@@ -122,7 +134,7 @@ const CategoriesPage = () => {
           <div className="mt-24 pt-12 border-t border-slate-200 flex flex-wrap justify-center gap-12 md:gap-24 opacity-60 grayscale hover:grayscale-0 transition-all duration-700">
             <div className="flex flex-col items-center">
               <span className="text-2xl font-black text-emerald-950">25+</span>
-              <span className="text-[9px] font-black uppercase tracking-widest text-slate-500">Service Regions</span>
+              <span className="text-[9px] font-black uppercase tracking-widest text-slate-500">Vendors Hub</span>
             </div>
             <div className="flex flex-col items-center">
               <span className="text-2xl font-black text-emerald-950">500+</span>

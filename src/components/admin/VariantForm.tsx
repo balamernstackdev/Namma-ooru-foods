@@ -95,6 +95,7 @@ export default function VariantForm({ initialData, mode }: VariantFormProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (submitting) return;
     if (!formData.productId) {
       addToast('Error', 'Please select a parent product');
       return;
@@ -136,7 +137,7 @@ export default function VariantForm({ initialData, mode }: VariantFormProps) {
               <ArrowLeft size={18} />
             </button>
             <h1 className="text-3xl font-black text-slate-900 tracking-tight">
-              {mode === 'edit' ? 'Edit Variation' : 'Architect New Variation'}
+              {mode === 'edit' ? 'Edit Variation' : 'Create New Variant'}
             </h1>
           </div>
           <div className="flex items-center gap-3">
@@ -160,12 +161,12 @@ export default function VariantForm({ initialData, mode }: VariantFormProps) {
             <div className="col-span-12 lg:col-span-8 space-y-8">
               {/* Specification Card */}
               <div className="bg-white rounded-2xl border border-slate-200 shadow-sm">
-                <SectionHeader title="Entity Mapping" icon={Layers} colorClass="text-blue-600" />
+                <SectionHeader title="Variant Mapping" icon={Layers} colorClass="text-blue-600" />
                 <div className="p-8 space-y-8">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <InputWrapper label="Parent Product" helpText="The core product this variation belongs to.">
                       <div className="relative">
-                        <div 
+                        <div
                           onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                           className={`w-full h-14 px-6 rounded-xl border ${!formData.productId && submitting ? 'border-red-400' : 'border-slate-200'} focus:border-blue-500 outline-none font-bold text-sm bg-white flex items-center justify-between cursor-pointer transition-all`}
                         >
@@ -174,7 +175,7 @@ export default function VariantForm({ initialData, mode }: VariantFormProps) {
                           </span>
                           <ChevronDown size={18} className={`text-slate-400 transition-transform duration-300 ${isDropdownOpen ? 'rotate-180' : ''}`} />
                         </div>
-                        
+
                         {isDropdownOpen && (
                           <>
                             <div className="fixed inset-0 z-40" onClick={() => setIsDropdownOpen(false)} />
@@ -182,10 +183,10 @@ export default function VariantForm({ initialData, mode }: VariantFormProps) {
                               <div className="p-3 border-b border-slate-100 bg-slate-50/50">
                                 <div className="relative">
                                   <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                                  <input 
-                                    type="text" 
+                                  <input
+                                    type="text"
                                     autoFocus
-                                    placeholder="Search by product name..." 
+                                    placeholder="Search by product name..."
                                     value={searchQuery}
                                     onChange={e => setSearchQuery(e.target.value)}
                                     className="w-full h-10 pl-9 pr-4 rounded-lg bg-white border border-slate-200 focus:border-blue-500 focus:ring-2 ring-blue-500/20 outline-none text-xs font-bold transition-all shadow-sm"
@@ -194,7 +195,7 @@ export default function VariantForm({ initialData, mode }: VariantFormProps) {
                               </div>
                               <div className="max-h-64 overflow-y-auto p-2 space-y-1">
                                 {filteredProducts.map(p => (
-                                  <div 
+                                  <div
                                     key={p.id}
                                     onClick={() => {
                                       setFormData({ ...formData, productId: p.id.toString() });
@@ -350,47 +351,47 @@ export default function VariantForm({ initialData, mode }: VariantFormProps) {
             </div>
 
             <div className="col-span-12 lg:col-span-4 space-y-8">
-               {/* Visibility Card */}
-               <div className="bg-white rounded-2xl border border-slate-200 shadow-sm">
-                 <SectionHeader title="Display Settings" icon={MonitorCheck} colorClass="text-purple-600" />
-                 <div className="p-8 space-y-6">
-                    <InputWrapper label="Sort Order" helpText="Lower numbers appear first in the dropdown.">
-                      <div className="relative">
-                        <LayoutList size={16} className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400" />
-                        <input
-                          type="number"
-                          value={formData.sortOrder}
-                          onChange={e => setFormData({ ...formData, sortOrder: e.target.value })}
-                          className="w-full h-14 pl-14 pr-6 rounded-xl border border-slate-200 focus:border-blue-500 outline-none font-bold text-slate-900 text-sm"
-                        />
-                      </div>
-                    </InputWrapper>
-
-                    <div className="flex items-center justify-between p-4 rounded-xl bg-slate-50 border border-slate-100">
-                      <div>
-                        <p className="text-[11px] font-black text-slate-900 uppercase">Availability Status</p>
-                        <p className="text-[10px] font-bold text-slate-400">Toggle visibility in storefront</p>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => setFormData({ ...formData, isActive: !formData.isActive })}
-                        className={`h-6 w-11 rounded-full transition-all relative ${formData.isActive ? 'bg-blue-600' : 'bg-slate-200'}`}
-                      >
-                        <div className={`absolute top-1 h-4 w-4 rounded-full bg-white transition-all ${formData.isActive ? 'left-6' : 'left-1'}`} />
-                      </button>
+              {/* Visibility Card */}
+              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm">
+                <SectionHeader title="Display Settings" icon={MonitorCheck} colorClass="text-purple-600" />
+                <div className="p-8 space-y-6">
+                  <InputWrapper label="Sort Order" helpText="Lower numbers appear first in the dropdown.">
+                    <div className="relative">
+                      <LayoutList size={16} className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400" />
+                      <input
+                        type="number"
+                        value={formData.sortOrder}
+                        onChange={e => setFormData({ ...formData, sortOrder: e.target.value })}
+                        className="w-full h-14 pl-14 pr-6 rounded-xl border border-slate-200 focus:border-blue-500 outline-none font-bold text-slate-900 text-sm"
+                      />
                     </div>
-                 </div>
-               </div>
+                  </InputWrapper>
 
-               <div className="bg-amber-50 rounded-2xl border border-amber-100 p-8">
-                  <div className="flex items-center gap-3 mb-4">
-                    <AlertTriangle size={18} className="text-amber-600" />
-                    <h4 className="text-[10px] font-black text-amber-900 uppercase tracking-widest">Inventory Intelligence</h4>
+                  <div className="flex items-center justify-between p-4 rounded-xl bg-slate-50 border border-slate-100">
+                    <div>
+                      <p className="text-[11px] font-black text-slate-900 uppercase">Availability Status</p>
+                      <p className="text-[10px] font-bold text-slate-400">Toggle visibility in storefront</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setFormData({ ...formData, isActive: !formData.isActive })}
+                      className={`h-6 w-11 rounded-full transition-all relative ${formData.isActive ? 'bg-blue-600' : 'bg-slate-200'}`}
+                    >
+                      <div className={`absolute top-1 h-4 w-4 rounded-full bg-white transition-all ${formData.isActive ? 'left-6' : 'left-1'}`} />
+                    </button>
                   </div>
-                  <p className="text-[11px] font-bold text-amber-800 leading-relaxed">
-                    Accurate weight specifications ensure correct shipping rate calculation at checkout, reducing logistics variance.
-                  </p>
-               </div>
+                </div>
+              </div>
+
+              <div className="bg-amber-50 rounded-2xl border border-amber-100 p-8">
+                <div className="flex items-center gap-3 mb-4">
+                  <AlertTriangle size={18} className="text-amber-600" />
+                  <h4 className="text-[10px] font-black text-amber-900 uppercase tracking-widest">Inventory Intelligence</h4>
+                </div>
+                <p className="text-[11px] font-bold text-amber-800 leading-relaxed">
+                  Accurate weight specifications ensure correct shipping rate calculation at checkout, reducing logistics variance.
+                </p>
+              </div>
             </div>
           </div>
         </form>

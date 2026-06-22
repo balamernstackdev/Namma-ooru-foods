@@ -10,6 +10,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import useSWR from 'swr';
 import { API_URL } from '@/lib/api';
+import { useBanners } from '@/hooks/useBanners';
 
 const fetcher = (url: string) => fetch(url).then(res => res.json());
 
@@ -64,63 +65,11 @@ const FlashTimer = ({ hours = 4 }: { hours?: number }) => {
 };
 
 // ---------------------------------------------------------
-// HARDCODED FALLBACKS (For initial blank database states)
-// ---------------------------------------------------------
-const FALLBACK_HEROS = [
-   {
-      id: 'fall_hero_1',
-      title: 'Summer Organic Fest 2026',
-      subtitle: 'Upto 40% off on Premium Products',
-      description: 'Experience 100% authentic, cold-pressed traditional oils & stone-ground spices delivered direct to your kitchen.',
-      tag: 'BESTSELLING SEASON',
-      color: '#064e3b',
-      image: '/ai_images/organic_grains_1776231059575.png',
-      action: 'Shop The Festival',
-      link: '/best-selling'
-   },
-   {
-      id: 'fall_hero_2',
-      title: 'The Golden Combo Blast',
-      subtitle: 'Buy 2 Get 1 Free Nationwide',
-      description: 'Mix & Match select traditional pickles, authentic organic snacks, and raw wild honey jars.',
-      tag: 'MEMBER EXCLUSIVE',
-      color: '#92400e',
-      image: '/ai_images/mango_ginger_pickle.png',
-      action: 'Claim B2G1 Deals',
-      link: '/best-selling'
-   }
-];
-
-const FALLBACK_STRIPS = [
-   { code: 'FIRST50', label: 'Flat ₹50 OFF', sub: 'On Your First Order', color: '#fff8e1' },
-   { code: 'FREEDEL', label: 'FREE Delivery', sub: 'On Orders Above ₹299', color: '#e8f5e9' },
-   { code: 'GPAY10', label: '10% UPI Cashback', sub: 'Secure GPay Checkout', color: '#e3f2fd' },
-   { code: 'HEALTHY', label: 'Extra 15% Off', sub: 'Organic Millets Fest', color: '#fff3e0' },
-];
-
-const FALLBACK_FLASH = [
-   { id: 'f_f1', title: 'Raw Forest Honey Combo (Pack of 2)', discount: '40% OFF', price: '₹499', oldPrice: '₹850', claimed: 78, image: '/ai_images/organic_grains_1776231059575.png', link: '/best-selling' },
-   { id: 'f_f2', title: "Grandmother's Special Garlic Pickle", discount: '25% OFF', price: '₹180', oldPrice: '₹240', claimed: 42, image: '/ai_images/mango_pickle_jar.png', link: '/best-selling' },
-   { id: 'f_f3', title: 'Cold Pressed Groundnut Oil (2L)', discount: 'SAVE ₹150', price: '₹599', oldPrice: '₹750', claimed: 91, image: '/ai_images/groundnut_oil.png', link: '/best-selling' },
-   { id: 'f_f4', title: 'Homemade Crispy Ragi Sticks', discount: 'B1G1', price: '₹120', oldPrice: '₹240', claimed: 64, image: '/ai_images/murukku_premium.png', link: '/best-selling' },
-];
-
-const FALLBACK_WALLETS = [
-   { provider: 'Google Pay', disc: 'Flat ₹75 Cashback', min: 'Min Order: ₹499', code: 'GPAYNATURE', color: '#2563eb', icon: <Smartphone size={20} /> },
-   { provider: 'PhonePe', disc: 'Win Upto ₹200 Scratch Card', min: 'Min Order: ₹600', code: 'PHPNATURE', color: '#7c3aed', icon: <Wallet size={20} /> },
-   { provider: 'ICICI NetBanking', disc: 'Instant 10% Discount', min: 'Min Order: ₹1000', code: 'ICICINATURAL', color: '#ea580c', icon: <ShieldCheck size={20} /> }
-];
-
-const FALLBACK_COMBOS = [
-   { id: 'f_cmb1', title: 'Healthy Breakfast Starter Pack', description: 'Pure Ghee + Multi Millet Flakes + Raw Honey', price: '₹599', oldPrice: '₹850', save: '30% Off', tag: 'HOT COMBO', image: '/ai_images/honey_gold_1776231080758.png', link: '/best-selling' },
-   { id: 'f_cmb2', title: 'Traditional Oil Festival Combo', description: 'Groundnut Oil 1L + Sesame Oil 1L + Coconut Oil 1L', price: '₹749', oldPrice: '₹999', save: '₹250 Saved', tag: 'BEST VALUE', image: '/ai_images/organic_oils_banner.png', link: '/best-selling' }
-];
-
-// ---------------------------------------------------------
 // MAIN COMPONENT
 // ---------------------------------------------------------
 export default function PromotionsPage() {
    const { data: promotions, error } = useSWR(`${API_URL}/api/promotions`, fetcher);
+   const { allBanners, heroBanners } = useBanners();
    const { data: sections } = useSWR(`${API_URL}/api/promotion-sections`, fetcher);
    const [copiedCode, setCopiedCode] = useState<string | null>(null);
    const [activeSlide, setActiveSlide] = useState(0);
@@ -136,68 +85,87 @@ export default function PromotionsPage() {
    // --- 1. DATA NORMALIZATION & FILTERING FROM BACKEND PRISMA API ---
    const activePromos = promotions?.filter((p: any) => p.isActive) || [];
 
-   // A. HERO CAMPAIGNS
-   const dbHeros = activePromos.filter((p: any) => p.type === 'HERO_CAROUSEL');
-   const heroCampaigns = dbHeros.length > 0 ? dbHeros.map((p: any) => ({
-      id: p.id,
-      title: p.title,
-      subtitle: p.subtitle || p.discount || 'Exclusive Season Deals',
-      description: p.description || '',
-      tag: p.tag || 'LIMITED',
-      color: p.color || '#064e3b',
-      image: p.image || (p.products?.[0]?.image) || '/ai_images/organic_grains_1776231059575.png',
-      action: p.actionText || 'Shop Now',
-      link: p.actionLink || (p.products?.[0] ? `/products/detail?id=${p.products[0].id}` : '/best-selling')
-   })) : FALLBACK_HEROS;
+   // A. HERO CAMPAIGNS — combined from DB promotions and active banners
+   const heroPromoCampaigns = activePromos
+      .filter((p: any) => p.type === 'HERO_CAROUSEL')
+      .map((p: any) => ({
+         id: p.id,
+         title: p.title,
+         subtitle: p.subtitle || p.discount || 'Exclusive Season Deals',
+         description: p.description || '',
+         tag: p.tag || 'LIMITED',
+         color: p.color || '#064e3b',
+         image: p.image || (p.products?.[0]?.image) || null,
+         action: p.actionText || 'Shop Now',
+         link: p.actionLink || (p.products?.[0] ? `/products/detail?id=${p.products[0].id}` : '/best-selling')
+      }));
 
-   // B. QUICK STRIPS
-   const dbStrips = activePromos.filter((p: any) => p.type === 'QUICK_STRIP');
-   const quickStrips = dbStrips.length > 0 ? dbStrips.map((p: any) => ({
-      id: p.id,
-      code: p.code || 'SAVE',
-      label: p.title || p.discount || 'Discount Active',
-      sub: p.description || 'Storewide Offer',
-      color: p.color || '#f1f5f9'
-   })) : FALLBACK_STRIPS;
+    const heroBannerCampaigns = heroBanners.map((b: any) => ({
+       id: `banner_${b.id}`,
+       title: b.title || 'Special Promotion',
+       subtitle: b.tagline || b.subtitle || 'Exclusive Offer',
+       description: b.subtitle || '',
+       tag: 'HOMEPAGE',
+       color: '#064e3b',
+       image: b.banner_image,
+       action: b.buttonText || 'Shop Now',
+       link: b.link || '/products'
+    }));
 
-   // C. FLASH DEALS
-   const dbFlash = activePromos.filter((p: any) => p.type === 'FLASH_DEAL');
-   const flashDeals = dbFlash.length > 0 ? dbFlash.map((p: any) => ({
-      id: p.id,
-      title: p.title,
-      discount: p.discount || 'DEAL',
-      price: p.salePrice || (p.products?.[0]?.price ? `₹${p.products[0].price}` : '₹199'),
-      oldPrice: p.originalPrice || (p.products?.[0]?.originalPrice ? `₹${p.products[0].originalPrice}` : '₹399'),
-      claimed: p.claimedPercent ?? 50,
-      image: p.image || (p.products?.[0]?.image) || '/ai_images/organic_grains_1776231059575.png',
-      link: p.actionLink || (p.products?.[0] ? `/products/detail?id=${p.products[0].id}` : '/best-selling')
-   })) : FALLBACK_FLASH;
+   const heroCampaigns = [...heroPromoCampaigns, ...heroBannerCampaigns];
 
-   // D. COMBO DEALS
-   const dbCombos = activePromos.filter((p: any) => p.type === 'COMBO_DEAL');
-   const comboDeals = dbCombos.length > 0 ? dbCombos.map((p: any) => ({
-      id: p.id,
-      title: p.title,
-      description: p.description || '',
-      price: p.salePrice || '₹999',
-      oldPrice: p.originalPrice || '₹1299',
-      save: p.discount || 'Save Large',
-      tag: p.tag || 'HOT COMBO',
-      image: p.image || (p.products?.[0]?.image) || '/ai_images/organic_grains_1776231059575.png',
-      link: p.actionLink || (p.products?.[0] ? `/products/detail?id=${p.products[0].id}` : '/best-selling')
-   })) : FALLBACK_COMBOS;
+   // B. QUICK STRIPS — only from DB, no fallback
+   const quickStrips = activePromos
+      .filter((p: any) => p.type === 'QUICK_STRIP')
+      .map((p: any) => ({
+         id: p.id,
+         code: p.code || 'SAVE',
+         label: p.title || p.discount || 'Discount Active',
+         sub: p.description || 'Storewide Offer',
+         color: p.color || '#f1f5f9'
+      }));
 
-   // E. WALLET OFFERS
-   const dbWallets = activePromos.filter((p: any) => p.type === 'WALLET_OFFER');
-   const walletOffers = dbWallets.length > 0 ? dbWallets.map((p: any) => ({
-      id: p.id,
-      provider: p.provider || p.title || 'Secure Bank',
-      disc: p.discount || 'Cashback Offer',
-      min: p.description || 'Valid during checkout',
-      code: p.code || 'PAYSECURE',
-      color: p.color || '#334155',
-      icon: <Smartphone size={20} />
-   })) : FALLBACK_WALLETS;
+   // C. FLASH DEALS — only from DB, no fallback
+   const flashDeals = activePromos
+      .filter((p: any) => p.type === 'FLASH_DEAL')
+      .map((p: any) => ({
+         id: p.id,
+         title: p.title,
+         discount: p.discount || 'DEAL',
+         price: p.salePrice || (p.products?.[0]?.price ? `₹${p.products[0].price}` : '₹199'),
+         oldPrice: p.originalPrice || (p.products?.[0]?.originalPrice ? `₹${p.products[0].originalPrice}` : '₹399'),
+         claimed: p.claimedPercent ?? 50,
+         image: p.image || (p.products?.[0]?.image) || null,
+         link: p.actionLink || (p.products?.[0] ? `/products/detail?id=${p.products[0].id}` : '/best-selling')
+      }));
+
+   // D. COMBO DEALS — only from DB, no fallback
+   const comboDeals = activePromos
+      .filter((p: any) => p.type === 'COMBO_DEAL')
+      .map((p: any) => ({
+         id: p.id,
+         title: p.title,
+         description: p.description || '',
+         price: p.salePrice || '₹999',
+         oldPrice: p.originalPrice || '₹1299',
+         save: p.discount || 'Save Large',
+         tag: p.tag || 'HOT COMBO',
+         image: p.image || (p.products?.[0]?.image) || null,
+         link: p.actionLink || (p.products?.[0] ? `/products/detail?id=${p.products[0].id}` : '/best-selling')
+      }));
+
+   // E. WALLET OFFERS — only from DB, no fallback
+   const walletOffers = activePromos
+      .filter((p: any) => p.type === 'WALLET_OFFER')
+      .map((p: any) => ({
+         id: p.id,
+         provider: p.provider || p.title || 'Secure Bank',
+         disc: p.discount || 'Cashback Offer',
+         min: p.description || 'Valid during checkout',
+         code: p.code || 'PAYSECURE',
+         color: p.color || '#334155',
+         icon: <Smartphone size={20} />
+      }));
 
    // F. STANDARD VOUCHER TICKETS
    const standardVouchers = activePromos.filter((p: any) => !p.type || p.type === 'STANDARD');
@@ -242,7 +210,7 @@ export default function PromotionsPage() {
    const renderHeroCarousel = () => (
       <section className="w-full relative bg-slate-950 text-white overflow-hidden min-h-[460px] md:min-h-[560px] flex items-center">
          <AnimatePresence mode="wait">
-            {heroCampaigns.map((camp, idx) => {
+            {heroCampaigns.map((camp: any, idx: number) => {
                if (idx !== activeSlide) return null;
                const primaryColor = camp.color || '#064e3b';
                return (
@@ -343,7 +311,7 @@ export default function PromotionsPage() {
 
          {heroCampaigns.length > 1 && (
             <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-3 z-30">
-               {heroCampaigns.map((_, i) => (
+               {heroCampaigns.map((_: any, i: number) => (
                   <button
                      key={i}
                      onClick={() => setActiveSlide(i)}
@@ -362,7 +330,7 @@ export default function PromotionsPage() {
                <div className="flex items-center gap-2.5 shrink-0 text-[11px] font-black uppercase tracking-widest text-slate-400 border-r border-slate-200 pr-6 mr-1">
                   <Zap size={15} className="text-[#ef4444] animate-bounce" /> Active Promos
                </div>
-               {quickStrips.map((cup, i) => {
+               {quickStrips.map((cup: any, i: number) => {
                   const isHex = cup.color?.startsWith('#');
                   return (
                      <button
@@ -415,7 +383,7 @@ export default function PromotionsPage() {
          </div>
 
          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {flashDeals.map((deal, index) => {
+            {flashDeals.map((deal: any, index: number) => {
                const isHighlyClaimed = deal.claimed >= 80;
                return (
                   <div key={`${deal.id}-${index}`} className="bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-sm relative group hover:shadow-2xl hover:border-[#ef4444]/30 transition-all duration-500">
@@ -463,59 +431,51 @@ export default function PromotionsPage() {
       </section>
    );
 
-   const renderBannerGrids = () => (
-      <section className="max-w-[1400px] mx-auto px-6 md:px-12 mb-20">
-         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <div className="relative rounded-[2.5rem] overflow-hidden bg-emerald-950 text-white p-10 md:p-14 shadow-xl shadow-emerald-950/10 group flex flex-col justify-between min-h-[300px]">
-               <div className="absolute top-0 right-0 w-[55%] h-full opacity-25 grayscale group-hover:opacity-40 group-hover:grayscale-0 transition-all duration-1000">
-                  <Image src="/ai_images/organic_grains_1776231059575.png" fill className="object-cover scale-105 group-hover:scale-100 transition-transform duration-700" alt="Spices Collection" />
-               </div>
-               <div className="absolute inset-0 bg-gradient-to-r from-emerald-950 via-emerald-950/90 to-transparent z-0" />
+   const renderBannerGrids = () => {
+      const displayBanners = allBanners.slice(0, 4);
 
-               <div className="relative z-10 flex flex-col gap-4 max-w-[75%] text-left">
-                  <div className="flex items-center gap-2.5 text-amber-400 font-black text-[10px] tracking-[0.25em] uppercase bg-white/5 w-fit px-3 py-1.5 rounded-full border border-white/10">
-                     <Award size={14} /> Native Exclusives
+      if (displayBanners.length === 0) {
+         return null;
+      }
+
+      return (
+         <section className="max-w-[1400px] mx-auto px-6 md:px-12 mb-20">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+               {displayBanners.map((banner: any, idx: number) => (
+                  <div 
+                     key={banner.id}
+                     className="relative rounded-[2.5rem] overflow-hidden bg-slate-900 text-white p-10 md:p-14 shadow-xl shadow-slate-900/10 group flex flex-col justify-between min-h-[300px]"
+                     style={{ backgroundColor: idx % 2 === 0 ? '#064e3b' : '#78350f' }}
+                  >
+                     <div className="absolute top-0 right-0 w-[55%] h-full opacity-20 grayscale group-hover:opacity-45 group-hover:grayscale-0 transition-all duration-1000">
+                        <img src={banner.banner_image || banner.image} className="w-full h-full object-cover scale-105 group-hover:scale-100 transition-transform duration-700" alt={banner.title || 'Banner'} />
+                     </div>
+                     <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/30 to-transparent z-0" />
+
+                     <div className="relative z-10 flex flex-col gap-4 max-w-[75%] text-left">
+                        <div className="flex items-center gap-2.5 text-amber-400 font-black text-[10px] tracking-[0.25em] uppercase bg-white/5 w-fit px-3 py-1.5 rounded-full border border-white/10">
+                           <Award size={14} /> {banner.tagline || 'Special Campaign'}
+                        </div>
+                        <h2 className="text-3xl md:text-4xl font-black tracking-tight uppercase leading-[0.95] text-white drop-shadow">
+                           {banner.title}
+                        </h2>
+                        {banner.subtitle && (
+                           <p className="text-slate-200/80 text-xs font-semibold leading-relaxed mt-1.5 max-w-md">
+                              {banner.subtitle}
+                           </p>
+                        )}
+                     </div>
+                     <div className="relative z-10 mt-8 text-left">
+                        <Link href={banner.link || '/best-selling'} className="inline-flex items-center gap-2.5 px-8 py-4 rounded-xl bg-white !text-slate-950 font-black uppercase tracking-wider text-[10px] active:scale-95 transition-all hover:bg-amber-400 hover:!text-slate-950 shadow-2xl">
+                           {banner.buttonText || 'Explore Offer'} <ArrowRight size={14} />
+                        </Link>
+                     </div>
                   </div>
-                  <h2 className="text-3xl md:text-4xl font-black tracking-tight uppercase leading-[0.95] text-white drop-shadow">
-                     Traditional Spices & <br /> Stone masalas
-                  </h2>
-                  <p className="text-emerald-100/65 text-xs font-bold leading-relaxed mt-1 max-w-md">
-                     100% chemical-free farm spices stone-pounded by native farmers to lock in essential natural oils.
-                  </p>
-               </div>
-               <div className="relative z-10 mt-8 text-left">
-                  <Link href="/best-selling" className="inline-flex items-center gap-2.5 px-8 py-4 rounded-xl bg-white !text-slate-950 font-black uppercase tracking-wider text-[10px] active:scale-95 transition-all hover:bg-amber-400 hover:!text-slate-950 shadow-2xl">
-                     Explore Masalas <ArrowRight size={14} />
-                  </Link>
-               </div>
+               ))}
             </div>
-
-            <div className="relative rounded-[2.5rem] overflow-hidden bg-amber-900 text-white p-10 md:p-14 shadow-xl shadow-amber-900/10 group flex flex-col justify-between min-h-[300px]">
-               <div className="absolute top-0 right-0 w-[55%] h-full opacity-25 grayscale group-hover:opacity-40 group-hover:grayscale-0 transition-all duration-1000">
-                  <Image src="/ai_images/mango_ginger_pickle.png" fill className="object-cover scale-105 group-hover:scale-100 transition-transform duration-700" alt="Pickle Artistry" />
-               </div>
-               <div className="absolute inset-0 bg-gradient-to-r from-amber-900 via-amber-900/95 to-transparent z-0" />
-
-               <div className="relative z-10 flex flex-col gap-4 max-w-[75%] text-left">
-                  <div className="flex items-center gap-2.5 text-emerald-200 font-black text-[10px] tracking-[0.25em] uppercase bg-white/5 w-fit px-3 py-1.5 rounded-full border border-white/10">
-                     <Percent size={14} /> Highly Curated
-                  </div>
-                  <h2 className="text-3xl md:text-4xl font-black tracking-tight uppercase leading-[0.95] text-white drop-shadow">
-                     Authentic Wood-Pressed <br /> Pickle range
-                  </h2>
-                  <p className="text-amber-100/75 text-xs font-bold leading-relaxed mt-1 max-w-md">
-                     Sun-dried, aged in natural clay jars, and preserved with high-grade wood-pressed oils.
-                  </p>
-               </div>
-               <div className="relative z-10 mt-8 text-left">
-                  <Link href="/best-selling" className="inline-flex items-center gap-2.5 px-8 py-4 rounded-xl bg-white !text-slate-950 font-black uppercase tracking-wider text-[10px] active:scale-95 transition-all hover:bg-emerald-950 hover:!text-white shadow-2xl">
-                     Shop Pickle Range <ArrowRight size={14} />
-                  </Link>
-               </div>
-            </div>
-         </div>
-      </section>
-   );
+         </section>
+      );
+   };
 
    const renderVoucherList = () => (
       <section id="active-deals" className="max-w-[1400px] mx-auto px-6 md:px-12 py-16 border-t border-slate-200/50">
@@ -528,7 +488,6 @@ export default function PromotionsPage() {
             </div>
             <div className="hidden lg:block h-[1px] flex-1 bg-slate-200 mx-10" />
          </div>
-
          {standardVouchers.length === 0 ? (
             <div className="bg-white border border-slate-200 rounded-3xl p-20 flex flex-col items-center justify-center text-center shadow-sm">
                <div className="h-20 w-20 bg-emerald-50 rounded-full flex items-center justify-center mb-5 text-emerald-600">
@@ -618,7 +577,7 @@ export default function PromotionsPage() {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-               {comboDeals.map((combo, index) => (
+               {comboDeals.map((combo: any, index: number) => (
                   <div key={`${combo.id}-${index}`} className="bg-white/5 border border-white/10 backdrop-blur-lg rounded-[2.5rem] p-6 md:p-8 lg:p-10 flex flex-col md:flex-row gap-8 items-center hover:bg-white/10 transition-all group shadow-[0_30px_60px_rgba(0,0,0,0.3)] relative overflow-hidden">
                      <div className="absolute top-0 left-0 w-20 h-20 bg-amber-400 text-slate-950 flex items-center justify-center font-black text-[10px] tracking-tighter rotate-[-45deg] translate-x-[-30px] translate-y-[-30px] shadow-xl z-10 uppercase pt-8 pl-7">
                         Combo
@@ -669,7 +628,7 @@ export default function PromotionsPage() {
          </div>
 
          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {walletOffers.map((wall, index) => {
+            {walletOffers.map((wall: any, index: number) => {
                const accentHex = wall.color || '#1e293b';
                return (
                   <div
@@ -740,12 +699,18 @@ export default function PromotionsPage() {
 
    const renderSection = (type: string) => {
       switch (type) {
-         case 'HERO_CAROUSEL': return renderHeroCarousel();
+         case 'HERO_CAROUSEL':
+         case 'HERO_SLIDER':
+            return renderHeroCarousel();
          case 'QUICK_STRIPS': return renderQuickStrips();
          case 'FLASH_DEALS': return renderFlashDeals();
          case 'BANNER_GRIDS': return renderBannerGrids();
-         case 'VOUCHER_LIST': return renderVoucherList();
-         case 'COMBOS': return renderCombos();
+         case 'VOUCHER_LIST':
+         case 'VOUCHERS':
+            return renderVoucherList();
+         case 'COMBOS':
+         case 'COMBO_OFFERS':
+            return renderCombos();
          case 'WALLET_OFFERS': return renderWalletOffers();
          case 'REFERRAL': return renderReferral();
          default: return null;
@@ -755,7 +720,7 @@ export default function PromotionsPage() {
    return (
       <div className="w-full bg-[#f8fafc] min-h-screen overflow-hidden relative pb-20 animate-in fade-in duration-700">
 
-         {/* DYNAMICALLY ORDERED CAMPAIGN ENGINE RENDERER */}
+         {/* DYNAMIC CAMPAIGN ENGINE — renders only real DB data */}
          {sections && sections.length > 0 ? (
             sections
                .filter((s: any) => s.isActive)
@@ -765,22 +730,18 @@ export default function PromotionsPage() {
                   </React.Fragment>
                ))
          ) : (
-            /* Resilient hardcoded fallback queue for high availability */
+            /* No section config — render all sections that have real data */
             <>
-               {renderHeroCarousel()}
-               {renderQuickStrips()}
-               {renderFlashDeals()}
+               {heroCampaigns.length > 0 && renderHeroCarousel()}
+               {quickStrips.length > 0 && renderQuickStrips()}
+               {flashDeals.length > 0 && renderFlashDeals()}
                {renderBannerGrids()}
                {renderVoucherList()}
-               {renderCombos()}
-               {renderWalletOffers()}
+               {comboDeals.length > 0 && renderCombos()}
+               {walletOffers.length > 0 && renderWalletOffers()}
                {renderReferral()}
             </>
          )}
-
-         {/* Auto mount essential legacy containers if they are excluded in database configuration */}
-         {sections && sections.length > 0 && !sections.some((s: any) => s.sectionType === 'VOUCHER_LIST') && renderVoucherList()}
-         {sections && sections.length > 0 && !sections.some((s: any) => s.sectionType === 'REFERRAL') && renderReferral()}
 
          {/* 9. STICKY FLOATING OFFER INDICATOR */}
          <AnimatePresence>
@@ -805,7 +766,7 @@ export default function PromotionsPage() {
                         <span className="text-[9px] font-black uppercase tracking-[0.15em] text-amber-400">Active Savings Vault</span>
                         <span className="text-sm font-black mt-1 tracking-tight">Stackable Offers Live</span>
                         <a href="#active-deals" className="text-[10px] text-emerald-400 hover:text-emerald-300 font-black underline mt-1.5 flex items-center gap-1 tracking-wide">
-                           View {activePromos.length || 12} Savings Vouchers <ChevronRight size={12} />
+                           View {activePromos.length} Savings Vouchers <ChevronRight size={12} />
                         </a>
                      </div>
                   </div>

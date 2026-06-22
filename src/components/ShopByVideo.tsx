@@ -8,12 +8,14 @@ import Link from 'next/link';
 import useSWR from 'swr';
 import { API_URL } from '@/lib/api';
 import ReelsViewer from './ReelsViewer';
+import { usePlatformSettings } from '@/context/PlatformSettingsContext';
 
 const fetcher = (url: string) => fetch(url).then(res => res.json());
 
 // --- OPTIMIZED SUBCOMPONENT: ELIMINATES MOUNT/UNMOUNT ABORT ERRORS ---
 const VideoReelItem = memo(({ video, isHovered, onClick, onHoverStart, onHoverEnd }: any) => {
   const videoRefLocal = useRef<HTMLVideoElement>(null);
+  const { settings } = usePlatformSettings();
 
   useEffect(() => {
     const el = videoRefLocal.current;
@@ -50,14 +52,14 @@ const VideoReelItem = memo(({ video, isHovered, onClick, onHoverStart, onHoverEn
       <div className="absolute inset-0">
         {/* Dual Layer Rendering: Cross-fades opacity instead of unmounting DOM nodes */}
         <Image
-          src={video.thumbnail || '/logo.webp'}
+          src={video.thumbnail || settings.logo || '/logo.webp'}
           alt={video.title}
           fill
           sizes="(max-width: 768px) 50vw, 30vw"
           className={`object-cover transition-opacity duration-700 group-hover:scale-110 ${isHovered ? 'opacity-0' : 'opacity-100'}`}
           unoptimized={video.thumbnail?.startsWith('http')}
           onError={(e) => {
-            (e.target as HTMLImageElement).src = '/logo.webp';
+            (e.target as HTMLImageElement).src = settings.logo || '/logo.webp';
           }}
         />
 

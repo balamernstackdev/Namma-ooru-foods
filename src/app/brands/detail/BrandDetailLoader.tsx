@@ -1,0 +1,62 @@
+'use client';
+
+import React from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
+import BrandDetailClient from '@/components/BrandDetailClient';
+import { API_URL } from '@/lib/api';
+import useSWR from 'swr';
+import PremiumLoader from '@/components/ui/PremiumLoader';
+
+const fetcher = (url: string) => fetch(url).then(res => res.json());
+
+export default function BrandDetailLoader() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const slug = searchParams.get('slug') || searchParams.get('id');
+
+  const { data: brand, error, isLoading } = useSWR(
+    slug ? `${API_URL}/api/sub-vendors/${slug}` : null,
+    fetcher
+  );
+
+  if (!slug) {
+    return (
+      <div className="min-h-[70vh] flex flex-col items-center justify-center py-20 px-8 text-center">
+        <h1 className="text-4xl font-black text-slate-800 uppercase tracking-tighter">No Brand Specified</h1>
+        <p className="text-slate-400 font-medium mt-4 max-w-sm mx-auto">Please select a brand to view their collection.</p>
+        <button
+          onClick={() => router.push('/brands')}
+          className="mt-8 h-12 px-8 rounded-xl bg-emerald-950 text-white font-black text-[11px] uppercase tracking-widest"
+        >
+          Browse All Brands
+        </button>
+      </div>
+    );
+  }
+
+  if (isLoading) {
+    return <PremiumLoader fullScreen={true} />;
+  }
+
+  if (error || !brand || brand.error) {
+    return (
+      <div className="min-h-[70vh] flex flex-col items-center justify-center py-20 px-8 text-center bg-white">
+        <div className="h-24 w-24 rounded-[2rem] bg-rose-50 flex items-center justify-center mb-8">
+          <span className="text-4xl font-black text-rose-400">!</span>
+        </div>
+        <h1 className="text-4xl md:text-5xl font-black text-slate-800 uppercase tracking-tighter">Brand Not Found</h1>
+        <p className="text-slate-400 font-medium mt-4 max-w-sm mx-auto tracking-tight">
+          This brand collection may have been removed or does not exist.
+        </p>
+        <button
+          onClick={() => router.push('/brands')}
+          className="mt-8 h-12 px-8 rounded-xl bg-emerald-950 text-white font-black text-[11px] uppercase tracking-widest"
+        >
+          Return to Registry
+        </button>
+      </div>
+    );
+  }
+
+  return <BrandDetailClient brand={brand} />;
+}

@@ -82,9 +82,14 @@ export default function AccountPage() {
 
   // Dynamic Background configuration
   useEffect(() => {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 4000);
+
     const fetchHeroImage = async () => {
       try {
-        const response = await fetch(`${API_URL}/api/settings/login_hero_image`);
+        const response = await fetch(`${API_URL}/api/settings/login_hero_image`, {
+          signal: controller.signal,
+        });
         if (response.ok) {
           const contentType = response.headers.get('content-type');
           if (contentType && contentType.includes('application/json')) {
@@ -94,11 +99,17 @@ export default function AccountPage() {
             }
           }
         }
-      } catch (err) {
-        console.error('Error fetching dynamic login hero image setting:', err);
+      } catch (err: any) {
+        // Silently ignore abort (timeout) or network errors — fallback image is already set
+        if (err?.name !== 'AbortError') {
+          console.warn('Hero image setting unavailable, using default.');
+        }
+      } finally {
+        clearTimeout(timeout);
       }
     };
     fetchHeroImage();
+    return () => controller.abort();
   }, []);
 
   // OTP countdown timer effect
@@ -110,7 +121,6 @@ export default function AccountPage() {
     return () => clearInterval(interval);
   }, [resendTimer]);
 
-  // Session redirection to correct panels
   useEffect(() => {
     if (user && typeof window !== 'undefined') {
       const role = user.role?.toLowerCase();
@@ -118,10 +128,18 @@ export default function AccountPage() {
         router.push('/admin');
       } else if (role === 'vendor') {
         router.push('/vendor');
-      } else if (window.innerWidth < 768) {
-        // Mobile custom layout stays here
+      } else if (role === 'hub') {
+        router.push('/hub/dashboard');
       } else {
-        router.push('/');
+        const params = new URLSearchParams(window.location.search);
+        const redirectTo = params.get('redirect');
+        if (redirectTo) {
+          router.push(redirectTo);
+        } else if (window.innerWidth < 768) {
+          // Mobile custom layout stays here
+        } else {
+          router.push('/');
+        }
       }
     }
   }, [user, router]);
@@ -423,10 +441,10 @@ export default function AccountPage() {
   if (user) {
     const menuItems = [
       { label: 'My Profile', href: '/account/profile', icon: User, desc: 'Personal details & settings' },
-      ...((user?.role?.toLowerCase() === 'admin' || user?.role?.toLowerCase() === 'vendor') ? [
+      ...((user?.role?.toLowerCase() === 'admin' || user?.role?.toLowerCase() === 'vendor' || user?.role?.toLowerCase() === 'hub') ? [
         {
           label: 'Control Board Portal',
-          href: user.role.toLowerCase() === 'vendor' ? '/vendor' : '/admin',
+          href: user.role.toLowerCase() === 'vendor' ? '/vendor' : user.role.toLowerCase() === 'hub' ? '/hub/dashboard' : '/admin',
           icon: LayoutDashboard,
           desc: 'Enterprise Operations panel'
         }
@@ -483,40 +501,34 @@ export default function AccountPage() {
   // MAIN GUEST ENTRY POINT (SPLIT SCREEN EXPERIENCE)
   // -----------------------------------------------------
   return (
-    <div className="min-h-[calc(100vh-96px)] w-full bg-[#fdfbf7] dark:bg-slate-950 flex items-stretch relative overflow-hidden transition-colors duration-500">
+    <div className="min-h-0 lg:min-h-[calc(100vh-96px)] w-full bg-[#fdfbf7] flex flex-col lg:flex-row relative overflow-hidden transition-colors duration-500">
 
-      {/* Dynamic Browser Autofill Overrides to remove default browser blue/yellow overlays */}
+      {/* Autofill override: force white background regardless of OS color-scheme */}
       <style dangerouslySetInnerHTML={{
         __html: `
-        input:-webkit-autofill,
-        input:-webkit-autofill:hover, 
-        input:-webkit-autofill:focus, 
-        input:-webkit-autofill:active {
-          -webkit-box-shadow: 0 0 0 1000px white inset !important;
+        /* Force white autofill on all inputs in the login/auth card */
+        .auth-input:-webkit-autofill,
+        .auth-input:-webkit-autofill:hover,
+        .auth-input:-webkit-autofill:focus,
+        .auth-input:-webkit-autofill:active {
+          -webkit-box-shadow: 0 0 0 1000px #ffffff inset !important;
           -webkit-text-fill-color: #1c1917 !important;
-          transition: background-color 5000s ease-in-out 0s;
-        }
-        .dark input:-webkit-autofill,
-        .dark input:-webkit-autofill:hover, 
-        .dark input:-webkit-autofill:focus, 
-        .dark input:-webkit-autofill:active {
-          -webkit-box-shadow: 0 0 0 1000px #0f172a inset !important;
-          -webkit-text-fill-color: #ffffff !important;
+          caret-color: #1c1917 !important;
+          transition: background-color 9999s ease-in-out 0s !important;
         }
       `}} />
 
       {/* 1. LEFT BACKGROUND IMAGE PANE */}
-      {/* On desktop: covers 58% of screen. On mobile: covers full background! */}
-      <div className="absolute inset-0 lg:static lg:flex lg:w-[58%] relative bg-stone-950 flex-col justify-end p-20 overflow-hidden">
+      <div className="hidden lg:flex lg:w-[58%] bg-[#fdfbf7] flex-col justify-end p-20 overflow-hidden relative border-r border-stone-100/80">
         {/* Cinematic Organic visual overlay background */}
         <img
           src={heroImage}
-          className="absolute inset-0 h-full w-full object-cover opacity-65 lg:opacity-60 scale-105 transition-all duration-1000"
+          className="absolute inset-0 h-full w-full object-cover opacity-20 scale-105 transition-all duration-1000"
           alt="Premium Namma Ooru Foods Organic Spices & Grains"
         />
         {/* Sophisticated gradient mapping */}
-        <div className="absolute inset-0 bg-gradient-to-t from-stone-950 via-stone-950/45 to-stone-950/25 opacity-95" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-transparent via-transparent to-stone-950/90" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#fdfbf7] via-[#fdfbf7]/40 to-transparent opacity-95" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-transparent via-transparent to-[#fdfbf7]/90" />
 
 
 
@@ -524,29 +536,29 @@ export default function AccountPage() {
         <div className="hidden lg:block relative z-20 max-w-xl animate-fade-in-up animation-delay-500">
           <div className="flex items-center gap-4 mb-6">
             <div className="h-[2px] w-12 bg-emerald-500 rounded-full" />
-            <span className="text-[11px] font-black text-emerald-400 uppercase tracking-[0.35em]">Namma Ooru Foods</span>
+            <span className="text-[11px] font-black text-emerald-600 uppercase tracking-[0.35em]">Namma Ooru Foods</span>
           </div>
-          <h1 className="text-5xl xl:text-[68px] font-black text-white tracking-tighter leading-[1.02] mb-8 drop-shadow-xl uppercase">
+          <h1 className="text-5xl xl:text-[68px] font-black text-stone-900 tracking-tighter leading-[1.02] mb-8 uppercase">
             Authentic.<br />
             Farm Fresh.<br />
             Delivered.
           </h1>
-          <p className="text-stone-300 font-bold text-lg leading-relaxed max-w-md mb-12">
+          <p className="text-stone-600 font-bold text-lg leading-relaxed max-w-md mb-12">
             Enjoy premium, chemical-free organic groceries and traditional products sourced directly from local agrarian families.
           </p>
 
           {/* Dynamic Stat cards */}
           <div className="flex gap-5 w-full">
-            <div className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-[2rem] p-6 flex-1 shadow-2xl transition-all hover:bg-white/10 hover:border-white/20 group">
-              <h4 className="text-3xl font-black text-white mb-1 tracking-tight group-hover:scale-105 transition-transform duration-300">50k+</h4>
+            <div className="bg-white/85 border border-stone-200/50 rounded-[2rem] p-6 flex-1 shadow-[0_8px_30px_rgb(0,0,0,0.015)] transition-all hover:bg-white hover:border-emerald-500/30 group">
+              <h4 className="text-3xl font-black text-stone-900 mb-1 tracking-tight group-hover:scale-105 group-hover:text-emerald-600 transition-all duration-300">50k+</h4>
               <p className="text-[10px] font-black text-stone-400 uppercase tracking-widest">Happy Families</p>
             </div>
-            <div className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-[2rem] p-6 flex-1 shadow-2xl transition-all hover:bg-white/10 hover:border-white/20 group">
-              <h4 className="text-3xl font-black text-white mb-1 tracking-tight group-hover:scale-105 transition-transform duration-300">200+</h4>
+            <div className="bg-white/85 border border-stone-200/50 rounded-[2rem] p-6 flex-1 shadow-[0_8px_30px_rgb(0,0,0,0.015)] transition-all hover:bg-white hover:border-emerald-500/30 group">
+              <h4 className="text-3xl font-black text-stone-900 mb-1 tracking-tight group-hover:scale-105 group-hover:text-emerald-600 transition-all duration-300">200+</h4>
               <p className="text-[10px] font-black text-stone-400 uppercase tracking-widest">Local Farmers</p>
             </div>
-            <div className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-[2rem] p-6 flex-1 shadow-2xl transition-all hover:bg-white/10 hover:border-white/20 group">
-              <h4 className="text-3xl font-black text-white mb-1 tracking-tight group-hover:scale-105 transition-transform duration-300">500+</h4>
+            <div className="bg-white/85 border border-stone-200/50 rounded-[2rem] p-6 flex-1 shadow-[0_8px_30px_rgb(0,0,0,0.015)] transition-all hover:bg-white hover:border-emerald-500/30 group">
+              <h4 className="text-3xl font-black text-stone-900 mb-1 tracking-tight group-hover:scale-105 group-hover:text-emerald-600 transition-all duration-300">500+</h4>
               <p className="text-[10px] font-black text-stone-400 uppercase tracking-widest">Organic items</p>
             </div>
           </div>
@@ -555,12 +567,12 @@ export default function AccountPage() {
 
       {/* 2. RIGHT / CENTER AUTHENTICATION GLASS PANE */}
       {/* On desktop: occupies 42%. On mobile: overlays transparently on background! */}
-      <div className="w-full lg:w-[42%] flex items-center justify-center p-4 sm:p-12 bg-transparent lg:bg-gradient-to-tr lg:from-stone-50 lg:to-[#fffefb] dark:lg:from-slate-950 dark:lg:to-slate-900/60 relative overflow-y-auto z-10">
-        <div className="absolute top-10 left-10 w-80 h-80 bg-emerald-100/30 dark:bg-emerald-950/15 rounded-full blur-[120px] pointer-events-none lg:block hidden" />
-        <div className="absolute bottom-10 right-10 w-80 h-80 bg-amber-100/30 dark:bg-amber-950/10 rounded-full blur-[120px] pointer-events-none lg:block hidden" />
+      <div className="w-full lg:w-[42%] flex items-center justify-center py-4 px-4 sm:p-12 bg-[#fdfbf7] lg:bg-gradient-to-tr lg:from-[#fdfbf7] lg:to-white border-l border-stone-100 relative overflow-y-auto z-10">
+        <div className="absolute top-10 left-10 w-80 h-80 bg-emerald-100/30 rounded-full blur-[120px] pointer-events-none lg:block hidden" />
+        <div className="absolute bottom-10 right-10 w-80 h-80 bg-amber-100/30 rounded-full blur-[120px] pointer-events-none lg:block hidden" />
 
         {/* Breathtaking smart authentication card */}
-        <div className="w-full max-w-[520px] px-6 py-10 sm:p-12 bg-white/90 dark:bg-slate-900/90 backdrop-blur-2xl rounded-[36px] border border-white/50 dark:border-slate-800/50 shadow-[0_20px_80px_rgba(0,0,0,0.08)] flex flex-col relative overflow-hidden transition-all duration-500">
+        <div className="w-full max-w-[520px] px-6 py-10 sm:p-12 bg-white rounded-[36px] border border-stone-200/60 shadow-[0_20px_80px_rgba(0,0,0,0.06)] flex flex-col relative overflow-hidden transition-all duration-500">
 
           {/* OTP success cinematic animation overlay */}
           <AnimatePresence>
@@ -569,7 +581,7 @@ export default function AccountPage() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="absolute inset-0 bg-white/95 dark:bg-slate-900/95 rounded-[36px] z-50 flex flex-col items-center justify-center p-8 text-center"
+                className="absolute inset-0 bg-white/95 rounded-[36px] z-50 flex flex-col items-center justify-center p-8 text-center"
               >
                 <div className="relative mb-6">
                   <motion.div
@@ -577,12 +589,12 @@ export default function AccountPage() {
                     transition={{ duration: 15, repeat: Infinity, ease: 'linear' }}
                     className="absolute -inset-4 border border-dashed border-[#0F9D58]/35 rounded-full"
                   />
-                  <div className="h-24 w-24 rounded-full bg-emerald-50 dark:bg-emerald-950/40 flex items-center justify-center text-[#0F9D58] shadow-xl shadow-emerald-500/10">
+                  <div className="h-24 w-24 rounded-full bg-emerald-50 flex items-center justify-center text-[#0F9D58] shadow-xl shadow-emerald-500/10">
                     <CheckCircle2 size={48} className="animate-scale-up" />
                   </div>
                 </div>
-                <h3 className="text-2xl font-black text-stone-900 dark:text-white tracking-tight uppercase">Verification Success</h3>
-                <p className="text-xs font-bold text-stone-400 dark:text-slate-400 uppercase tracking-widest mt-2">Securing marketplace session...</p>
+                <h3 className="text-2xl font-black text-stone-900 tracking-tight uppercase">Verification Success</h3>
+                <p className="text-xs font-bold text-stone-400 uppercase tracking-widest mt-2">Securing marketplace session...</p>
               </motion.div>
             )}
           </AnimatePresence>
@@ -600,23 +612,23 @@ export default function AccountPage() {
                 {/* Back Link */}
                 <button
                   onClick={() => setIsVerifyingOtp(false)}
-                  className="flex items-center gap-2 text-xs font-black text-stone-450 dark:text-slate-450 hover:text-stone-900 dark:hover:text-white uppercase tracking-widest self-start transition-colors"
+                  className="flex items-center gap-2 text-xs font-black text-stone-450 hover:text-stone-900 uppercase tracking-widest self-start transition-colors"
                 >
                   <ArrowLeft size={14} />
                   Back
                 </button>
 
                 <div className="text-center">
-                  <h2 className="text-[32px] font-black text-stone-900 dark:text-white tracking-tighter leading-none mb-3 uppercase">Verify Mobile</h2>
-                  <p className="text-xs font-bold text-stone-450 dark:text-slate-450 leading-relaxed uppercase tracking-wider">
-                    We've dispatched a secure verification OTP to <span className="text-[#0F9D58] dark:text-[#0F9D58]">+91 {phone || forgotEmail}</span>
+                  <h2 className="text-[32px] font-black text-stone-900 tracking-tighter leading-none mb-3 uppercase">Verify Mobile</h2>
+                  <p className="text-xs font-bold text-stone-450 leading-relaxed uppercase tracking-wider">
+                    We've dispatched a secure verification OTP to <span className="text-[#0F9D58]">+91 {phone || forgotEmail}</span>
                   </p>
                 </div>
 
                 {error && (
-                  <div className="w-full p-4.5 bg-red-50/70 dark:bg-red-950/20 border border-red-100 dark:border-red-950/40 rounded-2xl flex items-start gap-3.5 animate-shake">
+                  <div className="w-full p-4.5 bg-red-50/70 border border-red-100 rounded-2xl flex items-start gap-3.5 animate-shake">
                     <LockKeyhole className="text-red-500 h-4 w-4 shrink-0 mt-0.5" />
-                    <p className="text-xs font-bold text-red-600 dark:text-red-400 leading-relaxed">{error}</p>
+                    <p className="text-xs font-bold text-red-600 leading-relaxed">{error}</p>
                   </div>
                 )}
 
@@ -631,7 +643,7 @@ export default function AccountPage() {
                           type="text"
                           maxLength={1}
                           pattern="\d*"
-                          className={`w-12 h-14 sm:w-14 sm:h-16 text-center text-2xl font-black rounded-xl border-2 bg-stone-50/50 dark:bg-slate-800/30 text-stone-900 dark:text-white outline-none focus:scale-105 focus:ring-4 focus:ring-emerald-500/10 focus:border-[#0F9D58] transition-all ${digit ? 'border-emerald-300 dark:border-emerald-700 bg-emerald-50/20 dark:bg-emerald-950/10' : 'border-stone-200 dark:border-slate-800'}`}
+                          className={`w-12 h-14 sm:w-14 sm:h-16 text-center text-2xl font-black rounded-xl border-2 bg-stone-50 text-stone-900 outline-none focus:scale-105 focus:ring-4 focus:ring-emerald-500/10 focus:border-[#0F9D58] transition-all ${digit ? 'border-emerald-300 bg-emerald-50/20 shadow-sm' : 'border-stone-200'}`}
                           value={digit}
                           onChange={(e) => handleOtpChange(e.target.value, i)}
                           onKeyDown={(e) => handleOtpKeyDown(e, i)}
@@ -642,7 +654,7 @@ export default function AccountPage() {
                     </div>
 
                     <div className="flex items-center justify-between w-full px-1">
-                      <div className="flex items-center gap-1.5 text-xs font-bold text-stone-400 dark:text-slate-400 uppercase tracking-widest">
+                      <div className="flex items-center gap-1.5 text-xs font-bold text-stone-400 uppercase tracking-widest">
                         <Timer size={14} />
                         {resendTimer > 0 ? `00:${resendTimer.toString().padStart(2, '0')}` : 'Code Expired'}
                       </div>
@@ -655,7 +667,7 @@ export default function AccountPage() {
                           Resend Code
                         </button>
                       ) : (
-                        <span className="text-xs font-bold text-stone-300 dark:text-slate-700 uppercase tracking-widest">Resend Code</span>
+                        <span className="text-xs font-bold text-stone-300 uppercase tracking-widest">Resend Code</span>
                       )}
                     </div>
                   </div>
@@ -664,7 +676,7 @@ export default function AccountPage() {
                     <button
                       type="submit"
                       disabled={isLoading || getFullOtp().length < 6}
-                      className="w-full h-[60px] bg-[#0F9D58] hover:bg-[#0B7D46] disabled:bg-stone-200 dark:disabled:bg-slate-850 disabled:text-stone-400 dark:disabled:text-slate-600 rounded-2xl text-white font-semibold text-[13px] tracking-[0.15em] uppercase transition-all duration-300 flex items-center justify-center gap-2 shadow-lg cursor-pointer"
+                      className="w-full h-[60px] bg-[#0F9D58] hover:bg-[#0B7D46] disabled:bg-stone-200 disabled:text-stone-400 rounded-2xl text-white font-semibold text-[13px] tracking-[0.15em] uppercase transition-all duration-300 flex items-center justify-center gap-2 shadow-lg cursor-pointer"
                     >
                       {isLoading ? (
                         <span className="flex items-center gap-2">
@@ -691,18 +703,18 @@ export default function AccountPage() {
               >
                 {/* Visual Header */}
                 <div className="text-center">
-                  <h2 className="text-[32px] font-black text-stone-900 dark:text-white tracking-tighter leading-none mb-3">
+                  <h2 className="text-[32px] font-black text-stone-900 tracking-tighter leading-none mb-3">
                     {mode === 'login' ? 'Welcome Back' : 'Create Account'}
                   </h2>
-                  <p className="text-xs font-bold text-stone-450 dark:text-slate-400 uppercase tracking-widest leading-relaxed">
+                  <p className="text-xs font-bold text-stone-500 uppercase tracking-widest leading-relaxed">
                     {mode === 'login' ? 'Enter your mobile number or email to securely sign in or create an account.' : 'Join our premium organic food revolution today.'}
                   </p>
                 </div>
 
                 {error && (
-                  <div className="w-full p-4.5 bg-red-50/70 dark:bg-red-950/20 border border-red-100 dark:border-red-950/40 rounded-2xl flex items-start gap-3 animate-shake">
+                  <div className="w-full p-4.5 bg-red-50/70 border border-red-100 rounded-2xl flex items-start gap-3 animate-shake">
                     <LockKeyhole className="text-red-500 h-4 w-4 shrink-0 mt-0.5" />
-                    <p className="text-xs font-bold text-red-600 dark:text-red-400 leading-relaxed">{error}</p>
+                    <p className="text-xs font-bold text-red-600 leading-relaxed">{error}</p>
                   </div>
                 )}
 
@@ -719,34 +731,34 @@ export default function AccountPage() {
                         className="overflow-hidden flex flex-col gap-4"
                       >
                         {/* 1. Full Name */}
-                        <div className="relative h-[64px] rounded-2xl bg-white dark:bg-slate-900 border border-[#E8ECE5] dark:border-slate-800 shadow-[0_4px_20px_rgba(0,0,0,0.03)] focus-within:border-[#0F9D58] focus-within:shadow-[0_0_0_4px_rgba(15,157,88,0.12)] transition-all duration-300 flex items-center px-5">
+                        <div className="relative h-[64px] rounded-2xl bg-white border border-[#E8ECE5] shadow-[0_4px_20px_rgba(0,0,0,0.02)] focus-within:border-[#0F9D58] focus-within:shadow-[0_0_0_4px_rgba(15,157,88,0.1)] transition-all duration-300 flex items-center px-5">
                           <div className="relative flex-grow h-full">
                             <input
                               type="text"
                               value={name}
                               onChange={e => setName(e.target.value)}
-                              className="peer w-full h-full pt-4 bg-transparent outline-none font-bold text-sm text-stone-900 dark:text-white placeholder-transparent"
+                              className="auth-input peer w-full h-full pt-6 bg-transparent outline-none font-bold text-sm text-stone-900 placeholder-transparent"
                               placeholder="Full Name"
                               required={mode === 'signup'}
                             />
-                            <label className="absolute left-0 top-3.5 text-[9px] font-black text-stone-400 uppercase tracking-[0.15em] transition-all peer-placeholder-shown:text-xs peer-placeholder-shown:top-5.5 peer-placeholder-shown:font-semibold peer-focus:top-3.5 peer-focus:text-[9px] peer-focus:text-[#0F9D58] pointer-events-none">
+                            <label className="absolute left-0 top-2 text-[9px] font-black text-stone-400 uppercase tracking-[0.15em] transition-all peer-placeholder-shown:text-xs peer-placeholder-shown:top-5.5 peer-placeholder-shown:font-semibold peer-focus:top-2 peer-focus:text-[9px] peer-focus:text-[#0F9D58] pointer-events-none">
                               Full Name
                             </label>
                           </div>
                         </div>
 
                         {/* 2. Email Address */}
-                        <div className="relative h-[64px] rounded-2xl bg-white dark:bg-slate-900 border border-[#E8ECE5] dark:border-slate-800 shadow-[0_4px_20px_rgba(0,0,0,0.03)] focus-within:border-[#0F9D58] focus-within:shadow-[0_0_0_4px_rgba(15,157,88,0.12)] transition-all duration-300 flex items-center px-5">
+                        <div className="relative h-[64px] rounded-2xl bg-white border border-[#E8ECE5] shadow-[0_4px_20px_rgba(0,0,0,0.02)] focus-within:border-[#0F9D58] focus-within:shadow-[0_0_0_4px_rgba(15,157,88,0.1)] transition-all duration-300 flex items-center px-5">
                           <div className="relative flex-grow h-full">
                             <input
                               type="email"
                               value={email}
                               onChange={e => setEmail(e.target.value)}
-                              className="peer w-full h-full pt-4 bg-transparent outline-none font-bold text-sm text-stone-900 dark:text-white placeholder-transparent"
+                              className="auth-input peer w-full h-full pt-6 bg-transparent outline-none font-bold text-sm text-stone-900 placeholder-transparent"
                               placeholder="Email Address"
                               required={mode === 'signup'}
                             />
-                            <label className="absolute left-0 top-3.5 text-[9px] font-black text-stone-400 uppercase tracking-[0.15em] transition-all peer-placeholder-shown:text-xs peer-placeholder-shown:top-5.5 peer-placeholder-shown:font-semibold peer-focus:top-3.5 peer-focus:text-[9px] peer-focus:text-[#0F9D58] pointer-events-none">
+                            <label className="absolute left-0 top-2 text-[9px] font-black text-stone-400 uppercase tracking-[0.15em] transition-all peer-placeholder-shown:text-xs peer-placeholder-shown:top-5.5 peer-placeholder-shown:font-semibold peer-focus:top-2 peer-focus:text-[9px] peer-focus:text-[#0F9D58] pointer-events-none">
                               Email Address
                             </label>
                           </div>
@@ -756,10 +768,8 @@ export default function AccountPage() {
                   </AnimatePresence>
 
                   {/* SHARED FIELDS (ALWAYS VISIBLE, MORPHING HEIGHT & ALIGNMENT) */}
-                  <div className="flex flex-col gap-2">
-
-                    {/* 3. PREMIUM MOBILE INPUT */}
-                    <div className="relative h-[64px] rounded-2xl bg-white dark:bg-slate-900 border border-[#E8ECE5] dark:border-slate-800 shadow-[0_4px_20px_rgba(0,0,0,0.03)] focus-within:border-[#0F9D58] focus-within:shadow-[0_0_0_4px_rgba(15,157,88,0.12)] transition-all duration-300 flex items-center px-5">
+                  <div className="flex flex-col gap-2">                    {/* 3. PREMIUM MOBILE INPUT */}
+                    <div className="relative h-[64px] rounded-2xl bg-white border border-[#E8ECE5] shadow-[0_4px_20px_rgba(0,0,0,0.02)] focus-within:border-[#0F9D58] focus-within:shadow-[0_0_0_4px_rgba(15,157,88,0.1)] transition-all duration-300 flex items-center px-5">
                       <div className="relative flex-grow h-full">
                         <input
                           type={mode === 'login' && loginMethod === 'password' ? 'text' : 'tel'}
@@ -772,10 +782,10 @@ export default function AccountPage() {
                             }
                           }}
                           placeholder={mode === 'login' && loginMethod === 'password' ? 'Mobile or Email' : 'Mobile Number'}
-                          className="peer w-full h-full pt-4 bg-transparent outline-none font-bold text-sm text-stone-900 dark:text-white placeholder-transparent"
+                          className="auth-input peer w-full h-full pt-6 bg-transparent outline-none font-bold text-sm text-stone-900 placeholder-transparent"
                           required
                         />
-                        <label className="absolute left-0 top-3.5 text-[9px] font-black text-stone-400 uppercase tracking-[0.15em] transition-all peer-placeholder-shown:text-xs peer-placeholder-shown:top-5.5 peer-placeholder-shown:font-semibold peer-focus:top-3.5 peer-focus:text-[9px] peer-focus:text-[#0F9D58] pointer-events-none">
+                        <label className="absolute left-0 top-2 text-[9px] font-black text-stone-400 uppercase tracking-[0.15em] transition-all peer-placeholder-shown:text-xs peer-placeholder-shown:top-5 peer-placeholder-shown:font-semibold peer-focus:top-2 peer-focus:text-[9px] peer-focus:text-[#0F9D58] pointer-events-none">
                           {mode === 'login' && loginMethod === 'password' ? 'Mobile or Email' : 'Mobile Number'}
                         </label>
                       </div>
@@ -783,17 +793,16 @@ export default function AccountPage() {
 
                     {/* 4. PREMIUM PASSWORD INPUT */}
                     {!(mode === 'login' && loginMethod === 'otp') && (
-                      <div className="relative h-[64px] rounded-2xl bg-white dark:bg-slate-900 border border-[#E8ECE5] dark:border-slate-800 shadow-[0_4px_20px_rgba(0,0,0,0.03)] focus-within:border-[#0F9D58] focus-within:shadow-[0_0_0_4px_rgba(15,157,88,0.12)] transition-all duration-300 flex items-center px-5">
+                      <div className="relative h-[64px] rounded-2xl bg-white border border-[#E8ECE5] shadow-[0_4px_20px_rgba(0,0,0,0.02)] focus-within:border-[#0F9D58] focus-within:shadow-[0_0_0_4px_rgba(15,157,88,0.1)] transition-all duration-300 flex items-center px-5">
                         <div className="relative flex-grow h-full">
                           <input
                             type={showPassword ? 'text' : 'password'}
                             value={password}
                             onChange={e => setPassword(e.target.value)}
-                            className="peer w-full h-full pt-4 bg-transparent outline-none font-bold text-sm text-stone-900 dark:text-white placeholder-transparent"
-                            placeholder="Password"
+                            className="auth-input peer w-full h-full pt-6 bg-transparent outline-none font-bold text-sm text-stone-900 placeholder-transparent"
                             required
                           />
-                          <label className="absolute left-0 top-3.5 text-[9px] font-black text-stone-400 uppercase tracking-[0.15em] transition-all peer-placeholder-shown:text-xs peer-placeholder-shown:top-5.5 peer-placeholder-shown:font-semibold peer-focus:top-3.5 peer-focus:text-[9px] peer-focus:text-[#0F9D58] pointer-events-none">
+                          <label className="absolute left-0 top-2 text-[9px] font-black text-stone-400 uppercase tracking-[0.15em] transition-all peer-placeholder-shown:text-xs peer-placeholder-shown:top-5 peer-placeholder-shown:font-semibold peer-focus:top-2 peer-focus:text-[9px] peer-focus:text-[#0F9D58] pointer-events-none">
                             Password
                           </label>
                         </div>
@@ -819,17 +828,17 @@ export default function AccountPage() {
                         className="overflow-hidden flex flex-col gap-4"
                       >
                         {/* 5. Confirm Password */}
-                        <div className="relative h-[64px] rounded-2xl bg-white dark:bg-slate-900 border border-[#E8ECE5] dark:border-slate-800 shadow-[0_4px_20px_rgba(0,0,0,0.03)] focus-within:border-[#0F9D58] focus-within:shadow-[0_0_0_4px_rgba(15,157,88,0.12)] transition-all duration-300 flex items-center px-5">
+                        <div className="relative h-[64px] rounded-2xl bg-white border border-[#E8ECE5] shadow-[0_4px_20px_rgba(0,0,0,0.02)] focus-within:border-[#0F9D58] focus-within:shadow-[0_0_0_4px_rgba(15,157,88,0.1)] transition-all duration-300 flex items-center px-5">
                           <div className="relative flex-grow h-full">
                             <input
                               type={showConfirmPassword ? 'text' : 'password'}
                               value={confirmPassword}
                               onChange={e => setConfirmPassword(e.target.value)}
-                              className="peer w-full h-full pt-4 bg-transparent outline-none font-bold text-sm text-stone-900 dark:text-white placeholder-transparent"
+                              className="auth-input peer w-full h-full pt-6 bg-transparent outline-none font-bold text-sm text-stone-900 placeholder-transparent"
                               placeholder="Confirm Password"
                               required={mode === 'signup'}
                             />
-                            <label className="absolute left-0 top-3.5 text-[9px] font-black text-stone-400 uppercase tracking-[0.15em] transition-all peer-placeholder-shown:text-xs peer-placeholder-shown:top-5.5 peer-placeholder-shown:font-semibold peer-focus:top-3.5 peer-focus:text-[9px] peer-focus:text-[#0F9D58] pointer-events-none">
+                            <label className="absolute left-0 top-2 text-[9px] font-black text-stone-450 uppercase tracking-[0.15em] transition-all peer-placeholder-shown:text-xs peer-placeholder-shown:top-5 peer-placeholder-shown:font-semibold peer-focus:top-2 peer-focus:text-[9px] peer-focus:text-[#0F9D58] pointer-events-none">
                               Confirm Password
                             </label>
                           </div>
@@ -851,8 +860,8 @@ export default function AccountPage() {
                             checked={agreeTerms}
                             onChange={e => setAgreeTerms(e.target.checked)}
                           />
-                          <label htmlFor="agree-terms" className="text-[10px] font-bold text-stone-500 dark:text-slate-400 leading-none cursor-pointer select-none">
-                            I agree to Namma Ooru Foods's <Link href="/terms" className="font-black text-[#0F9D58] dark:text-[#0F9D58] underline underline-offset-2">terms & conditions</Link> and <Link href="/privacy" className="font-black text-[#0F9D58] dark:text-[#0F9D58] underline underline-offset-2">privacy notice</Link>.
+                          <label htmlFor="agree-terms" className="text-[10px] font-bold text-stone-500 leading-none cursor-pointer select-none">
+                            I agree to Namma Ooru Foods's <Link href="/terms" className="font-black text-[#0F9D58] underline underline-offset-2">terms & conditions</Link> and <Link href="/privacy" className="font-black text-[#0F9D58] underline underline-offset-2">privacy notice</Link>.
                           </label>
                         </div>
                       </motion.div>
@@ -880,7 +889,7 @@ export default function AccountPage() {
                           <button
                             type="button"
                             onClick={() => { setMode('forgot-password'); setError(null); }}
-                            className="text-[11px] font-black text-stone-400 hover:text-stone-705 uppercase tracking-widest transition-colors"
+                            className="text-[11px] font-black text-stone-400 hover:text-stone-600 uppercase tracking-widest transition-colors"
                           >
                             Forgot Password?
                           </button>
@@ -893,7 +902,7 @@ export default function AccountPage() {
                   <button
                     type="submit"
                     disabled={isLoading}
-                    className="w-full h-[60px] bg-[#0F9D58] hover:bg-[#0B7D46] disabled:bg-stone-200 dark:disabled:bg-slate-850 disabled:text-stone-400 dark:disabled:text-slate-600 rounded-2xl text-white font-semibold text-[13px] tracking-[0.15em] uppercase transition-all duration-300 flex items-center justify-center gap-2 shadow-lg cursor-pointer mt-1"
+                    className="w-full h-[60px] bg-[#0F9D58] hover:bg-[#0B7D46] disabled:bg-stone-200 disabled:text-stone-400 rounded-2xl text-white font-semibold text-[13px] tracking-[0.15em] uppercase transition-all duration-300 flex items-center justify-center gap-2 shadow-lg cursor-pointer mt-1"
                   >
                     {isLoading ? (
                       <span className="flex items-center gap-2">
@@ -952,15 +961,15 @@ export default function AccountPage() {
               >
                 <button
                   onClick={() => { setMode('login'); setForgotStep(1); setError(null); }}
-                  className="flex items-center gap-2 text-xs font-black text-stone-400 dark:text-slate-400 hover:text-stone-900 dark:hover:text-white uppercase tracking-widest self-start transition-colors"
+                  className="flex items-center gap-2 text-xs font-black text-stone-400 hover:text-stone-900 uppercase tracking-widest self-start transition-colors"
                 >
                   <ArrowLeft size={14} />
                   Back to Login
                 </button>
 
                 <div className="text-center">
-                  <h2 className="text-[32px] font-black text-stone-900 dark:text-white tracking-tighter leading-none mb-3 uppercase">Recover Account</h2>
-                  <p className="text-sm font-bold text-stone-400 dark:text-slate-400">
+                  <h2 className="text-[32px] font-black text-stone-900 tracking-tighter leading-none mb-3 uppercase">Recover Account</h2>
+                  <p className="text-sm font-bold text-stone-400">
                     {forgotStep === 1
                       ? 'Specify your registered mobile number below to receive an OTP.'
                       : 'Create your new strong password below.'}
@@ -968,25 +977,25 @@ export default function AccountPage() {
                 </div>
 
                 {error && (
-                  <div className="w-full p-4.5 bg-red-50/70 dark:bg-red-950/20 border border-red-100 dark:border-red-950/40 rounded-2xl flex items-start gap-3 animate-shake">
+                  <div className="w-full p-4.5 bg-red-50/70 border border-red-100 rounded-2xl flex items-start gap-3 animate-shake">
                     <LockKeyhole className="text-red-500 h-4 w-4 shrink-0 mt-0.5" />
-                    <p className="text-xs font-bold text-red-600 dark:text-red-400 leading-relaxed">{error}</p>
+                    <p className="text-xs font-bold text-red-600 leading-relaxed">{error}</p>
                   </div>
                 )}
 
                 {forgotStep === 1 ? (
                   <form onSubmit={handleForgotSubmit} className="flex flex-col gap-5">
-                    <div className="relative h-[64px] rounded-2xl bg-white dark:bg-slate-900 border border-[#E8ECE5] dark:border-slate-800 shadow-[0_4px_20px_rgba(0,0,0,0.03)] focus-within:border-[#0F9D58] focus-within:shadow-[0_0_0_4px_rgba(15,157,88,0.12)] transition-all duration-300 flex items-center px-5">
+                    <div className="relative h-[64px] rounded-2xl bg-white border border-[#E8ECE5] shadow-[0_4px_20px_rgba(0,0,0,0.02)] focus-within:border-[#0F9D58] focus-within:shadow-[0_0_0_4px_rgba(15,157,88,0.1)] transition-all duration-300 flex items-center px-5">
                       <div className="relative flex-grow h-full">
                         <input
                           type="tel"
                           placeholder="Mobile Number"
-                          className="peer w-full h-full pt-4 bg-transparent outline-none font-bold text-sm text-stone-900 dark:text-white placeholder-transparent"
+                          className="auth-input peer w-full h-full pt-6 bg-transparent outline-none font-bold text-sm text-stone-900 placeholder-transparent"
                           value={forgotEmail}
                           onChange={e => setForgotEmail(e.target.value.replace(/\D/g, ''))}
                           required
                         />
-                        <label className="absolute left-0 top-3.5 text-[9px] font-black text-stone-400 uppercase tracking-[0.15em] transition-all peer-placeholder-shown:text-xs peer-placeholder-shown:top-5.5 peer-placeholder-shown:font-semibold peer-focus:top-3.5 peer-focus:text-[9px] peer-focus:text-[#0F9D58] pointer-events-none">
+                        <label className="absolute left-0 top-2 text-[9px] font-black text-stone-450 uppercase tracking-[0.15em] transition-all peer-placeholder-shown:text-xs peer-placeholder-shown:top-5 peer-placeholder-shown:font-semibold peer-focus:top-2 peer-focus:text-[9px] peer-focus:text-[#0F9D58] pointer-events-none">
                           Mobile Number
                         </label>
                       </div>
@@ -995,7 +1004,7 @@ export default function AccountPage() {
                     <button
                       type="submit"
                       disabled={isLoading}
-                      className="w-full h-[60px] bg-[#0F9D58] hover:bg-[#0B7D46] disabled:bg-stone-200 dark:disabled:bg-slate-850 disabled:text-stone-400 dark:disabled:text-slate-600 rounded-2xl text-white font-semibold text-[13px] tracking-[0.15em] uppercase transition-all duration-300 flex items-center justify-center gap-2 shadow-lg cursor-pointer mt-2"
+                      className="w-full h-[60px] bg-[#0F9D58] hover:bg-[#0B7D46] disabled:bg-stone-200 disabled:text-stone-400 rounded-2xl text-white font-semibold text-[13px] tracking-[0.15em] uppercase transition-all duration-300 flex items-center justify-center gap-2 shadow-lg cursor-pointer mt-2"
                     >
                       {isLoading ? (
                         <span className="flex items-center gap-2">
@@ -1011,17 +1020,17 @@ export default function AccountPage() {
                   <form onSubmit={handleExecutePasswordReset} className="flex flex-col gap-5">
 
                     {/* New Password */}
-                    <div className="relative h-[64px] rounded-2xl bg-white dark:bg-slate-900 border border-[#E8ECE5] dark:border-slate-800 shadow-[0_4px_20px_rgba(0,0,0,0.03)] focus-within:border-[#0F9D58] focus-within:shadow-[0_0_0_4px_rgba(15,157,88,0.12)] transition-all duration-300 flex items-center px-5">
+                    <div className="relative h-[64px] rounded-2xl bg-white border border-[#E8ECE5] shadow-[0_4px_20px_rgba(0,0,0,0.02)] focus-within:border-[#0F9D58] focus-within:shadow-[0_0_0_4px_rgba(15,157,88,0.1)] transition-all duration-300 flex items-center px-5">
                       <div className="relative flex-grow h-full">
                         <input
                           type={showPassword ? 'text' : 'password'}
                           placeholder="••••••••"
-                          className="peer w-full h-full pt-4 bg-transparent outline-none font-bold text-sm text-stone-900 dark:text-white placeholder-transparent"
+                          className="auth-input peer w-full h-full pt-6 bg-transparent outline-none font-bold text-sm text-stone-900 placeholder-transparent"
                           value={password}
                           onChange={e => setPassword(e.target.value)}
                           required
                         />
-                        <label className="absolute left-0 top-3.5 text-[9px] font-black text-stone-400 uppercase tracking-[0.15em] transition-all peer-placeholder-shown:text-xs peer-placeholder-shown:top-5.5 peer-placeholder-shown:font-semibold peer-focus:top-3.5 peer-focus:text-[9px] peer-focus:text-[#0F9D58] pointer-events-none">
+                        <label className="absolute left-0 top-2 text-[9px] font-black text-stone-455 uppercase tracking-[0.15em] transition-all peer-placeholder-shown:text-xs peer-placeholder-shown:top-5 peer-placeholder-shown:font-semibold peer-focus:top-2 peer-focus:text-[9px] peer-focus:text-[#0F9D58] pointer-events-none">
                           New Password
                         </label>
                       </div>
@@ -1035,17 +1044,17 @@ export default function AccountPage() {
                     </div>
 
                     {/* Confirm New Password */}
-                    <div className="relative h-[64px] rounded-2xl bg-white dark:bg-slate-900 border border-[#E8ECE5] dark:border-slate-800 shadow-[0_4px_20px_rgba(0,0,0,0.03)] focus-within:border-[#0F9D58] focus-within:shadow-[0_0_0_4px_rgba(15,157,88,0.12)] transition-all duration-300 flex items-center px-5">
+                    <div className="relative h-[64px] rounded-2xl bg-white border border-[#E8ECE5] shadow-[0_4px_20px_rgba(0,0,0,0.02)] focus-within:border-[#0F9D58] focus-within:shadow-[0_0_0_4px_rgba(15,157,88,0.1)] transition-all duration-300 flex items-center px-5">
                       <div className="relative flex-grow h-full">
                         <input
                           type={showConfirmPassword ? 'text' : 'password'}
                           placeholder="••••••••"
-                          className="peer w-full h-full pt-4 bg-transparent outline-none font-bold text-sm text-stone-900 dark:text-white placeholder-transparent"
+                          className="auth-input peer w-full h-full pt-6 bg-transparent outline-none font-bold text-sm text-stone-900 placeholder-transparent"
                           value={confirmPassword}
                           onChange={e => setConfirmPassword(e.target.value)}
                           required
                         />
-                        <label className="absolute left-0 top-3.5 text-[9px] font-black text-stone-400 uppercase tracking-[0.15em] transition-all peer-placeholder-shown:text-xs peer-placeholder-shown:top-5.5 peer-placeholder-shown:font-semibold peer-focus:top-3.5 peer-focus:text-[9px] peer-focus:text-[#0F9D58] pointer-events-none">
+                        <label className="absolute left-0 top-2 text-[9px] font-black text-stone-455 uppercase tracking-[0.15em] transition-all peer-placeholder-shown:text-xs peer-placeholder-shown:top-5 peer-placeholder-shown:font-semibold peer-focus:top-2 peer-focus:text-[9px] peer-focus:text-[#0F9D58] pointer-events-none">
                           Confirm New Password
                         </label>
                       </div>
@@ -1061,7 +1070,7 @@ export default function AccountPage() {
                     <button
                       type="submit"
                       disabled={isLoading}
-                      className="w-full h-[60px] bg-[#0F9D58] hover:bg-[#0B7D46] disabled:bg-stone-200 dark:disabled:bg-slate-850 disabled:text-stone-400 dark:disabled:text-slate-600 rounded-2xl text-white font-semibold text-[13px] tracking-[0.15em] uppercase transition-all duration-300 flex items-center justify-center gap-2 shadow-lg cursor-pointer mt-2"
+                      className="w-full h-[60px] bg-[#0F9D58] hover:bg-[#0B7D46] disabled:bg-stone-200 disabled:text-stone-400 rounded-2xl text-white font-semibold text-[13px] tracking-[0.15em] uppercase transition-all duration-300 flex items-center justify-center gap-2 shadow-lg cursor-pointer mt-2"
                     >
                       {isLoading ? (
                         <span className="flex items-center gap-2">

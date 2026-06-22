@@ -53,8 +53,8 @@ export default function AdminBlogPage() {
     <div className="space-y-8 animate-in fade-in duration-700">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-          <h2 className="text-4xl font-black text-[var(--admin-sidebar)] tracking-tighter">Blog Management</h2>
-          <p className="text-slate-400 font-medium text-sm mt-1">Managing articles, recipes, and seasonal updates.</p>
+          <h1 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tighter italic">Blog <span className="text-emerald-600">Management</span></h1>
+          <p className="text-slate-400 font-bold uppercase tracking-[0.2em] text-[10px] mt-2">Managing articles, recipes, and seasonal updates.</p>
         </div>
         <button id="new-article-btn" onClick={() => router.push('/admin/blog/new')}
           className="h-16 px-10 rounded-2xl bg-[var(--admin-sidebar)] text-white text-[11px] font-black uppercase tracking-widest flex items-center gap-3 hover:bg-slate-900 transition-all shadow-2xl shadow-slate-900/20 active:scale-95">
@@ -73,7 +73,7 @@ export default function AdminBlogPage() {
 
       <div className="bg-white rounded-[3.5rem] border border-slate-100 shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-left">
+          <table className="w-full text-left min-w-[1000px] admin-data-table">
             <thead>
               <tr className="bg-slate-50/50">
                 {['Article', 'URL Path', 'Tags', 'Status', 'Date', 'Operations'].map(h => (

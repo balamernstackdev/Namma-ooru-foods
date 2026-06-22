@@ -125,7 +125,7 @@ export default function PaymentsPage() {
             </button>
           </div>
           <div className="overflow-x-auto">
-            <table className="w-full">
+            <table className="w-full min-w-[1000px] admin-data-table">
               <thead>
                 <tr className="bg-slate-50">
                   <th className="text-left px-6 py-3 text-[10px] font-black uppercase tracking-widest text-slate-400">Transaction</th>

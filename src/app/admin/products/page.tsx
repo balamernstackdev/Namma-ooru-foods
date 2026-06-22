@@ -5,6 +5,7 @@ import { Plus, Search, Edit2, Trash2, CheckCircle2, XCircle, Package, LayoutGrid
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
+import { usePlatformSettings } from '@/context/PlatformSettingsContext';
 import { useToast } from '@/context/ToastContext';
 import AdminPagination from '@/components/admin/AdminPagination';
 import AdminListToolbar from '@/components/admin/AdminListToolbar';
@@ -35,6 +36,7 @@ const STATUS_CONFIG: Record<string, { label: string; dot: string; bg: string; te
 export default function AdminProducts() {
    const router = useRouter();
    const { user } = useAuth();
+   const { settings } = usePlatformSettings();
    const { addToast } = useToast();
 
    // State controls
@@ -48,14 +50,17 @@ export default function AdminProducts() {
 
    const isVendor = user?.role?.toLowerCase() === 'vendor';
    const fetchUrl = isVendor && user?.brandId
-      ? `${API_URL}/api/products?brandId=${user?.brandId}&page=${currentPage}&limit=${itemsPerPage}&status=all`
-      : `${API_URL}/api/products?page=${currentPage}&limit=${itemsPerPage}&status=${statusFilter}`;
+      ? `${API_URL}/api/products?brandId=${user?.brandId}&limit=1000&status=all`
+      : `${API_URL}/api/products?limit=1000&status=all`;
 
    const { data, error, mutate } = useSWR(user ? fetchUrl : null, (url: string) => fetch(url).then(r => r.json()));
    const isLoading = !data && !error && !!user;
 
    const products: Product[] = data?.products || [];
-   const totalPages = data?.totalPages || 1;
+
+   React.useEffect(() => {
+      setCurrentPage(1);
+   }, [searchTerm, statusFilter]);
 
    const getStock = (p: Product) => {
       if (p.variants && p.variants.length > 0) {
@@ -66,16 +71,26 @@ export default function AdminProducts() {
 
    // Filtering + Sorting
    const filteredAndSorted = products
-      .filter(p =>
-         p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-         p.category?.name?.toLowerCase().includes(searchTerm.toLowerCase())
-      )
+      .filter(p => {
+         const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+         p.category?.name?.toLowerCase().includes(searchTerm.toLowerCase());
+         
+         const matchesStatus = statusFilter === 'all' || p.status === statusFilter;
+         
+         return matchesSearch && matchesStatus;
+      })
       .sort((a, b) => {
          if (sortOrder === 'latest') return b.id - a.id;
          if (sortOrder === 'oldest') return a.id - b.id;
          if (sortOrder === 'alphabetical') return a.name.localeCompare(b.name);
          return 0;
       });
+
+   const calculatedTotalPages = Math.max(1, Math.ceil(filteredAndSorted.length / itemsPerPage));
+   const paginatedProducts = filteredAndSorted.slice(
+      (currentPage - 1) * itemsPerPage,
+      currentPage * itemsPerPage
+   );
 
    const handleDelete = async (id: number) => {
       if (!confirm('Are you sure you want to permanently delete this product?')) return;
@@ -195,8 +210,7 @@ export default function AdminProducts() {
       }
    };
 
-   // Calculate quick stats
-   const statTotal = data?.total || products.length;
+   const statTotal = products.length;
    const statActive = products.filter(p => p.status === 'APPROVED').length;
    const statPending = products.filter(p => p.status === 'PENDING').length;
    const statLowStock = products.filter(p => getStock(p) < 20).length;
@@ -209,14 +223,14 @@ export default function AdminProducts() {
    ];
 
    return (
-      <div className="space-y-8 animate-in fade-in duration-500 pb-12 max-w-7xl mx-auto p-4 md:p-8">
+      <div className="space-y-8 animate-in fade-in duration-500 pb-12">
          {/* Header */}
          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-               <h1 className="text-4xl font-black text-slate-900 tracking-tighter">
-                  {isVendor ? 'My Products' : 'All Products'}
+               <h1 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tighter italic">
+                  {isVendor ? <>My <span className="text-emerald-600">Products</span></> : <>Product <span className="text-emerald-600">Management</span></>}
                </h1>
-               <p className="text-slate-400 font-medium text-sm mt-1">Configure organic catalog, manage inventory levels, and configure pricing.</p>
+               <p className="text-slate-400 font-bold uppercase tracking-[0.2em] text-[10px] mt-2">Configure organic catalog, manage inventory levels, and configure pricing.</p>
             </div>
          </div>
 
@@ -251,8 +265,9 @@ export default function AdminProducts() {
 
          {/* Listing table */}
          <div className="bg-white rounded-[2.5rem] border border-slate-200 shadow-sm overflow-hidden mt-6">
-            <div className="overflow-x-auto">
-               <table className="w-full text-left border-collapse">
+            {/* Desktop View */}
+            <div className="hidden md:block overflow-x-auto min-h-[280px]">
+               <table className="w-full text-left border-collapse min-w-[1000px] admin-data-table">
                   <thead>
                      <tr className="bg-slate-50/50">
                         <th className="px-6 py-5 w-12 border-b border-slate-100 text-center">
@@ -302,7 +317,7 @@ export default function AdminProducts() {
                            </td>
                         </tr>
                      ) : (
-                        filteredAndSorted.map(product => {
+                        paginatedProducts.map(product => {
                            const stock = getStock(product);
                            const stockPct = Math.min(100, (stock / 100) * 100);
                            const isLow = stock < 20;
@@ -322,7 +337,7 @@ export default function AdminProducts() {
                                     <div className="flex items-center gap-3">
                                        <div className="h-10 w-10 rounded-xl bg-slate-50 border border-slate-100 overflow-hidden shrink-0 shadow-sm">
                                           <img
-                                             src={product.image || '/logo.webp'}
+                                             src={product.image || settings.logo || '/logo.webp'}
                                              className="h-full w-full object-cover"
                                              alt={product.name}
                                           />
@@ -380,7 +395,7 @@ export default function AdminProducts() {
                                     </span>
                                  </td>
 
-                                 <td className="px-6 py-4 text-right border-b border-slate-50 relative">
+                                 <td className={`px-6 py-4 text-right border-b border-slate-50 relative ${activeMenuId === product.id ? '!z-[60]' : ''}`}>
                                     <div className="flex items-center justify-end gap-1">
                                        <Link
                                           href={`/admin/products/edit/${product.id}`}
@@ -434,12 +449,165 @@ export default function AdminProducts() {
                </table>
             </div>
 
+            {/* Mobile View - Card Layout */}
+            <div className="block md:hidden divide-y divide-slate-100">
+               {isLoading ? (
+                  Array.from({ length: 3 }).map((_, i) => (
+                     <div key={i} className="p-6 space-y-4 animate-pulse">
+                        <div className="flex items-center gap-3">
+                           <div className="h-12 w-12 bg-slate-100 rounded-xl shrink-0" />
+                           <div className="space-y-2 flex-1">
+                              <div className="h-3 bg-slate-100 rounded w-2/3" />
+                              <div className="h-2 bg-slate-100 rounded w-1/3" />
+                           </div>
+                        </div>
+                        <div className="h-16 bg-slate-50/50 rounded-2xl" />
+                     </div>
+                  ))
+               ) : filteredAndSorted.length === 0 ? (
+                  <div className="py-20 text-center">
+                     <div className="max-w-md mx-auto flex flex-col items-center gap-3 px-6">
+                        <div className="h-12 w-12 bg-slate-50 rounded-full flex items-center justify-center text-slate-400">
+                           <Package size={20} />
+                        </div>
+                        <h4 className="text-xs font-black text-slate-800 uppercase tracking-wider">No products found</h4>
+                        <p className="text-[10px] text-slate-400 font-bold">
+                           Start expanding your heritage market presence by adding your first product to our directory.
+                        </p>
+                     </div>
+                  </div>
+               ) : (
+                  paginatedProducts.map(product => {
+                     const stock = getStock(product);
+                     const stockPct = Math.min(100, (stock / 100) * 100);
+                     const isLow = stock < 20;
+
+                     return (
+                        <div key={product.id} className="p-6 space-y-4">
+                           <div className="flex items-center gap-3">
+                              <div className="h-12 w-12 rounded-xl bg-slate-50 border border-slate-100 overflow-hidden shrink-0 shadow-sm">
+                                 <img
+                                    src={product.image || settings.logo || '/logo.webp'}
+                                    className="h-full w-full object-cover"
+                                    alt={product.name}
+                                 />
+                              </div>
+                              <div className="min-w-0 flex-1">
+                                 <div className="flex items-center justify-between gap-2">
+                                    <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">
+                                       ID: NM-00{product.id}
+                                    </span>
+                                    <button onClick={() => toggleSelectRow(product.id)} className="text-slate-400 hover:text-slate-600 transition-colors">
+                                       {selectedIds.includes(product.id) ? (
+                                          <CheckSquare size={16} className="text-emerald-600" />
+                                       ) : (
+                                          <Square size={16} />
+                                       )}
+                                    </button>
+                                 </div>
+                                 <p className="text-[13px] font-extrabold text-slate-900 leading-tight truncate mt-0.5">
+                                    {product.name}
+                                 </p>
+                              </div>
+                           </div>
+
+                           <div className="grid grid-cols-2 gap-3 bg-slate-50/50 rounded-2xl p-4 border border-slate-100/50 text-xs">
+                              <div className="space-y-1">
+                                 <span className="text-[9px] text-slate-400 uppercase tracking-wider block font-bold">Category</span>
+                                 <span className="font-extrabold text-slate-800 block truncate">
+                                    {product.category?.name || 'Heritage Foods'}
+                                 </span>
+                              </div>
+                              <div className="space-y-1">
+                                 <span className="text-[9px] text-slate-400 uppercase tracking-wider block font-bold">Price</span>
+                                 <span className="font-extrabold text-slate-900 block">
+                                    ₹{Number(product.price).toLocaleString('en-IN')}
+                                 </span>
+                              </div>
+                              <div className="col-span-2 space-y-1.5 pt-2 border-t border-slate-100">
+                                 <div className="flex items-center justify-between">
+                                    <span className="text-[9px] text-slate-400 uppercase tracking-wider font-bold">Stock Status</span>
+                                    <span className={`text-[9px] font-black uppercase tracking-wider ${isLow ? 'text-red-500' : 'text-emerald-500'}`}>
+                                       {stock} units ({isLow ? 'Low' : 'OK'})
+                                    </span>
+                                 </div>
+                                 <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
+                                    <div
+                                       className={`h-full rounded-full transition-all ${isLow ? 'bg-red-400' : 'bg-emerald-500'}`}
+                                       style={{ width: `${stockPct}%` }}
+                                    />
+                                 </div>
+                              </div>
+                              <div className="col-span-2 pt-2 border-t border-slate-100 flex items-center gap-1.5 flex-wrap">
+                                 <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider border ${product.status === 'APPROVED' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' :
+                                       product.status === 'PENDING' ? 'bg-amber-50 text-amber-700 border-amber-100' :
+                                          'bg-slate-50 text-slate-500 border-slate-200'
+                                    }`}>
+                                    Status: {product.status}
+                                 </span>
+                                 {product.subVendor && (
+                                    <span className="px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest bg-indigo-50 text-indigo-600 border border-indigo-100">
+                                       {product.subVendor.name}
+                                    </span>
+                                 )}
+                              </div>
+                           </div>
+
+                           <div className="flex items-center gap-2 pt-1">
+                              <Link
+                                 href={`/admin/products/edit/${product.id}`}
+                                 className="h-11 flex-1 flex items-center justify-center gap-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-all text-xs font-bold no-underline"
+                              >
+                                 <Edit2 size={14} /> Edit
+                              </Link>
+                              
+                              <div className="relative">
+                                 <button
+                                    onClick={() => setActiveMenuId(activeMenuId === product.id ? null : product.id)}
+                                    className="h-11 w-11 flex items-center justify-center rounded-xl bg-slate-50 border border-slate-200 text-slate-400 hover:text-slate-600 transition-colors"
+                                 >
+                                    <MoreHorizontal size={18} />
+                                 </button>
+
+                                 {activeMenuId === product.id && (
+                                    <>
+                                       <div className="fixed inset-0 z-40" onClick={() => setActiveMenuId(null)} />
+                                       <div className="absolute right-0 mt-2 w-44 bg-white border border-slate-200 rounded-2xl shadow-xl p-2 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                                          <button
+                                             onClick={() => { handleStatusChange(product.id, 'APPROVED'); setActiveMenuId(null); }}
+                                             className="w-full text-left px-4 py-2.5 rounded-xl text-xs font-bold text-slate-600 hover:bg-emerald-50 hover:text-emerald-800 transition-colors flex items-center gap-2"
+                                          >
+                                             <Check size={14} /> Publish Product
+                                          </button>
+                                          <button
+                                             onClick={() => { handleStatusChange(product.id, 'PENDING'); setActiveMenuId(null); }}
+                                             className="w-full text-left px-4 py-2.5 rounded-xl text-xs font-bold text-slate-600 hover:bg-amber-50 hover:text-amber-800 transition-colors flex items-center gap-2"
+                                          >
+                                             <ShieldAlert size={14} /> Mark Pending
+                                          </button>
+                                          <button
+                                             onClick={() => { handleDelete(product.id); setActiveMenuId(null); }}
+                                             className="w-full text-left px-4 py-2.5 rounded-xl text-xs font-bold text-slate-600 hover:bg-red-50 hover:text-red-800 transition-colors flex items-center gap-2"
+                                          >
+                                             <Trash2 size={14} /> Delete Product
+                                          </button>
+                                       </div>
+                                    </>
+                                 )}
+                              </div>
+                           </div>
+                        </div>
+                     );
+                  })
+               )}
+            </div>
+
             {/* Pagination */}
-            {totalPages > 1 && (
+            {calculatedTotalPages > 1 && (
                <div className="border-t border-slate-50">
                   <AdminPagination
                      currentPage={currentPage}
-                     totalPages={totalPages}
+                     totalPages={calculatedTotalPages}
                      onPageChange={setCurrentPage}
                   />
                </div>

@@ -114,6 +114,7 @@ export default function BrandForm({ initialData, mode }: BrandFormProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (submitting) return;
     setSubmitting(true);
     try {
       const url = mode === 'edit'

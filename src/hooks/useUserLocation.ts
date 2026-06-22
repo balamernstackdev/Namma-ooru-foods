@@ -9,6 +9,10 @@ export interface LocationData {
   lat?: number;
   lng?: number;
   formattedAddress?: string;
+  district?: string;
+  state?: string;
+  country?: string;
+  street?: string;
 }
 
 export const useUserLocation = () => {
@@ -50,7 +54,7 @@ export const useUserLocation = () => {
         { 
           headers: { 
             'Accept-Language': 'en',
-            'User-Agent': 'NammaOrruFoods/1.0' 
+            'User-Agent': 'NammaOoruFoods/1.0' 
           } 
         }
       );
@@ -64,6 +68,10 @@ export const useUserLocation = () => {
       const city = addr.city || addr.town || addr.village || addr.state_district || addr.state || 'Chennai';
       const area = addr.suburb || addr.neighbourhood || addr.residential || addr.road || addr.county || city;
       const pincode = addr.postcode || '';
+      const district = addr.state_district || addr.county || city;
+      const state = addr.state || 'Tamil Nadu';
+      const country = addr.country || 'India';
+      const street = addr.road || addr.street || addr.pedestrian || '';
 
       const locationData: LocationData = {
         city,
@@ -71,7 +79,11 @@ export const useUserLocation = () => {
         pincode,
         lat,
         lng,
-        formattedAddress: data.display_name
+        formattedAddress: data.display_name,
+        district,
+        state,
+        country,
+        street
       };
 
       saveLocation(locationData);
@@ -84,7 +96,11 @@ export const useUserLocation = () => {
         area: 'Anna Nagar',
         pincode: '600040',
         lat,
-        lng
+        lng,
+        district: 'Chennai',
+        state: 'Tamil Nadu',
+        country: 'India',
+        street: 'Anna Nagar Second Avenue'
       };
       saveLocation(fallback);
       return fallback;

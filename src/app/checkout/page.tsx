@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import {
-   ShieldCheck, Truck, CheckCircle, RefreshCw, MapPin, Plus, ChevronRight, User, CreditCard, Lock, ChevronDown, ChevronUp, Tag, Home, Briefcase, Download, Package, FileText, Sparkles, Star
+   ShieldCheck, Truck, CheckCircle, RefreshCw, MapPin, Plus, ChevronRight, User, CreditCard, Lock, ChevronDown, ChevronUp, Tag, Home, Briefcase, Download, Package, FileText, Sparkles, Star, ShoppingBag, Phone
 } from 'lucide-react';
 import { useCartStore } from '@/store/useCartStore';
 import { useAuth } from '@/context/AuthContext';
@@ -54,18 +54,89 @@ export default function CheckoutPage() {
    const { data: recData } = useSWR(`${API_URL}/api/products?limit=4`, fetcher);
    const recommendedProducts = recData?.products ? recData.products.slice(0, 4) : [];
 
-   const subtotal = getTotal();
-   const delivery = (discountType === 'FREE_SHIPPING' || subtotal >= 499) ? 0 : 49;
-   const gst = Math.round(subtotal * 0.05);
-   const total = subtotal - discount + delivery + gst;
+   // Dynamic settings fetch
+   const { data: settingsData } = useSWR(`${API_URL}/api/settings`, fetcher);
 
-   useEffect(() => {
-      setMounted(true);
-      if (user?.id) {
-         setEmail(user.email);
-         loadAddresses();
-      }
-   }, [user]);
+   const getSettingVal = (key: string, fallback: string) => {
+      if (!settingsData || !Array.isArray(settingsData)) return fallback;
+      const found = settingsData.find((s: any) => s.key === key);
+      return found ? found.value : fallback;
+   };
+
+   const gstEnabled = getSettingVal('gst_enabled', 'true') === 'true';
+   const defaultGstRate = parseFloat(getSettingVal('gst_default_rate', '18'));
+   const gstTaxType = getSettingVal('gst_tax_type', 'exclusive');
+   const gstRoundingEnabled = getSettingVal('gst_rounding_enabled', 'true') === 'true';
+   const gstTaxLabel = getSettingVal('gst_tax_label', 'GST');
+
+   // Calculate GST dynamically
+   let gst = 0;
+   if (gstEnabled && cart.length > 0) {
+      cart.forEach((item) => {
+         const itemRate = item.gstRate !== undefined && item.gstRate !== null ? item.gstRate : defaultGstRate;
+         const totalPrice = item.price * item.quantity;
+         let itemTax = 0;
+         if (gstTaxType === 'inclusive') {
+            itemTax = totalPrice - (totalPrice / (1 + itemRate / 100));
+         } else {
+            itemTax = totalPrice * (itemRate / 100);
+         }
+         if (gstRoundingEnabled) {
+            gst += Math.round(itemTax);
+         } else {
+            gst += parseFloat(itemTax.toFixed(2));
+         }
+      });
+   }
+   if (gstRoundingEnabled) {
+      gst = Math.round(gst);
+   } else {
+      gst = parseFloat(gst.toFixed(2));
+   }
+
+   const subtotal = getTotal();
+   
+   // Fetch dynamic shipping values
+   const freeDeliveryAbove = parseFloat(getSettingVal('free_shipping_threshold', '499'));
+   const flatDeliveryFee = parseFloat(getSettingVal('delivery_fee', '49'));
+   const minOrderForDelivery = parseFloat(getSettingVal('shipping_min_order_amount', '0'));
+   
+   const delivery = (discountType === 'FREE_SHIPPING' || subtotal >= freeDeliveryAbove) ? 0 : flatDeliveryFee;
+   
+   let total = 0;
+   if (gstTaxType === 'exclusive') {
+      total = subtotal - discount + delivery + gst;
+   } else {
+      total = subtotal - discount + delivery;
+   }
+   if (total < 0) total = 0;
+   if (gstRoundingEnabled) {
+      total = Math.round(total);
+   } else {
+      total = parseFloat(total.toFixed(2));
+   }
+
+    const activeGateway = getSettingVal('active_payment_gateway', 'HDFC');
+    const paymentMethods = activeGateway === 'Razorpay' ? ['Razorpay'] : ['Online'];
+
+    useEffect(() => {
+       if (settingsData) {
+          const activeGatewayVal = getSettingVal('active_payment_gateway', 'HDFC');
+          if (activeGatewayVal === 'Razorpay' && paymentMethod === 'Online') {
+             setPaymentMethod('Razorpay');
+          } else if (activeGatewayVal === 'HDFC' && paymentMethod === 'Razorpay') {
+             setPaymentMethod('Online');
+          }
+       }
+    }, [settingsData, paymentMethod]);
+
+    useEffect(() => {
+       setMounted(true);
+       if (user?.id) {
+          setEmail(user.email);
+          loadAddresses();
+       }
+    }, [user]);
 
    const loadAddresses = async () => {
       if (!user?.id) return;
@@ -137,7 +208,8 @@ export default function CheckoutPage() {
                discountAmount: discount,
                gstAmount: gst,
                items: cart,
-               paymentMethod: paymentMethod === 'Cash on Delivery' ? 'Cash on Delivery' : 'Online'
+               paymentMethod: paymentMethod === 'Razorpay' ? 'Razorpay Online' : paymentMethod === 'Cash on Delivery' ? 'Cash on Delivery' : 'Online',
+               couponCode: appliedCoupon?.code || promoCode || null
             })
          });
 
@@ -155,34 +227,194 @@ export default function CheckoutPage() {
             });
          };
 
-         const res = await fetch(`${API_URL}/api/payments/orders`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-               amount: total,
-               customerId: user?.id,
-               customerEmail: email || user?.email || '',
-               customerPhone: addresses.find(a => a.id === selectedAddressId)?.phone || '9999999999',
-               returnUrl: `${API_URL}/api/payments/verify`,
-               dbOrderId: dbOrder.id
-            })
-         });
-         const hdfcOrder = await res.json();
+         if (paymentMethod === 'Razorpay') {
+            const res = await fetch(`${API_URL}/api/payments/razorpay/session`, {
+               method: 'POST',
+               headers: { 'Content-Type': 'application/json' },
+               body: JSON.stringify({
+                  amount: total,
+                  customerId: user?.id,
+                  customerEmail: email || user?.email || '',
+                  customerPhone: addresses.find(a => a.id === selectedAddressId)?.phone || '9999999999',
+                  dbOrderId: dbOrder.id
+               })
+            });
+            const razorpayOrder = await res.json();
+            if (!res.ok) throw new Error(razorpayOrder.error || 'Failed to initialize Razorpay payment');
 
-         if (!res.ok) throw new Error(hdfcOrder.error || 'Failed to initialize payment');
-
-         if (hdfcOrder.paymentLink) {
-            // Redirect to HDFC SmartGateway Secure Checkout
-            window.location.href = hdfcOrder.paymentLink;
+            const options = {
+               key: razorpayOrder.keyId,
+               amount: razorpayOrder.amount,
+               currency: razorpayOrder.currency,
+               name: "Namma Ooru Foods",
+               description: "Purchase Order",
+               order_id: razorpayOrder.orderId,
+               handler: async function (response: any) {
+                  try {
+                     const verifyRes = await fetch(`${API_URL}/api/payments/razorpay/verify`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                           razorpay_payment_id: response.razorpay_payment_id,
+                           razorpay_order_id: response.razorpay_order_id,
+                           razorpay_signature: response.razorpay_signature,
+                           dbOrderId: dbOrder.id
+                        })
+                     });
+                     const verifyData = await verifyRes.json();
+                     if (verifyData.success) {
+                        commitOrderCache();
+                        clearCart();
+                        setStep(4);
+                        window.scrollTo(0, 0);
+                     } else {
+                        setPromoError('Payment verification failed. Please contact support.');
+                     }
+                  } catch (e) {
+                     setPromoError('Payment verification error.');
+                  }
+               },
+               prefill: {
+                  name: user?.name || "Guest",
+                  email: email || user?.email || "",
+                  contact: addresses.find(a => a.id === selectedAddressId)?.phone || ""
+               },
+               theme: {
+                  color: "#16a34a"
+               }
+            };
+            const rzp1 = new (window as any).Razorpay(options);
+            rzp1.on('payment.failed', function (response: any) {
+               setPromoError('Payment failed: ' + response.error.description);
+               setIsProcessing(false);
+            });
+            rzp1.open();
          } else {
-            throw new Error('Payment gateway link could not be generated');
+            const res = await fetch(`${API_URL}/api/payments/session`, {
+               method: 'POST',
+               headers: { 'Content-Type': 'application/json' },
+               body: JSON.stringify({
+                  amount: total,
+                  customerId: user?.id,
+                  customerEmail: email || user?.email || '',
+                  customerPhone: addresses.find(a => a.id === selectedAddressId)?.phone || '9999999999',
+                  returnUrl: `${API_URL}/api/payments/verify`,
+                  dbOrderId: dbOrder.id
+               })
+            });
+            const hdfcOrder = await res.json();
+
+            if (!res.ok) throw new Error(hdfcOrder.error || 'Failed to initialize payment');
+
+            if (hdfcOrder.paymentLink) {
+               // Redirect to HDFC SmartGateway Secure Checkout
+               window.location.href = hdfcOrder.paymentLink;
+            } else {
+               throw new Error('Payment gateway link could not be generated');
+            }
          }
       } catch (error: any) {
          setPromoError(error.message || 'Payment processing failed');
-      } finally { setIsProcessing(false); }
+         setIsProcessing(false);
+      }
    };
 
    if (!mounted) return null;
+
+   if (!user) {
+      return (
+         <div className="bg-gradient-to-br from-[#f0fdf4] to-[#f8f8f5] min-h-[calc(100vh-100px)] py-8 px-4 sm:px-6 lg:px-8 flex items-center justify-center">
+            <div className="max-w-[1400px] w-full mx-auto">
+               <div className="grid grid-cols-1 lg:grid-cols-2 bg-white rounded-[32px] overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.05)] border border-slate-100 min-h-[600px]">
+                  
+                  {/* LEFT SIDE: Auth Form */}
+                  <div className="p-8 md:p-16 lg:p-20 flex flex-col justify-center relative">
+                     <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-[#059669] to-[#16a34a]" />
+                     <div className="max-w-md mx-auto w-full">
+                        <div className="h-16 w-16 bg-emerald-50 rounded-[1.5rem] flex items-center justify-center mb-8 shadow-sm border border-emerald-100/50">
+                           <Lock className="h-8 w-8 text-[#16a34a]" />
+                        </div>
+                        <h2 className="text-[32px] md:text-[40px] font-black text-[#111827] tracking-tight leading-none mb-4">Secure Checkout</h2>
+                        <p className="text-[15px] text-[#6b7280] font-semibold leading-relaxed mb-10">
+                           Login to continue your purchase and enjoy farm fresh delivery.
+                        </p>
+
+                        <div className="flex flex-col gap-4">
+                           <Link href="/account?redirect=/checkout" className="flex items-center justify-center h-[60px] w-full bg-[#111827] text-white rounded-2xl font-bold text-[16px] transition-all hover:bg-[#1f2937] hover:shadow-lg hover:-translate-y-0.5 gap-2" style={{ color: 'white' }}>
+                              <Phone size={20} className="text-white" /> <span className="text-white">Continue with Mobile Number</span>
+                           </Link>
+                           <Link href="/" className="mt-4 text-center text-[15px] font-bold text-[#16a34a] hover:text-[#15803d] transition-colors inline-block">
+                              Continue Shopping
+                           </Link>
+                        </div>
+                     </div>
+                  </div>
+
+                  {/* RIGHT SIDE: Summary & Benefits */}
+                  <div className="bg-[#f8fcf9] p-8 md:p-12 border-l border-slate-100 flex flex-col justify-between">
+                     <div>
+                        {cart.length > 0 && (
+                           <div className="mb-10 bg-white rounded-2xl p-6 shadow-sm border border-emerald-100">
+                              <div className="flex items-center justify-between mb-4">
+                                 <h3 className="font-black text-[#111827] flex items-center gap-2"><ShoppingBag size={18} className="text-[#16a34a]" /> Order Summary</h3>
+                                 <span className="text-[12px] font-bold text-[#6b7280] bg-[#f3f4f6] px-3 py-1 rounded-full">{cart.length} Items</span>
+                              </div>
+                              <div className="flex justify-between items-end border-t border-slate-100 pt-4">
+                                 <span className="text-[#6b7280] font-bold text-sm">Cart Total</span>
+                                 <span className="text-[24px] font-black text-[#111827]">₹{getTotal()}</span>
+                              </div>
+                           </div>
+                        )}
+                     </div>
+
+                     <div>
+                        <h4 className="text-[12px] font-black text-slate-400 uppercase tracking-widest mb-6">Why shop with us?</h4>
+                        <div className="grid grid-cols-1 gap-5">
+                           <div className="flex items-center gap-3">
+                              <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center shrink-0">
+                                 <ShieldCheck size={16} className="text-[#16a34a]" />
+                              </div>
+                              <div>
+                                 <p className="text-[14px] font-bold text-[#111827]">Secure Payments</p>
+                                 <p className="text-[12px] font-medium text-slate-500">100% encrypted transactions</p>
+                              </div>
+                           </div>
+                           <div className="flex items-center gap-3">
+                              <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
+                                 <Truck size={16} className="text-blue-600" />
+                              </div>
+                              <div>
+                                 <p className="text-[14px] font-bold text-[#111827]">Fast Delivery</p>
+                                 <p className="text-[12px] font-medium text-slate-500">Direct from farm to your door</p>
+                              </div>
+                           </div>
+                           <div className="flex items-center gap-3">
+                              <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center shrink-0">
+                                 <MapPin size={16} className="text-amber-600" />
+                              </div>
+                              <div>
+                                 <p className="text-[14px] font-bold text-[#111827]">Order Tracking</p>
+                                 <p className="text-[12px] font-medium text-slate-500">Real-time status updates</p>
+                              </div>
+                           </div>
+                           <div className="flex items-center gap-3">
+                              <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center shrink-0">
+                                 <Sparkles size={16} className="text-purple-600" />
+                              </div>
+                              <div>
+                                 <p className="text-[14px] font-bold text-[#111827]">Fresh Products</p>
+                                 <p className="text-[12px] font-medium text-slate-500">Quality checked before dispatch</p>
+                              </div>
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+
+               </div>
+            </div>
+         </div>
+      );
+   }
 
    if (placed || step === 4) {
       return (
@@ -280,7 +512,12 @@ export default function CheckoutPage() {
                         <div className="flex justify-between text-[#6b7280] font-medium"><span>Subtotal</span><span className="text-[#111827] font-bold">₹{finalOrderData?.subtotal || 0}</span></div>
                         <div className="flex justify-between text-[#6b7280] font-medium"><span>Shipping</span><span className="text-[#111827] font-bold">₹{finalOrderData?.delivery || 0}</span></div>
                         {finalOrderData?.discount > 0 && <div className="flex justify-between text-[#16a34a] font-bold"><span>Discount</span><span>-₹{finalOrderData.discount}</span></div>}
-                        <div className="flex justify-between text-[#6b7280] font-medium"><span>GST (5%)</span><span className="text-[#111827] font-bold">₹{finalOrderData?.gst || 0}</span></div>
+                        {gstEnabled && (finalOrderData?.gst || 0) > 0 && (
+                           <div className="flex justify-between text-[#6b7280] font-medium">
+                              <span>{gstTaxLabel} ({gstTaxType === 'inclusive' ? 'Inclusive' : 'Exclusive'})</span>
+                              <span className="text-[#111827] font-bold">₹{finalOrderData?.gst || 0}</span>
+                           </div>
+                        )}
                      </div>
 
                      <div className="h-px w-full bg-[#e5e7eb] my-5" />
@@ -337,7 +574,7 @@ export default function CheckoutPage() {
       <div className="flex items-center justify-center w-full max-w-xl mx-auto mb-8">
          {[{ id: 1, label: 'Cart' }, { id: 2, label: 'Delivery' }, { id: 3, label: 'Payment' }, { id: 4, label: 'Complete' }].map((s, i) => (
             <div key={s.id} className="flex items-center">
-               <div className="flex flex-col items-center">
+               <div className="flex flex-col items-center relative">
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center font-black text-[12px] z-10 transition-all ${step >= s.id ? 'bg-[#16a34a] text-white shadow-[0_0_0_4px_rgba(22,163,74,0.15)]' : 'bg-white border-2 border-[#e5e7eb] text-[#9ca3af]'
                      }`}>
                      {step > s.id ? <CheckCircle size={14} /> : s.id}
@@ -347,7 +584,7 @@ export default function CheckoutPage() {
                   </span>
                </div>
                {i < 3 && (
-                  <div className={`w-12 sm:w-24 h-1 mx-2 rounded-full transition-all ${step > s.id ? 'bg-[#16a34a]' : 'bg-[#e5e7eb]'}`} />
+                  <div className={`w-6 xs:w-8 sm:w-24 h-1 mx-1 sm:mx-2 rounded-full transition-all ${step > s.id ? 'bg-[#16a34a]' : 'bg-[#e5e7eb]'}`} />
                )}
             </div>
          ))}
@@ -356,6 +593,7 @@ export default function CheckoutPage() {
 
    return (
       <>
+         <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" />
          <div className="min-h-screen bg-[#f8f8f5] pt-6 md:pt-10 pb-40">
             <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
 
@@ -505,20 +743,20 @@ export default function CheckoutPage() {
                                  <button onClick={() => setStep(2)} className="text-sm font-bold text-[#16a34a] hover:underline">Edit Delivery</button>
                               </div>
 
-                              <div className="space-y-4">
-                                 {['Online'].map((method) => (
+                               <div className="space-y-4">
+                                 {paymentMethods.map((method) => (
                                     <div
                                        key={method}
                                        onClick={() => setPaymentMethod(method)}
                                        className={`p-6 rounded-[20px] border-2 transition-all cursor-pointer flex items-center justify-between ${paymentMethod === method ? 'border-[#16a34a] bg-[#f0fdf4]' : 'border-[#e5e7eb] bg-white hover:border-[#16a34a]/30'}`}
                                     >
                                        <div className="flex items-center gap-4">
-                                          <div className={`w-12 h-12 rounded-full flex items-center justify-center ${method === 'Online' ? 'bg-[#dcfce7] text-[#16a34a]' : 'bg-[#f3f4f6] text-[#6b7280]'}`}>
+                                          <div className={`w-12 h-12 rounded-full flex items-center justify-center ${method === 'Online' || method === 'Razorpay' ? 'bg-[#dcfce7] text-[#16a34a]' : 'bg-[#f3f4f6] text-[#6b7280]'}`}>
                                              <CreditCard size={20} />
                                           </div>
                                           <div>
-                                             <h4 className="font-bold text-[#111827] text-[15px]">{method === 'Online' ? 'Pay Online (Cards/UPI/NetBanking)' : 'Pay on Delivery'}</h4>
-                                             <p className="text-[12px] text-[#6b7280] font-medium">{method === 'Online' ? 'Instant & secure digital settlement' : 'Pay via cash or UPI at your doorstep'}</p>
+                                             <h4 className="font-bold text-[#111827] text-[15px]">{method === 'Online' ? 'HDFC SmartGateway (Cards/UPI)' : method === 'Razorpay' ? 'Razorpay (Cards/UPI/NetBanking)' : 'Pay on Delivery'}</h4>
+                                             <p className="text-[12px] text-[#6b7280] font-medium">{method === 'Online' || method === 'Razorpay' ? 'Instant & secure digital settlement' : 'Pay via cash or UPI at your doorstep'}</p>
                                           </div>
                                        </div>
                                        <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${paymentMethod === method ? 'border-[#16a34a] bg-[#16a34a]' : 'border-[#d1d5db]'}`}>
@@ -550,7 +788,7 @@ export default function CheckoutPage() {
 
                         <div className="p-6">
                            {/* PRODUCT PREVIEWS */}
-                           <div className="space-y-4 max-h-[30vh] overflow-y-auto no-scrollbar mb-6 pr-2">
+                           <div className="space-y-4 max-h-[400px] overflow-y-auto no-scrollbar mb-6 pr-2">
                               {cart.map(item => (
                                  <div key={`${item.productId}-${item.variant}`} className="flex items-center gap-4">
                                     <div className="h-[72px] w-[72px] rounded-[14px] bg-[#f8f8f5] border border-[#f1f5f9] overflow-hidden shrink-0 relative">
@@ -572,21 +810,56 @@ export default function CheckoutPage() {
                                  <span>Subtotal</span>
                                  <span className="text-[#111827] font-bold">₹{subtotal}</span>
                               </div>
-                              <div className="flex justify-between text-[#6b7280] font-medium">
-                                 <span>GST (5%)</span>
-                                 <span className="text-[#111827] font-bold">₹{gst}</span>
-                              </div>
+                              {gstEnabled && gst > 0 && (
+                                 <div className="flex justify-between text-[#6b7280] font-medium">
+                                    <span>{gstTaxLabel} ({gstTaxType === 'inclusive' ? 'Inclusive' : 'Exclusive'})</span>
+                                    <span className="text-[#111827] font-bold">₹{gst}</span>
+                                 </div>
+                              )}
                               {discount > 0 && (
                                  <div className="flex justify-between text-[#16a34a] font-bold">
                                     <span>Coupon Savings</span>
                                     <span>-₹{discount}</span>
                                  </div>
                               )}
-                              <div className="flex justify-between text-[#6b7280] font-medium">
-                                 <span>Delivery Fee</span>
-                                 <span className={delivery === 0 ? 'text-[#16a34a] font-bold' : 'text-[#111827] font-bold'}>
-                                    {delivery === 0 ? 'FREE' : `₹${delivery}`}
-                                 </span>
+                              {/* DELIVERY FEE */}
+                              <div className="flex flex-col gap-1">
+                                 <div className="flex justify-between text-[#6b7280] font-medium items-center">
+                                    <div className="flex items-center gap-1 group relative">
+                                       <span>Delivery Fee</span>
+                                       <div className="text-slate-400 hover:text-slate-600 cursor-help p-1 relative">
+                                          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                                          {/* Tooltip */}
+                                          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 bg-[#111827] text-white text-[11px] p-3 rounded-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 shadow-xl border border-white/10 before:content-[''] before:absolute before:top-full before:left-1/2 before:-translate-x-1/2 before:border-4 before:border-transparent before:border-t-[#111827]">
+                                             <div className="space-y-1.5">
+                                                <div className="flex justify-between"><span className="text-slate-300">Flat Delivery Fee:</span> <span className="font-bold">₹{flatDeliveryFee}</span></div>
+                                                <div className="flex justify-between"><span className="text-slate-300">Free Delivery Above:</span> <span className="font-bold">₹{freeDeliveryAbove}</span></div>
+                                                <div className="flex justify-between"><span className="text-slate-300">Standard Delivery:</span> <span className="font-bold">1-3 Days</span></div>
+                                             </div>
+                                          </div>
+                                       </div>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                       {delivery === 0 ? (
+                                          <>
+                                             <span className="text-slate-400 line-through text-[12px]">₹{flatDeliveryFee}</span>
+                                             <span className="text-[#16a34a] font-black uppercase tracking-wider text-[12px]">FREE</span>
+                                          </>
+                                       ) : (
+                                          <span className="text-[#111827] font-bold">₹{flatDeliveryFee}</span>
+                                       )}
+                                    </div>
+                                 </div>
+                                 
+                                 {delivery === 0 ? (
+                                    <div className="text-[11px] font-bold text-[#16a34a] bg-[#16a34a]/10 px-2.5 py-1.5 rounded-lg inline-flex items-center gap-1.5 mt-1 w-fit">
+                                       <span>🚚</span> Free Delivery Applied!
+                                    </div>
+                                 ) : (
+                                    <div className="text-[11px] font-bold text-amber-600 bg-amber-50 px-2.5 py-1.5 rounded-lg inline-flex items-center gap-1 mt-1 w-fit border border-amber-100/50">
+                                       Add <span className="font-black">₹{(freeDeliveryAbove - subtotal).toFixed(2)}</span> more to unlock <span className="uppercase tracking-wider font-black">FREE delivery</span>
+                                    </div>
+                                 )}
                               </div>
                            </div>
 
@@ -596,7 +869,9 @@ export default function CheckoutPage() {
                            <div className="flex justify-between items-end mb-6">
                               <div>
                                  <span className="block text-[14px] font-bold text-[#111827]">Total to Pay</span>
-                                 <span className="text-[11px] text-[#6b7280]">Inclusive of all taxes</span>
+                                 <span className="text-[11px] text-[#6b7280]">
+                                    {gstEnabled ? `Inclusive of ${gstTaxLabel}` : 'Inclusive of all taxes'}
+                                 </span>
                               </div>
                               <span className="text-[32px] font-black text-[#111827] tracking-tighter leading-none">₹{total}</span>
                            </div>
@@ -662,7 +937,12 @@ export default function CheckoutPage() {
                         <div className="pb-4 space-y-2 text-[13px] border-b border-[#e5e7eb] mb-4">
                            <div className="flex justify-between text-[#6b7280]"><span>Subtotal</span><span className="font-bold text-[#111827]">₹{subtotal}</span></div>
                            <div className="flex justify-between text-[#6b7280]"><span>Delivery</span><span className="font-bold text-[#111827]">{delivery === 0 ? 'FREE' : `₹${delivery}`}</span></div>
-                           <div className="flex justify-between text-[#6b7280]"><span>Taxes</span><span className="font-bold text-[#111827]">₹{gst}</span></div>
+                           {gstEnabled && gst > 0 && (
+                               <div className="flex justify-between text-[#6b7280]">
+                                  <span>{gstTaxLabel} ({gstTaxType === 'inclusive' ? 'Incl' : 'Excl'})</span>
+                                  <span className="font-bold text-[#111827]">₹{gst}</span>
+                               </div>
+                            )}
                         </div>
                      </motion.div>
                   )}

@@ -24,47 +24,16 @@ import { motion, AnimatePresence } from 'framer-motion';
 import ProductCard from '@/components/ProductCard';
 import OptimizedImage from '@/components/ui/OptimizedImage';
 import { useToast } from '@/context/ToastContext';
+import { usePlatformSettings } from '@/context/PlatformSettingsContext';
+import BrandBanner from '@/components/BrandBanner';
 
 export default function BrandDetailClient({ brand }: { brand: any }) {
   const { addToast } = useToast();
+  const { settings } = usePlatformSettings();
   const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('popular');
-  const [isSaved, setIsSaved] = useState(false);
-
-  // Load saved state from localStorage on mount
-  useEffect(() => {
-    try {
-      const savedBrands = JSON.parse(localStorage.getItem('saved_brands') || '[]');
-      setIsSaved(savedBrands.includes(brand.id));
-    } catch (e) {
-      console.error('Failed to load saved brands:', e);
-    }
-  }, [brand.id]);
-
-  const handleSaveToggle = () => {
-    try {
-      const savedBrands = JSON.parse(localStorage.getItem('saved_brands') || '[]');
-      let updatedBrands;
-      let nextSavedState;
-
-      if (savedBrands.includes(brand.id)) {
-        updatedBrands = savedBrands.filter((id: number) => id !== brand.id);
-        nextSavedState = false;
-        addToast('Success', `${brand.name} removed from your saved list`, 'info');
-      } else {
-        updatedBrands = [...savedBrands, brand.id];
-        nextSavedState = true;
-        addToast('Success', `${brand.name} saved to your list`, 'success');
-      }
-
-      localStorage.setItem('saved_brands', JSON.stringify(updatedBrands));
-      setIsSaved(nextSavedState);
-    } catch (e) {
-      console.error('Failed to save brand:', e);
-      addToast('Error', 'Failed to update saved brands', 'error');
-    }
-  };
+  const allProducts = brand.products || [];
 
   const handleShare = async () => {
     const shareData = {
@@ -92,7 +61,6 @@ export default function BrandDetailClient({ brand }: { brand: any }) {
     }
   };
 
-  const allProducts = brand.products || [];
 
   // Extract unique categories
   const categoriesMap = new Map();
@@ -129,104 +97,53 @@ export default function BrandDetailClient({ brand }: { brand: any }) {
       <section className="relative w-full overflow-hidden bg-gradient-to-br from-[#f8fafc] via-[#f1f5f9] to-white border-b border-slate-200/60">
         <div className="absolute top-0 right-0 w-[40%] h-full bg-emerald-100/10 blur-[120px] rounded-full translate-x-1/4 -translate-y-1/2" />
 
-        <div className="standard-container relative z-10 py-8 md:py-14">
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mb-8">
+        <div className="standard-container relative z-10 py-6 md:py-8">
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mb-6">
             <Link href="/brands" prefetch={false} className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 hover:text-emerald-600 transition-colors">
               <ArrowLeft size={12} strokeWidth={3} /> Back to Brands
             </Link>
           </motion.div>
 
-          <div className="flex flex-col md:flex-row md:items-start justify-between gap-10 md:gap-16">
+          <div className="flex flex-col md:flex-row items-center md:items-start gap-6 md:gap-8">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="relative h-28 w-28 md:h-32 md:w-32 shrink-0"
+            >
+              <div className="absolute inset-0 bg-white rounded-3xl shadow-xl rotate-3" />
+              <div className="relative h-full w-full bg-white rounded-3xl border border-slate-100 shadow-premium overflow-hidden z-10 p-2">
+                <OptimizedImage
+                  src={brand.logo || settings.logo || '/logo.webp'}
+                  alt={brand.name}
+                  fill
+                  className="object-contain p-4"
+                  priority
+                />
+              </div>
+            </motion.div>
 
-            {/* Left: Brand Information */}
-            <div className="flex flex-col md:flex-row items-center md:items-start gap-8 md:gap-10">
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="relative h-36 w-36 md:h-48 md:w-48 shrink-0"
-              >
-                <div className="absolute inset-0 bg-white rounded-[3rem] shadow-xl rotate-3" />
-                <div className="relative h-full w-full bg-white rounded-[3rem] border border-slate-100 shadow-premium overflow-hidden z-10 p-3">
-                  <OptimizedImage
-                    src={brand.logo || '/brand_logos/reseller_logo.webp'}
-                    alt={brand.name}
-                    fill
-                    className="object-contain p-6"
-                    priority
-                  />
-                </div>
+            <div className="flex-1 space-y-3 text-center md:text-left md:pt-4">
+              <h1 className="text-3xl md:text-5xl font-[900] text-[#0f172a] tracking-tighter leading-tight uppercase">
+                {brand.name}
+              </h1>
+              <p className="text-sm md:text-base text-slate-500 font-medium leading-relaxed max-w-2xl italic font-serif">
+                "{brand.description || "Traditional heritage brand delivering authentic, farm-fresh organic products sourced with absolute integrity."}"
+              </p>
+              <div className="flex items-center justify-center md:justify-start pt-2">
                 <button
-                  onClick={handleSaveToggle}
-                  className={`absolute -bottom-1 -right-1 text-white h-11 w-11 rounded-2xl flex items-center justify-center shadow-xl border-4 border-white z-20 transition-all hover:scale-105 active:scale-95 ${isSaved ? 'bg-rose-500 hover:bg-rose-600' : 'bg-[#059669] hover:bg-emerald-700'
-                    }`}
-                  aria-label="Save Brand"
+                  onClick={handleShare}
+                  className="h-10 px-5 rounded-xl bg-white border border-slate-200 text-slate-600 text-[10px] font-black uppercase tracking-widest flex items-center gap-2 hover:bg-slate-50 transition-all active:scale-95 shadow-sm"
                 >
-                  <Bookmark size={20} strokeWidth={2.5} className={isSaved ? 'fill-white' : ''} />
+                  <Share2 size={14} /> Share
                 </button>
-              </motion.div>
-
-              <div className="flex-1 space-y-5 text-center md:text-left">
-                <div className="space-y-3">
-                  <div className="flex flex-wrap items-center justify-center md:justify-start gap-3">
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#064e3b] text-white text-[9px] font-black uppercase tracking-[0.15em] rounded-md">
-                      <ShieldCheck size={12} className="text-emerald-400" /> Premium Organic Brand
-                    </span>
-                    <span className="text-emerald-700 font-bold text-[10px] uppercase tracking-widest flex items-center gap-1.5 opacity-60">
-                      <Globe size={12} /> {brand.headVendor?.name || 'Native Collective'}
-                    </span>
-                  </div>
-
-                  <h1 className="text-4xl md:text-6xl font-[900] text-[#0f172a] tracking-tighter leading-tight uppercase">
-                    {brand.name}
-                  </h1>
-                </div>
-
-                <p className="text-base md:text-lg text-slate-500 font-medium leading-relaxed max-w-xl italic font-serif">
-                  "{brand.description || "Traditional heritage brand delivering authentic, farm-fresh organic products sourced with absolute integrity."}"
-                </p>
-
-                <div className="flex flex-wrap items-center justify-center md:justify-start gap-4 pt-2">
-                  <button
-                    onClick={handleSaveToggle}
-                    className={`h-11 px-8 rounded-xl text-[11px] font-black uppercase tracking-widest flex items-center gap-2 transition-all shadow-xl active:scale-95 ${isSaved
-                      ? 'bg-rose-500 hover:bg-rose-600 text-white'
-                      : 'bg-[#0f172a] hover:bg-black text-white'
-                      }`}
-                  >
-                    <Heart size={14} className={isSaved ? 'fill-white text-white' : 'text-rose-400'} />
-                    {isSaved ? 'Saved' : 'Save Brand'}
-                  </button>
-                  <button
-                    onClick={handleShare}
-                    className="h-11 px-6 rounded-xl bg-white border border-slate-200 text-slate-600 text-[11px] font-black uppercase tracking-widest flex items-center gap-2 hover:bg-slate-50 transition-all active:scale-95 shadow-sm"
-                  >
-                    <Share2 size={16} /> Share
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* Right: Brand Metrics */}
-            <div className="grid grid-cols-2 gap-4 min-w-[320px] md:min-w-[380px]">
-              <div className="bg-white/80 backdrop-blur-md border border-white p-6 rounded-[2.5rem] shadow-premium-sm space-y-1">
-                <div className="flex items-center gap-2 text-amber-500">
-                  <Star size={18} className="fill-amber-500" />
-                  <span className="text-2xl font-black text-[#0f172a]">4.9</span>
-                </div>
-                <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Customer Rating</div>
-              </div>
-
-              <div className="bg-white/80 backdrop-blur-md border border-white p-6 rounded-[2.5rem] shadow-premium-sm space-y-1">
-                <div className="flex items-center gap-2 text-emerald-600">
-                  <Package size={18} />
-                  <span className="text-2xl font-black text-[#0f172a]">{allProducts.length}</span>
-                </div>
-                <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Live Products</div>
               </div>
             </div>
           </div>
         </div>
       </section>
+
+      {/* Brand Banner — renders banners with type='Brand' from admin */}
+      <BrandBanner />
 
       {/* 2. STICKY FILTERS BAR */}
       <div className="sticky top-20 md:top-24 z-40 bg-white/90 backdrop-blur-2xl border-b border-slate-100 shadow-sm">
@@ -274,8 +191,8 @@ export default function BrandDetailClient({ brand }: { brand: any }) {
       </div>
 
       {/* 3. PRODUCT GRID SECTION */}
-      <section className="standard-container py-12 md:py-20 min-h-[60vh]">
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+      <section className="standard-container py-8 md:py-12 min-h-[60vh]">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
           <div className="space-y-2">
             <h2 className="text-3xl md:text-5xl font-[900] text-[#0f172a] tracking-tight leading-none uppercase">
               {selectedCategoryId ? categories.find(c => c.id === selectedCategoryId)?.name : 'Brand products'}
@@ -288,16 +205,29 @@ export default function BrandDetailClient({ brand }: { brand: any }) {
             key={`${selectedCategoryId}-${sortBy}-${searchQuery}`}
             className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-10"
           >
-            {filteredAndSortedProducts.map((product: any, idx: number) => (
-              <motion.div
-                key={product.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: idx % 12 * 0.04 }}
-              >
-                <ProductCard product={product} />
-              </motion.div>
-            ))}
+            {filteredAndSortedProducts.length > 0 ? (
+              filteredAndSortedProducts.map((product: any, idx: number) => (
+                <motion.div
+                  key={product.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: idx % 12 * 0.04 }}
+                >
+                  <ProductCard product={product} />
+                </motion.div>
+              ))
+            ) : (
+              <div className="col-span-full py-20 flex flex-col items-center justify-center text-center">
+                <div className="w-24 h-24 bg-slate-50 rounded-full flex items-center justify-center mb-6">
+                  <Package size={40} className="text-slate-300" />
+                </div>
+                <h3 className="text-2xl font-black text-slate-900 mb-2">No Products Available</h3>
+                <p className="text-slate-500 font-medium max-w-sm mb-8">This brand currently has no active products.</p>
+                <Link href="/brands" className="h-12 px-8 rounded-xl bg-emerald-600 text-white text-[12px] font-bold uppercase tracking-wider hover:bg-emerald-700 transition-colors flex items-center justify-center">
+                  Browse Other Brands
+                </Link>
+              </div>
+            )}
           </motion.div>
         </AnimatePresence>
       </section>

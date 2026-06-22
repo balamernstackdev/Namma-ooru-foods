@@ -67,13 +67,13 @@ export default function AdminRefundsPage() {
   return (
     <div className="space-y-8 animate-in fade-in duration-700">
       <div>
-        <h2 className="text-4xl font-black text-[var(--admin-sidebar)] tracking-tighter">Refund Management</h2>
-        <p className="text-slate-400 font-medium text-sm mt-1">{orders.length} refund requests on this page</p>
+        <h1 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tighter italic">Refund <span className="text-emerald-600">Management</span></h1>
+        <p className="text-slate-400 font-bold uppercase tracking-[0.2em] text-[10px] mt-2">{orders.length} refund requests on this page</p>
       </div>
 
       <div className="bg-white rounded-[3.5rem] border border-slate-100 shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-left">
+          <table className="w-full text-left min-w-[1000px] admin-data-table">
             <thead>
               <tr className="bg-slate-50/50">
                 {['Order', 'Customer', 'Items', 'Amount', 'Status', 'Date', 'Actions'].map(h => (

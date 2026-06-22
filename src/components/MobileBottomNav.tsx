@@ -21,7 +21,7 @@ const MobileBottomNav = () => {
   ];
 
   // Hide on dashboard paths
-  const isDashboard = pathname?.startsWith('/admin') || pathname?.startsWith('/vendor');
+  const isDashboard = pathname?.startsWith('/admin') || pathname?.startsWith('/vendor') || pathname?.startsWith('/hub');
   const isCheckout = pathname === '/checkout';
   
   if (isDashboard || isCheckout) return null;

@@ -69,44 +69,63 @@ const CartDrawer = () => {
           ) : (
             <div className="flex flex-col gap-8">
               {cart.map((item) => (
-                <div key={item.id} className="flex gap-4 group">
-                  <div className="h-20 w-20 flex-shrink-0 overflow-hidden rounded-2xl border border-slate-100 bg-slate-50 relative">
-                    <Image
-                      src={item.image}
-                      alt={item.name}
-                      fill
-                      className="object-cover group-hover:scale-110 transition-transform duration-500"
-                    />
-                  </div>
-                  <div className="flex flex-1 flex-col justify-between">
-                    <div>
-                      <div className="flex items-start justify-between gap-4">
-                        <h4 className="font-black text-emerald-950 tracking-tighter leading-tight line-clamp-1">{item.name}</h4>
-                        <span className="font-black text-emerald-950 text-sm">₹{item.price * item.quantity}</span>
-                      </div>
-                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">{item.variant}</p>
+                <div key={item.id} className="flex flex-col gap-3 group border-b border-slate-50 pb-4 last:border-0">
+                  <div className="flex gap-4">
+                    <div className="h-20 w-20 flex-shrink-0 overflow-hidden rounded-2xl border border-slate-100 bg-slate-50 relative">
+                      <Image
+                        src={item.image}
+                        alt={item.name}
+                        fill
+                        className="object-cover group-hover:scale-110 transition-transform duration-500"
+                      />
                     </div>
+                    <div className="flex flex-1 flex-col justify-between">
+                      <div>
+                        <div className="flex items-start justify-between gap-4">
+                          <h4 className="font-black text-emerald-950 tracking-tighter leading-tight line-clamp-1">{item.name}</h4>
+                          <span className="font-black text-emerald-950 text-sm">₹{item.price * item.quantity}</span>
+                        </div>
+                        {item.isBundle ? (
+                          <div className="flex items-center gap-1.5 mt-1 text-[9px] font-bold uppercase tracking-wider text-emerald-600 bg-emerald-50 w-fit px-2 py-0.5 rounded">
+                            Bundle ({item.bundleItems?.length} items)
+                          </div>
+                        ) : (
+                          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">{item.variant}</p>
+                        )}
+                      </div>
 
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center rounded-xl border border-slate-100 bg-slate-50 p-1">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center rounded-xl border border-slate-100 bg-slate-50 p-1">
+                          <button
+                            onClick={() => updateQuantity(item.id, Math.max(1, item.quantity - 1))}
+                            className="h-7 w-7 flex items-center justify-center font-bold bg-white rounded-lg shadow-sm hover:text-amber-500"
+                          >-</button>
+                          <span className="w-8 text-center text-[11px] font-black text-emerald-950">{item.quantity}</span>
+                          <button
+                            onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                            className="h-7 w-7 flex items-center justify-center font-bold bg-white rounded-lg shadow-sm hover:text-amber-500"
+                          >+</button>
+                        </div>
                         <button
-                          onClick={() => updateQuantity(item.id, Math.max(1, item.quantity - 1))}
-                          className="h-7 w-7 flex items-center justify-center font-bold bg-white rounded-lg shadow-sm hover:text-amber-500"
-                        >-</button>
-                        <span className="w-8 text-center text-[11px] font-black text-emerald-950">{item.quantity}</span>
-                        <button
-                          onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                          className="h-7 w-7 flex items-center justify-center font-bold bg-white rounded-lg shadow-sm hover:text-amber-500"
-                        >+</button>
+                          onClick={() => removeFromCart(item.id)}
+                          className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-300 hover:text-red-500 hover:bg-red-50 transition-colors"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
                       </div>
-                      <button
-                        onClick={() => removeFromCart(item.id)}
-                        className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-300 hover:text-red-500 hover:bg-red-50 transition-colors"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
                     </div>
                   </div>
+                  
+                  {item.isBundle && item.bundleItems && (
+                    <div className="ml-24 flex flex-col gap-1.5 border-l-2 border-emerald-100 pl-3">
+                      {item.bundleItems.map((bi: any, idx: number) => (
+                        <div key={idx} className="flex justify-between items-center text-[10px] text-slate-500 font-medium">
+                          <span className="line-clamp-1 flex-1 pr-2">{bi.name}</span>
+                          <span className="font-bold text-slate-400">₹{bi.price}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>

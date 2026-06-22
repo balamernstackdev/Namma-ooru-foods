@@ -28,7 +28,7 @@ const StickyAssistant = () => {
 
   return (
     <>
-      <div className="fixed bottom-6 right-6 md:bottom-10 md:right-10 z-[500] flex flex-col gap-3 md:gap-4">
+      <div className="fixed bottom-28 right-6 md:bottom-10 md:right-10 z-[500] flex flex-col gap-3 md:gap-4">
         {isVisible && (
           <button
             onClick={scrollToTop}
@@ -38,9 +38,9 @@ const StickyAssistant = () => {
           </button>
         )}
         
-        {/* WhatsApp button — hidden for now, re-enable when ready
+        {/* WhatsApp button */}
         <a
-          href="https://wa.me/919876543210"
+          href="https://wa.me/919000896898"
           target="_blank"
           rel="noopener noreferrer"
           className="h-12 w-12 md:h-14 md:w-14 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-premium hover:bg-emerald-600 transition-all hover:scale-110 active:scale-95 relative"
@@ -50,7 +50,6 @@ const StickyAssistant = () => {
           </svg>
           <div className="absolute -top-1 -right-1 h-3.5 w-3.5 bg-red-500 border-2 border-white rounded-full animate-ping" />
         </a>
-        */}
       </div>
     </>
   );

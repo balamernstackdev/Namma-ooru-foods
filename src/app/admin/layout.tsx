@@ -7,9 +7,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import {
   LayoutDashboard, Package, ShoppingBag, Users, BarChart3, Settings,
-  LogOut, Bell, List, Layers, Tag, Ticket, Star, Truck,
+  LogOut, Bell, List, Layers, Tag, Ticket, Star, Truck, Clock,
   RotateCcw, BookOpen, Image as ImageIcon, Mail, ClipboardList,
-  ChevronDown, ChevronRight, Shield, Play
+  ChevronDown, ChevronRight, Shield, ShieldCheck, Play, Megaphone,
+  Menu
 } from 'lucide-react';
 import { useState } from 'react';
 import useSWR from 'swr';
@@ -17,8 +18,16 @@ import { API_URL } from '@/lib/api';
 import { formatDistanceToNow } from 'date-fns';
 import { io } from 'socket.io-client';
 import toast from 'react-hot-toast';
+import { usePlatformSettings } from '@/context/PlatformSettingsContext';
 
 const fetcher = (url: string) => fetch(url).then(res => res.json());
+
+const authFetcher = (url: string) => {
+  const token = typeof window !== 'undefined' ? localStorage.getItem('namma_orru_token') : null;
+  return fetch(url, {
+    headers: token ? { Authorization: `Bearer ${token}` } : {}
+  }).then(res => res.json());
+};
 
 const navGroups = [
   {
@@ -41,8 +50,8 @@ const navGroups = [
     items: [
       { label: 'Vendor Registrations', href: '/admin/vendor-requests', icon: Shield, adminOnly: true },
       { label: 'Vendor Management', href: '/admin/marketplace-governance', icon: Shield, adminOnly: true },
-      { label: 'Service Regions', href: '/admin/hubs', icon: Layers, adminOnly: true },
-      { label: 'Vendor Payouts', href: '/admin/payouts', icon: ClipboardList, adminOnly: true },
+      { label: 'Vendors Hub', href: '/admin/hubs', icon: Layers, adminOnly: true },
+      { label: 'Vendor Payouts', href: '/admin/vendor-payouts', icon: ClipboardList, adminOnly: true },
     ]
   },
   {
@@ -53,7 +62,7 @@ const navGroups = [
       { label: 'Categories', href: '/admin/categories', icon: List },
       { label: 'Subcategories', href: '/admin/subcategories', icon: Layers },
       { label: 'Variants', href: '/admin/variants', icon: Layers },
-      { label: 'Brands', href: '/admin/brands', icon: Tag },
+      // { label: 'Brands', href: '/admin/brands', icon: Tag },
     ]
   },
   {
@@ -69,8 +78,12 @@ const navGroups = [
     label: 'Marketing',
     items: [
       { label: 'Coupons', href: '/admin/coupons', icon: Ticket },
-      { label: 'Promotions', href: '/admin/promotions', icon: ClipboardList },
+      // { label: 'Promotions', href: '/admin/promotions', icon: ClipboardList },
       { label: 'Banners', href: '/admin/banners', icon: ImageIcon },
+      { label: 'Announcement Bars', href: '/admin/marketing/announcement-bar', icon: Megaphone },
+      { label: 'Popup Campaigns', href: '/admin/marketing/popup-campaigns', icon: Layers },
+      { label: 'Email Subscribers', href: '/admin/marketing/subscribers', icon: Mail },
+      { label: 'Vendor Approvals', href: '/admin/marketing/vendor-approvals', icon: ShieldCheck },
     ]
   },
   {
@@ -78,7 +91,6 @@ const navGroups = [
     items: [
       { label: 'Video Stories', href: '/admin/video-commerce', icon: Play },
       { label: 'Blog / Articles', href: '/admin/blog', icon: BookOpen },
-      { label: 'Newsletter', href: '/admin/newsletter', icon: Mail },
     ]
   },
   {
@@ -98,12 +110,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [collapsedGroups, setCollapsedGroups] = useState<string[]>([]);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
+  const { settings } = usePlatformSettings();
 
-  const { data: rawNotifs, mutate: mutateNotifs } = useSWR<any>(`${API_URL}/api/notifications`, fetcher, {
-    refreshInterval: 60000 // Poll once a minute as fallback
-  });
-  const notifications = Array.isArray(rawNotifs) ? rawNotifs : (rawNotifs?.notifications || []);
-  const unreadCount = notifications.filter((n: any) => !n.isRead).length;
+  const { data: rawNotifs, mutate: mutateNotifs } = useSWR<any>(
+    user?.id ? `${API_URL}/api/notifications?recipientType=ADMIN&limit=30` : null,
+    authFetcher,
+    { refreshInterval: 30000 }
+  );
+  const notifications = rawNotifs?.notifications || (Array.isArray(rawNotifs) ? rawNotifs : []);
+  const unreadCount = rawNotifs?.unreadCount ?? notifications.filter((n: any) => !n.isRead).length;
 
   // Global Socket Listener
   React.useEffect(() => {
@@ -131,12 +146,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           duration: 5000,
           style: {
             borderRadius: '16px',
-            background: '#022c22',
-            color: '#fff',
+            background: '#FFFFFF',
+            color: '#111827',
             fontSize: '12px',
             fontWeight: 'bold',
             padding: '16px',
-            border: '1px solid rgba(16, 185, 129, 0.2)'
+            border: '1px solid #E5E7EB',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.05)'
           }
         });
       }
@@ -157,6 +173,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }, [user, isLoading, router]);
 
   React.useEffect(() => {
+    document.body.style.overflow = 'auto';
     window.scrollTo(0, 0);
 
     // Auto-expand the group that contains the active route
@@ -189,13 +206,133 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   };
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] flex font-sans selection:bg-emerald-100 selection:text-emerald-900">
+    <div id="admin-root" className="min-h-screen bg-[#F8FAF7] flex font-sans selection:bg-emerald-100 selection:text-emerald-900">
       <style dangerouslySetInnerHTML={{
         __html: `
-        .admin-sidebar-nav::-webkit-scrollbar {
-          width: 6px;
+        /* Font Application */
+        #admin-root,
+        #admin-root button,
+        #admin-root input,
+        #admin-root select,
+        #admin-root textarea,
+        #admin-root table,
+        #admin-root label,
+        #admin-root span,
+        #admin-root p,
+        #admin-root h1,
+        #admin-root h2,
+        #admin-root h3,
+        #admin-root h4,
+        #admin-root h5,
+        #admin-root h6 {
+          font-family: var(--font-mulish), 'Mulish', sans-serif !important;
         }
-        .admin-sidebar-nav::-webkit-scrollbar-thumb {
+
+        /* Typography Hierarchy */
+        #admin-root h1 {
+          font-size: 32px !important;
+          font-weight: 800 !important;
+        }
+        #admin-root h2 {
+          font-size: 20px !important;
+          font-weight: 700 !important;
+        }
+        #admin-root h3 {
+          font-size: 18px !important;
+          font-weight: 700 !important;
+        }
+        #admin-root label {
+          font-size: 12px !important;
+          font-weight: 700 !important;
+          text-transform: uppercase !important;
+          letter-spacing: 0.08em !important;
+        }
+        #admin-root p {
+          font-size: 14px !important;
+          font-weight: 500 !important;
+        }
+        #admin-root td, #admin-root th {
+          font-size: 14px !important;
+          font-weight: 600 !important;
+        }
+        #admin-root button, #admin-root .btn-text {
+          font-size: 14px !important;
+          font-weight: 700 !important;
+        }
+
+        @media (min-width: 768px) {
+          #admin-root h1 {
+            font-size: 42px !important;
+          }
+          #admin-root h2 {
+            font-size: 26px !important;
+          }
+          #admin-root h3 {
+            font-size: 22px !important;
+          }
+        }
+
+        @media (min-width: 1024px) {
+          #admin-root h1 {
+            font-size: 52px !important;
+          }
+          #admin-root h2 {
+            font-size: 32px !important;
+          }
+          #admin-root h3 {
+            font-size: 24px !important;
+          }
+        }
+
+        /* Banner Cards overrides */
+        #admin-root .admin-banner-card {
+           box-shadow: 0 4px 12px rgba(0,0,0,0.05) !important;
+           transition: all 0.3s ease !important;
+        }
+        #admin-root .admin-banner-card:hover {
+           box-shadow: 0 12px 24px rgba(0,0,0,0.1) !important;
+           transform: translateY(-4px) !important;
+        }
+        #admin-root .badge-live {
+           background-color: #16A34A !important;
+           color: #ffffff !important;
+           border: none !important;
+        }
+
+        /* Premium Primary Action Button */
+        .admin-primary-btn {
+          background: linear-gradient(135deg, #16A34A, #059669) !important;
+          color: white !important;
+          height: 52px !important;
+          padding: 0 24px !important;
+          border-radius: 14px !important;
+          font-weight: 700 !important;
+          font-size: 15px !important;
+          box-shadow: 0 12px 24px rgba(22,163,74,0.25) !important;
+          display: inline-flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          gap: 12px !important;
+          transition: all 0.3s ease !important;
+          border: none !important;
+          cursor: pointer !important;
+          text-decoration: none !important;
+        }
+        .admin-primary-btn svg {
+          color: white !important;
+        }
+        .admin-primary-btn:hover {
+          transform: translateY(-2px) !important;
+          background: linear-gradient(135deg, #22c55e, #10b981) !important;
+          box-shadow: 0 16px 32px rgba(22,163,74,0.3) !important;
+        }
+
+        /* Global Spacing Enforcements (optional utility classes if needed, mostly handled by tailwind gap-8/p-6 but can enforce standard if components use these classes) */
+        .admin-card-padding { padding: 24px !important; }
+        .admin-section-gap { gap: 32px !important; }
+        .admin-form-gap { gap: 20px !important; }
+        .admin-input-height { height: 52px !important; }
+
         .admin-sidebar-nav::-webkit-scrollbar {
           width: 5px;
         }
@@ -231,10 +368,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <div className="p-8 border-b border-slate-100 bg-slate-50/30 shrink-0 relative z-10">
           <Link href="/" className="flex items-center gap-4 transition-all hover:opacity-80 active:scale-95">
             <div className="h-16 w-16 flex items-center justify-center flex-shrink-0 bg-white rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.05)] border border-slate-100 overflow-hidden">
-              <img src="/logo.webp" alt="Logo" className="h-14 w-14 object-contain" />
+              <img src={settings.logo || "/logo.webp"} alt="Logo" className="h-14 w-14 object-contain" />
             </div>
             <div className="flex flex-col">
-              <span className="text-[17px] font-black tracking-tighter leading-none text-slate-900 uppercase italic">Namma <span className="text-emerald-600">Orru</span></span>
+              <span className="text-[17px] font-black tracking-tighter leading-none text-slate-900 uppercase italic">Namma Ooru Foods Pvt Ltd</span>
               <span className="text-[9px] font-bold uppercase tracking-[0.4em] text-slate-400 mt-1.5">Admin Console</span>
             </div>
           </Link>
@@ -297,7 +434,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                           <span className={`text-[14px] font-semibold flex-1 tracking-tight ${isActive ? 'text-white' : 'text-inherit'}`}>
                             {item.label}
                           </span>
-                          
+
                           {/* Unread Notifications Badge */}
                           {item.label === 'Notifications' && unreadCount > 0 && (
                             <span className={`px-2 py-0.5 rounded-full text-[10px] font-black ${isActive ? 'bg-white text-emerald-600' : 'bg-red-500 text-white'}`}>
@@ -344,26 +481,39 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       </aside>
 
       {/* ─── MAIN CONTENT ─────────────────────────────────────────────── */}
-      <main className="flex-1 lg:ml-72 min-w-0 relative overflow-x-hidden">
+      <main className="flex-1 lg:ml-72 min-w-0 relative flex flex-col min-h-screen overflow-y-auto overflow-x-hidden">
 
         {/* Admin Top Header */}
-        <header className="hidden h-20 bg-white/80 backdrop-blur-md border-b border-slate-100 items-center justify-between px-8 sticky top-0 z-40">
-          <div className="flex items-center gap-4">
+        <header className="flex lg:hidden h-20 bg-white/80 backdrop-blur-md border-b border-slate-100 items-center justify-between px-4 md:px-8 sticky top-0 z-40">
+          <div className="flex items-center gap-2 md:gap-4 min-w-0 flex-1">
             <button
               onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-              className="h-10 w-10 flex items-center justify-center rounded-xl bg-slate-50 border border-slate-200 text-slate-500 lg:hidden hover:bg-emerald-50 hover:text-emerald-600 hover:border-emerald-200 transition-all"
+              className="h-10 w-10 shrink-0 flex items-center justify-center rounded-xl bg-slate-50 border border-slate-200 text-slate-500 lg:hidden hover:bg-emerald-50 hover:text-emerald-600 hover:border-emerald-200 transition-all"
             >
-              <LayoutDashboard size={20} />
+              <Menu size={20} />
             </button>
-            <div className="flex flex-col">
-              <h2 className="text-[11px] font-black uppercase tracking-[0.3em] text-slate-400">System</h2>
-              <span className="text-sm font-bold text-slate-900 tracking-tight">
-                {navGroups.flatMap(g => g.items).find(i => pathname === i.href || pathname.startsWith(i.href + '/'))?.label || 'Overview'}
-              </span>
+            <div className="flex flex-col min-w-0">
+              {(() => {
+                const activeItem = navGroups
+                  .flatMap(g => g.items)
+                  .find(i => pathname === i.href) ||
+                  navGroups
+                    .flatMap(g => g.items)
+                    .find(i => i.href !== '/admin' && pathname.startsWith(i.href + '/'));
+                const activeGroup = navGroups.find(g => g.items.some(i => i.href === activeItem?.href));
+                const categoryLabel = activeGroup ? activeGroup.label : 'System';
+                const itemLabel = activeItem ? activeItem.label : 'Overview';
+                return (
+                  <>
+                    <h2 className="text-[10px] md:text-[11px] font-black uppercase tracking-[0.3em] text-slate-400 truncate">{categoryLabel}</h2>
+                    <span className="text-xs md:text-sm font-bold text-slate-900 tracking-tight truncate">{itemLabel}</span>
+                  </>
+                );
+              })()}
             </div>
           </div>
 
-          <div className="flex items-center gap-4 relative">
+          <div className="flex items-center gap-2 md:gap-4 relative shrink-0">
             <button
               onClick={() => setShowNotifications(!showNotifications)}
               className={`h-10 w-10 flex items-center justify-center rounded-xl transition-all relative ${showNotifications ? 'bg-emerald-600 text-white shadow-lg' : 'bg-slate-50 border border-slate-200 text-slate-500 hover:bg-emerald-50 hover:text-emerald-600 hover:border-emerald-200'}`}
@@ -448,7 +598,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </header>
 
         {/* Dynamic Content */}
-        <div className="p-8 max-w-[1600px] mx-auto">
+        <div className="p-4 md:p-6 lg:p-8 max-w-full w-full overflow-x-hidden">
           {children}
         </div>
       </main>

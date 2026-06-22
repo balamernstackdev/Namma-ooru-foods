@@ -55,7 +55,7 @@ const CategoryCard = ({ category, index }: { category: Category; index: number }
       transition={{ duration: 0.5, delay: index * 0.05 }}
     >
       <Link
-        href={`/products?category=${category.name}`}
+        href={`/categories/${category.slug || category.id}`}
         className="group relative flex flex-col h-[320px] rounded-2xl overflow-hidden bg-slate-50 border border-slate-100/50 hover:border-emerald-500/20 transition-all duration-500 shadow-sm hover:shadow-2xl hover:shadow-emerald-950/5"
       >
         {/* Promotional Tag / Featured Badge */}

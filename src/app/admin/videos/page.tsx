@@ -129,8 +129,8 @@ export default function AdminVideosPage() {
     <div className="space-y-8 animate-in fade-in duration-700">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-4xl font-black text-[var(--admin-sidebar)] tracking-tighter">Video Stories Management</h2>
-          <p className="text-slate-400 font-medium text-sm mt-1">Manage the visual 'Shop by Video' homepage feed.</p>
+          <h1 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tighter italic">Video Stories <span className="text-emerald-600">Management</span></h1>
+          <p className="text-slate-400 font-bold uppercase tracking-[0.2em] text-[10px] mt-2">Manage the visual 'Shop by Video' homepage feed.</p>
         </div>
         <button
           onClick={() => { resetForm(); setShowForm(true); }}

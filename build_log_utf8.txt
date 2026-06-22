@@ -1,0 +1,118 @@
+﻿
+> frontend@0.1.0 build
+> next build
+
+Γû▓ Next.js 16.2.2 (Turbopack)
+
+  Creating an optimized production build ...
+Γ£ô Compiled successfully in 14.4s
+  Running TypeScript ...
+  Finished TypeScript in 17.8s ...
+  Collecting page data using 7 workers ...
+  Generating static pages using 7 workers (0/139) ...
+  Generating static pages using 7 workers (34/139) 
+  Generating static pages using 7 workers (69/139) 
+  Generating static pages using 7 workers (104/139) 
+Γ£ô Generating static pages using 7 workers (139/139) in 4.3s
+  Finalizing page optimization ...
+
+Route (app)                                  Revalidate  Expire
+Γöî Γùï /                                                2m      1y
+Γö£ Γùï /_not-found
+Γö£ Γùï /about
+Γö£ Γùï /account
+Γö£ Γùï /account/notifications
+Γö£ Γùï /account/orders
+Γö£ Γùï /account/payments
+Γö£ Γùï /account/profile
+Γö£ Γùï /account/settings
+Γö£ Γùï /account/tracking
+Γö£ Γùï /account/wishlist
+Γö£ Γùï /admin
+Γö£ Γùï /admin/analytics
+Γö£ Γùï /admin/audit
+Γö£ Γùï /admin/banners
+Γö£ Γùï /admin/blog
+Γö£ Γùï /admin/brands
+Γö£ Γùï /admin/categories
+Γö£ Γùï /admin/coupons
+Γö£ Γùï /admin/dashboard
+Γö£ Γùï /admin/newsletter
+Γö£ Γùï /admin/notifications
+Γö£ Γùï /admin/orders
+Γö£ Γùï /admin/products
+Γö£ Γùï /admin/products/create
+Γö£ ΓùÅ /admin/products/edit/[id]
+Γöé Γö£ /admin/products/edit/1
+Γöé Γö£ /admin/products/edit/2
+Γöé Γö£ /admin/products/edit/3
+Γöé Γöö [+16 more paths]
+Γö£ Γùï /admin/promotions
+Γö£ Γùï /admin/promotions/create
+Γö£ Γùï /admin/promotions/edit
+Γö£ ΓùÅ /admin/promotions/edit/[id]
+Γöé Γö£ /admin/promotions/edit/1
+Γöé Γö£ /admin/promotions/edit/2
+Γöé Γö£ /admin/promotions/edit/3
+Γöé Γöö /admin/promotions/edit/4
+Γö£ Γùï /admin/refunds
+Γö£ Γùï /admin/reviews
+Γö£ Γùï /admin/settings
+Γö£ Γùï /admin/tracking
+Γö£ Γùï /admin/users
+Γö£ Γùï /admin/variants
+Γö£ Γùï /best-selling
+Γö£ Γùï /blog                                            5m      1y
+Γö£ ΓùÅ /blog/[slug]                                     5m      1y
+Γöé Γöö /blog/Product-journal                            5m      1y
+Γö£ Γùï /brands
+Γö£ ΓùÅ /brands/[id]                                     5m      1y
+Γöé Γö£ /brands/14                                       5m      1y
+Γöé Γö£ /brands/15                                       5m      1y
+Γöé Γöö /brands/16                                       5m      1y
+Γö£ Γùï /cart
+Γö£ Γùï /categories
+Γö£ ΓùÅ /categories/[id]
+Γöé Γö£ /categories/traditional-millets
+Γöé Γö£ /categories/millet-noodles
+Γöé Γö£ /categories/cold-pressed-oils
+Γöé Γöö /categories/farm-fresh-dairy
+Γö£ Γùï /checkout
+Γö£ ΓùÅ /concerns/[id]
+Γöé Γö£ /concerns/pregnancy
+Γöé Γö£ /concerns/kids
+Γöé Γö£ /concerns/weight-loss
+Γöé Γöö [+3 more paths]
+Γö£ Γùï /manifest.webmanifest
+Γö£ Γùï /privacy
+Γö£ Γùï /products
+Γö£ ΓùÅ /products/[id]                                   1m      1y
+Γöé Γö£ /products/tangy-tomato-sauce-22                  1m      1y
+Γöé Γö£ /products/foxtail-millet-noodles-21              1m      1y
+Γöé Γö£ /products/wood-pressed-groundnut-oil-20          1m      1y
+Γöé Γöö [+20 more paths]
+Γö£ Γùï /promotions
+Γö£ Γùï /refund
+Γö£ Γùï /robots.txt
+Γö£ Γùï /search
+Γö£ Γùï /sitemap.xml
+Γö£ Γùï /special
+Γö£ Γùï /terms
+Γö£ Γùï /vendor
+Γö£ Γùï /vendor/categories
+Γö£ Γùï /vendor/orders
+Γö£ Γùï /vendor/products
+Γö£ Γùï /vendor/products/create
+Γö£ Γùï /vendor/products/edit
+Γö£ ΓùÅ /vendor/products/edit/[id]
+Γöé Γö£ /vendor/products/edit/1
+Γöé Γö£ /vendor/products/edit/2
+Γöé Γö£ /vendor/products/edit/3
+Γöé Γöö [+16 more paths]
+Γö£ Γùï /vendor/settings
+Γöö Γùï /vendor/variants
+
+
+Γùï  (Static)  prerendered as static content
+ΓùÅ  (SSG)     prerendered as static HTML (uses generateStaticParams)
+

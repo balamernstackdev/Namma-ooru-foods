@@ -1,9 +1,12 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import { useRef, useEffect, useCallback, useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import ProductCard from './ProductCard';
 import Link from 'next/link';
+import BannerCarousel from './BannerCarousel';
+import { useBanners } from '@/hooks/useBanners';
 
 interface ProductCarouselProps {
   products: any[];
@@ -12,6 +15,7 @@ interface ProductCarouselProps {
   viewAllHref?: string;
   bgClass?: string;
   autoScrollInterval?: number; // ms, default 3000
+  bannerType?: string; // e.g., 'best_sellers', 'organic_collection'
 }
 
 export default function ProductCarousel({
@@ -20,55 +24,100 @@ export default function ProductCarousel({
   subtitle,
   viewAllHref = '/products',
   bgClass = 'bg-white',
-  autoScrollInterval = 3000,
+  autoScrollInterval: _autoScrollInterval = 3000,
+  bannerType,
 }: ProductCarouselProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
-  const [canScrollLeft, setCanScrollLeft] = useState(false);
-  const [canScrollRight, setCanScrollRight] = useState(true);
-  const [isPaused, setIsPaused] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(0);
 
-  // Card width is ~320px + 32px gap = ~352px
-  const SCROLL_STEP = 352;
+  // Mouse drag scrolling support
+  const [isMouseDown, setIsMouseDown] = useState(false);
+  const [startX, setStartX] = useState(0);
+  const [scrollLeftPos, setScrollLeftPos] = useState(0);
 
-  const updateButtons = useCallback(() => {
+  const onMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
     const el = scrollRef.current;
     if (!el) return;
-    setCanScrollLeft(el.scrollLeft > 0);
-    setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 4);
+    setIsMouseDown(true);
+    setStartX(e.pageX - el.offsetLeft);
+    setScrollLeftPos(el.scrollLeft);
+  };
+
+  const onMouseLeave = () => {
+    setIsMouseDown(false);
+  };
+
+  const onMouseUp = () => {
+    setIsMouseDown(false);
+  };
+
+  const onMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!isMouseDown) return;
+    e.preventDefault();
+    const el = scrollRef.current;
+    if (!el) return;
+    const x = e.pageX - el.offsetLeft;
+    const walk = (x - startX) * 1.5;
+    el.scrollLeft = scrollLeftPos - walk;
+  };
+
+  const onKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === 'ArrowLeft') {
+      e.preventDefault();
+      scrollLeft();
+    } else if (e.key === 'ArrowRight') {
+      e.preventDefault();
+      scrollRight();
+    }
+  };
+
+  // Fetch dynamic banners client-side
+  const { allBanners } = useBanners();
+  const banners = bannerType ? allBanners.filter((b: any) => b.type === bannerType) : [];
+
+  // Card width is ~320px + 32px gap = ~352px
+
+  const SCROLL_STEP = 352;
+
+  const handleScroll = useCallback(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+
+    // Mobile dots calculation
+    const itemWidth = el.children[0]?.clientWidth || 165;
+    const gap = window.innerWidth < 768 ? 12 : 32;
+    const index = Math.round(el.scrollLeft / (itemWidth + gap));
+    setActiveIndex(index);
   }, []);
 
   const scrollLeft = useCallback(() => {
-    scrollRef.current?.scrollBy({ left: -SCROLL_STEP, behavior: 'smooth' });
-    setTimeout(updateButtons, 350);
-  }, [updateButtons]);
+    const el = scrollRef.current;
+    if (!el) return;
+    if (el.scrollLeft <= 10) {
+      el.scrollTo({ left: el.scrollWidth, behavior: 'smooth' });
+    } else {
+      el.scrollBy({ left: -SCROLL_STEP, behavior: 'smooth' });
+    }
+  }, []);
 
   const scrollRight = useCallback(() => {
     const el = scrollRef.current;
     if (!el) return;
     // If at end, loop back to start
-    if (el.scrollLeft + el.clientWidth >= el.scrollWidth - 4) {
+    if (el.scrollLeft + el.clientWidth >= el.scrollWidth - 20) {
       el.scrollTo({ left: 0, behavior: 'smooth' });
     } else {
       el.scrollBy({ left: SCROLL_STEP, behavior: 'smooth' });
     }
-    setTimeout(updateButtons, 350);
-  }, [updateButtons]);
-
-  // Auto-scroll
-  useEffect(() => {
-    if (isPaused || products.length === 0) return;
-    timerRef.current = setInterval(scrollRight, autoScrollInterval);
-    return () => { if (timerRef.current) clearInterval(timerRef.current); };
-  }, [scrollRight, autoScrollInterval, isPaused, products.length]);
+  }, []);
 
   useEffect(() => {
     const el = scrollRef.current;
     if (!el) return;
-    el.addEventListener('scroll', updateButtons, { passive: true });
-    updateButtons();
-    return () => el.removeEventListener('scroll', updateButtons);
-  }, [updateButtons]);
+    el.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
+    return () => el.removeEventListener('scroll', handleScroll);
+  }, [handleScroll]);
 
   if (products.length === 0) return null;
 
@@ -86,43 +135,56 @@ export default function ProductCarousel({
               dangerouslySetInnerHTML={{ __html: title }}
             />
           </div>
-          <div className="flex items-center gap-3">
-            {/* Prev button */}
-            <button
-              onClick={scrollLeft}
-              aria-label="Previous products"
-              className="hidden md:flex h-11 w-11 rounded-full items-center justify-center border border-slate-200 transition-all shadow-sm active:scale-95 hover:scale-105"
-              style={{ backgroundColor: '#f1f5f9', color: '#334155' }}
-            >
-              <ChevronLeft size={20} strokeWidth={2.5} />
-            </button>
-            {/* Next button */}
-            <button
-              onClick={scrollRight}
-              aria-label="Next products"
-              className="hidden md:flex h-11 w-11 rounded-full items-center justify-center transition-all shadow-md active:scale-95 hover:scale-105"
-              style={{ backgroundColor: '#065f46', color: '#ffffff' }}
-            >
-              <ChevronRight size={20} strokeWidth={2.5} />
-            </button>
+          <div className="flex items-center gap-4">
             <Link
               href={viewAllHref}
               prefetch={false}
-              className="hidden md:inline-flex text-[10px] font-black uppercase tracking-widest ml-2 whitespace-nowrap"
-              style={{ color: '#065f46' }}
+              className="hidden md:inline-flex text-[10px] font-black uppercase tracking-widest whitespace-nowrap text-slate-400 hover:text-emerald-950 transition-colors"
             >
               View All →
             </Link>
+
+            {/* Redesigned Carousel Navigation Arrows */}
+            <div className="hidden md:flex items-center gap-2">
+              <button
+                type="button"
+                onClick={scrollLeft}
+                aria-label="Previous"
+                className="w-11 h-11 rounded-full bg-white border border-[#E5E7EB] shadow-[0_8px_24px_rgba(0,0,0,0.08)] flex items-center justify-center text-slate-800 hover:bg-[#0F8A5F] hover:text-white hover:border-[#0F8A5F] transition-all duration-300 hover:scale-105 focus:outline-none shrink-0"
+              >
+                <ChevronLeft size={20} strokeWidth={2.5} />
+              </button>
+              <button
+                type="button"
+                onClick={scrollRight}
+                aria-label="Next"
+                className="w-11 h-11 rounded-full bg-white border border-[#E5E7EB] shadow-[0_8px_24px_rgba(0,0,0,0.08)] flex items-center justify-center text-slate-800 hover:bg-[#0F8A5F] hover:text-white hover:border-[#0F8A5F] transition-all duration-300 hover:scale-105 focus:outline-none shrink-0"
+              >
+                <ChevronRight size={20} strokeWidth={2.5} />
+              </button>
+            </div>
           </div>
         </div>
 
+        {/* Banners (if present) */}
+        {banners && banners.length > 0 && (
+          <div className="mb-4 px-1">
+            <BannerCarousel banners={banners} />
+          </div>
+        )}
+
         {/* Scrollable row - contained */}
-        <div className="relative z-10">
+        <div className="relative z-10 group/carousel w-full">
           <div
             ref={scrollRef}
-            onMouseEnter={() => setIsPaused(true)}
-            onMouseLeave={() => setIsPaused(false)}
-            className="flex gap-3 md:gap-8 overflow-x-auto scroll-smooth pb-10 pt-4 snap-x snap-mandatory no-scrollbar"
+            onMouseDown={onMouseDown}
+            onMouseLeave={onMouseLeave}
+            onMouseUp={onMouseUp}
+            onMouseMove={onMouseMove}
+            onKeyDown={onKeyDown}
+            tabIndex={0}
+            className={`flex gap-3 md:gap-8 overflow-x-auto scroll-smooth pb-10 pt-4 snap-x snap-mandatory no-scrollbar px-[10px] md:px-[20px] xl:px-[70px] cursor-grab active:cursor-grabbing focus:outline-none ${products.length < 4 ? 'lg:justify-center' : ''
+              }`}
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           >
             {products.map((product: any) => (
@@ -134,6 +196,16 @@ export default function ProductCarousel({
               </div>
             ))}
           </div>
+        </div>
+
+        {/* Mobile Pagination Dots */}
+        <div className="md:hidden flex justify-center gap-1.5 mt-[-10px] mb-4">
+          {products.slice(0, 10).map((_, idx) => (
+            <div
+              key={idx}
+              className={`h-1.5 rounded-full transition-all duration-300 ${idx === activeIndex ? 'w-4 bg-[#0f9d58]' : 'w-1.5 bg-slate-300'}`}
+            />
+          ))}
         </div>
 
         {/* Mobile view-all */}

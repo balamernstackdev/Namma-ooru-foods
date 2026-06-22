@@ -13,10 +13,17 @@ export default function AccountLayout({ children }: { children: React.ReactNode 
   const pathname = usePathname();
   const router = useRouter();
 
-  // Redirect to login if unauthenticated on protected sub-pages
+  // Redirect to login if unauthenticated on protected sub-pages, or redirect vendors to their control center
   React.useEffect(() => {
-    if (!isLoading && !user && pathname !== '/account' && pathname !== '/account/') {
-      router.replace('/account');
+    document.body.style.overflow = 'auto';
+    window.scrollTo(0, 0);
+
+    if (!isLoading) {
+      if (!user && pathname !== '/account' && pathname !== '/account/') {
+        router.replace('/account');
+      } else if (user?.role?.toLowerCase() === 'vendor') {
+        router.replace('/vendor');
+      }
     }
   }, [user, isLoading, pathname, router]);
 

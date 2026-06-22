@@ -8,22 +8,35 @@ import { Metadata } from 'next';
 
 export async function generateStaticParams(): Promise<{ id: string }[]> {
   try {
-    const res = await fetch(`${API_URL}/api/categories`, { next: { revalidate: 3600 } });
+    const res = await fetch(`${API_URL}/api/categories?limit=1000&all=true`, { next: { revalidate: 3600 } });
     if (!res.ok) throw new Error('API fetch failed');
     const data = await res.json();
     const categoriesList = Array.isArray(data) ? data : (data && Array.isArray(data.categories) ? data.categories : []);
 
     if (categoriesList.length > 0) {
-      return categoriesList.map((category: any) => ({
-        id: category.id.toString(),
-      }));
+      const params: { id: string }[] = [];
+      categoriesList.forEach((category: any) => {
+        params.push({ id: category.id.toString() });
+        if (category.slug) {
+          params.push({ id: category.slug });
+        }
+      });
+      return params;
     }
     throw new Error('Empty categories list');
   } catch (error) {
     console.warn('Falling back to static CATEGORIES for generateStaticParams:', error);
-    return CATEGORIES.map((category) => ({
-      id: category.id.toString(),
-    }));
+    if (CATEGORIES && CATEGORIES.length > 0) {
+      const params: { id: string }[] = [];
+      CATEGORIES.forEach((category) => {
+        params.push({ id: category.id.toString() });
+        if (category.slug) {
+          params.push({ id: category.slug });
+        }
+      });
+      return params;
+    }
+    return [{ id: '1' }];
   }
 }
 

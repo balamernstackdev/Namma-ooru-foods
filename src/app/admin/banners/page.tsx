@@ -1,263 +1,523 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
-import { ImageIcon, Plus, Trash2, Edit2, Search, Calendar, Play, Pause, Loader2, Upload } from 'lucide-react';
+import { useState, useEffect, useMemo } from 'react';
+import { ImageIcon, Plus, Trash2, Edit2, Search, Play, Pause, Loader2, Filter, GripVertical, ArrowUp, ArrowDown, Hash } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { API_URL } from '@/lib/api';
+import Link from 'next/link';
+import { Banner } from './BannerForm';
+import { useToast } from '@/context/ToastContext';
 
-interface Banner {
-   id: number;
-   title: string;
-   subtitle?: string;
-   tagline?: string;
-   image: string;
-   link?: string;
-   isActive: boolean;
-   startDate?: string;
-   endDate?: string;
-   sortOrder: number;
+// Safe date formatter helper
+function formatDate(dateStr?: string | null): string {
+  if (!dateStr) return '—';
+  try {
+    return new Date(dateStr).toLocaleDateString('en-IN', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric'
+    });
+  } catch {
+    return '—';
+  }
 }
 
+const TYPE_TAB_LABELS: Record<string, string> = {
+  hero: 'Hero Slider',
+  best_sellers: 'Best Sellers',
+  organic_collection: 'Organic Collection',
+  farmer_collection: 'Farmers Collection',
+};
+
+const POSITION_BADGE_COLORS = [
+  'bg-amber-500 text-white',    // #1 — gold
+  'bg-slate-400 text-white',    // #2 — silver
+  'bg-orange-400 text-white',   // #3 — bronze
+];
+
+function PositionBadge({ position }: { position: number }) {
+  const color = position <= 3 ? POSITION_BADGE_COLORS[position - 1] : 'bg-slate-100 text-slate-600';
+  return (
+    <span className={`inline-flex items-center gap-0.5 px-2.5 py-1 rounded-lg text-[10px] font-black tabular-nums ${color}`}>
+      <Hash size={8} />
+      {position}
+    </span>
+  );
+}
+
+function normalizeType(type?: string | null): string {
+  if (!type) return 'hero';
+  const lower = type.toLowerCase().trim();
+  const map: Record<string, string> = {
+    'hero banner': 'hero',
+    'best sellers banner': 'best_sellers',
+    'best sellers': 'best_sellers',
+    'organic collection banner': 'organic_collection',
+    'organic collection': 'organic_collection',
+    'farmer collection banner': 'farmer_collection',
+    'farmer collection': 'farmer_collection',
+  };
+  return map[lower] || lower;
+}
 
 export default function AdminBannersPage() {
-   const [banners, setBanners] = useState<Banner[]>([]);
-   const [loading, setLoading] = useState(true);
-   const [showForm, setShowForm] = useState(false);
-   const [editId, setEditId] = useState<number | null>(null);
-   const [formData, setFormData] = useState({ title: '', subtitle: '', tagline: '', image: '', link: '', isActive: true, sortOrder: 0, startDate: '', endDate: '' });
-   const [submitting, setSubmitting] = useState(false);
-   const [uploading, setUploading] = useState(false);
-   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { addToast } = useToast();
+  const router = useRouter();
+  const [banners, setBanners] = useState<Banner[]>([]);
+  const [loading, setLoading] = useState(true);
 
-   useEffect(() => {
-      fetch(`${API_URL}/api/admin-ops/banners`)
-         .then(r => r.json())
-         .then(data => setBanners(Array.isArray(data) ? data : []))
-         .catch(err => console.error('Fetch error:', err))
-         .finally(() => setLoading(false));
-   }, []);
+  // Filters & Tabs
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState('All');
+  const [activeTab, setActiveTab] = useState<'hero' | 'best_sellers' | 'organic_collection' | 'farmer_collection'>('hero');
 
-   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-      const file = e.target.files?.[0];
-      if (!file) return;
+  // Local ordered list state for drag-and-drop
+  const [typeBanners, setTypeBanners] = useState<Banner[]>([]);
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
 
-      setUploading(true);
-      const uploadData = new FormData();
-      uploadData.append('image', file);
+  const fetchBanners = () => {
+    setLoading(true);
+    fetch(`${API_URL}/api/admin-ops/banners`)
+      .then(r => r.json())
+      .then(data => {
+        const mapped = (Array.isArray(data) ? data : []).map((b: any) => ({
+          ...b,
+          banner_image: b.banner_image || b.desktopImage || b.image || '',
+          // Normalize display_order — fallback to sortOrder for old records
+          display_order: b.display_order ?? b.sortOrder ?? 0,
+        }));
+        setBanners(mapped);
+      })
+      .catch(err => console.error('Fetch error:', err))
+      .finally(() => setLoading(false));
+  };
 
-      try {
-         const res = await fetch(`${API_URL}/api/upload/image`, {
-            method: 'POST',
-            body: uploadData,
-         });
+  useEffect(() => {
+    fetchBanners();
+  }, []);
 
-         if (res.ok) {
-            const data = await res.json();
-            setFormData(prev => ({ ...prev, image: data.url }));
-         } else {
-            alert('Upload failed. Please check server configuration.');
-         }
-      } catch (error) {
-         alert('Network error while uploading image.');
-      } finally {
-         setUploading(false);
-      }
-   };
-
-   const handleSubmit = async (e: React.FormEvent) => {
-      e.preventDefault();
-      setSubmitting(true);
-      try {
-         const url = editId
-            ? `${API_URL}/api/admin-ops/banners/${editId}`
-            : `${API_URL}/api/admin-ops/banners`;
-         const method = editId ? 'PUT' : 'POST';
-
-         const payload = {
-            ...formData,
-            sortOrder: parseInt(formData.sortOrder.toString()) || 0,
-            startDate: formData.startDate || null,
-            endDate: formData.endDate || null
-         };
-
-         const res = await fetch(url, {
-            method,
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-         });
-         const data = await res.json();
-
-         if (editId) {
-            setBanners(prev => prev.map(b => b.id === editId ? data : b));
-         } else {
-            setBanners(prev => [data, ...prev]);
-         }
-         setShowForm(false);
-         setEditId(null);
-         setFormData({ title: '', subtitle: '', tagline: '', image: '', link: '', isActive: true, sortOrder: 0, startDate: '', endDate: '' });
-      } finally { setSubmitting(false); }
-   };
-
-   const deleteBanner = async (id: number) => {
-      if (!confirm('Delete this banner campaign?')) return;
+  const deleteBanner = async (id: number) => {
+    if (!confirm('Delete this banner campaign? Display order will be recalculated automatically.')) return;
+    try {
       await fetch(`${API_URL}/api/admin-ops/banners/${id}`, { method: 'DELETE' });
       setBanners(prev => prev.filter(b => b.id !== id));
-   };
+      addToast('Success', 'Banner deleted and positions recalculated', 'success');
+      // Refresh to get updated display_order from server
+      setTimeout(() => fetchBanners(), 500);
+    } catch (e) {
+      addToast('Error', 'Failed to delete banner', 'error');
+    }
+  };
 
-   const toggleStatus = async (banner: Banner) => {
+  const toggleStatus = async (banner: Banner) => {
+    try {
       const res = await fetch(`${API_URL}/api/admin-ops/banners/${banner.id}`, {
-         method: 'PUT',
-         headers: { 'Content-Type': 'application/json' },
-         body: JSON.stringify({ ...banner, isActive: !banner.isActive })
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...banner, isActive: !banner.isActive })
       });
       const data = await res.json();
-      setBanners(prev => prev.map(b => b.id === banner.id ? data : b));
-   };
+      const mappedData = {
+        ...data,
+        banner_image: data.banner_image || data.desktopImage || data.image || '',
+        display_order: data.display_order ?? data.sortOrder ?? 0,
+      };
+      setBanners(prev => prev.map(b => b.id === banner.id ? mappedData : b));
+      addToast('Success', `Banner set to ${!banner.isActive ? 'Live' : 'Draft'}`, 'success');
+    } catch (e) {
+      addToast('Error', 'Failed to toggle status', 'error');
+    }
+  };
 
-   return (
-      <div className="space-y-8 animate-in fade-in duration-700">
-         <div className="flex items-center justify-between">
-            <div>
-               <h2 className="text-4xl font-black text-[var(--admin-sidebar)] tracking-tighter">Banners Management</h2>
-               <p className="text-slate-400 font-medium text-sm mt-1">Manage seasonal promotions and hero section visuals.</p>
-            </div>
-            <button
-               onClick={() => { setShowForm(!showForm); setEditId(null); setFormData({ title: '', subtitle: '', tagline: '', image: '', link: '', isActive: true, sortOrder: 0, startDate: '', endDate: '' }); }}
-               className="h-16 px-10 rounded-2xl bg-[var(--admin-sidebar)] text-white text-[11px] font-black uppercase tracking-widest flex items-center gap-3 hover:bg-slate-900 transition-all shadow-2xl"
-            >
-               <Plus size={20} className="text-[var(--admin-accent)]" /> New Campaign
-            </button>
-         </div>
+  // Filter + sort by display_order ASC for current tab
+  const filteredBanners = useMemo(() => {
+    let result = banners.filter(b => {
+      const normalizedType = normalizeType(b.type);
+      return normalizedType === activeTab;
+    });
 
-         {showForm && (
-            <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm p-10">
-               <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                     <label className="text-[10px] uppercase font-black tracking-widest text-slate-400">Campaign Title (Heading)</label>
-                     <input required value={formData.title} onChange={e => setFormData({ ...formData, title: e.target.value })} className="w-full h-14 bg-slate-50 border-2 border-slate-100 rounded-2xl px-5 text-sm font-bold outline-none focus:border-amber-400" />
-                  </div>
-                  <div className="space-y-2">
-                     <label className="text-[10px] uppercase font-black tracking-widest text-slate-400">Tagline (Small Badge)</label>
-                     <input value={formData.tagline} onChange={e => setFormData({ ...formData, tagline: e.target.value })} className="w-full h-14 bg-slate-50 border-2 border-slate-100 rounded-2xl px-5 text-sm font-bold outline-none focus:border-amber-400" placeholder="e.g. Fresh from Local Farms" />
-                  </div>
-                  <div className="md:col-span-2 space-y-2">
-                     <label className="text-[10px] uppercase font-black tracking-widest text-slate-400">Campaign Subtitle (Description)</label>
-                     <textarea value={formData.subtitle} onChange={e => setFormData({ ...formData, subtitle: e.target.value })} className="w-full h-24 bg-slate-50 border-2 border-slate-100 rounded-2xl p-5 text-sm font-bold outline-none focus:border-amber-400 resize-none" placeholder="Enter a compelling description for this campaign..." />
-                  </div>
-                  <div className="space-y-2">
-                     <label className="text-[10px] uppercase font-black tracking-widest text-slate-400">Destination Link (URL)</label>
-                     <input value={formData.link} onChange={e => setFormData({ ...formData, link: e.target.value })} className="w-full h-14 bg-slate-50 border-2 border-slate-100 rounded-2xl px-5 text-sm font-bold outline-none focus:border-amber-400" />
-                  </div>
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      result = result.filter(b => b.title?.toLowerCase().includes(q));
+    }
 
-                  <div className="md:col-span-2 space-y-4">
-                     <label className="text-[10px] uppercase font-black tracking-widest text-slate-400">Campaign Imagery</label>
-                     <div
-                        onClick={() => !uploading && fileInputRef.current?.click()}
-                        className={`aspect-[21/9] w-full rounded-3xl border-2 border-dashed border-slate-200 bg-slate-50 flex flex-col items-center justify-center gap-4 cursor-pointer hover:border-amber-400 transition-all overflow-hidden relative ${uploading ? 'opacity-50' : ''}`}
-                     >
-                        <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleFileUpload} />
-                        {uploading ? (
-                           <Loader2 className="h-10 w-10 animate-spin text-amber-500" />
-                        ) : (formData.image && formData.image.trim() !== '') ? (
-                           <img src={formData.image || undefined} className="w-full h-full object-cover" alt="Preview" />
-                        ) : (
-                           <>
-                              <Upload className="text-slate-300" size={32} />
-                              <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Upload Banner Asset</span>
-                           </>
-                        )}
-                     </div>
-                     <div className="space-y-2">
-                        <label className="text-[10px] uppercase font-black tracking-widest text-slate-400">Manual Image URL (Optional)</label>
-                        <input value={formData.image} onChange={e => setFormData({ ...formData, image: e.target.value })} className="w-full h-14 bg-slate-50 border-2 border-slate-100 rounded-2xl px-5 text-sm font-bold outline-none focus:border-amber-400" placeholder="https://..." />
-                     </div>
-                  </div>
+    if (statusFilter !== 'All') {
+      if (statusFilter === 'Live') result = result.filter(b => b.isActive);
+      if (statusFilter === 'Draft') result = result.filter(b => !b.isActive);
+    }
 
-                  <div className="space-y-2">
-                     <label className="text-[10px] uppercase font-black tracking-widest text-slate-400">Start Date</label>
-                     <input type="date" value={formData.startDate} onChange={e => setFormData({ ...formData, startDate: e.target.value })} className="w-full h-14 bg-slate-50 border-2 border-slate-100 rounded-2xl px-5 text-sm font-bold outline-none focus:border-amber-400" />
-                  </div>
-                  <div className="space-y-2">
-                     <label className="text-[10px] uppercase font-black tracking-widest text-slate-400">End Date</label>
-                     <input type="date" value={formData.endDate} onChange={e => setFormData({ ...formData, endDate: e.target.value })} className="w-full h-14 bg-slate-50 border-2 border-slate-100 rounded-2xl px-5 text-sm font-bold outline-none focus:border-amber-400" />
-                  </div>
-                  <div className="flex items-center gap-8">
-                     <div className="space-y-2">
-                        <label className="text-[10px] uppercase font-black tracking-widest text-slate-400">Priority (Sort Order)</label>
-                        <input type="number" value={formData.sortOrder} onChange={e => setFormData({ ...formData, sortOrder: parseInt(e.target.value) || 0 })} className="w-24 h-14 bg-slate-50 border-2 border-slate-100 rounded-2xl px-5 text-sm font-bold outline-none focus:border-amber-400" />
-                     </div>
-                     <label className="flex items-center gap-3 cursor-pointer pt-6">
-                        <input type="checkbox" checked={formData.isActive} onChange={e => setFormData({ ...formData, isActive: e.target.checked })} className="h-5 w-5 rounded-lg accent-amber-500" />
-                        <span className="text-xs font-black uppercase tracking-widest text-[var(--admin-sidebar)]">Active Campaign</span>
-                     </label>
-                  </div>
-                  <div className="md:col-span-2 flex gap-4 pt-4">
-                     <button disabled={submitting} type="submit" className="h-14 px-10 bg-[var(--admin-sidebar)] text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-900 transition-all flex items-center gap-3">
-                        {submitting && <Loader2 className="h-4 w-4 animate-spin" />} {editId ? 'Update Campaign' : 'Launch Campaign'}
-                     </button>
-                     <button type="button" onClick={() => setShowForm(false)} className="h-14 px-8 border-2 border-slate-100 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-400">Cancel</button>
-                  </div>
-               </form>
-            </div>
-         )}
+    // Sort by display_order ASC, then by id ASC as fallback
+    result.sort((a, b) => {
+      const orderA = a.display_order ?? 0;
+      const orderB = b.display_order ?? 0;
+      if (orderA !== orderB) return orderA - orderB;
+      return a.id - b.id;
+    });
 
-         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {loading ? (
-               <div className="col-span-full py-20 text-center flex flex-col items-center gap-4">
-                  <Loader2 className="h-12 w-12 animate-spin text-slate-200" />
-                  <span className="text-[10px] font-black uppercase tracking-widest text-slate-300">Synchronizing Campaigns...</span>
-               </div>
-            ) : Array.isArray(banners) && banners.map(banner => (
-               <div key={banner.id} className="bg-white rounded-[3.5rem] border border-slate-100 overflow-hidden shadow-sm hover:shadow-2xl hover:shadow-slate-200/40 transition-all group">
-                  <div className="aspect-[21/9] bg-slate-100 relative group overflow-hidden">
-                     {(banner.image && banner.image.trim() !== '') ? <img src={banner.image || undefined} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" /> : <ImageIcon className="absolute inset-0 m-auto h-12 w-12 text-slate-200" />}
-                     <div className="absolute inset-x-0 bottom-0 p-6 bg-gradient-to-t from-black/60 to-transparent">
-                        <h3 className="text-xl font-black text-white tracking-tight">{banner.title}</h3>
-                        <p className="text-[10px] font-mono text-white/60 truncate">{banner.link || 'Internal Link'}</p>
-                     </div>
-                     <div className="absolute top-6 right-6 flex gap-2 transition-all translate-y-0 group-hover:translate-y-0">
-                        <button onClick={() => {
-                           setEditId(banner.id);
-                           setFormData({
-                              title: banner.title || '',
-                              subtitle: banner.subtitle || '',
-                              tagline: banner.tagline || '',
-                              image: banner.image || '',
-                              link: banner.link || '',
-                              isActive: banner.isActive,
-                              sortOrder: banner.sortOrder,
-                              startDate: banner.startDate?.split('T')[0] || '',
-                              endDate: banner.endDate?.split('T')[0] || ''
-                           });
-                           setShowForm(true);
-                        }} className="h-10 w-10 bg-white rounded-xl flex items-center justify-center text-slate-400 hover:text-blue-500 transition-all shadow-xl"><Edit2 size={16} /></button>
-                        <button onClick={() => deleteBanner(banner.id)} className="h-10 w-10 bg-white rounded-xl flex items-center justify-center text-slate-400 hover:text-red-500 transition-all shadow-xl"><Trash2 size={16} /></button>
-                     </div>
-                  </div>
-                  <div className="p-8 flex items-center justify-between">
-                     <div className="flex gap-4 items-center">
-                        <div className="flex flex-col">
-                           <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1">Scheduling</span>
-                           <div className="flex items-center gap-2 text-xs font-bold text-slate-600">
-                              <Calendar size={14} className="text-slate-300" />
-                              {banner.startDate ? new Date(banner.startDate).toLocaleDateString() : 'Immediate'} → {banner.endDate ? new Date(banner.endDate).toLocaleDateString() : 'Forever'}
-                           </div>
-                        </div>
-                        <div className="h-8 w-px bg-slate-100 mx-2" />
-                        <div className="flex flex-col">
-                           <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1">Status</span>
-                           <button onClick={() => toggleStatus(banner)} className={`flex items-center gap-2 text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full border transition-all ${banner.isActive ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-red-50 text-red-600 border-red-100'}`}>
-                              {banner.isActive ? <Play size={10} fill="currentColor" /> : <Pause size={10} fill="currentColor" />}
-                              {banner.isActive ? 'Live' : 'Paused'}
-                           </button>
-                        </div>
-                     </div>
-                     <div className="h-12 w-12 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center text-xs font-black text-slate-300">
-                        #{banner.sortOrder}
-                     </div>
-                  </div>
-               </div>
-            ))}
-         </div>
+    return result;
+  }, [banners, activeTab, searchQuery, statusFilter]);
+
+  // Keep local reorder state in sync with filtered list
+  useEffect(() => {
+    setTypeBanners(filteredBanners);
+  }, [filteredBanners]);
+
+  // ── Drag and Drop ──────────────────────────────────────────────────────────
+
+  const handleDragStart = (e: React.DragEvent, index: number) => {
+    setDraggedIndex(index);
+    e.dataTransfer.effectAllowed = 'move';
+    const img = window.document.createElement('img');
+    img.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+    e.dataTransfer.setDragImage(img, 0, 0);
+  };
+
+  const handleDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    if (draggedIndex === null || draggedIndex === index) return;
+    const updated = [...typeBanners];
+    const draggedItem = updated[draggedIndex];
+    updated.splice(draggedIndex, 1);
+    updated.splice(index, 0, draggedItem);
+    setDraggedIndex(index);
+    setTypeBanners(updated);
+  };
+
+  const handleDragEnd = async () => {
+    setDraggedIndex(null);
+    await saveOrder(typeBanners);
+  };
+
+  const saveOrder = async (ordered: Banner[]) => {
+    setIsSaving(true);
+    try {
+      const bannerIds = ordered.map(b => b.id);
+      const res = await fetch(`${API_URL}/api/admin-ops/banners/reorder`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: activeTab, bannerIds })
+      });
+      if (res.ok) {
+        addToast('Success', 'Display order saved', 'success');
+        fetchBanners();
+      } else {
+        addToast('Error', 'Failed to save display order', 'error');
+      }
+    } catch (err) {
+      addToast('Error', 'Network error reordering', 'error');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  // Mobile manual reordering
+  const handleMoveMobile = async (index: number, direction: -1 | 1) => {
+    const targetIndex = index + direction;
+    if (targetIndex < 0 || targetIndex >= typeBanners.length) return;
+    const updated = [...typeBanners];
+    const temp = updated[index];
+    updated[index] = updated[targetIndex];
+    updated[targetIndex] = temp;
+    setTypeBanners(updated);
+    await saveOrder(updated);
+  };
+
+  return (
+    <div className="space-y-6 animate-in fade-in duration-700">
+      {/* Top Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
+        <div>
+          <h1 className="text-3xl font-black text-slate-900 tracking-tighter italic">Banner <span className="text-emerald-600">Management</span></h1>
+          <p className="text-slate-400 font-bold uppercase tracking-[0.2em] text-[10px] mt-1">Configure promotional sections & sliding carousels</p>
+        </div>
+        <Link
+          href="/admin/banners/create"
+          className="admin-primary-btn shrink-0"
+        >
+          <Plus size={18} /> Create Banner
+        </Link>
       </div>
-   );
+
+      {/* Type Selector Tabs */}
+      <div className="flex flex-wrap gap-2 bg-slate-100/50 p-2 rounded-2xl border border-slate-200/50">
+        {(['hero', 'best_sellers', 'organic_collection', 'farmer_collection'] as const).map(tab => {
+          const count = banners.filter(b => normalizeType(b.type) === tab).length;
+          return (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2 ${
+                activeTab === tab
+                  ? 'bg-slate-900 text-white shadow-sm'
+                  : 'text-slate-500 hover:bg-slate-200/50 hover:text-slate-800'
+              }`}
+            >
+              {TYPE_TAB_LABELS[tab]}
+              {count > 0 && (
+                <span className={`text-[9px] font-black px-1.5 py-0.5 rounded-full ${activeTab === tab ? 'bg-white/20' : 'bg-slate-200 text-slate-600'}`}>
+                  {count}
+                </span>
+              )}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Search & Filters */}
+      <div className="flex flex-col sm:flex-row gap-4">
+        <div className="relative flex-1">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+          <input
+            type="text"
+            placeholder="Search banners by title..."
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            className="w-full h-12 bg-white border border-slate-200 rounded-xl pl-12 pr-4 text-xs font-bold outline-none focus:border-amber-400 transition-colors shadow-sm"
+          />
+        </div>
+        <div className="relative w-full sm:w-48 shrink-0">
+          <select
+            value={statusFilter}
+            onChange={e => setStatusFilter(e.target.value)}
+            className="appearance-none h-12 bg-white border border-slate-200 rounded-xl pl-10 pr-10 text-[10px] font-black uppercase tracking-widest outline-none focus:border-amber-400 transition-colors cursor-pointer w-full shadow-sm"
+          >
+            <option value="All">All Statuses</option>
+            <option value="Live">Live</option>
+            <option value="Draft">Draft</option>
+          </select>
+          <Filter className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={12} />
+        </div>
+      </div>
+
+      {/* Info Box */}
+      <div className="bg-emerald-50/50 border border-emerald-100 rounded-2xl p-4 flex items-start gap-3">
+        <div className="h-8 w-8 rounded-lg bg-emerald-100 flex items-center justify-center shrink-0 mt-0.5">
+          <GripVertical size={14} className="text-emerald-600" />
+        </div>
+        <div>
+          <h4 className="font-black text-[10px] text-emerald-900 uppercase tracking-widest mb-0.5">Drag-and-Drop Display Order</h4>
+          <p className="text-emerald-850/80 text-xs font-semibold">
+            Drag rows to reorder banners. Position (#1, #2, #3…) controls slider display order on the storefront. Each banner type maintains its own independent order sequence.
+            {isSaving && <span className="ml-2 text-amber-600">Saving…</span>}
+          </p>
+        </div>
+      </div>
+
+      {/* ── Desktop Table View ───────────────────────────────────────────── */}
+      <div className="hidden md:block bg-white rounded-[2rem] border border-slate-200/80 shadow-sm overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left table-auto border-separate border-spacing-0 min-w-[1000px] admin-data-table">
+            <thead>
+              <tr className="bg-slate-50/60">
+                <th className="w-12 px-4 py-4" title="Drag to reorder"></th>
+                <th className="px-4 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100 w-16 text-center">Position</th>
+                <th className="px-4 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100 w-24">Thumbnail</th>
+                <th className="px-4 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100">Banner Name</th>
+                <th className="px-4 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100">Banner Type</th>
+                <th className="px-4 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100 text-center">Status</th>
+                <th className="px-4 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100">Created</th>
+                <th className="px-4 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {loading ? (
+                <tr>
+                  <td colSpan={8} className="py-20 text-center">
+                    <Loader2 className="h-10 w-10 animate-spin mx-auto text-slate-200" />
+                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 mt-4 block">Loading campaigns...</span>
+                  </td>
+                </tr>
+              ) : typeBanners.length === 0 ? (
+                <tr>
+                  <td colSpan={8} className="py-20 text-center">
+                    <ImageIcon className="h-12 w-12 mx-auto text-slate-200 mb-3" />
+                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 block">No campaigns in this category</span>
+                    <Link href="/admin/banners/create" className="mt-4 inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-emerald-600 hover:text-emerald-700 underline underline-offset-2">
+                      <Plus size={12} /> Create First Banner
+                    </Link>
+                  </td>
+                </tr>
+              ) : (
+                typeBanners.map((banner, idx) => (
+                  <tr
+                    key={banner.id}
+                    draggable
+                    onDragStart={(e) => handleDragStart(e, idx)}
+                    onDragOver={(e) => handleDragOver(e, idx)}
+                    onDragEnd={handleDragEnd}
+                    className={`hover:bg-slate-50/50 transition-colors group cursor-grab active:cursor-grabbing ${
+                      draggedIndex === idx ? 'opacity-40 bg-slate-50 border-2 border-dashed border-amber-300' : ''
+                    }`}
+                  >
+                    {/* Drag handle */}
+                    <td className="px-4 py-4 text-slate-300 group-hover:text-slate-500 transition-colors">
+                      <GripVertical size={16} />
+                    </td>
+
+                    {/* Position Badge */}
+                    <td className="px-4 py-4 text-center">
+                      <PositionBadge position={idx + 1} />
+                    </td>
+
+                    {/* Thumbnail */}
+                    <td className="px-4 py-4">
+                      <div className="h-12 w-24 rounded-lg bg-slate-100 overflow-hidden border border-slate-100 relative shadow-sm">
+                        {(banner.banner_image && banner.banner_image.trim() !== '') ? (
+                          <img src={banner.banner_image} className="w-full h-full object-cover" alt="" />
+                        ) : (
+                          <ImageIcon className="absolute inset-0 m-auto h-5 w-5 text-slate-300" />
+                        )}
+                      </div>
+                    </td>
+
+                    {/* Banner Name */}
+                    <td className="px-4 py-4">
+                      <span className="text-xs font-black text-slate-900 block truncate max-w-xs">{banner.title || 'Untitled Banner'}</span>
+                      {banner.subtitle && (
+                        <span className="text-[10px] text-slate-400 font-bold block truncate max-w-xs mt-0.5">{banner.subtitle}</span>
+                      )}
+                    </td>
+
+                    {/* Banner Type */}
+                    <td className="px-4 py-4">
+                      <span className="inline-block text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded bg-slate-100 text-slate-600">
+                        {TYPE_TAB_LABELS[normalizeType(banner.type)] || banner.type}
+                      </span>
+                    </td>
+
+                    {/* Status toggle */}
+                    <td className="px-4 py-4 text-center">
+                      <button
+                        onClick={() => toggleStatus(banner)}
+                        className={`inline-flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-md transition-all border ${
+                          banner.isActive
+                            ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                            : 'bg-slate-50 text-slate-500 border-slate-200'
+                        }`}
+                      >
+                        {banner.isActive ? <Play size={8} fill="currentColor" /> : <Pause size={8} fill="currentColor" />}
+                        {banner.isActive ? 'Live' : 'Draft'}
+                      </button>
+                    </td>
+
+                    {/* Created date */}
+                    <td className="px-4 py-4">
+                      <span className="text-[10px] font-bold text-slate-500">{formatDate(banner.createdAt)}</span>
+                    </td>
+
+                    {/* Actions */}
+                    <td className="px-4 py-4 text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        <button
+                          onClick={() => router.push(`/admin/banners/${banner.id}/edit`)}
+                          className="h-9 w-9 flex items-center justify-center rounded-xl bg-slate-50 text-slate-400 hover:bg-blue-600 hover:text-white transition-colors"
+                          title="Edit Banner"
+                        >
+                          <Edit2 size={14} />
+                        </button>
+                        <button
+                          onClick={() => deleteBanner(banner.id)}
+                          className="h-9 w-9 flex items-center justify-center rounded-xl bg-slate-50 text-red-300 hover:bg-red-500 hover:text-white transition-colors"
+                          title="Delete Banner"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* ── Mobile Cards View ───────────────────────────────────────────────── */}
+      <div className="md:hidden space-y-3">
+        {loading ? (
+          <div className="py-20 text-center bg-white rounded-3xl border border-slate-100 shadow-sm">
+            <Loader2 className="h-10 w-10 animate-spin mx-auto text-slate-200" />
+          </div>
+        ) : typeBanners.length === 0 ? (
+          <div className="py-20 text-center bg-white rounded-3xl border border-dashed border-slate-200">
+            <ImageIcon className="h-12 w-12 mx-auto text-slate-200 mb-3" />
+            <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">No campaigns found</span>
+          </div>
+        ) : (
+          typeBanners.map((banner, idx) => (
+            <div key={banner.id} className="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm space-y-3">
+              <div className="flex gap-3 items-start">
+                {/* Position badge */}
+                <div className="shrink-0 mt-0.5">
+                  <PositionBadge position={idx + 1} />
+                </div>
+                {/* Thumbnail */}
+                <div className="h-14 w-24 rounded-lg bg-slate-100 overflow-hidden border border-slate-100 relative shrink-0">
+                  {(banner.banner_image && banner.banner_image.trim() !== '') ? (
+                    <img src={banner.banner_image} className="w-full h-full object-cover" alt="" />
+                  ) : (
+                    <ImageIcon className="absolute inset-0 m-auto h-5 w-5 text-slate-300" />
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <span className="text-xs font-black text-slate-900 block truncate">{banner.title || 'Untitled Banner'}</span>
+                  <span className="text-[9px] font-bold text-slate-400 block mt-0.5">{TYPE_TAB_LABELS[normalizeType(banner.type)]}</span>
+                  <span className="text-[9px] font-bold text-slate-400 block">{formatDate(banner.createdAt)}</span>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between pt-3 border-t border-slate-100">
+                <button
+                  onClick={() => toggleStatus(banner)}
+                  className={`inline-flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-md border ${
+                    banner.isActive
+                      ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                      : 'bg-slate-50 text-slate-500 border-slate-200'
+                  }`}
+                >
+                  {banner.isActive ? 'Live' : 'Draft'}
+                </button>
+
+                {/* Mobile reordering arrows */}
+                <div className="flex items-center gap-1.5">
+                  <button
+                    disabled={idx === 0}
+                    onClick={() => handleMoveMobile(idx, -1)}
+                    className="h-8 w-8 flex items-center justify-center rounded-lg bg-slate-50 border border-slate-200 text-slate-500 disabled:opacity-30"
+                    title="Move Up"
+                  >
+                    <ArrowUp size={14} />
+                  </button>
+                  <button
+                    disabled={idx === typeBanners.length - 1}
+                    onClick={() => handleMoveMobile(idx, 1)}
+                    className="h-8 w-8 flex items-center justify-center rounded-lg bg-slate-50 border border-slate-200 text-slate-500 disabled:opacity-30"
+                    title="Move Down"
+                  >
+                    <ArrowDown size={14} />
+                  </button>
+                </div>
+
+                <div className="flex items-center gap-1">
+                  <Link
+                    href={`/admin/banners/${banner.id}/edit`}
+                    className="h-8 px-3 rounded-lg bg-slate-50 border border-slate-200 text-slate-600 font-bold text-[10px] uppercase tracking-wider flex items-center justify-center gap-1 no-underline"
+                  >
+                    Edit
+                  </Link>
+                  <button
+                    onClick={() => deleteBanner(banner.id)}
+                    className="h-8 w-8 rounded-lg bg-red-50 border border-red-100 text-red-600 flex items-center justify-center"
+                  >
+                    <Trash2 size={12} />
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  );
 }

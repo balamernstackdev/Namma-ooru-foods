@@ -38,17 +38,20 @@ export default function AdminBrandsPage() {
   const itemsPerPage = 10;
 
   useEffect(() => {
-    fetchBrands(currentPage);
-  }, [currentPage]);
+    fetchBrands();
+  }, []);
 
-  const fetchBrands = (page: number) => {
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, statusFilter]);
+
+  const fetchBrands = () => {
     setLoading(true);
-    fetch(`${API_URL}/api/admin-ops/brands?page=${page}&limit=${itemsPerPage}&includeEmpty=true`)
+    fetch(`${API_URL}/api/admin-ops/brands?limit=1000&includeEmpty=true`)
       .then(r => r.json())
       .then(data => {
         setBrands(data.subVendors || []);
         setTotalBrands(data.total || 0);
-        setTotalPages(data.totalPages || 0);
       })
       .finally(() => setLoading(false));
   };
@@ -59,7 +62,7 @@ export default function AdminBrandsPage() {
       const res = await fetch(`${API_URL}/api/admin-ops/brands/${id}`, { method: 'DELETE' });
       if (res.ok) {
         addToast('Success', 'Brand partner removed from registry');
-        fetchBrands(currentPage);
+        fetchBrands();
       }
     } catch (err) {
       addToast('Error', 'Failed to remove brand');
@@ -81,7 +84,7 @@ export default function AdminBrandsPage() {
       }
       addToast('Success', `Successfully removed ${successCount} brand partners`);
       setSelectedIds([]);
-      fetchBrands(currentPage);
+      fetchBrands();
     } else {
       addToast('Info', 'Approval state changes are not supported for heritage brand partners.');
     }
@@ -154,12 +157,18 @@ export default function AdminBrandsPage() {
     }
   };
 
+  const calculatedTotalPages = Math.max(1, Math.ceil(filteredBrands.length / itemsPerPage));
+  const paginatedBrands = filteredBrands.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
   return (
-    <div className="space-y-8 animate-in fade-in duration-700 pb-20 max-w-7xl mx-auto p-4 md:p-8">
+    <div className="space-y-8 animate-in fade-in duration-700 pb-20">
       {/* HEADER */}
       <div>
-        <h2 className="text-4xl font-black text-slate-900 tracking-tighter">Brand Management</h2>
-        <p className="text-slate-400 font-medium text-sm mt-1">Configure heritage partner catalogs, manage digital footprints, and view operational products count.</p>
+        <h1 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tighter italic">Brand <span className="text-emerald-600">Management</span></h1>
+        <p className="text-slate-400 font-bold uppercase tracking-[0.2em] text-[10px] mt-2">Configure heritage partner catalogs, manage digital footprints, and view operational products count.</p>
       </div>
 
       {/* Advanced Filter Toolbar */}
@@ -192,7 +201,7 @@ export default function AdminBrandsPage() {
       {/* Brands List Table */}
       <div className="bg-white rounded-[2.5rem] border border-slate-200 shadow-sm overflow-hidden mt-6">
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+          <table className="w-full text-left border-collapse min-w-[1000px] admin-data-table">
             <thead>
               <tr className="bg-slate-50/50">
                 <th className="px-6 py-5 w-12 border-b border-slate-100 text-center">
@@ -234,7 +243,7 @@ export default function AdminBrandsPage() {
                   </td>
                 </tr>
               ) : (
-                filteredBrands.map(brand => {
+                paginatedBrands.map(brand => {
                   const isSelected = selectedIds.includes(brand.id);
                   return (
                     <tr key={brand.id} className={`group hover:bg-slate-50/40 transition-colors ${isSelected ? 'bg-slate-50/30' : ''}`}>
@@ -337,11 +346,11 @@ export default function AdminBrandsPage() {
         </div>
         
         {/* Pagination */}
-        {totalPages > 1 && (
+        {calculatedTotalPages > 1 && (
           <div className="border-t border-slate-50">
             <AdminPagination
               currentPage={currentPage}
-              totalPages={totalPages}
+              totalPages={calculatedTotalPages}
               onPageChange={setCurrentPage}
             />
           </div>

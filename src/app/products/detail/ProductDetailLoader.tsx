@@ -11,7 +11,7 @@ const fetcher = (url: string) => fetch(url).then(res => res.json());
 
 export default function ProductDetailLoader() {
   const searchParams = useSearchParams();
-  const id = searchParams.get('id');
+  const id = searchParams.get('slug') || searchParams.get('id');
   const router = useRouter();
 
   const { data: product, error: productError, isLoading } = useSWR(id ? `${API_URL}/api/products/${id}` : null, fetcher);

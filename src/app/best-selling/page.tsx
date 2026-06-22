@@ -14,39 +14,37 @@ import { API_URL } from '@/lib/api';
 const fetcher = (url: string) => fetch(url).then(res => res.json());
 
 export default function BestSellingPage() {
-   const { data: products, error } = useSWR(`${API_URL}/api/products`, fetcher);
-   const { data: categoriesData } = useSWR(`${API_URL}/api/categories`, fetcher);
+    const { data: products, error } = useSWR(`${API_URL}/api/products?limit=1000`, fetcher);
+    const { data: categoriesData } = useSWR(`${API_URL}/api/categories`, fetcher);
 
-   const [activeCategory, setActiveCategory] = useState<string>('All');
-   const [priceFilter, setPriceFilter] = useState<string>('all');
-   const [ratingFilter, setRatingFilter] = useState<number>(0);
-   const [showFilters, setShowFilters] = useState(false);
-   const [currentPage, setCurrentPage] = useState(1);
-   const [sortOrder, setSortOrder] = useState<'rating' | 'price_asc' | 'price_desc' | 'newest'>('rating');
-   const itemsPerPage = 12; // Increased for better density
+    const [activeCategory, setActiveCategory] = useState<string>('All');
+    const [priceFilter, setPriceFilter] = useState<string>('all');
+    const [ratingFilter, setRatingFilter] = useState<number>(0);
+    const [showFilters, setShowFilters] = useState(false);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [sortOrder, setSortOrder] = useState<'rating' | 'price_asc' | 'price_desc' | 'newest'>('rating');
+    const itemsPerPage = 12; // Increased for better density
 
-   // Filter Group Collapsed States
-   const [collapsedGroups, setCollapsedGroups] = useState({
-      categories: false,
-      price: false,
-      rating: false
-   });
+    // Filter Group Collapsed States
+    const [collapsedGroups, setCollapsedGroups] = useState({
+       categories: false,
+       price: false,
+       rating: false
+    });
 
-   const toggleGroup = (group: keyof typeof collapsedGroups) => {
-      setCollapsedGroups(prev => ({ ...prev, [group]: !prev[group] }));
-   };
+    const toggleGroup = (group: keyof typeof collapsedGroups) => {
+       setCollapsedGroups(prev => ({ ...prev, [group]: !prev[group] }));
+    };
 
-   const liveProductsList = Array.isArray(products)
-      ? products
-      : (products && Array.isArray((products as any).products) ? (products as any).products : []);
+    const liveProductsList = Array.isArray(products)
+       ? products
+       : (products && Array.isArray((products as any).products) ? (products as any).products : []);
 
-   const liveCategoriesList = Array.isArray(categoriesData)
-      ? categoriesData
-      : (categoriesData && Array.isArray((categoriesData as any).categories) ? (categoriesData as any).categories : []);
+    const liveCategoriesList = Array.isArray(categoriesData)
+       ? categoriesData
+       : (categoriesData && Array.isArray((categoriesData as any).categories) ? (categoriesData as any).categories : []);
 
-   const allProducts: any[] = liveProductsList.filter((p: any) => p.tags?.includes('best-selling')).length > 0
-      ? liveProductsList.filter((p: any) => p.tags?.includes('best-selling'))
-      : liveProductsList;
+    const allProducts: any[] = liveProductsList.filter((p: any) => p.isBestSeller === true || p.tags?.includes('best-selling'));
 
    const categoryNames: string[] = ['All', ...liveCategoriesList.map((c: any) => c.name)];
 

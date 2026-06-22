@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Save, X, Package, Tag, IndianRupee, Image as ImageIcon, List, ChevronLeft, Sparkles, Plus, Trash2 } from 'lucide-react';
+import { Save, X, Package, Tag, IndianRupee, Image as ImageIcon, List, ChevronLeft, Sparkles, Plus, Trash2, Layers } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import RelatedProductsSelector from '../admin/RelatedProductsSelector';
 import ComboProductsSelector from '../admin/ComboProductsSelector';
@@ -32,15 +32,27 @@ export default function ProductForm({ initialData, isEdit }: ProductFormProps) {
       price: '',
       originalPrice: '',
       categoryId: '',
+      subcategoryId: '',
       image: '',
       tags: [] as string[],
       highlights: [] as string[],
-      variants: [] as { name: string; price: number; stock: number }[],
-      storageInstructions: ''
+      variants: [] as { name: string; price: number; stock: number; originalPrice?: string; sku?: string; weight?: string; unit?: string }[],
+      storageInstructions: '',
+      isBestSeller: false,
+      isOrganic: false,
+      isFeatured: false,
+      isNewArrival: false,
+      inventoryMode: 'SINGLE',
+      weight: '',
+      unit: 'g',
+      sku: '',
+      stock: '0',
+      gstRate: ''
    });
 
    const [tagInput, setTagInput] = useState('');
    const [highlightInput, setHighlightInput] = useState('');
+   const [subcategories, setSubcategories] = useState<any[]>([]);
 
    useEffect(() => {
       fetchCategories();
@@ -50,30 +62,68 @@ export default function ProductForm({ initialData, isEdit }: ProductFormProps) {
             price: initialData.price?.toString() || '',
             originalPrice: initialData.originalPrice?.toString() || '',
             categoryId: initialData.categoryId?.toString() || '',
+            subcategoryId: initialData.subcategoryId?.toString() || '',
             tags: initialData.tags || [],
             highlights: initialData.highlights || [],
             variants: initialData.variants || [],
-               storageInstructions: initialData.storageInstructions || ''
+            storageInstructions: initialData.storageInstructions || '',
+            isBestSeller: initialData.isBestSeller || false,
+            isOrganic: initialData.isOrganic || false,
+            isFarmerCollection: initialData.isFarmerCollection || false,
+            isNewArrival: initialData.isNewArrival || false,
+            inventoryMode: initialData.inventoryMode || 'SINGLE',
+            weight: initialData.weight?.toString() || '',
+            unit: initialData.unit || 'g',
+            sku: initialData.sku || '',
+            stock: initialData.stock?.toString() || '0',
+            gstRate: initialData.gstRate !== undefined && initialData.gstRate !== null ? initialData.gstRate.toString() : ''
          });
-          if (initialData.relatedProductsSource) {
-             const allRPs = initialData.relatedProductsSource.map((rp: any) => ({
-                relatedProductId: rp.relatedProductId,
-                priority: rp.priority,
-                type: rp.type
-             }));
-             setRelatedProducts(allRPs.filter((rp: any) => rp.type !== 'COMBO'));
-             setComboProducts(allRPs.filter((rp: any) => rp.type === 'COMBO'));
-          }
+         if (initialData.relatedProductsSource) {
+            const allRPs = initialData.relatedProductsSource.map((rp: any) => ({
+               relatedProductId: rp.relatedProductId,
+               priority: rp.priority,
+               type: rp.type
+            }));
+            setRelatedProducts(allRPs);
+         }
+         if (initialData.parentCombos) {
+            const allCombos = initialData.parentCombos.map((c: any) => ({
+               comboProductId: c.comboProductId,
+               sortOrder: c.sortOrder,
+               discountType: c.discountType,
+               discountValue: c.discountValue,
+               finalPrice: c.finalPrice
+            }));
+            setComboProducts(allCombos);
+         }
       }
    }, [initialData]);
 
+   useEffect(() => {
+      if (form.categoryId) {
+         fetchSubcategories(Number(form.categoryId));
+      } else {
+         setSubcategories([]);
+      }
+   }, [form.categoryId]);
+
    const fetchCategories = async () => {
       try {
-         const response = await fetch(`${API_URL}/api/categories`);
+         const response = await fetch(`${API_URL}/api/categories?limit=100`);
          const data = await response.json();
-         setCategories(data);
+         setCategories(data.categories || data || []);
       } catch (error) {
          console.error('Error fetching categories:', error);
+      }
+   };
+
+   const fetchSubcategories = async (catId: number) => {
+      try {
+         const response = await fetch(`${API_URL}/api/subcategories?categoryId=${catId}`);
+         const data = await response.json();
+         setSubcategories(data.subcategories || []);
+      } catch (error) {
+         console.error('Error fetching subcategories:', error);
       }
    };
 
@@ -84,10 +134,25 @@ export default function ProductForm({ initialData, isEdit }: ProductFormProps) {
       try {
          const payload = {
             ...form,
-             relatedProducts: [...relatedProducts, ...comboProducts.map((cp: any, idx: number) => ({
-               ...cp, type: 'COMBO', priority: relatedProducts.length + idx
-            }))],
-            brandId: user?.brandId, // Force the vendor's brand ID
+            relatedProducts: [...relatedProducts],
+            productCombos: comboProducts.map((cp: any, idx: number) => ({
+               comboProductId: cp.comboProductId,
+               discountType: cp.discountType,
+               discountValue: cp.discountValue,
+               finalPrice: cp.finalPrice,
+               sortOrder: idx
+            })),
+            brandId: user?.brandId || undefined,
+            categoryId: parseInt(form.categoryId),
+            subcategoryId: form.subcategoryId ? parseInt(form.subcategoryId) : null,
+            gstRate: form.gstRate ? parseInt(form.gstRate) : null,
+            weight: form.weight ? parseFloat(form.weight) : null,
+            stock: form.stock ? parseInt(form.stock) : 0,
+            variants: form.variants.map((v: any) => ({
+               name: v.name,
+               price: v.price ? parseFloat(v.price.toString()) : null,
+               stock: parseInt(v.stock?.toString() || '0')
+            }))
          };
 
          const url = isEdit
@@ -95,7 +160,7 @@ export default function ProductForm({ initialData, isEdit }: ProductFormProps) {
             : `${API_URL}/api/products`;
 
          const token = typeof window !== 'undefined' ? localStorage.getItem('namma_orru_token') : null;
-         const headers = { 'Content-Type': 'application/json' };
+         const headers: Record<string, string> = { 'Content-Type': 'application/json' };
          if (token) {
             headers['Authorization'] = `Bearer ${token}`;
          }
@@ -201,34 +266,53 @@ export default function ProductForm({ initialData, isEdit }: ProductFormProps) {
                         />
                      </div>
 
-                     <div className="grid grid-cols-2 gap-6">
-                        <div className="space-y-3">
-                           <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">Selling Price (₹)</label>
-                           <div className="relative">
-                              <IndianRupee className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-                              <input
-                                 type="number"
-                                 placeholder="0.00"
-                                 className="w-full h-14 pl-14 pr-6 rounded-2xl bg-slate-50 border-2 border-transparent focus:border-amber-400 focus:bg-white outline-none font-bold text-emerald-950 transition-all"
-                                 value={form.price}
-                                 onChange={e => setForm({ ...form, price: e.target.value })}
-                              />
-                           </div>
-                        </div>
-                        <div className="space-y-3">
-                           <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">Original Price (₹)</label>
-                           <div className="relative">
-                              <IndianRupee className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-                              <input
-                                 type="number"
-                                 placeholder="0.00"
-                                 className="w-full h-14 pl-14 pr-6 rounded-2xl bg-slate-50 border-2 border-transparent focus:border-amber-400 focus:bg-white outline-none font-bold text-emerald-950 transition-all"
-                                 value={form.originalPrice}
-                                 onChange={e => setForm({ ...form, originalPrice: e.target.value })}
-                              />
-                           </div>
+                     {/* INVENTORY MODE SELECTOR */}
+                     <div className="border-t border-slate-100 pt-6">
+                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-wider mb-4 block ml-2">Variants </label>
+                        <div className="flex gap-4">
+                           <label className={`flex-1 flex items-center justify-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all ${form.inventoryMode === 'SINGLE' ? 'border-amber-500 bg-amber-50 text-amber-700' : 'border-slate-200 bg-slate-50 text-slate-500 hover:bg-white'}`}>
+                              <input type="radio" name="inventoryMode" className="hidden" checked={form.inventoryMode === 'SINGLE'} onChange={() => setForm({ ...form, inventoryMode: 'SINGLE' })} />
+                              <Package size={18} />
+                              <span className="text-sm font-bold">Single Product (Base)</span>
+                           </label>
+                           <label className={`flex-1 flex items-center justify-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all ${form.inventoryMode === 'MULTIPLE' ? 'border-amber-500 bg-amber-50 text-amber-700' : 'border-slate-200 bg-slate-50 text-slate-500 hover:bg-white'}`}>
+                              <input type="radio" name="inventoryMode" className="hidden" checked={form.inventoryMode === 'MULTIPLE'} onChange={() => setForm({ ...form, inventoryMode: 'MULTIPLE' })} />
+                              <Layers size={18} />
+                              <span className="text-sm font-bold">Multiple Variants</span>
+                           </label>
                         </div>
                      </div>
+
+                     {form.inventoryMode === 'SINGLE' && (
+                        <div className="grid grid-cols-2 gap-6">
+                           <div className="space-y-3">
+                              <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">Selling Price (₹)</label>
+                              <div className="relative">
+                                 <IndianRupee className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                                 <input
+                                    type="number"
+                                    placeholder="0.00"
+                                    className="w-full h-14 pl-14 pr-6 rounded-2xl bg-slate-50 border-2 border-transparent focus:border-amber-400 focus:bg-white outline-none font-bold text-emerald-950 transition-all"
+                                    value={form.price}
+                                    onChange={e => setForm({ ...form, price: e.target.value })}
+                                 />
+                              </div>
+                           </div>
+                           <div className="space-y-3">
+                              <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">Original Price (₹)</label>
+                              <div className="relative">
+                                 <IndianRupee className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                                 <input
+                                    type="number"
+                                    placeholder="0.00"
+                                    className="w-full h-14 pl-14 pr-6 rounded-2xl bg-slate-50 border-2 border-transparent focus:border-amber-400 focus:bg-white outline-none font-bold text-emerald-950 transition-all"
+                                    value={form.originalPrice}
+                                    onChange={e => setForm({ ...form, originalPrice: e.target.value })}
+                                 />
+                              </div>
+                           </div>
+                        </div>
+                     )}
                   </div>
                </section>
 
@@ -293,6 +377,60 @@ export default function ProductForm({ initialData, isEdit }: ProductFormProps) {
                   </div>
                </section>
 
+               {/* VARIANT MANAGER */}
+               {form.inventoryMode === 'MULTIPLE' && (
+                  <section className="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm p-10 space-y-8">
+                     <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-4">
+                           <div className="h-10 w-10 rounded-xl bg-amber-100 flex items-center justify-center text-amber-600">
+                              <Layers size={20} />
+                           </div>
+                           <h3 className="text-xl font-black text-emerald-950 tracking-tight">Variant & Inventory Manager</h3>
+                        </div>
+                        <button type="button" onClick={() => setForm({ ...form, variants: [...form.variants, { name: '', price: 0, originalPrice: '', stock: 0, sku: '', weight: '', unit: 'g' }] })} className="px-4 py-2 rounded-xl bg-emerald-600 text-white text-[11px] font-black uppercase tracking-widest hover:bg-emerald-700 transition-all shadow-sm">+ Add Variant</button>
+                     </div>
+                     <div className="space-y-4">
+                        {form.variants.length === 0 ? (
+                           <div className="text-center py-8 text-slate-400 text-sm font-medium border-2 border-dashed border-slate-100 rounded-xl bg-slate-50/50">No variants added.</div>
+                        ) : (
+                           <div className="overflow-x-auto">
+                              <table className="w-full text-left border-collapse">
+                                 <thead>
+                                    <tr className="border-b border-slate-100 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                       <th className="pb-3 font-black">Variant Name</th>
+                                       <th className="pb-3 font-black">Price</th>
+                                       <th className="pb-3 font-black">MRP</th>
+                                       <th className="pb-3 font-black">Weight/Unit</th>
+                                       <th className="pb-3 font-black">Stock</th>
+                                       <th className="pb-3 font-black">SKU</th>
+                                       <th className="pb-3 font-black text-right">Actions</th>
+                                    </tr>
+                                 </thead>
+                                 <tbody className="divide-y divide-slate-50">
+                                    {form.variants.map((variant: any, idx: number) => (
+                                       <tr key={idx} className="group">
+                                          <td className="py-3 pr-2"><input type="text" className="w-[120px] h-11 px-3 rounded-xl border border-slate-200 text-sm font-bold outline-none focus:border-amber-400 transition-colors" placeholder="e.g. 500g" value={variant.name} onChange={e => { const newV: any = [...form.variants]; newV[idx].name = e.target.value; setForm({ ...form, variants: newV }); }} /></td>
+                                          <td className="py-3 pr-2"><input type="number" className="w-[90px] h-11 px-3 rounded-xl border border-slate-200 text-sm font-bold outline-none focus:border-amber-400 transition-colors text-emerald-600" placeholder="Price" value={variant.price} onChange={e => { const newV: any = [...form.variants]; newV[idx].price = e.target.value; setForm({ ...form, variants: newV }); }} /></td>
+                                          <td className="py-3 pr-2"><input type="number" className="w-[90px] h-11 px-3 rounded-xl border border-slate-200 text-sm font-bold outline-none focus:border-amber-400 transition-colors text-slate-400" placeholder="MRP" value={variant.originalPrice} onChange={e => { const newV: any = [...form.variants]; newV[idx].originalPrice = e.target.value; setForm({ ...form, variants: newV }); }} /></td>
+                                          <td className="py-3 pr-2 flex items-center gap-1">
+                                             <input type="number" step="any" className="w-[70px] h-11 px-3 rounded-xl border border-slate-200 text-sm font-bold outline-none focus:border-amber-400 transition-colors" placeholder="Wt" value={variant.weight || ''} onChange={e => { const newV: any = [...form.variants]; newV[idx].weight = e.target.value; setForm({ ...form, variants: newV }); }} />
+                                             <select className="w-[70px] h-11 px-2 rounded-xl border border-slate-200 text-sm font-bold outline-none bg-white" value={variant.unit || 'g'} onChange={e => { const newV: any = [...form.variants]; newV[idx].unit = e.target.value; setForm({ ...form, variants: newV }); }}>
+                                                <option value="g">g</option><option value="kg">kg</option><option value="ml">ml</option><option value="L">L</option><option value="pcs">pcs</option>
+                                             </select>
+                                          </td>
+                                          <td className="py-3 pr-2"><input type="number" className="w-[80px] h-11 px-3 rounded-xl border border-slate-200 text-sm font-bold outline-none focus:border-amber-400 transition-colors" placeholder="Stock" value={variant.stock} onChange={e => { const newV: any = [...form.variants]; newV[idx].stock = e.target.value; setForm({ ...form, variants: newV }); }} /></td>
+                                          <td className="py-3 pr-2"><input type="text" className="w-[90px] h-11 px-3 rounded-xl border border-slate-200 text-sm font-bold outline-none focus:border-amber-400 transition-colors uppercase" placeholder="SKU" value={variant.sku} onChange={e => { const newV: any = [...form.variants]; newV[idx].sku = e.target.value; setForm({ ...form, variants: newV }); }} /></td>
+                                          <td className="py-3 text-right"><button type="button" onClick={() => { const newV = [...form.variants]; newV.splice(idx, 1); setForm({ ...form, variants: newV }); }} className="h-11 w-11 inline-flex items-center justify-center rounded-xl text-slate-300 hover:text-red-500 hover:bg-red-50 transition-all"><Trash2 size={16} /></button></td>
+                                       </tr>
+                                    ))}
+                                 </tbody>
+                              </table>
+                           </div>
+                        )}
+                     </div>
+                  </section>
+               )}
+
                {/* RELATED PRODUCTS */}
                <section className="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm p-10 space-y-8">
                   <div className="flex items-center gap-4 mb-2">
@@ -339,16 +477,106 @@ export default function ProductForm({ initialData, isEdit }: ProductFormProps) {
                      <h3 className="text-xl font-black text-emerald-950 tracking-tight">Organization</h3>
                   </div>
 
-                  <div className="space-y-3">
-                     <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">Category</label>
-                     <select
-                        className="w-full h-14 px-6 rounded-2xl bg-slate-50 border-2 border-transparent focus:border-emerald-400 focus:bg-white outline-none font-bold text-emerald-950 appearance-none cursor-pointer"
-                        value={form.categoryId}
-                        onChange={e => setForm({ ...form, categoryId: e.target.value })}
-                     >
-                        <option value="">Select Category</option>
-                        {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                     </select>
+                  <div className="space-y-6">
+                     <div className="space-y-3">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">Category</label>
+                        <select
+                           className="w-full h-14 px-6 rounded-2xl bg-slate-50 border-2 border-transparent focus:border-emerald-400 focus:bg-white outline-none font-bold text-emerald-950 appearance-none cursor-pointer"
+                           value={form.categoryId}
+                           onChange={e => setForm({ ...form, categoryId: e.target.value, subcategoryId: '' })}
+                        >
+                           <option value="">Select Category</option>
+                           {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                        </select>
+                     </div>                      <div className="space-y-3">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">Subcategory</label>
+                        <select
+                           className="w-full h-14 px-6 rounded-2xl bg-slate-50 border-2 border-transparent focus:border-emerald-400 focus:bg-white outline-none font-bold text-emerald-950 appearance-none cursor-pointer disabled:opacity-50"
+                           value={form.subcategoryId}
+                           onChange={e => setForm({ ...form, subcategoryId: e.target.value })}
+                           disabled={!form.categoryId}
+                        >
+                           <option value="">Select Subcategory</option>
+                           {subcategories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                        </select>
+                     </div>
+
+
+
+                     {form.inventoryMode === 'SINGLE' && (
+                        <>
+                           <div className="grid grid-cols-2 gap-4">
+                              <div className="space-y-3">
+                                 <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">Weight</label>
+                                 <input
+                                    type="number"
+                                    step="any"
+                                    className="w-full h-14 px-6 rounded-2xl bg-slate-50 border-2 border-transparent focus:border-emerald-400 focus:bg-white outline-none font-bold text-emerald-950"
+                                    value={form.weight}
+                                    onChange={e => setForm({ ...form, weight: e.target.value })}
+                                 />
+                              </div>
+                              <div className="space-y-3">
+                                 <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">Unit</label>
+                                 <select
+                                    className="w-full h-14 px-6 rounded-2xl bg-slate-50 border-2 border-transparent focus:border-emerald-400 focus:bg-white outline-none font-bold text-emerald-950 bg-white"
+                                    value={form.unit}
+                                    onChange={e => setForm({ ...form, unit: e.target.value })}
+                                 >
+                                    <option value="g">g (Grams)</option>
+                                    <option value="kg">kg (Kilograms)</option>
+                                    <option value="ml">ml (Milliliters)</option>
+                                    <option value="L">L (Liters)</option>
+                                    <option value="pcs">pcs (Pieces)</option>
+                                 </select>
+                              </div>
+                           </div>
+
+                           <div className="grid grid-cols-2 gap-4">
+                              <div className="space-y-3">
+                                 <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">Base Stock</label>
+                                 <input
+                                    type="number"
+                                    className="w-full h-14 px-6 rounded-2xl bg-slate-50 border-2 border-transparent focus:border-emerald-400 focus:bg-white outline-none font-bold text-emerald-950"
+                                    value={form.stock}
+                                    onChange={e => setForm({ ...form, stock: e.target.value })}
+                                 />
+                              </div>
+                              <div className="space-y-3">
+                                 <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">SKU</label>
+                                 <input
+                                    type="text"
+                                    className="w-full h-14 px-6 rounded-2xl bg-slate-50 border-2 border-transparent focus:border-emerald-400 focus:bg-white outline-none font-bold text-emerald-950 uppercase"
+                                    value={form.sku}
+                                    onChange={e => setForm({ ...form, sku: e.target.value })}
+                                 />
+                              </div>
+                           </div>
+                        </>
+                     )}
+
+                     <div className="border-t border-slate-100 pt-4 space-y-3">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">Product Classification</label>
+                        <div className="flex flex-col gap-2">
+                           {[
+                              { name: 'isBestSeller', label: 'Best Seller' },
+                              { name: 'isOrganic', label: 'Organic Product' },
+                              { name: 'isFarmerCollection', label: 'Farmer Collection' },
+                              { name: 'isFeatured', label: 'Featured Product' },
+                              { name: 'isNewArrival', label: 'New Arrival' }
+                           ].map(flag => (
+                              <label key={flag.name} className="flex items-center gap-3 p-3.5 rounded-xl border border-slate-100 bg-slate-50 hover:bg-white cursor-pointer select-none transition-colors">
+                                 <input
+                                    type="checkbox"
+                                    checked={(form as any)[flag.name]}
+                                    onChange={e => setForm({ ...form, [flag.name]: e.target.checked })}
+                                    className="h-4 w-4 accent-emerald-800 rounded"
+                                 />
+                                 <span className="text-xs font-bold text-slate-700">{flag.label}</span>
+                              </label>
+                           ))}
+                        </div>
+                     </div>
                   </div>
                </section>
 

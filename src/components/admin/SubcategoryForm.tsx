@@ -14,7 +14,9 @@ import {
   Layers,
   Settings,
   MonitorCheck,
-  LayoutList
+  LayoutList,
+  Globe,
+  Search
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { API_URL } from '@/lib/api';
@@ -65,16 +67,17 @@ export default function SubcategoryForm({ initialData, mode }: SubcategoryFormPr
     name: initialData?.name || '',
     categoryId: initialData?.categoryId?.toString() || '',
     imageUrl: initialData?.imageUrl || '',
-    status: initialData?.status || 'ACTIVE'
+    status: initialData?.status || 'ACTIVE',
+    metaTitle: initialData?.metaTitle || '',
+    metaDescription: initialData?.metaDescription || ''
   });
 
   useEffect(() => {
-    fetch(`${API_URL}/api/categories`)
+    // parentOnly=true fetches only top-level categories from the backend (parentId IS NULL)
+    fetch(`${API_URL}/api/categories?all=true&limit=1000&parentOnly=true`)
       .then(r => r.json())
       .then(data => {
-        // Original app filters c => !c.parentId to only show top level parent categories
-        const parentCats = (data.categories || []).filter((c: any) => !c.parentId);
-        setCategories(parentCats);
+        setCategories(data.categories || []);
       })
       .catch(err => console.error('Failed to load parent categories', err));
   }, []);
@@ -96,7 +99,6 @@ export default function SubcategoryForm({ initialData, mode }: SubcategoryFormPr
       if (res.ok) {
         const data = await res.json();
         setFormData(prev => ({ ...prev, imageUrl: data.url }));
-        addToast('Success', 'Subcategory visual updated');
       } else {
         addToast('Error', 'Image upload failed');
       }
@@ -109,6 +111,7 @@ export default function SubcategoryForm({ initialData, mode }: SubcategoryFormPr
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (submitting) return;
 
     if (!formData.name || !formData.categoryId) {
       return addToast('Error', 'Subcategory Name and Parent Category are required');
@@ -181,8 +184,8 @@ export default function SubcategoryForm({ initialData, mode }: SubcategoryFormPr
             >
               <ArrowLeft size={18} />
             </button>
-            <h1 className="text-3xl font-black text-slate-900 tracking-tight uppercase">
-              {mode === 'edit' ? 'Edit Subcategory' : 'New Subcategory Map'}
+            <h1 className="text-3xl font-black text-slate-900 tracking-tight ">
+              {mode === 'edit' ? 'Edit Subcategory' : 'Create Subcategory'}
             </h1>
           </div>
           <div className="flex items-center gap-3">
@@ -208,10 +211,10 @@ export default function SubcategoryForm({ initialData, mode }: SubcategoryFormPr
               {/* Main Detail Architecture Card */}
               <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden w-full">
                 <SectionHeader title="Subcategory Architecture" icon={Tag} colorClass="text-emerald-600" />
-                <div className="p-8 grid grid-cols-1 lg:grid-cols-12 gap-12">
-                  <div className="lg:col-span-8 space-y-8 flex flex-col justify-center">
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="p-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
+                  {/* Left: inputs */}
+                  <div className="lg:col-span-8 space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
                       {/* Subcategory Name */}
                       <InputWrapper label="Subcategory Name" helpText="The granular product label (e.g. Ghee, Honey, Rice).">
@@ -245,23 +248,14 @@ export default function SubcategoryForm({ initialData, mode }: SubcategoryFormPr
                       </InputWrapper>
 
                     </div>
-
-                    {/* <div className="bg-slate-50/50 border border-slate-100 rounded-xl p-6 flex items-start gap-4">
-                      <Layers className="text-emerald-600 mt-1 shrink-0" size={20} />
-                      <div>
-                        <h4 className="text-xs font-black text-slate-800 uppercase tracking-wider">Granular Hierarchy Mapping</h4>
-                        <p className="text-[11px] font-medium text-slate-400 mt-1 leading-relaxed">Subcategories provide specialized segments for shoppers. Associating products with distinct subcategories drastically enhances catalog navigation and SEO discovery indices.</p>
-                      </div>
-                    </div> */}
-
                   </div>
 
-                  {/* Visual Image Asset Upload */}
+                  {/* Right: Visual Image Asset Upload */}
                   <div className="lg:col-span-4 flex flex-col">
                     <label className="text-[11px] font-black text-slate-500 uppercase tracking-wider mb-3 px-1">Icon / Visual Asset</label>
                     <div
                       onClick={() => !isUploading && fileInputRef.current?.click()}
-                      className={`flex-1 min-h-[200px] bg-slate-50/50 border-2 border-dashed border-slate-200 rounded-2xl flex flex-col items-center justify-center gap-6 group cursor-pointer hover:border-emerald-500/50 transition-all overflow-hidden relative ${isUploading ? 'opacity-50 cursor-wait' : ''}`}
+                      className={`flex-1 min-h-[160px] bg-slate-50/50 border-2 border-dashed border-slate-200 rounded-2xl flex flex-col items-center justify-center gap-4 group cursor-pointer hover:border-emerald-500/50 transition-all overflow-hidden relative ${isUploading ? 'opacity-50 cursor-wait' : ''}`}
                     >
                       <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleFileUpload} />
                       {isUploading ? (
@@ -279,11 +273,39 @@ export default function SubcategoryForm({ initialData, mode }: SubcategoryFormPr
                             <ImageIcon size={24} />
                           </div>
                           <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">Upload Asset</span>
-                          <span className="text-[8px] font-bold uppercase tracking-widest text-slate-300 mt-1">Recommended: 400 x 400px</span>
+                          <span className="text-[8px] font-bold uppercase tracking-widest text-slate-300">Recommended: 400 x 400px</span>
                         </>
                       )}
                     </div>
                   </div>
+                </div>
+              </div>
+
+              {/* SEO Card */}
+              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden w-full">
+                <SectionHeader title="Search Engine Optimization" icon={Globe} colorClass="text-emerald-600" />
+                <div className="p-8 space-y-8">
+                  <InputWrapper label="Meta Title" helpText="The title tag for search engines. Recommended: 60 characters.">
+                    <div className="relative">
+                      <Search size={16} className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400" />
+                      <input
+                        value={formData.metaTitle}
+                        onChange={e => setFormData({ ...formData, metaTitle: e.target.value })}
+                        placeholder="e.g. Natural Honey | Namma Orru Foods"
+                        className="w-full h-14 pl-14 pr-6 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-4 ring-emerald-500/5 outline-none font-bold text-slate-900 text-sm transition-all shadow-sm"
+                      />
+                    </div>
+                  </InputWrapper>
+
+                  <InputWrapper label="Meta Description" helpText="The snippet shown in search results. Recommended: 155 characters.">
+                    <textarea
+                      rows={4}
+                      value={formData.metaDescription}
+                      onChange={e => setFormData({ ...formData, metaDescription: e.target.value })}
+                      placeholder="Describe this subcategory for search engine discovery..."
+                      className="w-full px-6 py-4 rounded-xl border border-slate-200 focus:border-emerald-500 outline-none font-bold text-slate-600 text-sm resize-none shadow-sm"
+                    />
+                  </InputWrapper>
                 </div>
               </div>
 
@@ -293,13 +315,13 @@ export default function SubcategoryForm({ initialData, mode }: SubcategoryFormPr
 
               {/* Display Status Setting */}
               <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                <SectionHeader title="Visibility Controls" icon={MonitorCheck} colorClass="text-emerald-600" />
+                <SectionHeader title="Visibility" icon={MonitorCheck} colorClass="text-emerald-600" />
                 <div className="p-8 space-y-6">
                   <div className="space-y-4">
                     <div className="flex items-center justify-between p-4 rounded-xl bg-slate-50 border border-slate-100 transition-all">
                       <div>
                         <p className="text-[11px] font-black text-slate-900 uppercase">Active Status</p>
-                        <p className="text-[10px] font-bold text-slate-400">Publish into storefront catalog</p>
+                        <p className="text-[10px] font-bold text-slate-400">Publish To live</p>
                       </div>
                       <button
                         type="button"

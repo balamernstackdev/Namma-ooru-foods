@@ -4,6 +4,7 @@ import { Search, Edit2, Trash2, CheckCircle, XCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import AdminPagination from '@/components/admin/AdminPagination';
+import { ActionGroup, PremiumActionButton, ViewButton } from '@/components/ui/ActionButtons';
 import useSWR from 'swr';
 import { API_URL } from '@/lib/api';
 
@@ -11,7 +12,8 @@ interface Product {
    id: number;
    name: string;
    category: any;
-   brand: any;
+   brand?: any;
+   subVendor?: any;
    price: number;
    originalPrice: number;
    image: string;
@@ -35,7 +37,8 @@ export default function ProductApprovals() {
 
    const filteredProducts = products.filter(p =>
       p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      p.brand?.name?.toLowerCase().includes(searchTerm.toLowerCase())
+      p.brand?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      p.subVendor?.name?.toLowerCase().includes(searchTerm.toLowerCase())
    );
 
    const handleStatusChange = async (id: number, status: string) => {
@@ -58,10 +61,10 @@ export default function ProductApprovals() {
          {/* Page Header */}
          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div className="space-y-1">
-               <h2 className="text-4xl font-black text-[var(--admin-sidebar)] tracking-tighter">
-                  Vendor Products Approvals
-               </h2>
-               <p className="text-slate-400 font-bold text-xs uppercase tracking-widest">Review and approve products submitted by vendors</p>
+               <h1 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tighter italic">
+                  Vendor Products <span className="text-emerald-600">Approvals</span>
+               </h1>
+               <p className="text-slate-400 font-bold uppercase tracking-[0.2em] text-[10px] mt-2">Review and approve products submitted by vendors</p>
             </div>
          </div>
 
@@ -80,9 +83,10 @@ export default function ProductApprovals() {
          </div>
 
          {/* Approval Table */}
-         <div className="bg-white rounded-[3.5rem] border border-slate-100 shadow-sm overflow-hidden min-h-[400px]">
+         {/* Desktop View */}
+         <div className="hidden md:block bg-white rounded-[3.5rem] border border-slate-100 shadow-sm overflow-hidden min-h-[400px]">
             <div className="overflow-x-auto">
-               <table className="w-full text-left border-collapse">
+               <table className="w-full text-left border-collapse min-w-[1000px] admin-data-table">
                   <thead>
                      <tr className="bg-slate-50/50">
                         <th className="px-10 py-6 text-[11px] font-black uppercase tracking-[0.3em] text-slate-400 border-b border-slate-100">Product & Vendor</th>
@@ -108,7 +112,7 @@ export default function ProductApprovals() {
                                  <div className="h-20 w-20 rounded-full bg-slate-50 flex items-center justify-center text-slate-200">
                                     <CheckCircle size={40} />
                                  </div>
-                                 <span className="text-[11px] font-black uppercase tracking-[0.3em] text-slate-400">All caught up! No pending approvals.</span>
+                                 <span className="text-[11px] font-black uppercase tracking-[0.3em] text-slate-400">No pending approvals.</span>
                               </div>
                            </td>
                         </tr>
@@ -122,7 +126,7 @@ export default function ProductApprovals() {
                                     </div>
                                     <div className="flex flex-col">
                                        <span className="text-base font-black text-[var(--admin-sidebar)] tracking-tight">{product.name}</span>
-                                       <span className="text-[10px] text-amber-600 font-black uppercase tracking-widest mt-1">Vendor: {product.brand?.name || 'Local Producer'}</span>
+                                       <span className="text-[10px] text-amber-600 font-black uppercase tracking-widest mt-1">Vendor: {product.subVendor?.name || product.brand?.name || 'Local Producer'}</span>
                                     </div>
                                  </div>
                               </td>
@@ -134,33 +138,48 @@ export default function ProductApprovals() {
                               <td className="px-10 py-8">
                                  <span className="text-xl font-black text-[var(--admin-sidebar)] tracking-tighter">₹{Number(product.price).toLocaleString()}</span>
                               </td>
-                              <td className="px-10 py-8 text-right">
-                                 <div className="flex items-center justify-end gap-3">
-                                    <button
-                                       onClick={() => handleStatusChange(product.id, 'APPROVED')}
-                                       className="h-12 px-6 flex items-center justify-center rounded-xl bg-emerald-600 text-white text-[10px] font-black uppercase tracking-widest hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-600/20 gap-2"
-                                    >
-                                       <CheckCircle size={14} />
-                                       Approve
-                                    </button>
-                                    <button
-                                       onClick={() => {
-                                          const note = prompt('Reason for rejection?');
-                                          if (note) handleStatusChange(product.id, 'REJECTED');
-                                       }}
-                                       className="h-12 px-6 flex items-center justify-center rounded-xl bg-red-50 text-red-600 border border-red-100 text-[10px] font-black uppercase tracking-widest hover:bg-red-100 transition-all gap-2"
-                                    >
-                                       <XCircle size={14} />
-                                       Reject
-                                    </button>
-                                    <button
-                                       onClick={() => router.push(`/admin/products/edit/${product.id}`)}
-                                       className="h-12 w-12 flex items-center justify-center rounded-xl bg-white border border-slate-100 text-slate-400 hover:bg-slate-900 hover:text-white transition-all"
-                                       title="Review Details"
-                                    >
-                                       <Edit2 size={16} />
-                                    </button>
-                                 </div>
+                              <td className="px-10 py-8 text-right w-[180px] min-w-[180px]">
+                                 <ActionGroup className="flex-nowrap">
+                                    {product.status === 'PENDING' && (
+                                       <>
+                                          <PremiumActionButton 
+                                             icon={CheckCircle} 
+                                             tooltip="Approve" 
+                                             variant="approve" 
+                                             onClick={() => handleStatusChange(product.id, 'APPROVED')} 
+                                          />
+                                          <PremiumActionButton 
+                                             icon={XCircle} 
+                                             tooltip="Reject" 
+                                             variant="suspend" 
+                                             onClick={() => {
+                                                const note = prompt('Reason for rejection?');
+                                                if (note) handleStatusChange(product.id, 'REJECTED');
+                                             }}
+                                          />
+                                       </>
+                                    )}
+                                    {product.status === 'APPROVED' && (
+                                       <PremiumActionButton 
+                                          icon={XCircle} 
+                                          tooltip="Suspend" 
+                                          variant="suspend" 
+                                          onClick={() => handleStatusChange(product.id, 'REJECTED')} 
+                                       />
+                                    )}
+                                    {product.status === 'REJECTED' && (
+                                       <PremiumActionButton 
+                                          icon={CheckCircle} 
+                                          tooltip="Re-Approve" 
+                                          variant="approve" 
+                                          onClick={() => handleStatusChange(product.id, 'APPROVED')} 
+                                       />
+                                    )}
+                                    <ViewButton 
+                                       tooltip="Review Details" 
+                                       onClick={() => router.push(`/admin/products/edit/${product.id}`)} 
+                                    />
+                                 </ActionGroup>
                               </td>
                            </tr>
                         ))
@@ -168,6 +187,99 @@ export default function ProductApprovals() {
                   </tbody>
                </table>
             </div>
+            <AdminPagination
+               currentPage={currentPage}
+               totalPages={totalPages}
+               onPageChange={setCurrentPage}
+            />
+         </div>
+
+         {/* Mobile View */}
+         <div className="block md:hidden divide-y divide-slate-100 bg-white border border-slate-200 rounded-[2rem] p-6 shadow-sm space-y-4">
+            {isLoading ? (
+               <div className="py-20 text-center">
+                  <div className="h-12 w-12 border-4 border-slate-100 border-t-[var(--admin-accent)] rounded-full animate-spin mx-auto" />
+                  <span className="text-[11px] font-black uppercase tracking-[0.3em] text-slate-400 mt-4 block">Scanning submissions...</span>
+               </div>
+            ) : filteredProducts.length === 0 ? (
+               <div className="py-20 text-center">
+                  <div className="h-14 w-14 rounded-full bg-slate-50 flex items-center justify-center text-slate-200 mx-auto mb-4">
+                     <CheckCircle size={28} />
+                  </div>
+                  <span className="text-[11px] font-black uppercase tracking-[0.3em] text-slate-400">No pending approvals.</span>
+               </div>
+            ) : (
+               filteredProducts.map((product) => (
+                  <div key={product.id} className="py-4 space-y-3">
+                     <div className="flex items-center gap-4">
+                        <div className="h-14 w-14 rounded-xl bg-white border border-slate-100 overflow-hidden shrink-0 shadow-sm">
+                           <img src={product.image || '/ai_images/organic_grains_1776231059575.png'} className="h-full w-full object-cover" alt="" />
+                        </div>
+                        <div className="flex flex-col min-w-0 flex-1">
+                           <span className="text-sm font-black text-[var(--admin-sidebar)] tracking-tight truncate">{product.name}</span>
+                           <span className="text-[10px] text-amber-600 font-black uppercase tracking-widest mt-1">Vendor: {product.subVendor?.name || product.brand?.name || 'Local Producer'}</span>
+                        </div>
+                     </div>
+
+                     <div className="grid grid-cols-2 gap-2 bg-slate-50/50 rounded-2xl p-4 border border-slate-100/50 text-xs">
+                        <div>
+                           <span className="text-[9px] text-slate-400 font-black uppercase tracking-wider block">Category</span>
+                           <span className="font-bold text-slate-800">{product.category?.name || 'Traditional'}</span>
+                        </div>
+                        <div>
+                           <span className="text-[9px] text-slate-400 font-black uppercase tracking-wider block">Price</span>
+                           <span className="font-black text-slate-900 font-mono text-sm">₹{Number(product.price).toLocaleString()}</span>
+                        </div>
+                     </div>
+
+                     <div className="flex items-center gap-2 justify-end pt-1">
+                        <button
+                           onClick={() => router.push(`/admin/products/edit/${product.id}`)}
+                           className="h-11 flex-1 flex items-center justify-center gap-1.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-600 hover:bg-slate-100 text-xs font-bold transition-all"
+                        >
+                           Review Details
+                        </button>
+                        {product.status === 'PENDING' && (
+                           <>
+                              <button
+                                 onClick={() => {
+                                    const note = prompt('Reason for rejection?');
+                                    if (note) handleStatusChange(product.id, 'REJECTED');
+                                 }}
+                                 className="h-11 px-4 flex items-center justify-center rounded-xl bg-red-50 border border-red-100 text-red-600 hover:bg-red-500 hover:text-white transition-all font-bold text-xs"
+                                 title="Reject"
+                              >
+                                 Reject
+                              </button>
+                              <button
+                                 onClick={() => handleStatusChange(product.id, 'APPROVED')}
+                                 className="h-11 px-4 flex items-center justify-center rounded-xl bg-emerald-600 text-white hover:bg-emerald-700 transition-all font-bold text-xs"
+                                 title="Approve"
+                              >
+                                 Approve
+                              </button>
+                           </>
+                        )}
+                        {product.status === 'APPROVED' && (
+                           <button
+                              onClick={() => handleStatusChange(product.id, 'REJECTED')}
+                              className="h-11 px-4 flex items-center justify-center rounded-xl bg-red-50 border border-red-100 text-red-600 hover:bg-red-500 hover:text-white transition-all text-xs font-bold"
+                           >
+                              Suspend
+                           </button>
+                        )}
+                        {product.status === 'REJECTED' && (
+                           <button
+                              onClick={() => handleStatusChange(product.id, 'APPROVED')}
+                              className="h-11 px-4 flex items-center justify-center rounded-xl bg-emerald-600 text-white hover:bg-emerald-700 transition-all text-xs font-bold"
+                           >
+                              Re-Approve
+                           </button>
+                        )}
+                     </div>
+                  </div>
+               ))
+            )}
             <AdminPagination
                currentPage={currentPage}
                totalPages={totalPages}

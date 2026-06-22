@@ -4,6 +4,7 @@ import { useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ShoppingBag, Tag, Landmark, ChevronRight, CheckCircle2, Search, ArrowRight, Loader2 } from 'lucide-react';
 import Link from 'next/link';
+import { usePlatformSettings } from '@/context/PlatformSettingsContext';
 
 interface SearchDropdownProps {
   isVisible: boolean;
@@ -23,7 +24,8 @@ interface SearchDropdownProps {
 // Highlight matching query keywords in a title
 const HighlightMatch = ({ text, query }: { text: string; query: string }) => {
   if (!query) return <>{text}</>;
-  const parts = text.split(new RegExp(`(${query})`, 'gi'));
+  const escapedQuery = query.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+  const parts = text.split(new RegExp(`(${escapedQuery})`, 'gi'));
   return (
     <>
       {parts.map((part, i) =>
@@ -51,6 +53,7 @@ const SearchProductCard = ({
   query: string;
   onClick: () => void;
 }) => {
+  const { settings } = usePlatformSettings();
   return (
     <Link
       href={`/products/detail?id=${product.id}`}
@@ -62,7 +65,7 @@ const SearchProductCard = ({
     >
       <div className="h-10 w-10 rounded-lg bg-white border border-slate-100 overflow-hidden shrink-0 shadow-sm flex items-center justify-center">
         <img
-          src={product.image || '/logo.webp'}
+          src={product.image || settings.logo || '/logo.webp'}
           alt={product.name}
           className="h-full w-full object-cover"
           loading="lazy"
@@ -117,7 +120,7 @@ const SearchBrandCard = ({
         )}
       </div>
       <div className="flex-1 min-w-0">
-        <p className={`text-xs truncate ${isHighlighted ? 'font-extrabold text-emerald-950' : 'text-slate-800 font-semibold'}`}>
+        <p className={`text-xs truncate ${isHighlighted ? 'font-extrabold text-emerald-950' : 'text-slate-800 font-semibold'} line-clamp-2 min-h-[48px]`}>
           <HighlightMatch text={brand.name} query={query} />
         </p>
         <span className="text-[8px] text-amber-600 uppercase font-black tracking-wider block">
@@ -196,7 +199,7 @@ const SearchVendorCard = ({
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-1">
-          <p className={`text-xs truncate ${isHighlighted ? 'font-extrabold text-emerald-950' : 'text-slate-800 font-semibold'}`}>
+          <p className={`text-xs truncate ${isHighlighted ? 'font-extrabold text-emerald-950' : 'text-slate-800 font-semibold'} line-clamp-2 min-h-[48px]`}>
             <HighlightMatch text={vendor.name} query={query} />
           </p>
           <CheckCircle2 size={10} className="text-emerald-600 fill-emerald-50 shrink-0" />
@@ -387,51 +390,8 @@ export default function SearchDropdown({
           </div>
           <h4 className="text-xs font-black text-slate-800">No matching products found</h4>
           <p className="text-[10px] text-slate-400 font-bold mt-1">
-            We couldn't find matches for "{query}". Explore these instead:
+            We couldn't find matches for "{query}".
           </p>
-
-          <div className="mt-3.5 pt-3 border-t border-slate-100/60">
-            <p className="text-[9px] font-black uppercase text-slate-400 tracking-wider mb-2">
-              Suggested Categories
-            </p>
-            <div className="flex flex-wrap gap-1.5 justify-center">
-              {suggestedCategories.map((cat, idx) => (
-                <Link
-                  key={idx}
-                  href={`/products?category=${cat.slug}`}
-                  className="text-[9px] font-bold text-slate-600 bg-slate-50 hover:bg-slate-100 border border-slate-200/50 hover:border-slate-300 transition-colors px-2.5 py-1 rounded-full"
-                >
-                  {cat.name}
-                </Link>
-              ))}
-            </div>
-          </div>
-
-          <div className="mt-3.5">
-            <p className="text-[9px] font-black uppercase text-slate-400 tracking-wider mb-2">
-              Popular Searches
-            </p>
-            <div className="flex flex-wrap gap-1.5 justify-center">
-              {popularSearches.map((item, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => onItemClick(item, 'query')}
-                  className="text-[9px] font-bold text-slate-600 bg-slate-50 hover:bg-slate-100 border border-slate-200/50 transition-colors px-2.5 py-1 rounded-full"
-                >
-                  {item}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="mt-4 pt-4 border-t border-slate-100/60">
-            <Link
-              href="/products"
-              className="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-white bg-[#022c22] hover:bg-[#033a2d] transition-colors py-2 px-4 rounded-xl shadow-md shadow-emerald-950/10"
-            >
-              Continue Shopping <ArrowRight size={10} />
-            </Link>
-          </div>
         </div>
       )}
 

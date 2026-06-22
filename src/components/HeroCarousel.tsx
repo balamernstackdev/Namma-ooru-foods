@@ -42,7 +42,7 @@ const HeroCarousel = ({
           className={`absolute inset-0 transition-all duration-[2400ms] cubic-bezier(0.4, 0, 0.2, 1) ${index === currentSlide ? 'opacity-100 scale-100 blur-0' : 'opacity-0 scale-110 blur-xl'}`}
         >
           <Image 
-            src={img.startsWith('http') ? img : `/${img}`} 
+            src={img.startsWith('http') || img.startsWith('/') ? img : `/${img}`} 
             alt=""
             fill
             className="object-cover"

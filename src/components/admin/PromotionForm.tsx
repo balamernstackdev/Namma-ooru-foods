@@ -1,6 +1,6 @@
 'use client'
 import React, { useState, useRef } from 'react';
-import { ArrowLeft, ChevronRight, Save, Upload, Megaphone, Calendar, Tag, Info, Palette, Loader2, Layers, DollarSign, BarChart, Search, X, Check, Link as LinkIcon } from 'lucide-react';
+import { ArrowLeft, ChevronRight, Save, Upload, Megaphone, Calendar, Tag, Info, Palette, Loader2, Layers, DollarSign, BarChart, Search, X, Check, Plus, Link as LinkIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/context/ToastContext';
 import useSWR from 'swr';

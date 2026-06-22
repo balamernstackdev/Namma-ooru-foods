@@ -38,8 +38,8 @@ export default function AdminAuditLogsPage() {
     <div className="space-y-8 animate-in fade-in duration-700">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-          <h2 className="text-4xl font-black text-[var(--admin-sidebar)] tracking-tighter">System Audit Trail</h2>
-          <p className="text-slate-400 font-medium text-sm mt-1">Traceability of all admin and system-critical actions.</p>
+          <h1 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tighter italic">System Audit <span className="text-emerald-600">Trail</span></h1>
+          <p className="text-slate-400 font-bold uppercase tracking-[0.2em] text-[10px] mt-2">Traceability of all admin and system-critical actions.</p>
         </div>
         <div className="h-16 px-8 rounded-2xl bg-amber-50 flex items-center gap-3 border border-amber-100">
           <Shield className="h-6 w-6 text-amber-600" />
@@ -62,7 +62,7 @@ export default function AdminAuditLogsPage() {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full text-left">
+          <table className="w-full text-left min-w-[1000px] admin-data-table">
             <thead>
               <tr className="bg-slate-50/50">
                 <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100">Timestamp</th>

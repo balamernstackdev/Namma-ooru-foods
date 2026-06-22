@@ -15,7 +15,11 @@ import {
    ExternalLink,
    Package,
    Clock,
-   Shield
+   Shield,
+   Ticket,
+   Megaphone,
+   ArrowRight,
+   AlertTriangle
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import useSWR from 'swr';
@@ -23,6 +27,58 @@ import { useAuth } from '@/context/AuthContext';
 import { API_URL } from '@/lib/api';
 
 const fetcher = (url: string) => fetch(url).then(res => res.json());
+
+function PendingApprovalsWidget() {
+  const router = useRouter();
+  const { data: couponsData } = useSWR<any>(`${API_URL}/api/coupons?createdByType=VENDOR&limit=500`, fetcher, { refreshInterval: 30000 });
+  const { data: annData }     = useSWR<any>(`${API_URL}/api/offer-announcements?createdByType=VENDOR`, fetcher, { refreshInterval: 30000 });
+
+  const coupons       = couponsData?.coupons || [];
+  const announcements = Array.isArray(annData) ? annData : [];
+
+  const pendingCoupons = coupons.filter((c: any) => c.status === 'PENDING').length;
+  const pendingAnn     = announcements.filter((a: any) => a.status === 'PENDING').length;
+  const total          = pendingCoupons + pendingAnn;
+
+  if (total === 0) return null;
+
+  return (
+    <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-3xl p-6">
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2">
+          <div className="h-8 w-8 bg-amber-400 rounded-xl flex items-center justify-center">
+            <AlertTriangle className="text-white h-4 w-4" />
+          </div>
+          <h3 className="text-[13px] font-black uppercase tracking-widest text-amber-800">Vendor Approvals Pending</h3>
+        </div>
+        <button onClick={() => router.push('/admin/marketing/vendor-approvals')}
+          className="text-[10px] font-black uppercase tracking-widest text-amber-700 hover:text-amber-900 flex items-center gap-1 bg-amber-100 hover:bg-amber-200 px-3 py-1.5 rounded-xl transition-all cursor-pointer">
+          Review All <ArrowRight size={11} />
+        </button>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
+        {[
+          { label: 'Pending Coupon Requests', value: pendingCoupons, icon: Ticket,    href: '/admin/marketing/vendor-approvals', color: 'emerald' },
+          { label: 'Pending Banner Requests', value: pendingAnn,     icon: Megaphone, href: '/admin/marketing/vendor-approvals', color: 'blue' },
+        ].map(card => (
+          <button key={card.label} onClick={() => router.push(card.href)}
+            className="bg-white border border-amber-100 rounded-2xl p-4 flex items-center justify-between hover:shadow-md transition-all cursor-pointer text-left group">
+            <div>
+              <div className="text-2xl font-black text-slate-900">{card.value}</div>
+              <div className="text-[10px] font-black uppercase tracking-widest text-slate-400 mt-1">{card.label}</div>
+            </div>
+            <div className="flex flex-col items-end gap-2 shrink-0 ml-4">
+              <div className={`h-10 w-10 rounded-xl flex items-center justify-center ${card.color === 'emerald' ? 'bg-emerald-50 text-emerald-600' : 'bg-blue-50 text-blue-600'}`}>
+                <card.icon size={18} />
+              </div>
+              <ArrowRight size={13} className="text-slate-300 group-hover:text-slate-600 group-hover:translate-x-1 transition-all" />
+            </div>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 export default function AdminDashboard() {
    const { user } = useAuth();
@@ -52,43 +108,43 @@ export default function AdminDashboard() {
       <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-1000 ease-out p-1">
 
          {/* Header Section */}
-         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-            <div>
-               <h1 className="text-3xl font-black text-slate-950 tracking-tight flex items-center gap-3">
-                  Admin Dashboard
-                  <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-               </h1>
-               <p className="text-[14px] text-slate-500 font-semibold mt-1 tracking-wide">
-                  <span className="text-emerald-800">Welcome Back, {user?.name}!</span>
-               </p>
-            </div>
-            <div className="flex flex-wrap items-center gap-3">
-               <button
-                  onClick={() => router.push('/admin/marketplace-governance')}
-                  className="h-10 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[12px] shadow-lg shadow-emerald-500/25 transition-all flex items-center gap-2 active:scale-95 group border-0 cursor-pointer"
-               >
-                  <Shield size={16} className="group-hover:scale-110 transition-transform" />
-                  Vendor Management
-               </button>
-               <button
-                  onClick={() => router.push('/admin/analytics')}
-                  className="h-10 px-4 rounded-xl bg-white border border-slate-200 text-slate-600 font-bold text-[12px] shadow-sm hover:shadow-md hover:bg-slate-50 transition-all flex items-center gap-2"
-               >
-                  <Download size={16} />
-                  Export Analysis
-               </button>
-               <button
-                  onClick={() => router.push('/admin/products')}
-                  className="h-10 px-5 rounded-xl bg-slate-950 text-white font-bold text-[12px] shadow-lg shadow-slate-950/20 hover:bg-slate-900 transition-all flex items-center gap-2 active:scale-95 group border-0 cursor-pointer"
-               >
-                  <Plus size={16} className="group-hover:rotate-90 transition-transform" />
-                  New Initiative
-               </button>
-            </div>
-         </div>
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+             <div>
+                <h1 className="text-2xl md:text-3xl lg:text-5xl font-black text-slate-900 tracking-tighter italic flex items-center gap-2 flex-wrap">
+                   Admin <span className="text-emerald-600">Dashboard</span>
+                   <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse mt-1" />
+                </h1>
+                <p className="text-slate-400 font-bold uppercase tracking-[0.2em] text-[10px] mt-2">
+                   Welcome back, <span className="text-emerald-600">{user?.name}!</span>
+                </p>
+             </div>
+             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto shrink-0">
+                <button
+                   onClick={() => router.push('/admin/marketplace-governance')}
+                   className="h-12 px-6 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-[11px] uppercase tracking-widest shadow-xl shadow-emerald-500/20 transition-all flex items-center justify-center gap-2 active:scale-95 group border-0 cursor-pointer w-full sm:w-auto"
+                >
+                   <Shield size={16} className="group-hover:scale-110 transition-transform shrink-0" />
+                   <span className="truncate">Vendor Management</span>
+                </button>
+                <button
+                   onClick={() => router.push('/admin/analytics')}
+                   className="h-12 px-6 rounded-xl bg-white border border-slate-200 text-slate-500 font-extrabold text-xs uppercase tracking-wider shadow-sm hover:shadow-md hover:bg-slate-50 transition-all flex items-center justify-center gap-2 cursor-pointer w-full sm:w-auto"
+                >
+                   <Download size={16} className="shrink-0" />
+                   <span className="truncate">Export Analysis</span>
+                </button>
+                <button
+                   onClick={() => router.push('/admin/products')}
+                   className="h-12 px-6 rounded-xl bg-[var(--admin-sidebar)] text-white font-black text-[11px] uppercase tracking-widest shadow-xl shadow-slate-900/10 hover:bg-slate-800 transition-all flex items-center justify-center gap-2 active:scale-95 group border-0 cursor-pointer w-full sm:w-auto"
+                >
+                   <Plus size={16} className="group-hover:rotate-90 transition-transform shrink-0" />
+                   <span className="truncate">New Initiative</span>
+                </button>
+             </div>
+          </div>
 
          {/* Metrics Grid */}
-         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
             {stats.map((stat: any, i: number) => (
                <div key={i} className="bg-white p-6 rounded-2xl border border-slate-200/60 shadow-sm hover:shadow-xl hover:shadow-slate-200/40 transition-all group relative overflow-hidden">
                   <div className="flex items-center justify-between mb-6">
@@ -117,23 +173,23 @@ export default function AdminDashboard() {
 
          {/* System Alerts Row */}
          {systemAlerts && systemAlerts.length > 0 && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                {systemAlerts.map((alert: any, i: number) => (
-                  <div key={i} className={`p-5 rounded-2xl border-2 flex items-center justify-between transition-all hover:scale-[1.01] ${alert.type === 'danger' ? 'bg-rose-50/50 border-rose-100/50 text-rose-700' : 'bg-amber-50/50 border-amber-100/50 text-amber-700'
+                  <div key={i} className={`p-4 md:p-5 rounded-2xl border-2 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 transition-all hover:scale-[1.01] ${alert.type === 'danger' ? 'bg-rose-50/50 border-rose-100/50 text-rose-700' : 'bg-amber-50/50 border-amber-100/50 text-amber-700'
                      }`}>
-                     <div className="flex items-center gap-4">
-                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center shadow-sm ${alert.type === 'danger' ? 'bg-rose-100 text-rose-600' : 'bg-amber-100 text-amber-600'
+                     <div className="flex items-center gap-4 min-w-0">
+                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center shadow-sm shrink-0 ${alert.type === 'danger' ? 'bg-rose-100 text-rose-600' : 'bg-amber-100 text-amber-600'
                            }`}>
                            {alert.type === 'danger' ? <Package size={22} /> : <Clock size={22} />}
                         </div>
-                        <div>
-                           <div className="text-[10px] font-black uppercase tracking-[0.15em] opacity-60 mb-0.5">{alert.label}</div>
-                           <div className="text-lg font-black tracking-tight">{alert.value} Tasks Pending</div>
+                        <div className="min-w-0">
+                           <div className="text-[10px] font-black uppercase tracking-[0.15em] opacity-60 mb-0.5 truncate">{alert.label}</div>
+                           <div className="text-base md:text-lg font-black tracking-tight truncate">{alert.value} Tasks Pending</div>
                         </div>
                      </div>
                      <button
                         onClick={() => router.push(alert.label.includes('Approvals') ? '/admin/products/approvals' : '/admin/products')}
-                        className={`h-10 px-6 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all shadow-sm active:scale-95 ${alert.type === 'danger' ? 'bg-rose-600 text-white hover:bg-rose-700 shadow-rose-200' : 'bg-amber-600 text-white hover:bg-amber-700 shadow-amber-200'
+                        className={`h-10 px-6 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all shadow-sm active:scale-95 shrink-0 ${alert.type === 'danger' ? 'bg-rose-600 text-white hover:bg-rose-700 shadow-rose-200' : 'bg-amber-600 text-white hover:bg-amber-700 shadow-amber-200'
                            }`}
                      >
                         Take Action
@@ -143,6 +199,9 @@ export default function AdminDashboard() {
             </div>
          )}
 
+
+         {/* Pending Approvals Widget */}
+         <PendingApprovalsWidget />
 
          <div className="w-full">
 
@@ -160,8 +219,8 @@ export default function AdminDashboard() {
                      Live Ledger <ExternalLink size={14} />
                   </button>
                </div>
-               <div className="overflow-x-auto -mx-2">
-                  <table className="w-full text-left border-separate border-spacing-y-2">
+               <div className="overflow-x-auto w-full border border-slate-100 rounded-2xl">
+                  <table className="w-full min-w-[700px] text-left border-separate border-spacing-y-2 px-2 min-w-[1200px] admin-data-table">
                      <thead>
                         <tr className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
                            <th className="pb-4 px-4">Identity</th>

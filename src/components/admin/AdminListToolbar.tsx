@@ -17,8 +17,8 @@ interface AdminListToolbarProps {
   searchTerm: string;
   onSearchChange: (value: string) => void;
   statusOptions?: { label: string; value: string }[];
-  selectedStatus: string;
-  onStatusChange: (value: string) => void;
+  selectedStatus?: string;
+  onStatusChange?: (value: string) => void;
   sortOptions?: { label: string; value: string }[];
   selectedSort: string;
   onSortChange: (value: string) => void;
@@ -35,8 +35,8 @@ export default function AdminListToolbar({
   searchTerm,
   onSearchChange,
   statusOptions = [],
-  selectedStatus,
-  onStatusChange,
+  selectedStatus = '',
+  onStatusChange = () => {},
   sortOptions = [],
   selectedSort,
   onSortChange,
@@ -56,10 +56,10 @@ export default function AdminListToolbar({
 
       {/* STICKY TOOLBAR WRAPPER */}
       <div className="sticky top-2 z-30 bg-white/80 backdrop-blur-md border border-slate-100 rounded-3xl p-3 shadow-md shadow-slate-900/5 flex flex-col gap-3">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 flex-wrap">
           
           {/* SEARCH */}
-          <div className="relative flex-1">
+          <div className="relative flex-1 min-w-[200px]">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-300" />
             <input
               type="text"
@@ -71,31 +71,33 @@ export default function AdminListToolbar({
           </div>
 
           {/* CONTROLS */}
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto">
             
             {/* STATUS FILTER */}
             {statusOptions.length > 0 && (
-              <div className="relative">
+              <div className="relative w-full sm:w-auto">
                 <button
                   onClick={() => setShowStatusMenu(!showStatusMenu)}
-                  className={`h-11 px-4 rounded-2xl border text-xs font-bold flex items-center gap-2 transition-all ${
+                  className={`h-11 px-4 rounded-2xl border text-xs font-bold flex items-center justify-between sm:justify-start gap-2 transition-all w-full sm:w-auto ${
                     selectedStatus !== 'ALL' && selectedStatus !== ''
                       ? 'bg-emerald-50 border-emerald-100 text-emerald-800'
                       : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
                   }`}
                 >
-                  <Filter size={14} />
-                  <span>
-                    Status:{' '}
-                    {statusOptions.find(o => o.value === selectedStatus)?.label || 'All'}
+                  <span className="flex items-center gap-2">
+                    <Filter size={14} />
+                    <span>
+                      Status:{' '}
+                      {statusOptions.find(o => o.value === selectedStatus)?.label || 'All'}
+                    </span>
                   </span>
-                  <ChevronDown size={12} />
+                  <ChevronDown size={12} className="ml-auto sm:ml-0" />
                 </button>
 
                 {showStatusMenu && (
                   <>
                     <div className="fixed inset-0 z-40" onClick={() => setShowStatusMenu(false)} />
-                    <div className="absolute right-0 mt-2 w-48 bg-white border border-slate-100 rounded-2xl shadow-xl p-2 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                    <div className="absolute left-0 sm:left-auto sm:right-0 mt-2 w-full sm:w-48 bg-white border border-slate-100 rounded-2xl shadow-xl p-2 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
                       {statusOptions.map(option => (
                         <button
                           key={option.value}
@@ -120,20 +122,22 @@ export default function AdminListToolbar({
 
             {/* SORT BUTTON */}
             {sortOptions.length > 0 && (
-              <div className="relative">
+              <div className="relative w-full sm:w-auto">
                 <button
                   onClick={() => setShowSortMenu(!showSortMenu)}
-                  className="h-11 px-4 rounded-2xl border border-slate-200 bg-white text-xs font-bold text-slate-600 flex items-center gap-2 hover:bg-slate-50 transition-all"
+                  className="h-11 px-4 rounded-2xl border border-slate-200 bg-white text-xs font-bold text-slate-600 flex items-center justify-between sm:justify-start gap-2 hover:bg-slate-50 transition-all w-full sm:w-auto"
                 >
-                  <ArrowUpDown size={14} />
-                  <span>Sort By: {sortOptions.find(o => o.value === selectedSort)?.label || 'Latest'}</span>
-                  <ChevronDown size={12} />
+                  <span className="flex items-center gap-2">
+                    <ArrowUpDown size={14} />
+                    <span>Sort By: {sortOptions.find(o => o.value === selectedSort)?.label || 'Latest'}</span>
+                  </span>
+                  <ChevronDown size={12} className="ml-auto sm:ml-0" />
                 </button>
 
                 {showSortMenu && (
                   <>
                     <div className="fixed inset-0 z-40" onClick={() => setShowSortMenu(false)} />
-                    <div className="absolute right-0 mt-2 w-48 bg-white border border-slate-100 rounded-2xl shadow-xl p-2 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                    <div className="absolute left-0 sm:left-auto sm:right-0 mt-2 w-full sm:w-48 bg-white border border-slate-100 rounded-2xl shadow-xl p-2 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
                       {sortOptions.map(option => (
                         <button
                           key={option.value}
@@ -158,20 +162,22 @@ export default function AdminListToolbar({
 
             {/* EXPORT OPTIONS */}
             {onExportClick && (
-              <div className="relative">
+              <div className="relative w-full sm:w-auto">
                 <button
                   onClick={() => setShowExportMenu(!showExportMenu)}
-                  className="h-11 px-4 rounded-2xl border border-slate-200 bg-white text-xs font-bold text-slate-600 flex items-center gap-2 hover:bg-slate-50 transition-all"
+                  className="h-11 px-4 rounded-2xl border border-slate-200 bg-white text-xs font-bold text-slate-600 flex items-center justify-between sm:justify-start gap-2 hover:bg-slate-50 transition-all w-full sm:w-auto"
                 >
-                  <Download size={14} />
-                  <span>Export</span>
-                  <ChevronDown size={12} />
+                  <span className="flex items-center gap-2">
+                    <Download size={14} />
+                    <span>Export</span>
+                  </span>
+                  <ChevronDown size={12} className="ml-auto sm:ml-0" />
                 </button>
 
                 {showExportMenu && (
                   <>
                     <div className="fixed inset-0 z-40" onClick={() => setShowExportMenu(false)} />
-                    <div className="absolute right-0 mt-2 w-40 bg-white border border-slate-100 rounded-2xl shadow-xl p-2 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                    <div className="absolute left-0 sm:left-auto sm:right-0 mt-2 w-full sm:w-40 bg-white border border-slate-100 rounded-2xl shadow-xl p-2 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
                       {(['CSV', 'EXCEL', 'PDF'] as const).map(format => (
                         <button
                           key={format}
@@ -194,7 +200,7 @@ export default function AdminListToolbar({
             {onAddNewClick && (
               <button
                 onClick={onAddNewClick}
-                className="h-11 px-6 rounded-2xl bg-emerald-600 text-white text-xs font-black uppercase tracking-wider flex items-center gap-2 hover:bg-emerald-700 shadow-md shadow-emerald-500/10 active:scale-95 transition-all"
+                className="h-11 px-6 rounded-2xl bg-emerald-600 text-white text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2 hover:bg-emerald-700 shadow-md shadow-emerald-500/10 active:scale-95 transition-all w-full sm:w-auto"
               >
                 <Plus size={16} />
                 <span>{addNewLabel}</span>

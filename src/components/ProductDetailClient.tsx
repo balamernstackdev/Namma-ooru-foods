@@ -28,7 +28,8 @@ import {
    Sparkles,
    Store,
    Package,
-   ArrowRight
+   ArrowRight,
+   ClipboardList
 } from 'lucide-react';
 import { useCartStore } from '@/store/useCartStore';
 import { useToast } from '@/context/ToastContext';
@@ -47,6 +48,17 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
 const fetcher = (url: string) => fetch(url).then(res => res.json());
+
+/** Strip trailing empty <p><br></p> blocks and decode &nbsp; */
+const renderHtml = (html: string | null | undefined) => {
+   if (!html) return '';
+   return html
+      .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+      .replace(/&nbsp;/g, ' ')
+      .replace(/(<p><br\s*\/?><\/p>\s*)+$/gi, '')
+      .replace(/(<p>\s*<\/p>\s*)+$/gi, '')
+      .trim();
+};
 
 interface ProductDetailClientProps {
    product: any;
@@ -171,7 +183,8 @@ export default function ProductDetailClient({ product: initialProduct, allProduc
          price: Number(selectedVariant.price),
          quantity: quantity,
          image: galleryImages[0] || product.image,
-         variant: selectedVariant.name
+         variant: selectedVariant.name,
+         gstRate: product.gstRate
       });
 
       // Micro-animation for premium feel
@@ -347,13 +360,19 @@ export default function ProductDetailClient({ product: initialProduct, allProduc
                      {/* Brand, Share Icon, and Title */}
                      <div className="flex items-start justify-between gap-4">
                         <div className="space-y-1">
+                           <div className="text-[12px] text-gray-500 font-mono mb-2 font-medium">
+                              {product.productIdStr || `PROD-${product.id.toString().padStart(3, '0')}`}
+                           </div>
                            <div className="flex flex-wrap items-center gap-x-2 text-[10px] md:text-[11px] font-black tracking-[0.25em] text-emerald-750 uppercase">
                               <Link href={`/artisans/${encodeURIComponent(product.subVendor?.slug || product.subVendor?.id || product.brand?.slug || product.brand?.id || '')}`} className="hover:text-emerald-950 transition-colors">
                                  {product.subVendor?.name || product.brand?.name || 'Namma Ooru Store'}
                               </Link>
                            </div>
-                           <h1 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight leading-[1.1] mt-1">
+                           <h1 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight leading-[1.1] mt-1 flex flex-wrap items-center gap-3">
                               {product.name}
+                              <span className="text-[12px] bg-slate-100 text-slate-600 px-2 py-1 rounded-md font-mono border border-slate-200 shrink-0 font-medium tracking-normal mt-1 md:mt-0">
+                                 {selectedVariant?.skuCode || product.skuCode || `SKU-${product.id.toString().padStart(3, '0')}`}
+                              </span>
                            </h1>
                         </div>
 
@@ -510,27 +529,24 @@ export default function ProductDetailClient({ product: initialProduct, allProduc
             </div>
          </section>
 
-         {/* SECTION: ICON GRID HIGHLIGHTS */}
+         {/* SECTION: ICON GRID HIGHLIGHTS — dynamic, hides when empty */}
+         {product.productHighlights && product.productHighlights.filter((h: any) => h.isActive !== false).length > 0 && (
          <section className="py-10 bg-slate-50">
             <div className="standard-container grid grid-cols-2 md:grid-cols-4 gap-4">
-               {[
-                  { icon: Leaf, title: '100% Organic', desc: 'Zero chemicals & pesticides' },
-                  { icon: ShieldCheck, title: 'Strict Quality', desc: 'Passed rigorous tests' },
-                  { icon: Timer, title: 'Fresh Product', desc: 'Direct from agrarian clusters' },
-                  { icon: CheckCircle2, title: 'Native Breed', desc: 'Traditional heritage lineage' },
-               ].map((h, i) => (
-                  <div key={i} className="flex flex-col md:flex-row items-center text-center md:text-left gap-3 bg-white p-5 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow duration-300">
+               {product.productHighlights.filter((h: any) => h.isActive !== false).map((h: any, i: number) => (
+                  <div key={h.id || i} className="flex flex-col md:flex-row items-center text-center md:text-left gap-3 bg-white p-5 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow duration-300">
                      <div className="h-12 w-12 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0">
-                        <h.icon size={24} className="text-emerald-700" />
+                        <CheckCircle2 size={24} className="text-emerald-700" />
                      </div>
                      <div>
                         <h4 className="text-[14px] font-black text-slate-900 leading-tight">{h.title}</h4>
-                        <p className="text-[12px] text-slate-500 mt-0.5 font-medium leading-tight">{h.desc}</p>
+                        <p className="text-[12px] text-slate-500 mt-0.5 font-medium leading-tight">{h.description}</p>
                      </div>
                   </div>
                ))}
             </div>
          </section>
+         )}
 
          {/* SECTION: COMPACT PRODUCT DETAILS & TABS */}
          <section className="py-12 bg-white">
@@ -544,7 +560,7 @@ export default function ProductDetailClient({ product: initialProduct, allProduc
                         <h3 className="text-2xl font-black text-slate-900 tracking-tight mb-4">About {product.name}</h3>
                         <div
                            className="prose prose-emerald max-w-none text-[15px] text-slate-600 leading-relaxed break-words"
-                           dangerouslySetInnerHTML={{ __html: (product.description || product.whatIsProduct || "This product represents the rich heritage of authentic farming. Carefully sourced and packaged to deliver pure nutrition without synthesis.").replace(/&nbsp;/g, ' ').replace(/(<p><br><\/p>\s*)+$/, '') }}
+                           dangerouslySetInnerHTML={{ __html: renderHtml(product.description || product.whatIsProduct) || "This product represents the rich heritage of authentic farming. Carefully sourced and packaged to deliver pure nutrition without synthesis." }}
                         />
                      </div>
                      {/* PRODUCT VIDEO (If exists) */}
@@ -568,6 +584,22 @@ export default function ProductDetailClient({ product: initialProduct, allProduc
 
 
 
+                     {/* PRODUCT SPECIFICATIONS */}
+                     {product.whoShouldEat && renderHtml(product.whoShouldEat).length > 0 && (
+                        <div>
+                           <h3 className="text-2xl font-black text-slate-900 tracking-tight mb-6 flex items-center gap-3">
+                              <ClipboardList className="text-emerald-600 w-7 h-7" />
+                              Product Specifications
+                           </h3>
+                           <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100 shadow-sm">
+                              <div
+                                 className="prose prose-emerald max-w-none text-[15px] text-slate-700 leading-relaxed break-words"
+                                 dangerouslySetInnerHTML={{ __html: renderHtml(product.whoShouldEat) }}
+                              />
+                           </div>
+                        </div>
+                     )}
+
                      {/* BENEFITS */}
                      <div>
                         <h3 className="text-2xl font-black text-slate-900 tracking-tight mb-6">Key Benefits</h3>
@@ -584,7 +616,7 @@ export default function ProductDetailClient({ product: initialProduct, allProduc
                               {product.healthBenefits && (
                                  <div
                                     className="prose prose-sm prose-emerald max-w-none text-[14px] text-slate-500 mt-6 leading-relaxed break-words"
-                                    dangerouslySetInnerHTML={{ __html: product.healthBenefits.replace(/&nbsp;/g, ' ').replace(/(<p><br><\/p>\s*)+$/, '') }}
+                                    dangerouslySetInnerHTML={{ __html: renderHtml(product.healthBenefits) }}
                                  />
                               )}
                            </>
@@ -605,7 +637,7 @@ export default function ProductDetailClient({ product: initialProduct, allProduc
                               {product.howToEat ? (
                                  <div
                                     className="prose prose-sm prose-emerald max-w-none text-[14px] text-slate-700 font-medium leading-relaxed break-words"
-                                    dangerouslySetInnerHTML={{ __html: product.howToEat.replace(/&nbsp;/g, ' ').replace(/(<p><br><\/p>\s*)+$/, '') }}
+                                    dangerouslySetInnerHTML={{ __html: renderHtml(product.howToEat) }}
                                  />
                               ) : (
                                  <p className="text-[14px] text-slate-700 font-medium leading-relaxed">Standard consumption guidance applies. Refer to packaging for specific regional instructions.</p>
@@ -616,9 +648,16 @@ export default function ProductDetailClient({ product: initialProduct, allProduc
                            <div className="flex items-center gap-2 font-black text-emerald-900 uppercase text-[12px]">
                               <ShieldCheck size={16} /> Storage Instructions
                            </div>
-                           <div className="bg-slate-50 p-5 rounded-2xl border border-slate-100">
-                              <p className="text-[14px] text-slate-700 font-medium leading-relaxed">{product.storageInstructions || product.shelfLife || "Store in a cool, dry, airtight environment away from excessive heat."}</p>
-                           </div>
+                            <div className="bg-slate-50 p-5 rounded-2xl border border-slate-100">
+                               {product.storageInstructions || product.shelfLife ? (
+                                  <div
+                                     className="prose prose-sm prose-slate max-w-none text-[14px] text-slate-700 font-medium leading-relaxed break-words"
+                                     dangerouslySetInnerHTML={{ __html: renderHtml(product.storageInstructions || product.shelfLife) }}
+                                  />
+                               ) : (
+                                  <p className="text-[14px] text-slate-700 font-medium leading-relaxed">Store in a cool, dry, airtight environment away from excessive heat.</p>
+                               )}
+                            </div>
                         </div>
                      </div>
 
@@ -661,7 +700,12 @@ export default function ProductDetailClient({ product: initialProduct, allProduc
                                     </span>
                                  </summary>
                                  <div className="px-4 pb-4 text-[13px] text-slate-600 leading-relaxed border-t border-slate-100 pt-3 bg-white">
-                                    {faq.a || faq.answer}
+                                    {(faq.a || faq.answer) ? (
+                                       <div
+                                          className="prose prose-sm max-w-none text-[13px] text-slate-600 leading-relaxed"
+                                          dangerouslySetInnerHTML={{ __html: renderHtml(faq.a || faq.answer) }}
+                                       />
+                                    ) : null}
                                  </div>
                               </details>
                            ))}

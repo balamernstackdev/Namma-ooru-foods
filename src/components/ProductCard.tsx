@@ -10,6 +10,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { useWishlistStore } from '@/store/useWishlistStore';
 import OptimizedImage from '@/components/ui/OptimizedImage';
+import ProductDetailSuccessAnimation from '@/components/ProductDetailSuccessAnimation';
 
 interface ProductCardProps {
   product: {
@@ -18,6 +19,7 @@ interface ProductCardProps {
     name: string;
     category?: any;
     brand?: any;
+    subVendor?: any;
     price: number | string;
     originalPrice?: number | string;
     image?: string;
@@ -25,6 +27,12 @@ interface ProductCardProps {
     rating?: number;
     tags?: string[];
     variants?: any[];
+    gstRate?: number | null;
+    productIdStr?: string | null;
+    skuCode?: string | null;
+    reviewCount?: number;
+    isFastDelivery?: boolean;
+    deliveryTime?: string | null;
   };
 }
 
@@ -43,9 +51,9 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
   const isFav = isMounted ? isInWishlist(product.id) : false;
 
-  const mainImage = product.image || (product.images && product.images[0]?.url) || '/ai_images/organic_grains_1776231059575.png';
+  const mainImage = product.image || (product.images && product.images[0]?.url) || '';
   const displayPrice = Number(product.price);
-  const displayOriginalPrice = product.originalPrice ? Number(product.originalPrice) : displayPrice + 120; // Mock original price if missing
+  const displayOriginalPrice = product.originalPrice ? Number(product.originalPrice) : 0; 
 
   const variants = product.variants || [];
   const [selectedVariant, setSelectedVariant] = React.useState(variants[0] || { name: 'Standard', price: displayPrice });
@@ -53,42 +61,49 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const cartItem = isMounted ? cart.find(i => i.productId === product.id && i.variant === selectedVariant.name) : undefined;
   const quantity = cartItem ? cartItem.quantity : 0;
 
-  const categoryName = typeof product.category === 'object' ? product.category?.name : product.category;
+  const categoryName = typeof product.category === 'object' ? product.category?.name : (product.category || '');
   const subVendor = product.subVendor || product.brand;
-  const brandName = subVendor?.name || 'Native Foods';
+  const brandName = subVendor?.name || '';
   const brandLogo = subVendor?.logo;
 
-  const discountPercent = Math.round(((displayOriginalPrice - displayPrice) / displayOriginalPrice) * 100);
+  const discountPercent = displayOriginalPrice > displayPrice ? Math.round(((displayOriginalPrice - displayPrice) / displayOriginalPrice) * 100) : 0;
 
-  // Simulated review count based on ID for consistency
-  const reviewCount = (product.id * 17) % 150 + 42;
+  const reviewCount = product.reviewCount || 0;
+  const averageRating = product.rating || 0;
 
-  const handleIncrement = (e: React.MouseEvent) => {
+  const [justAdded, setJustAdded] = React.useState(false);
+  const [showSuccessAnimation, setShowSuccessAnimation] = React.useState(false);
+  const timerRef = React.useRef<NodeJS.Timeout | null>(null);
+  const containerBtnRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, []);
+
+  const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    if (cartItem) {
-      updateQuantity(cartItem.id, cartItem.quantity + 1);
-    } else {
-      addToCart({
-        productId: product.id,
-        name: product.name,
-        price: selectedVariant.price || displayPrice,
-        quantity: 1,
-        image: mainImage,
-        variant: selectedVariant.name
-      });
-    }
-  };
 
-  const handleDecrement = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (!cartItem) return;
-    if (cartItem.quantity > 1) {
-      updateQuantity(cartItem.id, cartItem.quantity - 1);
-    } else {
-      removeFromCart(cartItem.id);
-    }
+    addToCart({
+      productId: product.id,
+      name: product.name,
+      price: selectedVariant.price || displayPrice,
+      quantity: 1,
+      image: mainImage,
+      variant: selectedVariant.name,
+      gstRate: product.gstRate
+    });
+
+    addToast('Success', 'Added to Cart Successfully');
+    setShowSuccessAnimation(true);
+
+    setJustAdded(true);
+    if (timerRef.current) clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(() => {
+      setJustAdded(false);
+    }, 4000);
   };
 
   const handleWishlist = async (e: React.MouseEvent) => {
@@ -101,12 +116,12 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       return;
     }
 
-    const added = await toggleWishlist(user.id, product.id);
+    const added = await toggleWishlist(Number(user.id), product.id);
     addToast('Success', added ? 'Added to wishlist' : 'Removed from wishlist');
   };
 
   return (
-    <div className="group relative flex flex-col bg-white rounded-2xl border border-slate-200 transition-all duration-300 hover:shadow-[0_15px_30px_-10px_rgba(0,0,0,0.08)] overflow-hidden w-full h-[380px] md:h-[450px]">
+    <div className="group relative flex flex-col bg-white rounded-2xl border border-slate-200 transition-all duration-300 hover:shadow-[0_15px_30px_-10px_rgba(0,0,0,0.08)] overflow-hidden w-full h-full min-h-[390px] md:min-h-[460px]">
 
       {/* 1. IMAGE SECTION (Compact & High Density) */}
       <div className="relative w-full h-[160px] md:h-[210px] shrink-0 p-2">
@@ -123,7 +138,11 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
         {/* BADGES */}
         <div className="absolute top-4 left-4 flex flex-col gap-1.5 z-10 pointer-events-none">
-          {product.tags?.includes('best-selling') || product.id % 3 === 0 ? (
+          {product.isFastDelivery ? (
+            <div className="bg-gradient-to-r from-emerald-500 to-green-400 text-white text-[8px] md:text-[9px] font-black uppercase tracking-wider px-2.5 py-1 rounded-md shadow-sm">
+              {product.deliveryTime === '30 Minutes' ? '🚀 30 MIN DELIVERY' : '⚡ FAST DELIVERY'}
+            </div>
+          ) : product.tags?.includes('best-selling') || product.id % 3 === 0 ? (
             <div className="bg-[#052e16] text-white text-[8px] md:text-[9px] font-black uppercase tracking-wider px-2.5 py-1 rounded-md shadow-sm backdrop-blur-md">
               BESTSELLER
             </div>
@@ -144,11 +163,15 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       </div>
 
       {/* 2. PRODUCT INFO (Tight spacing for fast scanning) */}
-      <div className="flex flex-col flex-1 p-3 md:p-4 pt-0 min-h-0 justify-between">
+      <div className="flex flex-col flex-1 p-3 md:p-4 pt-0 pb-4 md:pb-5 min-h-0 justify-between">
+        
+        <div className="text-[10px] text-gray-400 font-mono mb-1.5 font-medium mt-2">
+          {product.productIdStr || `PROD-${product.id.toString().padStart(3, '0')}`}
+        </div>
 
         <div className="space-y-1">
           <div className="flex items-center gap-2 mb-1">
-            <div className="h-4 w-4 rounded-full overflow-hidden border border-slate-100 flex-shrink-0 bg-slate-50 flex items-center justify-center relative">
+            <div className="h-6 w-6 md:h-7 md:w-7 rounded-full overflow-hidden border border-slate-100 flex-shrink-0 bg-slate-50 flex items-center justify-center relative">
               {brandLogo ? (
                 <OptimizedImage
                   src={brandLogo}
@@ -158,7 +181,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                   fallback="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
                 />
               ) : (
-                <span className="text-[7px] font-black text-emerald-800">{brandName.charAt(0)}</span>
+                <span className="text-[10px] md:text-[11px] font-black text-emerald-800">{brandName.charAt(0)}</span>
               )}
             </div>
             <div className="text-[9px] md:text-[10px] font-black tracking-wider uppercase text-emerald-600 truncate">
@@ -170,18 +193,23 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             </div>
           </div>
 
-          {/* PRODUCT TITLE (Max 2 lines, 18px weight 700) */}
-          <Link href={`/products/detail?id=${product.slug || product.id}`} prefetch={false} className="block">
-            <p className="text-[15px] md:text-[17px] font-bold text-[#1e293b] leading-snug line-clamp-2 tracking-tight group-hover:text-[#052e16] transition-colors">
-              {product.name}
-            </p>
+          {/* Product Name (Max 2 lines, 18px weight 700) */}
+          <Link href={`/products/detail?id=${product.slug || product.id}`} prefetch={false} className="block group/link">
+            <div className="flex justify-between items-start gap-2">
+              <p className="text-[15px] md:text-[17px] font-bold text-[#1e293b] leading-snug line-clamp-2 tracking-tight group-hover/link:text-[#052e16] transition-colors">
+                {product.name}
+              </p>
+              <span className="text-[9px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded font-mono shrink-0 mt-0.5 border border-slate-200">
+                {product.skuCode || selectedVariant?.skuCode || `SKU-${product.id.toString().padStart(3, '0')}`}
+              </span>
+            </div>
           </Link>
 
           {/* RATING & REVIEWS */}
           <div className="flex items-center gap-1.5">
             <div className="flex items-center bg-slate-50 px-1.5 py-0.5 rounded border border-slate-100">
               <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
-              <span className="ml-1 text-[11px] font-black text-slate-700">{product.rating || '4.8'}</span>
+              <span className="ml-1 text-[11px] font-black text-slate-700">{averageRating ? averageRating.toFixed(1) : '0.0'}</span>
             </div>
             <span className="text-[10px] font-medium text-slate-400">({reviewCount})</span>
           </div>
@@ -206,33 +234,47 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           </div>
 
           {/* COMPACT TRUST / REGULATORY INFO */}
-          <div className="flex flex-col gap-0.5 border-t border-slate-100 pt-2">
-            <div className="flex items-center gap-1.5 text-emerald-700">
-              <CheckCircle2 size={12} strokeWidth={3} className="shrink-0" />
-              <span className="text-[9px] font-black tracking-wide uppercase">100% Organic • Farm Fresh</span>
-            </div>
+          <div className="flex flex-col gap-0.5 border-t border-slate-100 pt-2 h-[22px] justify-center">
+            {quantity > 0 || justAdded ? (
+              <div className="text-[10px] text-emerald-600 font-bold flex items-center gap-1 animate-in fade-in duration-200 select-none">
+                <span>✓ Added to Cart</span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-1.5 text-emerald-700">
+                <CheckCircle2 size={12} strokeWidth={3} className="shrink-0" />
+                <span className="text-[9px] font-black tracking-wide uppercase">100% Organic • Farm Fresh</span>
+              </div>
+            )}
           </div>
 
           {/* DIRECT CTA QUICK ADD / STEPPER */}
-          <div className="h-[38px] md:h-[42px] mt-2 relative w-full">
+          <div className="h-11 md:h-[42px] mt-2 relative w-full" ref={containerBtnRef}>
+            <AnimatePresence>
+              {showSuccessAnimation && (
+                <ProductDetailSuccessAnimation
+                  key="card-success-anim"
+                  buttonRef={containerBtnRef}
+                  onComplete={() => setShowSuccessAnimation(false)}
+                />
+              )}
+            </AnimatePresence>
             <AnimatePresence mode="wait">
-              {quantity > 0 ? (
-                <motion.div
-                  key="stepper"
+              {quantity > 0 || justAdded ? (
+                <motion.button
+                  key="view-cart-btn"
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.95 }}
                   transition={{ duration: 0.15 }}
-                  className="absolute inset-0 w-full h-full bg-[#f0fdf4] text-[#059669] rounded-lg border border-[#34d399] flex items-center justify-between px-1 shadow-sm overflow-hidden"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    router.push('/cart');
+                  }}
+                  className="absolute inset-0 w-full h-full bg-[#059669] text-slate-50 rounded-lg text-[11px] md:text-[12px] font-[900] uppercase tracking-wider transition-all active:scale-[0.97] flex items-center justify-center gap-2 hover:bg-[#047857] border border-[#059669] shadow-sm shadow-emerald-900/5 cursor-pointer whitespace-nowrap"
                 >
-                  <button onClick={handleDecrement} className="w-9 h-full flex items-center justify-center hover:bg-[#dcfce7] transition-colors active:scale-90 text-[#059669]">
-                    <Minus size={16} strokeWidth={3} />
-                  </button>
-                  <span className="text-[13px] font-black uppercase tracking-wider flex-1 text-center select-none">{quantity} Added</span>
-                  <button onClick={handleIncrement} className="w-9 h-full flex items-center justify-center hover:bg-[#dcfce7] transition-colors active:scale-90 text-[#059669]">
-                    <Plus size={16} strokeWidth={3} />
-                  </button>
-                </motion.div>
+                  <span>VIEW CART →</span>
+                </motion.button>
               ) : (
                 <motion.button
                   key="add-btn"
@@ -240,8 +282,8 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.95 }}
                   transition={{ duration: 0.15 }}
-                  onClick={handleIncrement}
-                  className="absolute inset-0 w-full h-full bg-[#059669] text-slate-50 rounded-lg text-[11px] md:text-[12px] font-[900] uppercase tracking-wider transition-all active:scale-[0.97] flex items-center justify-center gap-2 hover:bg-[#047857] border border-[#059669] shadow-sm shadow-emerald-900/5 group/btn"
+                  onClick={handleAddToCart}
+                  className="absolute inset-0 w-full h-full bg-[#059669] text-slate-50 rounded-lg text-[11px] md:text-[12px] font-[900] uppercase tracking-wider transition-all active:scale-[0.97] flex items-center justify-center gap-2 hover:bg-[#047857] border border-[#059669] shadow-sm shadow-emerald-900/5 group/btn whitespace-nowrap"
                 >
                   <Plus size={15} className="transition-transform group-hover/btn:rotate-90" strokeWidth={3} />
                   <span>ADD TO CART</span>

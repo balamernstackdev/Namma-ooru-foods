@@ -27,8 +27,8 @@ export default function PromotionsPage() {
     <div className="flex flex-col gap-12 animate-in fade-in duration-700 pb-20">
       <div className="flex flex-col gap-6">
         <div>
-          <h1 className="text-4xl font-black text-slate-900 tracking-tighter leading-none">Marketing Management</h1>
-          <p className="text-slate-400 font-medium text-sm mt-3">Refining seasonal campaigns and high-impact homepage visuals.</p>
+          <h1 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tighter italic leading-none">Marketing <span className="text-emerald-600">Management</span></h1>
+          <p className="text-slate-400 font-bold uppercase tracking-[0.2em] text-[10px] mt-2">Refining seasonal campaigns and high-impact homepage visuals.</p>
         </div>
         <div className="flex flex-wrap gap-4 pt-2">
           <Link href="/admin/promotions/layout">
@@ -162,7 +162,7 @@ export default function PromotionsPage() {
           <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
             {banners.slice(0, 4).map((banner: any) => (
               <div key={banner.id} className="group relative aspect-[21/9] overflow-hidden rounded-[2.5rem] border border-slate-100 bg-white shadow-sm hover:shadow-2xl hover:shadow-slate-200/50 transition-all">
-                <img src={banner.image} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000" alt={banner.title} />
+                <img src={banner.banner_image || banner.image} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000" alt={banner.title || 'Banner'} />
                 <div className="absolute inset-x-0 bottom-0 p-8 bg-gradient-to-t from-black/80 to-transparent">
                   <p className="text-white text-lg font-black tracking-tight truncate">{banner.title}</p>
                   <p className="text-white/40 text-[10px] font-bold uppercase tracking-widest mt-1">/{banner.link || 'Internal'}</p>

@@ -8,8 +8,12 @@ interface User {
   name: string;
   email: string;
   phone?: string;
-  role?: 'user' | 'admin' | 'vendor';
+  role?: 'user' | 'admin' | 'vendor' | 'hub' | 'customer';
   brandId?: number;
+  subVendorId?: number;
+  headVendorId?: number;
+  hubId?: string | null;
+  vendorId?: string | null;
   avatar?: string;
   defaultAddress?: {
     id: number;
@@ -26,6 +30,9 @@ interface AuthContextType {
   login: (email: string, pass: string) => Promise<void>;
   requestAuthOTP: (phone: string) => Promise<void>;
   verifyAuthOTP: (phone: string, otp: string) => Promise<void>;
+  requestOnboardingOTP: (phone: string) => Promise<void>;
+  verifyOnboardingOTP: (phone: string, otp: string) => Promise<{ action: string; token?: string; user?: User }>;
+  completeOnboardingProfile: (phone: string, name: string, email: string, pass: string) => Promise<void>;
   logout: () => void;
   isLoading: boolean;
 }
@@ -125,13 +132,73 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
+  const requestOnboardingOTP = async (phone: string) => {
+    setIsLoading(true);
+    try {
+      const res = await fetch(`${API_URL}/api/auth/onboarding/request-otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to dispatch OTP.');
+    } catch (err: any) {
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const verifyOnboardingOTP = async (phone: string, otp: string) => {
+    setIsLoading(true);
+    try {
+      const res = await fetch(`${API_URL}/api/auth/onboarding/verify-otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone, otp })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Verification mismatch.');
+
+      if (data.action === 'login') {
+        setUser(data.user);
+        localStorage.setItem('namma_orru_token', data.token);
+      }
+      return data;
+    } catch (err: any) {
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const completeOnboardingProfile = async (phone: string, name: string, email: string, pass: string) => {
+    setIsLoading(true);
+    try {
+      const res = await fetch(`${API_URL}/api/auth/onboarding/complete-profile`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone, name, email, password: pass })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to create account.');
+
+      setUser(data.user);
+      localStorage.setItem('namma_orru_token', data.token);
+    } catch (err: any) {
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const logout = () => {
     setUser(null);
     localStorage.removeItem('namma_orru_token');
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, requestAuthOTP, verifyAuthOTP, logout, isLoading }}>
+    <AuthContext.Provider value={{ user, login, requestAuthOTP, verifyAuthOTP, requestOnboardingOTP, verifyOnboardingOTP, completeOnboardingProfile, logout, isLoading }}>
       {children}
     </AuthContext.Provider>
   );
@@ -140,6 +207,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {
+    if (typeof window === 'undefined') {
+      return {
+        user: null,
+        login: async () => {},
+        requestAuthOTP: async () => {},
+        verifyAuthOTP: async () => {},
+        requestOnboardingOTP: async () => {},
+        verifyOnboardingOTP: async () => ({ action: 'register' }),
+        completeOnboardingProfile: async () => {},
+        logout: () => {},
+        isLoading: false
+      };
+    }
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;

@@ -5,7 +5,7 @@ export const dynamic = 'force-static';
 export const revalidate = 3600; // optionally revalidate every hour if supported, but dynamic='force-static' is key for export
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = 'https://namma-urru-foods.web.app';
+  const baseUrl = 'https://nammaoorufoods.com';
 
   try {
     const res = await fetch(`${API_URL}/api/products`);

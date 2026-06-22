@@ -7,10 +7,7 @@ import { Metadata } from 'next';
 
 export async function generateStaticParams() {
   try {
-    let res = await fetch(`${API_URL}/api/sub-vendors?includeEmpty=true&limit=1000`, { cache: 'no-store' });
-    if (!res.ok) {
-      res = await fetch(`http://localhost:5000/api/sub-vendors?includeEmpty=true&limit=1000`, { cache: 'no-store' });
-    }
+    const res = await fetch(`${API_URL}/api/sub-vendors?includeEmpty=true&limit=1000`, { cache: 'no-store' });
     const data = await res.json();
     const brands = data.subVendors || [];
     const params = [];

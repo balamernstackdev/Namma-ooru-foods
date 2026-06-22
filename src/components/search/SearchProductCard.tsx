@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { usePlatformSettings } from '@/context/PlatformSettingsContext';
 
 interface SearchProductCardProps {
   product: {
@@ -15,6 +16,7 @@ interface SearchProductCardProps {
 }
 
 export default function SearchProductCard({ product, isHighlighted, onClick }: SearchProductCardProps) {
+  const { settings } = usePlatformSettings();
   return (
     <Link
       href={`/products/detail?id=${product.id}`}
@@ -25,7 +27,7 @@ export default function SearchProductCard({ product, isHighlighted, onClick }: S
       }`}
     >
       <div className="h-12 w-12 rounded-lg bg-white border border-slate-100 overflow-hidden shrink-0 shadow-sm">
-        <img src={product.image || '/logo.webp'} alt={product.name} className="h-full w-full object-cover" />
+        <img src={product.image || settings.logo || '/logo.webp'} alt={product.name} className="h-full w-full object-cover" />
       </div>
       <div className="flex-1 min-w-0">
         <p className={`text-sm leading-tight truncate ${isHighlighted ? 'font-bold text-emerald-950' : 'text-slate-700 font-semibold'}`}>

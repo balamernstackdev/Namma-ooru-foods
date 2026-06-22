@@ -9,15 +9,18 @@ import useSWR from 'swr';
 import { API_URL } from '@/lib/api';
 import ReelsViewer from '@/components/ReelsViewer';
 import { useSearchParams } from 'next/navigation';
+import { Suspense } from 'react';
+import { usePlatformSettings } from '@/context/PlatformSettingsContext';
 
 const fetcher = (url: string) => fetch(url).then(res => res.json());
 
-export default function VideoGalleryPage() {
+function VideoGalleryPageContent() {
   const searchParams = useSearchParams();
   const activeParam = searchParams.get('active');
 
   const { data: videos, isLoading } = useSWR(`${API_URL}/api/videos/active`, fetcher);
   const [searchQuery, setSearchQuery] = useState('');
+  const { settings } = usePlatformSettings();
   
   // Reels Viewer state
   const [viewerOpen, setViewerOpen] = useState(false);
@@ -110,13 +113,13 @@ export default function VideoGalleryPage() {
               >
                 <div className="absolute inset-0 z-0">
                   <Image
-                    src={video.thumbnail || '/logo.webp'}
+                    src={video.thumbnail || settings.logo || '/logo.webp'}
                     alt={video.title}
                     fill
                     className="object-cover transition-transform duration-[1500ms] group-hover:scale-110"
                     unoptimized={video.thumbnail?.startsWith('http')}
                     onError={(e) => {
-                      (e.target as HTMLImageElement).src = '/logo.webp';
+                      (e.target as HTMLImageElement).src = settings.logo || '/logo.webp';
                     }}
                   />
                 </div>
@@ -161,5 +164,17 @@ export default function VideoGalleryPage() {
         onClose={() => setViewerOpen(false)}
       />
     </div>
+  );
+}
+
+export default function VideoGalleryPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-slate-50 pt-24 pb-20 flex items-center justify-center">
+        <div className="h-12 w-12 border-4 border-slate-100 border-t-emerald-600 rounded-full animate-spin" />
+      </div>
+    }>
+      <VideoGalleryPageContent />
+    </Suspense>
   );
 }

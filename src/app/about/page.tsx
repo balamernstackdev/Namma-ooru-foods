@@ -74,14 +74,35 @@ export default function AboutPage() {
               </h2>
               <div className="space-y-6 md:space-y-8 text-base md:text-lg text-gray-600 font-medium leading-relaxed">
                 <p>
-                  <strong className="text-emerald-950">namma ooru Foods Pvt Ltd</strong> is committed to producing, processing, packaging, and distributing organic food products that emphasize traditional, ancient food-making techniques. Specializing in a diverse range of items such as organic snacks, pickles, herbal products, edible oils, sweets, millets, spices, homemade masalas, and more, the company ensures all ingredients are naturally sourced and free from chemicals.
+                  <strong className="text-emerald-950">Penniyam Entrepreneur Network</strong>, an initiative of Penniyam Pvt. Ltd., is a comprehensive platform dedicated to empowering women entrepreneurs through education, mentorship, business development, networking, and market access.
                 </p>
                 <p>
-                  At the heart of namma ooru Foods is a focus on preserving culinary Story. The company revives time-tested food preparation methods like slow cooking, hand grinding, and other authentic processes that help retain the natural flavors and nutritional value of ingredients. These traditional practices, passed down through generations, not only ensure superior product quality but also celebrate the wisdom of age-old food-making techniques.
+                  Our vision is to create a thriving ecosystem where women can learn, launch, grow, and scale successful businesses with confidence. Through our specialized programs and initiatives, we provide women with the knowledge, resources, and opportunities needed to succeed in today’s competitive business environment.
                 </p>
                 <p>
-                  namma ooru Foods actively empowers rural communities, particularly women, by involving them in the production process. This approach not only helps preserve traditional food-making skills but also provides women with economic opportunities and a platform for leadership.
+                  At the heart of our ecosystem is <strong className="text-emerald-950">Penniyam Academy</strong>, which offers entrepreneurship education, business training, leadership development, and practical skill-building programs designed specifically for women. We believe that continuous learning is the foundation of sustainable business growth.
                 </p>
+                <p>
+                  Beyond education, we provide mentorship, business networking opportunities, strategic guidance, and hands-on support to help women navigate every stage of their entrepreneurial journey. Our focus extends to marketing, branding, sales development, customer acquisition, and business expansion, ensuring that women entrepreneurs receive the support they need to build profitable and sustainable ventures.
+                </p>
+                <p>
+                  We also help women entrepreneurs access digital opportunities through e-commerce enablement, market connectivity, business collaborations, and growth-focused initiatives that increase visibility and sales potential. By connecting women with industry experts, successful entrepreneurs, and valuable business networks, we create pathways for long-term success.
+                </p>
+                <p>
+                  Through initiatives such as the <strong className="text-emerald-950">Penniyam Entrepreneur Tour</strong>, women gain direct exposure to successful enterprises, innovative business models, and collaborative opportunities that inspire growth and practical business implementation.
+                </p>
+                <p>
+                  At Penniyam Entrepreneur Network, our mission is not just to help women start businesses—it is to empower them to become confident business leaders, create economic impact, and build enterprises that transform communities and future generations.
+                </p>
+                <div className="bg-emerald-50 p-6 md:p-8 rounded-3xl border border-emerald-100 mt-8">
+                  <p className="text-xl md:text-2xl font-black text-emerald-950 italic text-center mb-6 leading-tight">
+                    "Empowering Women to Learn, Lead, Build, and Scale Successful Businesses."
+                  </p>
+                  <div className="text-center space-y-1">
+                    <p className="font-black text-emerald-900 uppercase tracking-widest text-sm">Penniyam Entrepreneur Network</p>
+                    <p className="text-xs font-bold text-emerald-700/70 uppercase tracking-widest">An Initiative of Penniyam Pvt. Ltd.</p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

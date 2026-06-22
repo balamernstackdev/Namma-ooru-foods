@@ -173,10 +173,17 @@ export default function PromotionLayoutBuilder() {
 
   const getSectionTypeColor = (type: string) => {
     switch(type) {
+      case 'HERO_CAROUSEL':
       case 'HERO_SLIDER': return 'bg-indigo-50 text-indigo-600 border-indigo-100';
       case 'FLASH_DEALS': return 'bg-rose-50 text-rose-600 border-rose-100';
+      case 'COMBOS':
       case 'COMBO_OFFERS': return 'bg-amber-50 text-amber-700 border-amber-100';
+      case 'VOUCHER_LIST':
       case 'VOUCHERS': return 'bg-teal-50 text-teal-600 border-teal-100';
+      case 'QUICK_STRIPS': return 'bg-yellow-50 text-yellow-700 border-yellow-100';
+      case 'WALLET_OFFERS': return 'bg-blue-50 text-blue-600 border-blue-100';
+      case 'BANNER_GRIDS': return 'bg-purple-50 text-purple-600 border-purple-100';
+      case 'REFERRAL': return 'bg-orange-50 text-orange-600 border-orange-100';
       default: return 'bg-slate-50 text-slate-500 border-slate-100';
     }
   };
@@ -190,8 +197,8 @@ export default function PromotionLayoutBuilder() {
           <Link href="/admin/promotions" className="flex items-center gap-1 text-slate-400 hover:text-slate-900 text-[10px] font-black uppercase tracking-widest mb-4 transition-colors">
             <ChevronLeft size={14} /> Back to Campaigns
           </Link>
-          <h1 className="text-4xl font-black text-slate-900 tracking-tighter uppercase leading-none">Home Flow Builder</h1>
-          <p className="text-slate-400 font-medium text-sm mt-3">Configure client-side container injection order and component structures.</p>
+          <h1 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tighter uppercase italic leading-none">Home Flow <span className="text-emerald-600">Builder</span></h1>
+          <p className="text-slate-400 font-bold uppercase tracking-[0.2em] text-[10px] mt-2">Configure client-side container injection order and component structures.</p>
         </div>
         
         <button 
@@ -362,10 +369,14 @@ export default function PromotionLayoutBuilder() {
                          onChange={e => setNewType(e.target.value)}
                          className="h-12 px-4 rounded-xl bg-slate-900 border border-slate-800 text-white font-semibold text-xs focus:outline-none focus:border-emerald-500 transition-all w-full appearance-none"
                        >
-                          <option value="HERO_SLIDER">Hero Slider / Main Banners</option>
+                          <option value="HERO_CAROUSEL">Hero Slider / Main Banners</option>
+                          <option value="QUICK_STRIPS">Quick Promo Strip</option>
                           <option value="FLASH_DEALS">Flash Deals Cards Grid</option>
-                          <option value="COMBO_OFFERS">Combo / Strip Offers</option>
-                          <option value="VOUCHERS">Claimable Coupons Tray</option>
+                          <option value="BANNER_GRIDS">Banner Showcase Grids</option>
+                          <option value="COMBOS">Multi-Save Combo Deals</option>
+                          <option value="VOUCHER_LIST">Claimable Coupons Tray</option>
+                          <option value="WALLET_OFFERS">Partner Wallet Offers</option>
+                          <option value="REFERRAL">Community Referral Module</option>
                        </select>
                     </div>
 

@@ -34,10 +34,10 @@ const BottomNav = () => {
           <User className="h-6 w-6" strokeWidth={2} />
           <span className="text-[9px] font-black uppercase tracking-widest text-inherit">Account</span>
         </Link>
-        <Link href="/promotions" className="flex flex-col items-center gap-1.5 text-amber-500 transition-all active:scale-90">
+        {/* <Link href="/promotions" className="flex flex-col items-center gap-1.5 text-amber-500 transition-all active:scale-90">
           <Zap className="h-6 w-6 fill-amber-500" strokeWidth={2} />
           <span className="text-[9px] font-black uppercase tracking-widest text-inherit">Deals</span>
-        </Link>
+        </Link> */}
       </div>
     </div>
 

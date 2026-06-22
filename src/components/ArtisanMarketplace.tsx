@@ -1,127 +1,253 @@
 'use client';
 
-import React, { useRef, useState, useCallback, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import Link from 'next/link';
-import { ChevronRight, Sparkle } from 'lucide-react';
+import { Sparkles, ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
 import useSWR from 'swr';
 import { motion } from 'framer-motion';
+import { usePlatformSettings } from '@/context/PlatformSettingsContext';
 
 import { API_URL } from '@/lib/api';
 import OptimizedImage from './ui/OptimizedImage';
 
 const fetcher = (url: string) => fetch(url).then(res => res.json());
 
+const formatBrandName = (name: string) => {
+  if (!name) return '';
+  return name
+    .replace(/[-_]+/g, ' ')
+    .split(' ')
+    .map(w => {
+      let cleaned = w.charAt(0).toUpperCase() + w.slice(1).toLowerCase();
+      if (cleaned === 'Prod' || cleaned === 'Prods') return 'Products';
+      return cleaned;
+    })
+    .join(' ');
+};
+
 export default function ArtisanMarketplace() {
-  const { data: brandsData, error } = useSWR(`${API_URL}/api/sub-vendors?limit=15`, fetcher);
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const [canScrollLeft, setCanScrollLeft] = useState(false);
-  const [canScrollRight, setCanScrollRight] = useState(true);
-
+  const { settings } = usePlatformSettings();
+  const { data: brandsData, error } = useSWR(`${API_URL}/api/sub-vendors?limit=100&includeEmpty=true`, fetcher);
   const brands = brandsData?.subVendors || [];
+  const isLoading = !brandsData && !error;
 
-  const scrollRight = () => {
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Mouse drag scrolling support
+  const [isMouseDown, setIsMouseDown] = useState(false);
+  const [startX, setStartX] = useState(0);
+  const [scrollLeftPos, setScrollLeftPos] = useState(0);
+
+  const onMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
     const el = scrollRef.current;
     if (!el) return;
-    const SCROLL_STEP = el.clientWidth < 640 ? 180 : 252; // card width + gap depending on viewport
-    if (el.scrollLeft + el.clientWidth >= el.scrollWidth - 20) {
-      el.scrollTo({ left: 0, behavior: 'smooth' });
-    } else {
-      el.scrollBy({ left: SCROLL_STEP, behavior: 'smooth' });
+    setIsMouseDown(true);
+    setStartX(e.pageX - el.offsetLeft);
+    setScrollLeftPos(el.scrollLeft);
+  };
+
+  const onMouseLeave = () => {
+    setIsMouseDown(false);
+  };
+
+  const onMouseUp = () => {
+    setIsMouseDown(false);
+  };
+
+  const onMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!isMouseDown) return;
+    e.preventDefault();
+    const el = scrollRef.current;
+    if (!el) return;
+    const x = e.pageX - el.offsetLeft;
+    const walk = (x - startX) * 1.5;
+    el.scrollLeft = scrollLeftPos - walk;
+  };
+
+  const onKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === 'ArrowLeft') {
+      e.preventDefault();
+      scrollLeft();
+    } else if (e.key === 'ArrowRight') {
+      e.preventDefault();
+      scrollRight();
     }
   };
 
-  useEffect(() => {
-    if (brands.length === 0) return;
-    const interval = setInterval(scrollRight, 3500);
-    return () => clearInterval(interval);
-  }, [brands.length]);
+  // Vendor visibility should not depend on product count
+  const activeBrands = brands;
+  const [activeIndex, setActiveIndex] = useState(0);
 
-  if (error || brands.length === 0) return null;
+  const checkScrollLimits = React.useCallback(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+
+    // Mobile dots calculation
+    const itemWidth = el.children[0]?.clientWidth || 140;
+    const gap = window.innerWidth < 768 ? 24 : 40;
+    const index = Math.round(el.scrollLeft / (itemWidth + gap));
+    setActiveIndex(index);
+  }, []);
+
+  const getScrollStep = (el: HTMLElement) => el.clientWidth < 640 ? 164 : 220;
+
+  const scrollLeft = React.useCallback(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    if (el.scrollLeft <= 10) {
+      el.scrollTo({ left: el.scrollWidth, behavior: 'smooth' });
+    } else {
+      el.scrollBy({ left: -getScrollStep(el), behavior: 'smooth' });
+    }
+  }, []);
+
+  const scrollRight = React.useCallback(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    if (el.scrollLeft + el.clientWidth >= el.scrollWidth - 20) {
+      el.scrollTo({ left: 0, behavior: 'smooth' });
+    } else {
+      el.scrollBy({ left: getScrollStep(el), behavior: 'smooth' });
+    }
+  }, []);
+
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (el) {
+      el.addEventListener('scroll', checkScrollLimits);
+      setTimeout(checkScrollLimits, 500);
+    }
+    return () => el?.removeEventListener('scroll', checkScrollLimits);
+  }, [checkScrollLimits]);
+
+  if (error || (!isLoading && activeBrands.length === 0)) return null;
 
   return (
     <section className="w-full pt-2 md:pt-4 pb-4 md:pb-6 bg-white relative overflow-hidden">
-      
+
       {/* Decorative luxurious ambient glow */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-radial from-amber-50/40 to-transparent rounded-full pointer-events-none opacity-70" />
 
       <div className="standard-container relative z-10">
-        
-        {/* --- SECTION HEADER --- */}
+
+        {/* --- Header matching premium vendor style --- */}
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-6 md:mb-8 gap-6">
           <div className="space-y-3">
             <div className="flex items-center gap-2 text-slate-400">
-              <Sparkle size={12} className="text-amber-500 fill-amber-500" />
-              <span className="text-[10px] md:text-xs font-extrabold uppercase tracking-[0.35em]">Brand Collections</span>
+              <Sparkles size={12} className="text-amber-500 fill-amber-500" />
+              <span className="text-[10px] md:text-xs font-black uppercase tracking-[0.35em] text-slate-400">Our Trusted Resellers</span>
             </div>
             <h2 className="text-xl md:text-[32px] lg:text-[36px] font-[900] text-emerald-950 tracking-tighter leading-none uppercase">
-              Explore the <span className="text-amber-500 italic lowercase font-serif font-normal ml-1">Brands</span>
+              Featured <span className="text-amber-500 italic lowercase font-serif font-normal ml-1">Brands</span>
             </h2>
           </div>
 
-          {/* Clean Discovery Controls */}
-          <div className="flex items-center gap-5">
-            <Link
-              href="/brands"
-              className="hidden sm:flex items-center gap-1 text-[11px] font-black text-slate-400 hover:text-emerald-950 uppercase tracking-[0.2em] transition-colors"
-            >
-              <span>View All</span>
-              <ChevronRight size={14} />
+          <div className="flex items-center gap-4">
+            <Link href="/brands" className="hidden sm:flex items-center gap-1 text-[11px] font-black text-slate-400 hover:text-emerald-950 uppercase tracking-[0.2em] transition-colors group">
+              <span>View All Brands</span>
+              <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform text-slate-400 group-hover:text-emerald-950" />
             </Link>
+
+            {/* Redesigned Carousel Navigation Arrows */}
+            <div className="hidden md:flex items-center gap-2">
+              <button
+                type="button"
+                onClick={scrollLeft}
+                aria-label="Previous"
+                className="w-11 h-11 rounded-full bg-white border border-[#E5E7EB] shadow-[0_8px_24px_rgba(0,0,0,0.08)] flex items-center justify-center text-slate-800 hover:bg-[#0F8A5F] hover:text-white hover:border-[#0F8A5F] transition-all duration-300 hover:scale-105 focus:outline-none shrink-0"
+              >
+                <ChevronLeft size={20} strokeWidth={2.5} />
+              </button>
+              <button
+                type="button"
+                onClick={scrollRight}
+                aria-label="Next"
+                className="w-11 h-11 rounded-full bg-white border border-[#E5E7EB] shadow-[0_8px_24px_rgba(0,0,0,0.08)] flex items-center justify-center text-slate-800 hover:bg-[#0F8A5F] hover:text-white hover:border-[#0F8A5F] transition-all duration-300 hover:scale-105 focus:outline-none shrink-0"
+              >
+                <ChevronRight size={20} strokeWidth={2.5} />
+              </button>
+            </div>
           </div>
         </div>
 
-        {/* --- THE PREMIUM SQUIRCLE DECK --- */}
-        <div className="relative -mx-6 md:-mx-8 px-6 md:px-8">
-          <div 
+        {/* --- The Premium Squircle Deck matching Vendors --- */}
+        <div className="relative group/carousel w-full">
+          <div
             ref={scrollRef}
-            className="flex overflow-x-auto no-scrollbar gap-6 md:gap-10 pb-4 snap-x snap-mandatory scroll-smooth items-start"
+            onMouseDown={onMouseDown}
+            onMouseLeave={onMouseLeave}
+            onMouseUp={onMouseUp}
+            onMouseMove={onMouseMove}
+            onKeyDown={onKeyDown}
+            tabIndex={0}
+            className="flex overflow-x-auto no-scrollbar pb-4 snap-x snap-mandatory scroll-smooth items-start justify-start px-[10px] md:px-[20px] xl:px-[70px] gap-6 md:gap-10 cursor-grab active:cursor-grabbing focus:outline-none"
           >
-            {brands.map((brand: any, idx: number) => {
-              const count = brand._count?.products || 0;
-              const imageUrl = brand.logo || '/brand_logos/reseller_logo.webp';
-
-              return (
+            {isLoading ? (
+              // Loading Skeleton
+              [...Array(4)].map((_, i) => (
+                <div key={i} className="snap-start shrink-0 w-[140px] md:w-[180px] animate-pulse">
+                  <div className="w-full aspect-square rounded-[2rem] md:rounded-[2.8rem] bg-slate-100" />
+                  <div className="h-3 bg-slate-100 rounded-full w-2/3 mx-auto mt-4" />
+                </div>
+              ))
+            ) : (
+              activeBrands.map((brand: any, idx: number) => (
                 <motion.div
                   key={brand.id}
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true, margin: "-20px" }}
                   transition={{ duration: 0.6, delay: idx * 0.05 }}
-                  className="snap-start shrink-0 w-[150px] md:w-[210px]"
+                  className="snap-start shrink-0 w-[140px] md:w-[180px]"
                 >
                   <Link
                     href={`/brands/${brand.slug || brand.id}`}
                     prefetch={false}
-                    className="group flex flex-col items-center text-center relative"
+                    className="group flex flex-col items-center text-center"
                   >
-                    {/* Premium Taller Fashion-Style Aspect Image Container */}
-                    <div className="relative w-full aspect-[3/4] rounded-[2.2rem] md:rounded-[3rem] overflow-hidden bg-[#fafaf9] border border-slate-100 shadow-[0_8px_30px_rgba(0,0,0,0.015)] transition-all duration-700 group-hover:shadow-[0_24px_48px_-12px_rgba(6,78,59,0.15)] group-hover:-translate-y-2 group-hover:border-emerald-100 flex items-center justify-center">
-                      <OptimizedImage
-                        src={imageUrl}
-                        alt={brand.name}
-                        fill
-                        className="object-cover scale-100 group-hover:scale-105 transition-transform duration-[1000ms] ease-[0.25,1,0.5,1]"
-                        sizes="(max-width: 768px) 150px, 210px"
-                      />
-                      
-                      {/* Dark overlay for luxury depth */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-80 transition-opacity duration-500" />
-                      
-                      {/* Floating Glassmorphic Label Overlay */}
-                      <div className="absolute inset-x-3 bottom-3 p-3 md:p-4 bg-white/90 backdrop-blur-md rounded-[1.6rem] border border-white/20 shadow-lg flex flex-col gap-1 items-start text-left transition-all duration-500 group-hover:bg-emerald-950/95 group-hover:border-emerald-900 group-hover:text-white">
-                        <span className="text-[8px] font-black uppercase tracking-widest text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full group-hover:bg-white/10 group-hover:text-amber-300 transition-colors">
-                          {count} {count === 1 ? 'Product' : 'Products'}
-                        </span>
-                        <p className="text-emerald-950 font-black text-xs md:text-sm tracking-tight uppercase leading-tight w-full group-hover:text-white transition-colors">
-                          {brand.name}
-                        </p>
+                    {/* Premium Squircle Image Box - 100% Identical to Vendors Showcase */}
+                    <div className="relative w-full aspect-square rounded-[2rem] md:rounded-[2.8rem] overflow-hidden bg-[#fafaf9] border border-slate-200 shadow-[0_8px_30px_rgba(0,0,0,0.02)] transition-all duration-700 group-hover:shadow-[0_24px_48px_-12px_rgba(6,78,59,0.12)] group-hover:-translate-y-2 group-hover:border-emerald-100 relative flex items-center justify-center">
+
+                      <div className="absolute inset-0 m-2 rounded-[1.6rem] md:rounded-[2.2rem] overflow-hidden bg-white shadow-inner p-3 flex items-center justify-center">
+                        <OptimizedImage
+                          src={brand.logo || settings.logo || '/logo.webp'}
+                          alt={brand.name}
+                          fill
+                          className="object-contain p-1 scale-100 group-hover:scale-105 transition-transform duration-[1000ms] ease-[0.25,1,0.5,1]"
+                        />
+                        {/* Dark overlay on hover for luxury depth */}
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-500" />
                       </div>
+
+                    </div>
+
+                    {/* Text Block placed BELOW the card */}
+                    <div className="mt-5 w-full flex flex-col items-center gap-2">
+                      <p className="text-emerald-950 text-[10px] md:text-[12px] font-[900] uppercase tracking-[0.06em] group-hover:text-amber-600 transition-colors duration-300 leading-[1.4] text-center px-1 break-words w-full">
+                        {formatBrandName(brand.name)}
+                      </p>
+                      {(!brand._count?.products || brand._count.products === 0) && (
+                        <span className="text-[9px] md:text-[10px] font-bold text-amber-600 uppercase tracking-widest leading-none shrink-0 bg-amber-50 px-2 py-0.5 rounded">
+                          Coming Soon
+                        </span>
+                      )}
                     </div>
                   </Link>
                 </motion.div>
-              );
-            })}
+              ))
+            )}
           </div>
+
+        </div>
+
+        {/* Mobile Pagination Dots */}
+        <div className="md:hidden flex justify-center gap-1.5 mt-[-10px] mb-4">
+          {activeBrands.slice(0, 10).map((_: any, idx: number) => (
+            <div
+              key={idx}
+              className={`h-1.5 rounded-full transition-all duration-300 ${idx === activeIndex ? 'w-4 bg-[#0f9d58]' : 'w-1.5 bg-slate-300'}`}
+            />
+          ))}
         </div>
 
       </div>

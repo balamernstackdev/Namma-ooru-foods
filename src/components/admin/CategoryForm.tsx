@@ -75,7 +75,8 @@ export default function CategoryForm({ initialData, mode }: CategoryFormProps) {
   });
 
   useEffect(() => {
-    fetch(`${API_URL}/api/admin-ops/categories?all=true&limit=1000`)
+    // Only load top-level categories as parent options (parentId IS NULL)
+    fetch(`${API_URL}/api/admin-ops/categories?all=true&limit=1000&parentOnly=true`)
       .then(r => r.json())
       .then(data => {
         setCategories(data.categories || []);
@@ -99,7 +100,7 @@ export default function CategoryForm({ initialData, mode }: CategoryFormProps) {
       if (res.ok) {
         const data = await res.json();
         setFormData(prev => ({ ...prev, image: data.url }));
-        addToast('Success', 'Category visual updated');
+        // addToast('Success', 'Category visual updated');
       }
     } finally {
       setIsUploading(false);
@@ -108,6 +109,7 @@ export default function CategoryForm({ initialData, mode }: CategoryFormProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (submitting) return;
     setSubmitting(true);
     try {
       const url = mode === 'edit'
@@ -122,7 +124,7 @@ export default function CategoryForm({ initialData, mode }: CategoryFormProps) {
       });
 
       if (res.ok) {
-        addToast('Success', mode === 'edit' ? 'Category synchronized' : 'Category architected');
+        addToast('Success', mode === 'edit' ? 'Category is updated' : 'Category architected');
         router.push('/admin/categories');
       } else {
         const err = await res.json();

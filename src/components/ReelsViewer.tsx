@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { 
   X, Play, Pause, Volume2, VolumeX, Heart, Share2, 
@@ -12,6 +13,7 @@ import Link from 'next/link';
 import { useCart } from '@/context/CartContext';
 import { API_URL } from '@/lib/api';
 import toast from 'react-hot-toast';
+import { usePlatformSettings } from '@/context/PlatformSettingsContext';
 
 interface ProductItem {
   id: number;
@@ -55,6 +57,7 @@ interface ReelsViewerProps {
 
 export default function ReelsViewer({ videos, initialIndex, isOpen, onClose }: ReelsViewerProps) {
   const { addToCart } = useCart();
+  const { settings } = usePlatformSettings();
   const [activeIndex, setActiveIndex] = useState(initialIndex);
   const [videoError, setVideoError] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
@@ -71,6 +74,9 @@ export default function ReelsViewer({ videos, initialIndex, isOpen, onClose }: R
   const videoRef = useRef<HTMLVideoElement>(null);
   const touchStartY = useRef<number>(0);
   const scrollCooldown = useRef<boolean>(false);
+
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
 
   const activeVideo = videos[activeIndex];
 
@@ -142,7 +148,7 @@ export default function ReelsViewer({ videos, initialIndex, isOpen, onClose }: R
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, activeIndex, isPlaying]);
 
-  if (!isOpen || !activeVideo) return null;
+  if (!mounted || !isOpen || !activeVideo) return null;
 
   // Next / Prev functions
   const handleNext = () => {
@@ -285,7 +291,7 @@ export default function ReelsViewer({ videos, initialIndex, isOpen, onClose }: R
       name: product.name,
       price: product.price,
       quantity: 1,
-      image: product.image || '/logo.webp',
+      image: product.image || settings.logo || '/logo.webp',
       variant: ''
     });
     
@@ -304,12 +310,12 @@ export default function ReelsViewer({ videos, initialIndex, isOpen, onClose }: R
     });
   };
 
-  return (
+  const content = (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[99999] bg-[#020617] flex flex-col items-center justify-center overflow-hidden font-sans"
+      className="fixed inset-0 z-[999999] bg-[#020617] flex flex-col items-center justify-center overflow-hidden font-sans"
     >
       {/* Background Ambient Blur - Desktop Only */}
       <div className="absolute inset-0 opacity-20 blur-[130px] pointer-events-none hidden md:block select-none">
@@ -319,7 +325,7 @@ export default function ReelsViewer({ videos, initialIndex, isOpen, onClose }: R
 
       {/* Main Container: Handles touch swipes and mouse wheels */}
       <div 
-        className="w-full h-full md:h-[90vh] md:max-w-[440px] md:rounded-[2.5rem] bg-black overflow-hidden shadow-2xl relative flex items-center justify-center cursor-pointer select-none"
+        className="w-full h-[100dvh] md:h-[90vh] md:w-auto md:aspect-[9/16] md:max-w-none md:rounded-[2.5rem] bg-black overflow-hidden shadow-2xl relative flex items-center justify-center cursor-pointer select-none"
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
         onWheel={handleWheel}
@@ -336,6 +342,7 @@ export default function ReelsViewer({ videos, initialIndex, isOpen, onClose }: R
           src={activeVideo.videoUrl}
           className="absolute inset-0 w-full h-full object-cover z-10"
           loop
+          autoPlay
           muted={isMuted}
           playsInline
           controls={false}
@@ -499,7 +506,7 @@ export default function ReelsViewer({ videos, initialIndex, isOpen, onClose }: R
               className="flex items-center gap-2.5 bg-black/40 backdrop-blur-md border border-white/10 p-2 rounded-2xl w-fit pointer-events-auto hover:bg-white/10 active:scale-95 transition-all mt-1"
             >
               <div className="relative h-10 w-10 rounded-lg overflow-hidden shrink-0 border border-white/15">
-                <img src={activeVideo.product.image || '/logo.webp'} alt="" className="h-full w-full object-cover" />
+                <img src={activeVideo.product.image || settings.logo || '/logo.webp'} alt="" className="h-full w-full object-cover" />
               </div>
               <div className="flex flex-col text-left">
                 <span className="text-[9px] font-black text-white/50 uppercase leading-none tracking-wider">Tap to Shop</span>
@@ -530,54 +537,106 @@ export default function ReelsViewer({ videos, initialIndex, isOpen, onClose }: R
           </div>
         )}
 
-        {/* Fallback Screen Overlay (Permanent replacement for Access Restricted) */}
+        {/* Premium Farm Story Preview Fallback Layout */}
         <AnimatePresence>
           {videoError && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="absolute inset-0 z-[2015] flex flex-col items-center justify-center p-6 text-center bg-black/85 backdrop-blur-xl pointer-events-auto"
+              className="absolute inset-0 z-[2015] flex flex-col justify-between p-6 bg-[#022c22] pointer-events-auto"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="bg-zinc-900 border border-white/10 p-6 rounded-[2.5rem] shadow-2xl w-[90%] max-w-sm flex flex-col items-center">
-                <div className="h-14 w-14 rounded-full bg-amber-500/10 border border-amber-500/30 flex items-center justify-center mb-4">
-                  <AlertCircle className="h-7 w-7 text-amber-500 animate-bounce-slow" />
-                </div>
-                <h3 className="text-white text-base font-black mb-1.5 uppercase tracking-wider">Video Unavailable</h3>
-                <p className="text-white/50 font-semibold text-[11px] leading-relaxed mb-5">
-                  The video file is undergoing maintenance. You can retry loading it or check other popular stories.
-                </p>
-                
-                {/* Fallback Action Buttons */}
-                <div className="flex gap-3 w-full mb-6">
-                  <button
-                    onClick={() => {
-                      setVideoError(false);
-                      setProgress(0);
-                      if (videoRef.current) {
-                        videoRef.current.load();
-                        const play = videoRef.current.play();
-                        if (play !== undefined) play.catch(() => {});
-                      }
-                    }}
-                    className="flex-1 py-3 bg-white text-slate-900 font-black uppercase text-[9px] tracking-widest rounded-full hover:bg-zinc-200 transition-all flex items-center justify-center gap-1.5 active:scale-95 shadow-md"
-                  >
-                    <RefreshCw size={11} /> Retry
-                  </button>
-                  <button
-                    onClick={onClose}
-                    className="flex-1 py-3 bg-zinc-800 text-white font-black uppercase text-[9px] tracking-widest rounded-full hover:bg-zinc-700 transition-all active:scale-95 border border-white/10"
-                  >
-                    Close
-                  </button>
-                </div>
+              {/* Full Screen High-Res Farm Background with Glass Overlay */}
+              <div className="absolute inset-0 z-0">
+                <img 
+                  src={activeVideo.thumbnail || '/ai_images/cinematic_farm_1776230966841.png'} 
+                  alt="" 
+                  className="w-full h-full object-cover opacity-35 filter brightness-50"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = '/ai_images/cinematic_farm_1776230966841.png';
+                  }}
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#021f18] via-[#022c22]/90 to-transparent" />
+              </div>
 
-                {/* Suggested Stories carousel inside failure popup */}
+              {/* Top Bar for Fallback */}
+              <div className="z-10 flex items-center justify-between mt-4">
+                <div className="h-8 px-3 bg-white/10 backdrop-blur-md rounded-full border border-white/10 flex items-center">
+                  <span className="text-[9px] font-black uppercase tracking-[0.2em] text-white">Story Preview</span>
+                </div>
+                <button
+                  onClick={onClose}
+                  className="h-8 w-8 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center text-white border border-white/20"
+                >
+                  <X size={14} />
+                </button>
+              </div>
+
+              {/* Central Premium Interactive Card */}
+              <div className="z-10 flex-1 flex flex-col justify-center items-center px-4 max-w-sm mx-auto text-center mt-8">
+                <div className="h-16 w-16 rounded-[1.5rem] bg-gradient-to-br from-emerald-400/20 to-amber-400/20 border border-emerald-500/30 flex items-center justify-center mb-6 shadow-xl relative">
+                  <span className="text-2xl animate-pulse">🌾</span>
+                  <div className="absolute -inset-1 rounded-[1.5rem] border border-emerald-500/20 animate-ping opacity-75" />
+                </div>
+                
+                <h3 className="text-white text-[22px] font-black uppercase tracking-tight leading-none mb-3">
+                  {activeVideo.title || "Pure Harvest Story"}
+                </h3>
+                <p className="text-[#a7f3d0] font-medium text-xs leading-relaxed mb-6">
+                  {activeVideo.description || "Take a peek at our authentic farming process. We gather cold-pressed ingredients directly from partner cultivators, preserving nutrient integrity."}
+                </p>
+
+                {/* Primary Interactive Fallback Buttons */}
+                <div className="flex flex-col gap-3 w-full">
+                  {taggedProducts.length > 0 && (
+                    <button
+                      onClick={() => setShowProductsDrawer(true)}
+                      className="w-full py-4 bg-gradient-to-r from-amber-500 to-amber-600 text-emerald-950 font-black uppercase text-[10px] tracking-[0.15em] rounded-full hover:scale-[1.02] active:scale-98 transition-all flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20"
+                    >
+                      🛒 Explore {taggedProducts.length} Tagged Products
+                    </button>
+                  )}
+                  
+                  <div className="flex gap-3 w-full">
+                    {videos.length > 1 && (
+                      <button
+                        onClick={() => {
+                          setVideoError(false);
+                          handleNext();
+                        }}
+                        className="flex-1 py-3.5 bg-white/10 hover:bg-white/15 text-white font-black uppercase text-[9px] tracking-widest rounded-full transition-all border border-white/10 active:scale-95 flex items-center justify-center gap-1.5"
+                      >
+                        🌾 Next Story
+                      </button>
+                    )}
+                    <button
+                      onClick={() => {
+                        setVideoError(false);
+                        setProgress(0);
+                        if (videoRef.current) {
+                          videoRef.current.load();
+                          const play = videoRef.current.play();
+                          if (play !== undefined) play.catch(() => {});
+                        }
+                      }}
+                      className="flex-1 py-3.5 bg-emerald-600 hover:bg-emerald-500 text-white font-black uppercase text-[9px] tracking-widest rounded-full transition-all active:scale-95"
+                    >
+                      🔄 Reload
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Bottom Suggested Stories List inside Fallback */}
+              <div className="z-10 mt-6 pb-4 w-full max-w-sm mx-auto text-left">
                 {videos.length > 1 && (
-                  <div className="w-full text-left">
-                    <h4 className="text-[8px] font-black uppercase tracking-[0.2em] text-slate-400 mb-3 border-b border-white/5 pb-2">Suggested Stories</h4>
-                    <div className="flex gap-3 overflow-x-auto pb-2 no-scrollbar">
+                  <>
+                    <h4 className="text-[9px] font-black uppercase tracking-[0.2em] text-[#34d399]/70 mb-3 border-b border-emerald-950 pb-2 flex items-center justify-between">
+                      <span>Explore Other Stories</span>
+                      <span className="text-[8px] font-bold text-slate-500 uppercase tracking-widest">{videos.length - 1} AVAILABLE</span>
+                    </h4>
+                    <div className="flex gap-3.5 overflow-x-auto pb-2 no-scrollbar scroll-smooth">
                       {videos
                         .filter((_, idx) => idx !== activeIndex)
                         .slice(0, 4)
@@ -590,22 +649,22 @@ export default function ReelsViewer({ videos, initialIndex, isOpen, onClose }: R
                                 setActiveIndex(originalIdx);
                                 setVideoError(false);
                               }}
-                              className="relative h-16 w-12 rounded-xl bg-zinc-800 overflow-hidden shrink-0 cursor-pointer border border-white/10 hover:border-emerald-500 transition-all hover:scale-105 active:scale-95"
+                              className="relative h-16 w-12 rounded-xl bg-[#011a14] overflow-hidden shrink-0 cursor-pointer border border-[#10b981]/20 hover:border-emerald-400 transition-all hover:scale-105 active:scale-95 shadow-md flex items-center justify-center"
                             >
                               <img 
-                                src={v.thumbnail || '/logo.webp'} 
+                                src={v.thumbnail || '/ai_images/organic_grains_1776231059575.png'} 
                                 alt="" 
                                 className="h-full w-full object-cover" 
                                 onError={(e) => {
-                                  // Fallback image source if thumbnail also fails
-                                  (e.target as HTMLImageElement).src = '/logo.webp';
+                                  (e.target as HTMLImageElement).src = '/ai_images/organic_grains_1776231059575.png';
                                 }}
                               />
+                              <div className="absolute inset-0 bg-black/10 hover:bg-transparent transition-colors" />
                             </div>
                           );
                         })}
                     </div>
-                  </div>
+                  </>
                 )}
               </div>
             </motion.div>
@@ -656,11 +715,11 @@ export default function ReelsViewer({ videos, initialIndex, isOpen, onClose }: R
                     >
                       <div className="relative h-16 w-16 rounded-xl overflow-hidden shrink-0 border border-slate-100">
                         <img 
-                          src={product.image || '/logo.webp'} 
+                          src={product.image || settings.logo || '/logo.webp'} 
                           alt={product.name} 
                           className="w-full h-full object-cover" 
                           onError={(e) => {
-                            (e.target as HTMLImageElement).src = '/logo.webp';
+                            (e.target as HTMLImageElement).src = settings.logo || '/logo.webp';
                           }}
                         />
                       </div>
@@ -721,4 +780,6 @@ export default function ReelsViewer({ videos, initialIndex, isOpen, onClose }: R
       `}</style>
     </motion.div>
   );
+
+  return createPortal(content, document.body);
 }

@@ -56,7 +56,8 @@ export default function WishlistPage() {
       price: Number(item.product.price),
       image: item.product.image || '',
       variant: item.product.variants?.[0]?.name || 'Standard',
-      quantity: 1
+      quantity: 1,
+      gstRate: item.product.gstRate
     });
     showToast(`Added "${item.product.name}" to cart successfully!`);
     setTimeout(() => setAddingId(null), 800);
@@ -69,7 +70,8 @@ export default function WishlistPage() {
       price: Number(item.product.price),
       image: item.product.image || '',
       variant: item.product.variants?.[0]?.name || 'Standard',
-      quantity: 1
+      quantity: 1,
+      gstRate: item.product.gstRate
     });
     showToast(`Redirecting with "${item.product.name}"...`);
     router.push('/cart');
@@ -114,7 +116,7 @@ export default function WishlistPage() {
           </div>
           <h2 className="text-[15px] font-black text-emerald-950 uppercase tracking-widest mb-2">My Wishlist</h2>
           <p className="text-xs text-slate-400 font-bold uppercase tracking-wide mb-6">Sign in to view your saved items</p>
-          <Link href="/account" className="inline-flex w-full justify-center py-4 bg-emerald-950 text-white rounded-2xl font-black text-[11px] uppercase tracking-widest hover:bg-emerald-800 transition-all shadow-md">
+          <Link href="/account" className="inline-flex w-full justify-center py-4 bg-emerald-950 text-white !text-white rounded-2xl font-black text-[11px] uppercase tracking-widest hover:bg-emerald-800 transition-all shadow-md">
             Sign In Account
           </Link>
         </div>
@@ -227,7 +229,7 @@ export default function WishlistPage() {
             <p className="text-[11px] text-slate-400 font-bold uppercase tracking-wide mb-8 max-w-sm mx-auto leading-relaxed">
               {searchQuery ? "No matching products found. Try adjusting your search query." : "Explore our fresh organic selection and save items for easy ordering."}
             </p>
-            <Link href="/products" className="inline-flex items-center gap-2 px-8 py-4 bg-emerald-950 text-white rounded-2xl font-black text-[11px] uppercase tracking-widest hover:bg-emerald-800 transition-all shadow-md">
+            <Link href="/products" className="inline-flex items-center gap-2 px-8 py-4 bg-emerald-950 text-white !text-white rounded-2xl font-black text-[11px] uppercase tracking-widest hover:bg-emerald-800 transition-all shadow-md">
               Explore Organic Products <ArrowRight className="h-3.5 w-3.5" />
             </Link>
           </div>

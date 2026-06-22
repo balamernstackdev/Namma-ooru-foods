@@ -46,6 +46,23 @@ export default function RefundPage() {
     finally { setLoading(false); }
   };
 
+  if (!user) {
+    return (
+      <div className="mx-auto w-full py-20 px-[5%]" style={{ maxWidth: '1400px' }}>
+        <div className="bg-white rounded-[2rem] p-12 text-center shadow-sm border border-slate-100 max-w-md mx-auto">
+          <div className="h-16 w-16 bg-rose-50 rounded-full flex items-center justify-center mx-auto mb-6">
+            <RotateCcw className="h-6 w-6 text-rose-500 animate-[spin_8s_linear_infinite]" />
+          </div>
+          <h2 className="text-[15px] font-black text-emerald-950 uppercase tracking-widest mb-2">Refund Request</h2>
+          <p className="text-xs text-slate-400 font-bold uppercase tracking-wide mb-6">Sign in to request refunds or track order returns</p>
+          <Link href="/account?redirect=/refund" className="inline-flex w-full justify-center py-4 bg-emerald-950 text-white !text-white rounded-2xl font-black text-[11px] uppercase tracking-widest hover:bg-emerald-800 transition-all shadow-md">
+            Sign In Account
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="mx-auto w-full py-12" style={{ maxWidth: '1400px', paddingLeft: '5%', paddingRight: '5%' }}>
       <Link href="/account" className="flex items-center gap-2 text-[11px] font-black uppercase tracking-widest text-emerald-600 mb-6 bg-emerald-50 w-fit px-4 py-2 rounded-full">
@@ -67,7 +84,7 @@ export default function RefundPage() {
             <CheckCircle className="h-12 w-12 text-emerald-500 mx-auto mb-4" />
             <h2 className="text-xl font-black text-emerald-950 mb-2">Request Submitted!</h2>
             <p className="text-slate-500 font-medium text-sm">{success}</p>
-            <Link href="/account/orders" className="mt-6 inline-block px-6 py-3 rounded-xl bg-emerald-950 text-white text-xs font-black uppercase tracking-widest hover:bg-emerald-800 transition-all">View Orders</Link>
+            <Link href="/account/orders" className="mt-6 inline-block px-6 py-3 rounded-xl bg-emerald-950 text-white !text-white text-xs font-black uppercase tracking-widest hover:bg-emerald-800 transition-all">View Orders</Link>
           </div>
         ) : (
           <div className="bg-white rounded-[2rem] border border-slate-100 p-10 shadow-sm">

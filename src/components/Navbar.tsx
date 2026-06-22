@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Search, ShoppingCart, User, Menu, X, Home, LayoutGrid, TrendingUp, Star, Tag, ChevronRight, Heart, Package, MapPin, CreditCard, LogOut, Settings, Bell, ArrowRight, Sun, Moon, Globe } from 'lucide-react';
@@ -15,7 +15,10 @@ import { useTheme } from '@/context/ThemeContext';
 
 const fetcher = (url: string) => fetch(url).then(res => res.json());
 
+import OptimizedImage from './ui/OptimizedImage';
+import { usePlatformSettings } from '@/context/PlatformSettingsContext';
 import SearchBar from './search/SearchBar';
+import TopLocationBar from './location/TopLocationBar';
 
 
 const Navbar = () => {
@@ -29,9 +32,11 @@ const Navbar = () => {
   const [selectedLang, setSelectedLang] = useState('EN');
 
   const [isMounted, setIsMounted] = useState(false);
+  const [mobileCategories, setMobileCategories] = useState<any[]>([]);
+  const { settings } = usePlatformSettings();
   const [activeMegaCategory, setActiveMegaCategory] = useState<number | null>(0);
 
-  React.useEffect(() => {
+  useEffect(() => {
     setIsMounted(true);
     const handleScroll = () => {
       setScrolled(window.scrollY > 20);
@@ -43,11 +48,11 @@ const Navbar = () => {
   const { fetchWishlist } = useWishlistStore();
   React.useEffect(() => {
     if (user?.id) {
-      fetchWishlist(user.id);
+      fetchWishlist(Number(user.id));
     }
   }, [user?.id]);
 
-  const { data: apiCategories } = useSWR(`${API_URL}/api/categories`, fetcher);
+  const { data: apiCategories } = useSWR(`${API_URL}/api/categories?limit=100&all=true`, fetcher);
 
   const categoriesList = Array.isArray(apiCategories)
     ? apiCategories
@@ -61,103 +66,164 @@ const Navbar = () => {
       sub: cat.children ? cat.children.map((c: any) => c.name) : []
     }));
 
-  const accountMenuItems = [
-    { label: 'My Profile', href: '/account/profile', icon: User, desc: 'Personal details & settings' },
-    { label: 'Wishlist', href: '/account/wishlist', icon: Heart, desc: 'Saved products' },
-    { label: 'My Orders', href: '/account/orders', icon: Package, desc: 'Order history & status' },
-    { label: 'Payments', href: '/account/payments', icon: CreditCard, desc: 'Transaction history' },
-    { label: 'Settings', href: '/account/settings', icon: Settings, desc: 'Privacy & preferences' },
-  ];
+  const isVendor = user?.role?.toLowerCase() === 'vendor' || user?.role?.toLowerCase() === 'hub';
+  const isAdmin = user?.role?.toLowerCase() === 'admin';
 
-  const menuGroups = [
-    {
-      title: 'SHOP',
-      items: [
-        { label: 'Home', href: '/', icon: Home },
-        { label: 'Categories', href: '/products', icon: LayoutGrid },
-        { label: 'Best Sellers', href: '/best-selling', icon: TrendingUp },
-        { label: 'Combo Deals', href: '/promotions', icon: Tag },
-        { label: 'Vendors', href: '/vendors', icon: User }
-      ]
-    },
-    {
-      title: 'ACCOUNT',
-      items: [
-        { label: 'My Account', href: '/account/profile', icon: User },
-        { label: 'Orders', href: '/account/orders', icon: Package },
-        { label: 'Wishlist', href: '/account/wishlist', icon: Heart },
-        { label: 'Refund Requests', href: '/refund-policy', icon: CreditCard },
-        { label: 'Logout', href: '#logout', icon: LogOut, isLogout: true }
-      ]
-    },
-    {
+  const accountMenuItems = isVendor
+    ? [
+      { label: user?.role?.toLowerCase() === 'hub' ? 'Hub Panel' : 'Vendor Panel', href: user?.role?.toLowerCase() === 'hub' ? '/hub/dashboard' : '/vendor', icon: User, desc: user?.role?.toLowerCase() === 'hub' ? 'Hub dashboard' : 'Vendor dashboard' },
+    ]
+    : [
+      { label: 'My Profile', href: '/account/profile', icon: User, desc: 'Personal details & settings' },
+      ...((isAdmin) ? [
+        { label: 'Admin Panel', href: '/admin', icon: LayoutGrid, desc: 'Admin Dashboard' }
+      ] : []),
+      { label: 'Wishlist', href: '/account/wishlist', icon: Heart, desc: 'Saved products' },
+      { label: 'My Orders', href: '/account/orders', icon: Package, desc: 'Order history & status' },
+      { label: 'Payments', href: '/account/payments', icon: CreditCard, desc: 'Transaction history' },
+      { label: 'Settings', href: '/account/settings', icon: Settings, desc: 'Privacy & preferences' },
+    ];
+
+  const isCustomer = user && !isVendor && !isAdmin;
+
+  // Dynamically build menu groups based on user authentication state and role
+  const menuGroups = [];
+
+  // Group 1: SHOP (Always visible)
+  menuGroups.push({
+    title: 'SHOP',
+    items: [
+      { label: 'Home', href: '/', icon: Home },
+      { label: 'Our Vision', href: '/about', icon: Star },
+      { label: 'Categories', href: '/products', icon: LayoutGrid },
+      { label: 'Best Sellers', href: '/best-selling', icon: TrendingUp },
+      { label: 'Sellers', href: '/sellers', icon: Star }
+    ]
+  });
+
+  // Group 2: ROLE-SPECIFIC CONTROLS (Only visible after login)
+  if (user) {
+    if (isCustomer) {
+      menuGroups.push({
+        title: 'ACCOUNT',
+        items: [
+          { label: 'Profile', href: '/account/profile', icon: User },
+          { label: 'Orders', href: '/account/orders', icon: Package },
+          { label: 'Wishlist', href: '/account/wishlist', icon: Heart },
+          { label: 'Refund Requests', href: '/refund', icon: CreditCard },
+          { label: 'Addresses', href: '/account/profile#addresses', icon: MapPin },
+          { label: 'Logout', href: '#logout', icon: LogOut, isLogout: true }
+        ]
+      });
+    } else if (isVendor) {
+      menuGroups.push({
+        title: 'SELLER HUB',
+        items: [
+          { label: 'Dashboard', href: '/vendor', icon: LayoutGrid },
+          { label: 'Products', href: '/vendor/products', icon: Package },
+          { label: 'Orders', href: '/vendor/orders', icon: Package },
+          { label: 'Coupons', href: '/vendor/marketing/coupons', icon: Tag },
+          { label: 'Announcements', href: '/vendor/marketing/announcements', icon: Bell },
+          { label: 'Payouts', href: '/vendor/payouts', icon: CreditCard },
+          { label: 'Analytics', href: '/vendor', icon: TrendingUp },
+          { label: 'Logout', href: '#logout', icon: LogOut, isLogout: true }
+        ]
+      });
+    } else if (isAdmin) {
+      menuGroups.push({
+        title: 'ADMIN PANEL',
+        items: [
+          { label: 'Dashboard', href: '/admin', icon: LayoutGrid },
+          { label: 'Users', href: '/admin/users', icon: User },
+          { label: 'Vendors', href: '/admin/vendors', icon: User },
+          { label: 'Products', href: '/admin/products', icon: Package },
+          { label: 'Orders', href: '/admin/orders', icon: Package },
+          { label: 'Payouts', href: '/admin/payouts', icon: CreditCard },
+          { label: 'Settings', href: '/admin/settings', icon: Settings },
+          { label: 'Logout', href: '#logout', icon: LogOut, isLogout: true }
+        ]
+      });
+    }
+  }
+
+  // Group 3: BUSINESS (Only for guest or customer)
+  if (!user || isCustomer) {
+    menuGroups.push({
       title: 'BUSINESS',
       items: [
-        { label: 'Become a Vendor', href: '/seller-hub', icon: Star },
-        { label: 'Seller Hub', href: '/vendor', icon: Settings }
+        { label: 'Become a Vendor', href: '/seller-hub', icon: Star }
       ]
-    },
-    {
-      title: 'SUPPORT',
-      items: [
-        { label: 'About Us', href: '/about', icon: Star },
-        { label: 'Contact Us', href: '#contact-card', icon: Bell, isContact: true },
-        { label: 'Terms & Privacy', href: '/terms', icon: ArrowRight }
-      ]
-    }
-  ];
+    });
+  }
+
+  // Group 4: SUPPORT (Always visible)
+  menuGroups.push({
+    title: 'SUPPORT',
+    items: [
+      { label: 'Contact Us', href: '#contact-card', icon: Bell, isContact: true },
+      { label: 'Terms & Privacy', href: '/terms', icon: ArrowRight }
+    ]
+  });
 
   const sidebarVariants = {
     hidden: { x: '-100%', opacity: 0.95 },
-    visible: { 
+    visible: {
       x: 0,
       opacity: 1,
-      transition: { 
-        type: 'spring', 
-        damping: 24, 
+      transition: {
+        type: 'spring',
+        damping: 24,
         stiffness: 240,
         staggerChildren: 0.03,
         delayChildren: 0.04
-      } 
+      }
     }
-  };
+  } as any;
 
   const itemVariants = {
     hidden: { opacity: 0, x: -16 },
     visible: { opacity: 1, x: 0, transition: { type: 'spring', stiffness: 350, damping: 25 } }
-  };
+  } as any;
 
   return (
     <>
-      <nav className="sticky top-0 left-0 right-0 z-[500] w-full flex flex-col bg-white/95 backdrop-blur-md border-b border-slate-100 shadow-sm">
+      <nav className="sticky top-[var(--announcement-bar-height,0px)] left-0 right-0 z-[500] w-full flex flex-col bg-white/95 backdrop-blur-md border-b border-slate-100 shadow-sm">
         {/* PRIMARY TIER */}
         <div className="standard-container w-full">
-          <div className={`transition-all duration-500 ${scrolled ? 'h-16 md:h-20' : 'h-20 md:h-24'} flex items-center justify-between gap-4 md:gap-10`}>
+          <div className={`transition-all duration-500 ${scrolled ? 'h-16 md:h-20' : 'h-20 md:h-24'} flex items-center justify-between`}>
             {/* LOGO & LOCATION */}
-            <div className="flex items-center gap-4 md:gap-10">
+            <div className="flex items-center w-[15%] shrink-0">
               <Link href="/" prefetch={false} className="shrink-0 flex items-center transition-transform hover:scale-105">
                 <Image
-                  src="/logo.webp"
-                  alt="namma ooru Foods"
+                  src={settings.logo || "/logo.webp"}
+                  alt={settings.name || "Platform Logo"}
                   width={160}
                   height={48}
                   priority
                   className="w-24 md:w-36 h-auto object-contain"
                 />
               </Link>
-
-
             </div>
 
             {/* DYNAMIC SEARCH (DESKTOP) */}
-            <div className="hidden lg:flex flex-1 max-w-2xl">
+            <div className="hidden lg:flex w-[60%] xl:w-[65%] shrink-0">
               <SearchBar />
             </div>
 
             {/* UTILITIES */}
-            <div className="flex items-center gap-2 md:gap-6 shrink-0">
+            <div className="flex items-center justify-end w-[25%] xl:w-[20%] gap-2 md:gap-6 shrink-0">
               {(isMounted && user) ? (
-                <Link href="/account/profile" prefetch={false} className="hidden sm:flex items-center gap-3 group">
+                <Link
+                  href={user.role?.toLowerCase() === 'hub'
+                    ? '/hub/dashboard'
+                    : user.role?.toLowerCase() === 'vendor'
+                      ? '/vendor'
+                    : user.role?.toLowerCase() === 'admin'
+                      ? '/admin'
+                      : '/account/profile'}
+                  prefetch={false}
+                  className="hidden sm:flex items-center gap-3 group"
+                >
                   <div className="h-9 w-9 rounded-full border-2 border-slate-100 overflow-hidden">
                     {user.avatar ? <img src={user.avatar} alt="" className="h-full w-full object-cover" /> : <div className="h-full w-full bg-emerald-950 text-white flex items-center justify-center text-xs font-black">{user.name[0]}</div>}
                   </div>
@@ -202,6 +268,8 @@ const Navbar = () => {
         {/* SECONDARY TIER (DESKTOP) */}
         <div className="hidden md:flex h-12 bg-slate-50/50 border-t border-slate-100 items-center">
           <div className="standard-container flex items-center gap-10">
+            <Link href="/about" prefetch={false} className="text-[11px] font-black uppercase tracking-widest text-emerald-950 hover:text-emerald-600 transition-colors">Our Vision</Link>
+
             <div
               className="relative h-full flex items-center"
               onMouseEnter={() => setIsCategoryOpen(true)}
@@ -275,13 +343,14 @@ const Navbar = () => {
               </AnimatePresence>
             </div>
 
+            {/* Other links removed as requested */}
             <Link href="/best-selling" prefetch={false} className="text-[11px] font-black uppercase tracking-widest text-emerald-950 hover:text-emerald-600 transition-colors">Best Sellers</Link>
-            <Link href="/brands" prefetch={false} className="text-[11px] font-black uppercase tracking-widest text-emerald-950 hover:text-emerald-600 transition-colors">Brands</Link>
-            <Link href="/vendors" prefetch={false} className="text-[11px] font-black uppercase tracking-widest text-emerald-950 hover:text-emerald-600 transition-colors">Vendors</Link>
-            <Link href="/promotions" prefetch={false} className="text-[11px] font-black uppercase tracking-widest text-emerald-950 hover:text-emerald-600 transition-colors">Combo Deals</Link>
-            <Link href="/about" prefetch={false} className="text-[11px] font-black uppercase tracking-widest text-emerald-950 hover:text-emerald-600 transition-colors">Our Vision</Link>
+            <Link href="/sellers" prefetch={false} className="text-[11px] font-black uppercase tracking-widest text-emerald-950 hover:text-emerald-600 transition-colors">Sellers</Link>
           </div>
         </div>
+
+        {/* TOP LOCATION BAR */}
+        <TopLocationBar />
 
       </nav>
 
@@ -310,13 +379,13 @@ const Navbar = () => {
               <div className="sticky top-0 z-10 flex items-center justify-between px-4 py-4 bg-[#041a12]/95 backdrop-blur-md border-b border-emerald-900/20 shadow-sm relative min-h-[60px] shrink-0">
                 {/* Spacer to align close button on the right */}
                 <div className="w-8 h-8" />
-                
+
                 {/* Perfectly Centered Logo */}
                 <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center">
                   <Link href="/" onClick={() => setIsMenuOpen(false)} className="flex items-center justify-center">
                     <img
-                      src="/logo.webp"
-                      alt="Logo"
+                      src={settings.logo || "/logo.webp"}
+                      alt={settings.name || "Logo"}
                       className="brightness-0 invert h-5 w-auto object-contain opacity-95"
                     />
                   </Link>
@@ -334,27 +403,43 @@ const Navbar = () => {
               {/* Scrollable Navigation Groups */}
               <div className="flex-1 overflow-y-auto px-4 py-4 space-y-6 custom-scrollbar">
                 {/* Premium User Profile Banner */}
-                <motion.div variants={itemVariants} className="p-3 rounded-xl bg-emerald-950/30 border border-emerald-900/25 flex items-center gap-3">
-                  <div className="h-9 w-9 rounded-full bg-emerald-800 text-white flex items-center justify-center text-sm font-bold border border-emerald-700/30 shrink-0">
-                    {user?.name ? user.name[0].toUpperCase() : <User size={15} className="text-emerald-400" />}
+                <motion.div variants={itemVariants} className="p-4 rounded-2xl bg-emerald-950/40 border border-emerald-900/25 flex flex-col gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className="h-9 w-9 rounded-full bg-emerald-800 text-white flex items-center justify-center text-sm font-bold border border-emerald-700/30 shrink-0">
+                      {user?.name ? user.name[0].toUpperCase() : <User size={15} className="text-emerald-400" />}
+                    </div>
+                    <div className="flex flex-col text-left">
+                      <span className="text-[9px] text-emerald-400/60 font-black uppercase tracking-wider leading-none">Welcome</span>
+                      <span className="text-[13px] text-white font-black mt-1 leading-none truncate max-w-[180px]">{user ? user.name : 'Guest User'}</span>
+                    </div>
                   </div>
-                  <div className="flex flex-col text-left">
-                    <span className="text-[9px] text-emerald-400/60 font-black uppercase tracking-wider leading-none">Welcome</span>
-                    <span className="text-[13px] text-white font-bold mt-1 leading-none truncate max-w-[180px]">{user ? user.name : 'Guest User'}</span>
-                    {!user && (
-                      <Link href="/account" onClick={() => setIsMenuOpen(false)} className="text-[10px] text-emerald-400 underline font-semibold mt-1 leading-none hover:text-emerald-300 transition-colors">
-                        Login / Sign Up
+
+                  {!user && (
+                    <div className="flex gap-2 w-full mt-1">
+                      <Link
+                        href="/account?mode=login"
+                        onClick={() => setIsMenuOpen(false)}
+                        className="flex-1 h-9 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-[10px] uppercase tracking-widest flex items-center justify-center transition-all active:scale-95 shadow-md shadow-emerald-900/20"
+                      >
+                        Login
                       </Link>
-                    )}
-                  </div>
+                      <Link
+                        href="/account?mode=signup"
+                        onClick={() => setIsMenuOpen(false)}
+                        className="flex-1 h-9 rounded-xl bg-white/10 text-emerald-300 border border-emerald-800/30 hover:bg-white/15 hover:text-white font-black text-[10px] uppercase tracking-widest flex items-center justify-center transition-all active:scale-95"
+                      >
+                        Sign Up
+                      </Link>
+                    </div>
+                  )}
                 </motion.div>
 
                 {menuGroups.map((group) => {
-                  const visibleItems = group.items.filter(item => {
+                  const visibleItems = group.items.filter((item: any) => {
                     if (item.isLogout) return !!user;
                     return true;
                   });
-                  
+
                   if (visibleItems.length === 0) return null;
 
                   return (
@@ -363,9 +448,9 @@ const Navbar = () => {
                         {group.title}
                       </h3>
                       <div className="space-y-0.5">
-                        {visibleItems.map((item) => {
+                        {visibleItems.map((item: any) => {
                           const isActive = item.isContact || item.isLogout ? false : (pathname === item.href || (item.href !== '/' && pathname?.startsWith(item.href)));
-                          
+
                           const linkContent = (
                             <>
                               <div className="flex items-center gap-3">
@@ -381,10 +466,8 @@ const Navbar = () => {
                               <button
                                 key={item.label}
                                 onClick={() => {
-                                  if (window.confirm('Are you sure you want to log out?')) {
-                                    logout();
-                                    setIsMenuOpen(false);
-                                  }
+                                  logout();
+                                  setIsMenuOpen(false);
                                 }}
                                 className="w-full flex items-center justify-between py-2.5 px-3 rounded-lg text-left transition-all duration-300 group hover:bg-red-500/10 text-red-400 hover:text-red-300 border-l-[3px] border-transparent"
                               >
@@ -421,11 +504,10 @@ const Navbar = () => {
                               key={item.label}
                               href={item.href}
                               onClick={() => setIsMenuOpen(false)}
-                              className={`flex items-center justify-between py-2.5 px-3 rounded-lg transition-all duration-350 group border-l-[3px] ${
-                                isActive 
-                                  ? 'bg-gradient-to-r from-emerald-500/10 to-emerald-500/5 text-emerald-400 border-emerald-500/70 font-semibold shadow-[inset_1px_0_0_rgba(16,185,129,0.2)]' 
-                                  : 'text-slate-300 hover:text-white hover:bg-white/5 border-transparent'
-                              }`}
+                              className={`flex items-center justify-between py-2.5 px-3 rounded-lg transition-all duration-350 group border-l-[3px] ${isActive
+                                ? 'bg-gradient-to-r from-emerald-500/10 to-emerald-500/5 text-emerald-400 border-emerald-500/70 font-semibold shadow-[inset_1px_0_0_rgba(16,185,129,0.2)]'
+                                : 'text-slate-300 hover:text-white hover:bg-white/5 border-transparent'
+                                }`}
                             >
                               {linkContent}
                             </Link>
@@ -442,11 +524,11 @@ const Navbar = () => {
                   <h4 className="text-[10px] font-black uppercase tracking-wider text-emerald-400 mb-2">Need Help?</h4>
                   <div className="space-y-2 text-xs font-semibold">
                     <a
-                      href="tel:+919876543210"
+                      href="tel:+919000896898"
                       className="flex items-center gap-2 text-slate-300 hover:text-emerald-400 transition-colors"
                     >
                       <span className="text-emerald-400 text-sm">📞</span>
-                      <span>+91 98765 43210</span>
+                      <span>+91 9000 896 898</span>
                     </a>
                     <a
                       href="mailto:support@nammaoorufoods.com"
@@ -459,27 +541,7 @@ const Navbar = () => {
                 </motion.div>
               </div>
 
-              {/* Minimal Redesigned Footer */}
-              <div className="p-4 border-t border-emerald-900/20 bg-[#03150e]/95 flex items-center justify-between shrink-0">
-                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
-                  © 2026 Namma Ooru Foods
-                </span>
 
-                {/* Language Selector Dropdown */}
-                <div className="relative">
-                  <select
-                    value={selectedLang}
-                    onChange={(e) => setSelectedLang(e.target.value)}
-                    className="bg-[#041a12]/80 text-slate-300 font-bold uppercase py-1.5 pl-7 pr-8 rounded-lg border border-emerald-900/30 outline-none cursor-pointer appearance-none hover:border-emerald-800 transition-colors text-[10px]"
-                  >
-                    <option value="EN">English</option>
-                    <option value="TA">தமிழ்</option>
-                    <option value="HI">हिन्दी</option>
-                  </select>
-                  <Globe size={11} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
-                  <ChevronRight size={10} className="absolute right-2.5 top-1/2 -translate-y-1/2 rotate-90 text-slate-400 pointer-events-none" />
-                </div>
-              </div>
             </motion.div>
           </>
         )}

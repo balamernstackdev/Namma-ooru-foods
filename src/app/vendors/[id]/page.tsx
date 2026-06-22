@@ -8,21 +8,28 @@ import { Metadata } from 'next';
 
 export async function generateStaticParams() {
   try {
-    let res = await fetch(`${API_URL}/api/head-vendors?limit=1000`, { cache: 'no-store' });
-    if (!res.ok) {
-      res = await fetch(`http://localhost:5000/api/head-vendors?limit=1000`, { cache: 'no-store' });
-    }
+    console.log(`[Build] generateStaticParams starting for /vendors/[id]...`);
+    console.log(`[Build] Fetching head vendors from: ${API_URL}/api/head-vendors?limit=1000`);
+    const res = await fetch(`${API_URL}/api/head-vendors?limit=1000`, { cache: 'no-store' });
     const data = await res.json();
     const vendors = data.headVendors || [];
+    console.log(`[Build] Successfully fetched ${vendors.length} head vendors.`);
     const params = [];
     for (const vendor of vendors) {
       params.push({ id: vendor.id.toString() });
-      if (vendor.slug) params.push({ id: vendor.slug });
+      if (vendor.slug) {
+        params.push({ id: vendor.slug });
+        console.log(`[Build] Registering vendor path: /vendors/${vendor.slug} (ID: ${vendor.id})`);
+      } else {
+        console.log(`[Build] Registering vendor path: /vendors/${vendor.id}`);
+      }
     }
     if (params.length === 0) throw new Error('No vendors fetched');
+    console.log(`[Build] Total pre-rendered paths for vendors: ${params.length}`);
     return params;
   } catch (error) {
-    console.warn('Falling back to default vendor ID in generateStaticParams:', error);
+    console.error('[Build ERROR] Failed to fetch vendors in generateStaticParams:', error);
+    console.warn('[Build Warning] Falling back to default vendor ID "1" in generateStaticParams.');
     return [{ id: '1' }];
   }
 }

@@ -1,14 +1,25 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
+export interface BundleSubItem {
+  productId: number;
+  name: string;
+  price: number;
+  image: string;
+}
+
 export interface CartItem {
   id: number;
   productId: number;
   name: string;
   price: number;
+  originalPrice?: number;
   quantity: number;
   image: string;
   variant: string;
+  isBundle?: boolean;
+  bundleItems?: BundleSubItem[];
+  gstRate?: number | null;
 }
 
 interface CartState {
@@ -33,13 +44,13 @@ export const useCartStore = create<CartState>()(
       addToCart: (item) => {
         const { cart } = get();
         const existing = cart.find(
-          (i) => i.productId === item.productId && i.variant === item.variant
+          (i) => i.productId === item.productId && i.variant === item.variant && i.isBundle === item.isBundle
         );
 
         if (existing) {
           set({
             cart: cart.map((i) =>
-              i.productId === item.productId && i.variant === item.variant
+              i.productId === item.productId && i.variant === item.variant && i.isBundle === item.isBundle
                 ? { ...i, quantity: i.quantity + item.quantity }
                 : i
             ),

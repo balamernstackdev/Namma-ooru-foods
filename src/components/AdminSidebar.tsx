@@ -14,10 +14,10 @@ const navGroups = [
   {
     label: 'Core',
     items: [
-      { name: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
+      { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
       { name: 'Products', href: '/admin/products', icon: Package },
       { name: 'Categories', href: '/admin/categories', icon: Layers },
-      { name: 'Brands', href: '/admin/brands', icon: Tag },
+      // { name: 'Brands', href: '/admin/brands', icon: Tag },
       { name: 'Orders', href: '/admin/orders', icon: ShoppingCart },
       { name: 'Users', href: '/admin/users', icon: Users },
     ]
