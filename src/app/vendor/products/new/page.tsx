@@ -325,11 +325,20 @@ export default function CreateProduct() {
          });
 
          if (res.ok) {
-            addToast('Product Registered Successfully', formData.name);
-            router.push('/vendor/products');
+            const data = await res.json();
+            if (data && data.success) {
+               addToast('Success', data.message || 'Product created successfully');
+               router.push('/vendor/products');
+            } else {
+               addToast('Error', data.message || 'Failed to create product');
+            }
          } else {
-            const error = await res.json();
-            addToast('Fulfillment Error', error.error || 'Check all required fields');
+            try {
+               const error = await res.json();
+               addToast('Fulfillment Error', error.message || error.error || 'Check all required fields');
+            } catch (e) {
+               addToast('Fulfillment Error', `Server returned error status ${res.status}`);
+            }
          }
       } catch (err) {
          addToast('Critical Error', 'Connectivity to agrarian node lost');

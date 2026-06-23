@@ -1,26 +1,30 @@
-import type { Metadata } from 'next';
+'use client';
+
+import React from 'react';
 import Link from 'next/link';
+import useSWR from 'swr';
 import { BookOpen, Tag, Calendar } from 'lucide-react';
 import { API_URL } from '@/lib/api';
+import PremiumLoader from '@/components/ui/PremiumLoader';
 
-async function getBlogPosts() {
-  try {
-    const res = await fetch(`${API_URL}/api/blog`, { next: { revalidate: 300 } });
-    const data = await res.json();
-    if (Array.isArray(data)) return data;
-    if (data && Array.isArray(data.posts)) return data.posts;
-    if (data && Array.isArray(data.data)) return data.data;
-    return [];
-  } catch { return []; }
-}
+const fetcher = (url: string) => fetch(url).then(res => res.json());
 
-export const metadata: Metadata = {
-  title: 'namma ooru Foods — Blog | Organic Farming & Nutrition Insights',
-  description: 'Discover stories from our farms, nutrition tips, and the journey of traditional food — straight from the Producters at namma ooru Foods.',
+const getPostsList = (data: any) => {
+  if (!data) return [];
+  if (Array.isArray(data)) return data;
+  if (Array.isArray(data.posts)) return data.posts;
+  if (Array.isArray(data.data)) return data.data;
+  return [];
 };
 
-export default async function BlogPage() {
-  const posts = await getBlogPosts();
+export default function BlogPage() {
+  const { data: responseData, error, isLoading } = useSWR(`${API_URL}/api/blog`, fetcher);
+
+  if (isLoading) {
+    return <PremiumLoader fullScreen={true} />;
+  }
+
+  const posts = getPostsList(responseData);
 
   return (
     <div className="mx-auto w-full py-12" style={{ maxWidth: '1400px', paddingLeft: '5%', paddingRight: '5%' }}>
@@ -36,7 +40,7 @@ export default async function BlogPage() {
         <div className="bg-white rounded-[2rem] border border-slate-100 p-20 text-center shadow-sm">
           <BookOpen className="h-12 w-12 text-slate-200 mx-auto mb-4" />
           <h2 className="text-xl font-black text-slate-300">No articles published yet</h2>
-          <p className="text-slate-300 text-sm mt-2">Our farming stories are being Producted. Check back soon!</p>
+          <p className="text-slate-300 text-sm mt-2">Our farming stories are being produced. Check back soon!</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">

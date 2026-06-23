@@ -1,6 +1,6 @@
 import React from 'react';
 import { Metadata } from 'next';
-import BlogDetailClient from '@/components/BlogDetailClient';
+import BlogDetailLoaderDirect from './BlogDetailLoaderDirect';
 import { API_URL } from '@/lib/api';
 
 interface BlogPost {
@@ -22,8 +22,6 @@ async function getPost(slug: string): Promise<BlogPost | null> {
     return res.json();
   } catch { return null; }
 }
-
-// export const dynamicParams = true;
 
 export async function generateStaticParams() {
   try {
@@ -63,7 +61,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
 
   return (
     <div className="bg-white min-h-screen">
-      <BlogDetailClient post={post} />
+      <BlogDetailLoaderDirect slug={slug} initialPost={post} />
     </div>
   );
 }

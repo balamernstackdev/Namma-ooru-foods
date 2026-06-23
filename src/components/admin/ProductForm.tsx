@@ -506,8 +506,25 @@ export default function ProductForm({ initialData, mode }: ProductFormProps) {
          });
 
          if (res.ok) {
-            addToast('Success', 'Product updated successfully');
-            router.push('/admin/products');
+            const data = await res.json();
+            if (mode === 'edit') {
+               addToast('Success', 'Product updated successfully');
+               router.push('/admin/products');
+            } else {
+               if (data && data.success) {
+                  addToast('Success', data.message || 'Product created successfully');
+                  router.push('/admin/products');
+               } else {
+                  addToast('Error', data.message || 'Failed to create product');
+               }
+            }
+         } else {
+            try {
+               const errorData = await res.json();
+               addToast('Error', errorData.message || errorData.error || 'Server error occurred');
+            } catch (e) {
+               addToast('Error', `Server returned error status ${res.status}`);
+            }
          }
       } finally {
          setIsLoading(false);

@@ -171,8 +171,25 @@ export default function ProductForm({ initialData, isEdit }: ProductFormProps) {
          });
 
          if (response.ok) {
-            router.push('/vendor/products');
-            router.refresh();
+            const data = await response.json();
+            if (isEdit) {
+               router.push('/vendor/products');
+               router.refresh();
+            } else {
+               if (data && data.success) {
+                  router.push('/vendor/products');
+                  router.refresh();
+               } else {
+                  console.error('Failed to create product:', data.message);
+               }
+            }
+         } else {
+            try {
+               const data = await response.json();
+               console.error('Failed to save product:', data.message || data.error);
+            } catch (e) {
+               console.error('Server error saving product:', response.status);
+            }
          }
       } catch (error) {
          console.error('Error saving product:', error);

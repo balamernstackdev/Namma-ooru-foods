@@ -1,3 +1,7 @@
+'use client';
+
+import React from 'react';
+import useSWR from 'swr';
 import Hero from "@/components/Hero";
 import Link from "next/link";
 import ProductCarousel from "@/components/ProductCarousel";
@@ -11,11 +15,12 @@ import LazyHomeSections from '@/components/HomePageSections';
 import nextDynamic from 'next/dynamic';
 import { CategoryCircleSkeleton } from '@/components/Skeleton';
 import VendorPromotion from "@/components/VendorPromotion";
+import PremiumLoader from '@/components/ui/PremiumLoader';
 
 import { API_URL } from '@/lib/api';
 
 const CategoriesCircles = nextDynamic(() => import('@/components/CategoriesCircles'), {
-  ssr: true,
+  ssr: false, // Turn off SSR to ensure it hydrates and mounts on the client
   loading: () => (
     <div className="w-full pt-4 pb-8 flex justify-center bg-white">
       <div className="standard-container">
@@ -27,51 +32,33 @@ const CategoriesCircles = nextDynamic(() => import('@/components/CategoriesCircl
   )
 });
 
-/** Normalize banner type — handles both legacy formats and new snake_case keys */
-function normalizeType(type?: string | null): string {
-  if (!type) return 'hero';
-  const lower = type.toLowerCase().trim();
-  const map: Record<string, string> = {
-    'hero': 'hero',
-    'best_sellers': 'best_sellers',
-    'organic_collection': 'organic_collection',
-    'farmer_collection': 'farmer_collection',
-    // Spaced / Legacy
-    'best sellers': 'best_sellers',
-    'organic collection': 'organic_collection',
-    'farmer collection': 'farmer_collection',
-    'hero banner': 'hero',
-    'best sellers banner': 'best_sellers',
-    'organic collection banner': 'organic_collection',
-    'farmer collection banner': 'farmer_collection',
-  };
-  return map[lower] || lower;
-}
+const fetcher = (url: string) => fetch(url).then(res => res.json());
 
-async function fetchProducts(query: string): Promise<any[]> {
-  try {
-    const res = await fetch(`${API_URL}/api/products?${query}&limit=20`, {
-      next: { revalidate: 1800 },
-    });
-    if (!res.ok) return [];
-    const data = await res.json();
-    return Array.isArray(data) ? data : (data?.products || []);
-  } catch {
-    return [];
+const getProductsList = (data: any) => Array.isArray(data) ? data : (data?.products || []);
+
+export default function Home() {
+  // Client-side fetching using SWR to ensure DevTools visibility
+  const { data: bestSellersData, error: bestSellersError } = useSWR(`${API_URL}/api/products?isBestSeller=true&limit=20`, fetcher);
+  const { data: organicData, error: organicError } = useSWR(`${API_URL}/api/products?isOrganic=true&limit=20`, fetcher);
+  const { data: farmerData, error: farmerError } = useSWR(`${API_URL}/api/products?isFarmerCollection=true&limit=20`, fetcher);
+  const { data: allData, error: allError } = useSWR(`${API_URL}/api/products?limit=100`, fetcher);
+  const { data: fastDeliveryData, error: fastDeliveryError } = useSWR(`${API_URL}/api/products?isFastDelivery=true&limit=20`, fetcher);
+
+  const isLoading = !bestSellersData && !bestSellersError ||
+                    !organicData && !organicError ||
+                    !farmerData && !farmerError ||
+                    !allData && !allError ||
+                    !fastDeliveryData && !fastDeliveryError;
+
+  if (isLoading) {
+    return <PremiumLoader fullScreen={true} />;
   }
-}
 
-
-
-export default async function Home() {
-  // Fetch all collections and products in parallel from the backend
-  const [bestSellers, organicProducts, farmerProducts, allProducts, fastDeliveryProducts] = await Promise.all([
-    fetchProducts('isBestSeller=true'),
-    fetchProducts('isOrganic=true'),
-    fetchProducts('isFarmerCollection=true'),
-    fetchProducts('limit=100'),
-    fetchProducts('isFastDelivery=true'),
-  ]);
+  const bestSellers = getProductsList(bestSellersData);
+  const organicProducts = getProductsList(organicData);
+  const farmerProducts = getProductsList(farmerData);
+  const allProducts = getProductsList(allData);
+  const fastDeliveryProducts = getProductsList(fastDeliveryData);
 
   // Deduplicate: organic shouldn't repeat best sellers for carousel
   const bestSellerIds = new Set(bestSellers.map((p: any) => p.id));

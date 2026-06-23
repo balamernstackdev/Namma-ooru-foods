@@ -7,6 +7,7 @@ import StickyAssistant from "@/components/StickyAssistant";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import AnnouncementBar from "@/components/AnnouncementBar";
 import { usePathname } from 'next/navigation';
+import GlobalApiLoader from "@/components/GlobalApiLoader";
 
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -18,6 +19,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
 
   return (
     <>
+      <GlobalApiLoader />
       {!isDashboardPath && (
         <>
           <Suspense fallback={null}>
