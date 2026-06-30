@@ -19,7 +19,7 @@ export default function SearchProductCard({ product, isHighlighted, onClick }: S
   const { settings } = usePlatformSettings();
   return (
     <Link
-      href={`/products/detail?id=${product.id}`}
+      href={`/products/${(product as any).slug || product.id}`}
       onClick={onClick}
       data-highlighted={isHighlighted}
       className={`flex items-center gap-4 px-4 py-3 transition-colors ${

@@ -121,8 +121,12 @@ export default function ProductApprovals() {
                            <tr key={product.id} className="group hover:bg-slate-50/50 transition-all border-l-4 border-transparent hover:border-l-amber-400">
                               <td className="px-10 py-8">
                                  <div className="flex items-center gap-6">
-                                    <div className="h-16 w-16 rounded-2xl bg-white border border-slate-100 overflow-hidden shrink-0 shadow-sm">
-                                       <img src={product.image || '/ai_images/organic_grains_1776231059575.png'} className="h-full w-full object-cover" alt="" />
+                                    <div className="h-16 w-16 rounded-2xl bg-white border border-slate-100 overflow-hidden shrink-0 shadow-sm flex items-center justify-center">
+                                       {product.image ? (
+                                          <img src={product.image} className="h-full w-full object-cover" alt="" />
+                                       ) : (
+                                          <span className="text-[8px] font-black text-slate-300 uppercase tracking-widest text-center p-1">No Image</span>
+                                       )}
                                     </div>
                                     <div className="flex flex-col">
                                        <span className="text-base font-black text-[var(--admin-sidebar)] tracking-tight">{product.name}</span>
@@ -212,8 +216,12 @@ export default function ProductApprovals() {
                filteredProducts.map((product) => (
                   <div key={product.id} className="py-4 space-y-3">
                      <div className="flex items-center gap-4">
-                        <div className="h-14 w-14 rounded-xl bg-white border border-slate-100 overflow-hidden shrink-0 shadow-sm">
-                           <img src={product.image || '/ai_images/organic_grains_1776231059575.png'} className="h-full w-full object-cover" alt="" />
+                        <div className="h-14 w-14 rounded-xl bg-white border border-slate-100 overflow-hidden shrink-0 shadow-sm flex items-center justify-center">
+                           {product.image ? (
+                              <img src={product.image} className="h-full w-full object-cover" alt="" />
+                           ) : (
+                              <span className="text-[7px] font-black text-slate-300 uppercase tracking-widest text-center p-1">No Image</span>
+                           )}
                         </div>
                         <div className="flex flex-col min-w-0 flex-1">
                            <span className="text-sm font-black text-[var(--admin-sidebar)] tracking-tight truncate">{product.name}</span>

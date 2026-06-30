@@ -138,7 +138,7 @@ export default function CreateVariant() {
             <div className="bg-white rounded-[20px] border border-[#E5E7EB] shadow-[0_4px_12px_rgba(0,0,0,0.05)] overflow-hidden w-full">
                <SectionHeader title="Weight & Inventory DNA" icon={Layers} colorClass="text-[#0F7A4D]" />
                <div className="p-8 space-y-8">
-                  
+
                   <InputWrapper label="Parent Root Product">
                      <div className="relative">
                         <select
@@ -166,7 +166,7 @@ export default function CreateVariant() {
                            value={form.name}
                            onChange={e => setForm({ ...form, name: e.target.value })}
                         />
-                      </InputWrapper>
+                     </InputWrapper>
 
                      <div className="grid grid-cols-2 gap-4">
                         <InputWrapper label="Market Price (Base)">
@@ -191,25 +191,15 @@ export default function CreateVariant() {
                      </div>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div className="grid grid-cols-1 gap-8">
                      <InputWrapper label="Stock Availability">
                         <input
                            required
                            type="number"
-                           placeholder="Available SKU Count"
+                           placeholder="Available Stock Count"
                            className="w-full h-14 px-6 rounded-xl border border-[#E5E7EB] bg-white focus:border-[#0F7A4D] focus:ring-4 focus:ring-[#0F7A4D]/5 outline-none font-bold text-sm text-[#111827]"
                            value={form.stock}
                            onChange={e => setForm({ ...form, stock: e.target.value })}
-                        />
-                     </InputWrapper>
-
-                     <InputWrapper label="Inventory SKU ID">
-                        <input
-                           type="text"
-                           placeholder="e.g. TM-SAUCE-500G"
-                           className="w-full h-14 px-6 rounded-xl border border-[#E5E7EB] bg-white focus:border-[#0F7A4D] focus:ring-4 focus:ring-[#0F7A4D]/5 outline-none font-bold text-sm text-[#111827]"
-                           value={form.sku}
-                           onChange={e => setForm({ ...form, sku: e.target.value })}
                         />
                      </InputWrapper>
                   </div>

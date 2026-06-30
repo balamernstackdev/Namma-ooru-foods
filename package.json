@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "clean": "npx rimraf .next out build.zip out.zip",
-    "build": "npm run clean && npm install && next build",
+    "build": "npm run clean && node scripts/validate-slugs.js && npm install && next build",
     "postbuild": "node scripts/verify-deployment.js && node scripts/zip-build.js",
     "verify-build": "node scripts/verify-deployment.js",
     "zip-build": "node scripts/zip-build.js",

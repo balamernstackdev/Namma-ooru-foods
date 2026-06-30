@@ -437,15 +437,7 @@ export default function CreateHubPage() {
               <label className="block text-[10px] font-black uppercase text-slate-500 mb-1">Mobile Number *</label>
               <input type="text" name="mobileNumber" value={formData.mobileNumber} onChange={handleInputChange} className="w-full bg-slate-50 rounded-xl px-4 py-3 text-sm font-bold border border-slate-200 outline-none focus:border-emerald-500 transition-colors" required />
             </div>
-            <div>
-              <label className="block text-[10px] font-black uppercase text-slate-500 mb-1">Hub ID (Auto-generated if left blank)</label>
-              <div className="flex gap-2">
-                <input type="text" name="hubId" placeholder="e.g. HUB-001" value={formData.hubId} onChange={handleInputChange} className="flex-1 bg-slate-50 rounded-xl px-4 py-3 text-sm font-bold border border-slate-200 outline-none focus:border-emerald-500 transition-colors" />
-                <button type="button" onClick={generateHubId} className="px-4 py-3 bg-emerald-100 text-emerald-700 font-bold text-xs uppercase rounded-xl hover:bg-emerald-200 whitespace-nowrap">
-                  Auto Generate
-                </button>
-              </div>
-            </div>
+            {/* Hub ID is auto-generated */}
           </div>
         </div>
 

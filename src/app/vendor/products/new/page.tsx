@@ -608,21 +608,18 @@ export default function CreateProduct() {
                               <input type="number" step="any" className="w-full h-14 px-6 rounded-xl border border-[#E5E7EB] bg-white focus:border-[#0F7A4D] focus:ring-4 focus:ring-[#0F7A4D]/5 outline-none font-bold text-sm" value={formData.weight} onChange={e => setFormData({ ...formData, weight: e.target.value })} />
                            </InputWrapper>
                            <InputWrapper label="Unit">
-                              <select className="w-full h-14 px-6 rounded-xl border border-[#E5E7EB] bg-white focus:border-[#0F7A4D] outline-none font-bold text-sm" value={formData.unit} onChange={e => setFormData({ ...formData, unit: e.target.value })} >
-                                 <option value="g">g (Grams)</option>
-                                 <option value="kg">kg (Kilograms)</option>
-                                 <option value="ml">ml (Milliliters)</option>
-                                 <option value="l">l (Liters)</option>
-                                 <option value="pcs">pcs (Pieces)</option>
-                                 <option value="pack">pack (Pack)</option>
-                              </select>
+                              <input
+                                 type="text"
+                                 className="w-full h-14 px-6 rounded-xl border border-[#E5E7EB] bg-white focus:border-[#0F7A4D] focus:ring-4 focus:ring-[#0F7A4D]/5 outline-none font-bold text-sm"
+                                 placeholder="e.g. g, kg, ml, pcs"
+                                 value={formData.unit}
+                                 onChange={e => setFormData({ ...formData, unit: e.target.value })}
+                              />
                            </InputWrapper>
                            <InputWrapper label="Base Stock">
                               <input type="number" className="w-full h-14 px-6 rounded-xl border border-[#E5E7EB] bg-white focus:border-[#0F7A4D] focus:ring-4 focus:ring-[#0F7A4D]/5 outline-none font-bold text-sm" value={formData.stock} onChange={e => setFormData({ ...formData, stock: e.target.value })} />
                            </InputWrapper>
-                           <InputWrapper label="SKU">
-                              <input type="text" className="w-full h-14 px-6 rounded-xl border border-[#E5E7EB] bg-white focus:border-[#0F7A4D] focus:ring-4 focus:ring-[#0F7A4D]/5 outline-none font-bold text-sm uppercase" value={formData.sku} onChange={e => setFormData({ ...formData, sku: e.target.value })} />
-                           </InputWrapper>
+
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -716,9 +713,9 @@ export default function CreateProduct() {
                                     <th className="pb-3 font-black">Variant Name <span className="font-medium normal-case text-slate-400">(e.g. 500g)</span></th>
                                     <th className="pb-3 font-black">Selling Price</th>
                                     <th className="pb-3 font-black">MRP</th>
-                                    <th className="pb-3 font-black">Weight / Unit</th>
+
                                     <th className="pb-3 font-black">Stock</th>
-                                    <th className="pb-3 font-black">SKU <span className="font-medium normal-case text-slate-400">(Optional)</span></th>
+
                                     <th className="pb-3 font-black text-right">Actions</th>
                                  </tr>
                               </thead>
@@ -728,16 +725,7 @@ export default function CreateProduct() {
                                        <td className="py-3 pr-2"><input type="text" className="w-full h-11 px-4 rounded-xl border border-[#E5E7EB] bg-white text-sm font-bold outline-none focus:border-[#0F7A4D] transition-colors focus:ring-4 focus:ring-[#0F7A4D]/5" placeholder="Variant name" value={variant.name} onChange={e => { const newV = [...formData.variants]; newV[idx].name = e.target.value; setFormData({ ...formData, variants: newV }); }} /></td>
                                        <td className="py-3 pr-2"><input type="number" className="w-full h-11 px-4 rounded-xl border border-[#E5E7EB] bg-white text-sm font-bold outline-none focus:border-[#0F7A4D] transition-colors text-[#0F7A4D] font-black focus:ring-4 focus:ring-[#0F7A4D]/5" placeholder="Price" value={variant.price} onChange={e => { const newV = [...formData.variants]; newV[idx].price = e.target.value; setFormData({ ...formData, variants: newV }); }} /></td>
                                        <td className="py-3 pr-2"><input type="number" className="w-full h-11 px-4 rounded-xl border border-[#E5E7EB] bg-white text-sm font-bold outline-none focus:border-[#0F7A4D] transition-colors text-[#6B7280] focus:ring-4 focus:ring-[#0F7A4D]/5" placeholder="MRP" value={variant.originalPrice} onChange={e => { const newV = [...formData.variants]; newV[idx].originalPrice = e.target.value; setFormData({ ...formData, variants: newV }); }} /></td>
-                                       <td className="py-3 pr-2">
-                                          <div className="flex gap-2">
-                                             <input type="number" step="any" className="w-1/2 h-11 px-3 rounded-xl border border-[#E5E7EB] bg-white text-sm font-bold outline-none focus:border-[#0F7A4D] transition-colors" placeholder="Wt" value={variant.weight} onChange={e => { const newV = [...formData.variants]; newV[idx].weight = e.target.value; setFormData({ ...formData, variants: newV }); }} />
-                                             <select className="w-1/2 h-11 px-2 rounded-xl border border-[#E5E7EB] bg-white text-sm font-bold outline-none focus:border-[#0F7A4D] transition-colors" value={variant.unit} onChange={e => { const newV = [...formData.variants]; newV[idx].unit = e.target.value; setFormData({ ...formData, variants: newV }); }}>
-                                                <option value="g">g</option><option value="kg">kg</option><option value="ml">ml</option><option value="l">l</option><option value="pcs">pcs</option><option value="pack">pack</option>
-                                             </select>
-                                          </div>
-                                       </td>
                                        <td className="py-3 pr-2"><input type="number" className="w-full h-11 px-4 rounded-xl border border-[#E5E7EB] bg-white text-sm font-bold outline-none focus:border-[#0F7A4D] transition-colors focus:ring-4 focus:ring-[#0F7A4D]/5" placeholder="Stock" value={variant.stock} onChange={e => { const newV = [...formData.variants]; newV[idx].stock = e.target.value; setFormData({ ...formData, variants: newV }); }} /></td>
-                                       <td className="py-3 pr-2"><input type="text" className="w-full h-11 px-4 rounded-xl border border-[#E5E7EB] bg-white text-sm font-bold outline-none focus:border-[#0F7A4D] transition-colors uppercase focus:ring-4 focus:ring-[#0F7A4D]/5" placeholder="SKU" value={variant.sku} onChange={e => { const newV = [...formData.variants]; newV[idx].sku = e.target.value; setFormData({ ...formData, variants: newV }); }} /></td>
                                        <td className="py-3 text-right"><button type="button" onClick={() => { const newV = [...formData.variants]; newV.splice(idx, 1); setFormData({ ...formData, variants: newV }); }} className="h-11 w-11 inline-flex items-center justify-center rounded-xl text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all"><Trash2 size={16} /></button></td>
                                     </tr>
                                  ))}

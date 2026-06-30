@@ -21,6 +21,7 @@ import {
 import { useRouter } from 'next/navigation';
 import { API_URL } from '@/lib/api';
 import { useToast } from '@/context/ToastContext';
+import { mutate } from 'swr';
 
 interface SubcategoryFormProps {
   initialData?: any;
@@ -138,11 +139,13 @@ export default function SubcategoryForm({ initialData, mode }: SubcategoryFormPr
 
       if (res.ok) {
         addToast('Success', mode === 'edit' ? 'Subcategory updated' : 'Subcategory created');
+        addToast('Rebuild Needed', 'A static rebuild is required for this new subcategory to be SEO-indexed as a static page. (Dynamic lookup will work client-side)', 'info');
+        mutate(() => true);
         router.push('/admin/subcategories');
         router.refresh();
       } else {
         const err = await res.json();
-        addToast('Error', err.error || 'Failed to save subcategory');
+        addToast('Error', err.error || err.message || 'Failed to save subcategory');
       }
     } catch (err) {
       addToast('Error', 'Network or server failure');
@@ -160,6 +163,7 @@ export default function SubcategoryForm({ initialData, mode }: SubcategoryFormPr
       const res = await fetch(`${API_URL}/api/subcategories/${formData.id}`, { method: 'DELETE' });
       if (res.ok) {
         addToast('Deleted', 'Subcategory removed from catalog');
+        mutate(() => true);
         router.push('/admin/subcategories');
         router.refresh();
       } else {

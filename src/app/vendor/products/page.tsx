@@ -84,7 +84,10 @@ export default function VendorProducts() {
                method: 'DELETE'
             });
             if (response.ok) {
+               const { mutate: globalMutate } = await import('swr');
+               globalMutate(() => true);
                mutate();
+               router.refresh();
             }
          } catch (error) {
             console.error('Error deleting Product:', error);
@@ -208,14 +211,20 @@ export default function VendorProducts() {
                               >
                                  <td className="px-10 py-8">
                                     <div className="flex items-center gap-6">
-                                       <div className="h-16 w-16 rounded-[12px] bg-slate-50 overflow-hidden border border-[#E5E7EB] shrink-0">
-                                          <OptimizedImage
-                                             src={product.image || '/placeholder-Product.jpg'}
-                                             alt={product.name}
-                                             width={64}
-                                             height={64}
-                                             className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
-                                          />
+                                       <div className="h-16 w-16 rounded-[12px] bg-slate-50 overflow-hidden border border-[#E5E7EB] shrink-0 flex items-center justify-center">
+                                          {product.image ? (
+                                             <OptimizedImage
+                                                src={product.image}
+                                                alt={product.name}
+                                                width={64}
+                                                height={64}
+                                                className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                             />
+                                          ) : (
+                                             <div className="h-full w-full bg-slate-100 flex flex-col items-center justify-center text-center p-1">
+                                                <span className="text-[8px] leading-tight font-black uppercase text-slate-400">No Image</span>
+                                             </div>
+                                          )}
                                        </div>
                                        <div>
                                           <h4 className="text-[15px] font-black text-[#111827] leading-tight">{product.name}</h4>
@@ -286,14 +295,20 @@ export default function VendorProducts() {
                            className="bg-white border border-[#E5E7EB] rounded-[20px] p-5 shadow-[0_4px_12px_rgba(0,0,0,0.03)] space-y-4"
                         >
                            <div className="flex items-center gap-4">
-                              <div className="h-16 w-16 rounded-[12px] bg-slate-50 overflow-hidden border border-[#E5E7EB] shrink-0">
-                                 <OptimizedImage
-                                    src={product.image || '/placeholder-Product.jpg'}
-                                    alt={product.name}
-                                    width={64}
-                                    height={64}
-                                    className="h-full w-full object-cover"
-                                 />
+                              <div className="h-16 w-16 rounded-[12px] bg-slate-50 overflow-hidden border border-[#E5E7EB] shrink-0 flex items-center justify-center">
+                                 {product.image ? (
+                                    <OptimizedImage
+                                       src={product.image}
+                                       alt={product.name}
+                                       width={64}
+                                       height={64}
+                                       className="h-full w-full object-cover"
+                                    />
+                                 ) : (
+                                    <div className="h-full w-full bg-slate-100 flex flex-col items-center justify-center text-center p-1">
+                                       <span className="text-[8px] leading-tight font-black uppercase text-slate-400">No Image</span>
+                                    </div>
+                                 )}
                               </div>
                               <div className="flex-1 min-w-0">
                                  <h4 className="text-[14px] font-black text-[#111827] leading-tight truncate">{product.name}</h4>

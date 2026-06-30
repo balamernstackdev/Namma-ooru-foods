@@ -129,7 +129,7 @@ function RecommendationCard({
          animate={{ opacity: 1, y: 0 }}
          className="shrink-0 w-[200px] md:w-[220px] group"
       >
-         <Link href={`/products/detail?id=${p.id}`} className="block">
+         <Link href={`/products/${p.slug || p.id}`} className="block">
             <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden hover:shadow-lg hover:border-emerald-200 hover:-translate-y-1 transition-all duration-300">
                {/* Image */}
                <div className="relative aspect-square bg-slate-50 overflow-hidden">

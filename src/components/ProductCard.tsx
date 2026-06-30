@@ -125,7 +125,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
       {/* 1. IMAGE SECTION (Compact & High Density) */}
       <div className="relative w-full h-[160px] md:h-[210px] shrink-0 p-2">
-        <Link href={`/products/detail?id=${product.slug || product.id}`} prefetch={false} className="relative block h-full w-full overflow-hidden rounded-xl bg-slate-50">
+        <Link href={`/products/${product.slug || product.id}`} prefetch={false} className="relative block h-full w-full overflow-hidden rounded-xl bg-slate-50">
           <OptimizedImage
             src={mainImage}
             alt={product.name}
@@ -136,22 +136,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           <div className="absolute inset-0 bg-black/[0.02] group-hover:bg-transparent transition-colors pointer-events-none" />
         </Link>
 
-        {/* BADGES */}
-        <div className="absolute top-4 left-4 flex flex-col gap-1.5 z-10 pointer-events-none">
-          {product.isFastDelivery ? (
-            <div className="bg-gradient-to-r from-emerald-500 to-green-400 text-white text-[8px] md:text-[9px] font-black uppercase tracking-wider px-2.5 py-1 rounded-md shadow-sm">
-              {product.deliveryTime === '30 Minutes' ? '🚀 30 MIN DELIVERY' : '⚡ FAST DELIVERY'}
-            </div>
-          ) : product.tags?.includes('best-selling') || product.id % 3 === 0 ? (
-            <div className="bg-[#052e16] text-white text-[8px] md:text-[9px] font-black uppercase tracking-wider px-2.5 py-1 rounded-md shadow-sm backdrop-blur-md">
-              BESTSELLER
-            </div>
-          ) : (
-            <div className="bg-amber-400 text-[#052e16] text-[8px] md:text-[9px] font-black uppercase tracking-wider px-2.5 py-1 rounded-md shadow-sm">
-              ORGANIC
-            </div>
-          )}
-        </div>
+
 
         {/* WISHLIST BUTTON */}
         <button
@@ -194,12 +179,12 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           </div>
 
           {/* Product Name (Max 2 lines, 18px weight 700) */}
-          <Link href={`/products/detail?id=${product.slug || product.id}`} prefetch={false} className="block group/link">
+          <Link href={`/products/${product.slug || product.id}`} prefetch={false} className="block group/link">
             <div className="flex justify-between items-start gap-2">
               <p className="text-[15px] md:text-[17px] font-bold text-[#1e293b] leading-snug line-clamp-2 tracking-tight group-hover/link:text-[#052e16] transition-colors">
                 {product.name}
               </p>
-              <span className="text-[9px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded font-mono shrink-0 mt-0.5 border border-slate-200">
+              <span className="text-[11px] bg-slate-100 text-slate-600 px-2 py-1 rounded font-mono shrink-0 mt-0.5 border border-slate-200 font-bold">
                 {product.skuCode || selectedVariant?.skuCode || `SKU-${product.id.toString().padStart(3, '0')}`}
               </span>
             </div>

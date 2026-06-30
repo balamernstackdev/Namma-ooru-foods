@@ -233,30 +233,7 @@ export default function VariantForm({ initialData, mode }: VariantFormProps) {
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <InputWrapper label="SKU (Stock Keeping Unit)" helpText="Internal unique identifier for inventory tracking.">
-                      <div className="relative">
-                        <Hash size={16} className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400" />
-                        <input
-                          required
-                          value={formData.sku}
-                          onChange={e => setFormData({ ...formData, sku: e.target.value })}
-                          placeholder="e.g. SKU-12345"
-                          className="w-full h-14 pl-14 pr-6 rounded-xl border border-slate-200 focus:border-blue-500 outline-none font-bold text-slate-900 text-sm transition-all"
-                        />
-                      </div>
-                    </InputWrapper>
 
-                    <InputWrapper label="Barcode / GTIN" helpText="Global Trade Item Number for scanning systems.">
-                      <div className="relative">
-                        <Barcode size={16} className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400" />
-                        <input
-                          value={formData.barcode}
-                          onChange={e => setFormData({ ...formData, barcode: e.target.value })}
-                          placeholder="UPC / EAN Code"
-                          className="w-full h-14 pl-14 pr-6 rounded-xl border border-slate-200 focus:border-blue-500 outline-none font-bold text-slate-900 text-sm transition-all"
-                        />
-                      </div>
-                    </InputWrapper>
                   </div>
                 </div>
               </div>

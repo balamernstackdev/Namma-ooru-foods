@@ -153,7 +153,7 @@ export default function SearchBar({ isMobile = false }: { isMobile?: boolean }) 
 
         if (selectedIndex < products.length) {
           const product = products[selectedIndex];
-          router.push(`/products/detail?id=${product.id}`);
+          router.push(`/products/${product.slug || product.id}`);
           onItemClick(product.name, 'product');
         } else if (selectedIndex < products.length + brandCount) {
           const brandIdx = selectedIndex - products.length;

@@ -3,11 +3,12 @@ import React from 'react';
 import BrandDetailLoader from './BrandDetailLoader';
 import { API_URL } from '@/lib/api';
 import { Metadata } from 'next';
-// export const dynamicParams = true;
+export const dynamicParams = false;
 
 export async function generateStaticParams() {
   try {
     const res = await fetch(`${API_URL}/api/sub-vendors?includeEmpty=true&limit=1000`, { cache: 'no-store' });
+    if (!res.ok) throw new Error(`API fetch failed with status ${res.status}`);
     const data = await res.json();
     const brands = data.subVendors || [];
     const params = [];
@@ -16,10 +17,11 @@ export async function generateStaticParams() {
       if (brand.slug) params.push({ id: brand.slug });
     }
     if (params.length === 0) throw new Error('No brands fetched');
+    console.log(`[Build] Generated ${params.length} static paths for brands.`);
     return params;
   } catch (error) {
-    console.warn('Falling back to default brand ID in generateStaticParams:', error);
-    return [{ id: '1' }];
+    console.error('[Build ERROR] Failed to fetch brands in generateStaticParams:', error);
+    throw error; // Fail the build as requested
   }
 }
 

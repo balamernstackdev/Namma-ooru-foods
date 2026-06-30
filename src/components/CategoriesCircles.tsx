@@ -9,10 +9,10 @@ import { motion } from 'framer-motion';
 
 import { API_URL } from '@/lib/api';
 
-const fetcher = (url: string) => fetch(url).then(res => res.json());
+const fetcher = (url: string) => fetch(url, { cache: 'no-store' }).then(res => res.json());
 
 export default function CategoriesCircles() {
-  const { data: responseData, error } = useSWR(`${API_URL}/api/categories?limit=100&all=true`, fetcher);
+  const { data: responseData, error } = useSWR(`${API_URL}/api/categories?limit=1000&all=true`, fetcher);
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
@@ -59,7 +59,8 @@ export default function CategoriesCircles() {
   };
 
   const apiCategories = responseData?.categories || [];
-  const parentCategories = apiCategories.filter((cat: any) => !cat.parentId).slice(0, 12);
+  // Include all active parent categories, removing hardcoded slices
+  const displayCategories = apiCategories.filter((cat: any) => cat.isActive !== false && !cat.parentId);
 
   const [activeIndex, setActiveIndex] = useState(0);
 
@@ -122,7 +123,7 @@ export default function CategoriesCircles() {
     );
   }
 
-  if (parentCategories.length === 0) return null;
+  if (displayCategories.length === 0) return null;
 
   return (
     <section className="w-full pt-2 md:pt-4 pb-4 md:pb-6 bg-white relative overflow-hidden">
@@ -188,9 +189,14 @@ export default function CategoriesCircles() {
             tabIndex={0}
             className="flex overflow-x-auto no-scrollbar pb-4 snap-x snap-mandatory scroll-smooth items-start px-[10px] md:px-[20px] xl:px-[70px] gap-6 md:gap-10 cursor-grab active:cursor-grabbing focus:outline-none"
           >
-            {parentCategories.map((category: any, idx: number) => {
+            {displayCategories.map((category: any, idx: number) => {
               const count = category._count?.products || 0;
-              const imageUrl = category.image || '/ai_images/indian_spices_1776231045209.png';
+              const cacheBuster = category.updatedAt ? new Date(category.updatedAt).getTime() : Date.now();
+              const rawImageUrl = (category.image && category.image.trim() !== '') 
+                ? category.image 
+                : `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" fill="%23f1f5f9"><rect width="200" height="200" /><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="20" fill="%2394a3b8">No Image</text></svg>`;
+              
+              const imageUrl = rawImageUrl.startsWith('http') ? `${rawImageUrl}?t=${cacheBuster}` : rawImageUrl;
 
               return (
                 <motion.div
@@ -244,14 +250,12 @@ export default function CategoriesCircles() {
           {/* Floating Navigation Arrows - Hidden on Mobile, styled as requested */}
         </div>
 
-        {/* Mobile Pagination Dots */}
-        <div className="md:hidden flex justify-center gap-1.5 mt-[-10px] mb-4">
-          {parentCategories.slice(0, 10).map((_: any, idx: number) => (
-            <div 
-              key={idx} 
-              className={`h-1.5 rounded-full transition-all duration-300 ${idx === activeIndex ? 'w-4 bg-[#0f9d58]' : 'w-1.5 bg-slate-300'}`} 
-            />
-          ))}
+        {/* Mobile Pagination Progress Bar */}
+        <div className="md:hidden w-[100px] h-1.5 bg-slate-200 rounded-full mx-auto mt-[-10px] mb-4 overflow-hidden relative">
+          <div 
+            className="absolute top-0 left-0 h-full bg-[#0f9d58] rounded-full transition-all duration-300" 
+            style={{ width: `${Math.max(15, ((activeIndex + 1) / displayCategories.length) * 100)}%` }} 
+          />
         </div>
 
       </div>

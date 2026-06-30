@@ -148,7 +148,21 @@ export default function FarmersCollection({ products }: FarmersCollectionProps) 
     }
   }, []);
 
-  if (!products || products.length === 0 || filteredProducts.length === 0) return null;
+  if (!products || products.length === 0) {
+    return (
+      <section className="w-full py-4 md:py-16 bg-stone-50 relative overflow-hidden border-y border-slate-100">
+        <div className="standard-container w-full flex flex-col items-center justify-center py-16 px-4 bg-white/50 backdrop-blur-sm rounded-[32px] border border-dashed border-slate-200">
+          <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mb-4">
+            <span className="text-2xl">📦</span>
+          </div>
+          <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight mb-2">No Products Available</h3>
+          <p className="text-slate-500 font-medium text-sm text-center max-w-sm">
+            There are currently no products available in this farmers collection. Please check back later.
+          </p>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="w-full py-4 md:py-16 bg-stone-50 relative overflow-hidden border-y border-slate-100">
@@ -290,10 +304,12 @@ export default function FarmersCollection({ products }: FarmersCollectionProps) 
         {/* Empty state fallback */}
         {filteredProducts.length === 0 && (
           <div className="w-full py-16 flex flex-col items-center justify-center text-center bg-white rounded-3xl border border-dashed border-slate-200 p-8 shadow-inner">
-            <Sparkles className="text-amber-400 h-10 w-10 animate-bounce mb-4" />
-            <h3 className="text-emerald-950 font-black text-lg uppercase tracking-wider mb-2">Products Coming Soon</h3>
+            <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mb-4">
+              <span className="text-2xl">📦</span>
+            </div>
+            <h3 className="text-emerald-950 font-black text-lg uppercase tracking-wider mb-2">No Products Available</h3>
             <p className="text-slate-400 text-xs max-w-md">
-              Our small-batch organic farmers are currently preparing the next fresh Product. Check back shortly!
+              There are currently no products available for this filter. Please check back later.
             </p>
           </div>
         )}

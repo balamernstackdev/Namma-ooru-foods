@@ -40,7 +40,20 @@ export default function CategoryDetailClient({ categoryId, category, categoryPro
 
   const { categoryBanners } = useBanners();
   const activeBanners = categoryBanners.filter((b: any) => b.isActive !== false);
-  const matchedBanner = activeBanners?.[0] || null;
+  const matchedBanner = activeBanners.find((b: any) => {
+    let ld = b.linkData;
+    if (typeof ld === 'string') {
+      try { ld = JSON.parse(ld); } catch { ld = null; }
+    }
+    if (!ld) return false;
+    const { linkType, targetId } = ld;
+    if (linkType !== 'category') return false;
+    return (
+      String(targetId) === String(category?.id) ||
+      String(targetId) === String(category?.slug) ||
+      (categoryId && String(targetId) === String(categoryId))
+    );
+  }) || activeBanners?.[0] || null;
 
   const categoryDesc = category?.description || `Premium selection of organic ${categoryName.toLowerCase()} sourced directly from native farms.`;
   const bannerImage = matchedBanner?.banner_image || category?.banner_image;

@@ -27,6 +27,7 @@ const TYPE_TAB_LABELS: Record<string, string> = {
   best_sellers: 'Best Sellers',
   organic_collection: 'Organic Collection',
   farmer_collection: 'Farmers Collection',
+  category: 'Category Banners',
 };
 
 const POSITION_BADGE_COLORS = [
@@ -56,6 +57,8 @@ function normalizeType(type?: string | null): string {
     'organic collection': 'organic_collection',
     'farmer collection banner': 'farmer_collection',
     'farmer collection': 'farmer_collection',
+    'category banner': 'category',
+    'category': 'category',
   };
   return map[lower] || lower;
 }
@@ -69,7 +72,7 @@ export default function AdminBannersPage() {
   // Filters & Tabs
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
-  const [activeTab, setActiveTab] = useState<'hero' | 'best_sellers' | 'organic_collection' | 'farmer_collection'>('hero');
+  const [activeTab, setActiveTab] = useState<'hero' | 'best_sellers' | 'organic_collection' | 'farmer_collection' | 'category'>('hero');
 
   // Local ordered list state for drag-and-drop
   const [typeBanners, setTypeBanners] = useState<Banner[]>([]);
@@ -241,7 +244,7 @@ export default function AdminBannersPage() {
 
       {/* Type Selector Tabs */}
       <div className="flex flex-wrap gap-2 bg-slate-100/50 p-2 rounded-2xl border border-slate-200/50">
-        {(['hero', 'best_sellers', 'organic_collection', 'farmer_collection'] as const).map(tab => {
+        {(['hero', 'best_sellers', 'organic_collection', 'farmer_collection', 'category'] as const).map(tab => {
           const count = banners.filter(b => normalizeType(b.type) === tab).length;
           return (
             <button

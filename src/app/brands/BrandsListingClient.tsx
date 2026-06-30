@@ -95,12 +95,18 @@ export default function BrandsListingClient() {
                 >
                   {/* Brand Logo Squircle */}
                   <div className="relative aspect-square rounded-[1.3rem] md:rounded-[2rem] overflow-hidden bg-slate-50 flex items-center justify-center p-4 md:p-8 transition-colors group-hover:bg-emerald-50/30">
-                    <OptimizedImage
-                      src={brand.logo || settings.logo || '/logo.webp'}
-                      alt={brand.name}
-                      fill
-                      className="object-contain p-4 md:p-8 group-hover:scale-110 transition-transform duration-700"
-                    />
+                    {brand.logo ? (
+                      <OptimizedImage
+                        src={brand.logo}
+                        alt={brand.name}
+                        fill
+                        className="object-contain p-4 md:p-8 group-hover:scale-110 transition-transform duration-700"
+                      />
+                    ) : (
+                      <div className="flex flex-col items-center justify-center text-center p-4">
+                        <span className="text-[10px] font-black uppercase text-slate-400 tracking-wider">No Logo Uploaded</span>
+                      </div>
+                    )}
                     <div className="absolute top-4 right-4 h-8 w-8 rounded-full bg-white shadow-sm flex items-center justify-center text-emerald-600 opacity-0 group-hover:opacity-100 transition-opacity">
                       <ShieldCheck size={16} />
                     </div>

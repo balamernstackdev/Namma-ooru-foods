@@ -209,12 +209,16 @@ export default function ArtisanMarketplace() {
                     <div className="relative w-full aspect-square rounded-[2rem] md:rounded-[2.8rem] overflow-hidden bg-[#fafaf9] border border-slate-200 shadow-[0_8px_30px_rgba(0,0,0,0.02)] transition-all duration-700 group-hover:shadow-[0_24px_48px_-12px_rgba(6,78,59,0.12)] group-hover:-translate-y-2 group-hover:border-emerald-100 relative flex items-center justify-center">
 
                       <div className="absolute inset-0 m-2 rounded-[1.6rem] md:rounded-[2.2rem] overflow-hidden bg-white shadow-inner p-3 flex items-center justify-center">
-                        <OptimizedImage
-                          src={brand.logo || settings.logo || '/logo.webp'}
-                          alt={brand.name}
-                          fill
-                          className="object-contain p-1 scale-100 group-hover:scale-105 transition-transform duration-[1000ms] ease-[0.25,1,0.5,1]"
-                        />
+                        {brand.logo ? (
+                          <OptimizedImage
+                            src={brand.logo}
+                            alt={brand.name}
+                            fill
+                            className="object-contain p-1 scale-100 group-hover:scale-105 transition-transform duration-[1000ms] ease-[0.25,1,0.5,1]"
+                          />
+                        ) : (
+                          <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest text-center p-2">No Logo</span>
+                        )}
                         {/* Dark overlay on hover for luxury depth */}
                         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-500" />
                       </div>

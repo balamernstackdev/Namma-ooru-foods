@@ -111,14 +111,18 @@ export default function BrandDetailClient({ brand }: { brand: any }) {
               className="relative h-28 w-28 md:h-32 md:w-32 shrink-0"
             >
               <div className="absolute inset-0 bg-white rounded-3xl shadow-xl rotate-3" />
-              <div className="relative h-full w-full bg-white rounded-3xl border border-slate-100 shadow-premium overflow-hidden z-10 p-2">
-                <OptimizedImage
-                  src={brand.logo || settings.logo || '/logo.webp'}
-                  alt={brand.name}
-                  fill
-                  className="object-contain p-4"
-                  priority
-                />
+              <div className="relative h-full w-full bg-white rounded-3xl border border-slate-100 shadow-premium overflow-hidden z-10 p-2 flex items-center justify-center">
+                {brand.logo ? (
+                  <OptimizedImage
+                    src={brand.logo}
+                    alt={brand.name}
+                    fill
+                    className="object-contain p-4"
+                    priority
+                  />
+                ) : (
+                  <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest text-center p-2">No Logo</span>
+                )}
               </div>
             </motion.div>
 

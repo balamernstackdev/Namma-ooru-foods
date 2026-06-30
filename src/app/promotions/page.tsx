@@ -97,7 +97,7 @@ export default function PromotionsPage() {
          color: p.color || '#064e3b',
          image: p.image || (p.products?.[0]?.image) || null,
          action: p.actionText || 'Shop Now',
-         link: p.actionLink || (p.products?.[0] ? `/products/detail?id=${p.products[0].id}` : '/best-selling')
+         link: p.actionLink || (p.products?.[0] ? `/products/${p.products[0].slug || p.products[0].id}` : '/best-selling')
       }));
 
     const heroBannerCampaigns = heroBanners.map((b: any) => ({
@@ -136,7 +136,7 @@ export default function PromotionsPage() {
          oldPrice: p.originalPrice || (p.products?.[0]?.originalPrice ? `₹${p.products[0].originalPrice}` : '₹399'),
          claimed: p.claimedPercent ?? 50,
          image: p.image || (p.products?.[0]?.image) || null,
-         link: p.actionLink || (p.products?.[0] ? `/products/detail?id=${p.products[0].id}` : '/best-selling')
+         link: p.actionLink || (p.products?.[0] ? `/products/${p.products[0].slug || p.products[0].id}` : '/best-selling')
       }));
 
    // D. COMBO DEALS — only from DB, no fallback
@@ -151,7 +151,7 @@ export default function PromotionsPage() {
          save: p.discount || 'Save Large',
          tag: p.tag || 'HOT COMBO',
          image: p.image || (p.products?.[0]?.image) || null,
-         link: p.actionLink || (p.products?.[0] ? `/products/detail?id=${p.products[0].id}` : '/best-selling')
+         link: p.actionLink || (p.products?.[0] ? `/products/${p.products[0].slug || p.products[0].id}` : '/best-selling')
       }));
 
    // E. WALLET OFFERS — only from DB, no fallback

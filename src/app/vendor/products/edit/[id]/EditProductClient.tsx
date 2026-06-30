@@ -241,10 +241,10 @@ export default function EditProductClient({ id }: { id?: string }) {
                price: v.price ? parseFloat(v.price) : null,
                originalPrice: v.originalPrice ? parseFloat(v.originalPrice) : null,
                stock: parseInt(v.stock?.toString() || '0'),
-               sku: v.sku,
+               sku: v.sku && typeof v.sku === 'string' ? v.sku.trim() || null : null,
                weight: v.weight ? parseFloat(v.weight) : null,
-               unit: v.unit || null,
-               barcode: v.barcode
+               unit: null,
+               barcode: v.barcode && typeof v.barcode === 'string' ? v.barcode.trim() || null : null
             })) : []
          };
 
@@ -475,21 +475,18 @@ export default function EditProductClient({ id }: { id?: string }) {
                               <input type="number" step="any" className="w-full h-14 px-6 rounded-xl border border-[#E5E7EB] bg-white focus:border-[#0F7A4D] focus:ring-4 focus:ring-[#0F7A4D]/5 outline-none font-bold text-sm" value={formData.weight} onChange={e => setFormData({ ...formData, weight: e.target.value })} />
                            </InputWrapper>
                            <InputWrapper label="Unit">
-                              <select className="w-full h-14 px-6 rounded-xl border border-[#E5E7EB] bg-white focus:border-[#0F7A4D] outline-none font-bold text-sm" value={formData.unit} onChange={e => setFormData({ ...formData, unit: e.target.value })} >
-                                 <option value="g">g (Grams)</option>
-                                 <option value="kg">kg (Kilograms)</option>
-                                 <option value="ml">ml (Milliliters)</option>
-                                 <option value="l">l (Liters)</option>
-                                 <option value="pcs">pcs (Pieces)</option>
-                                 <option value="pack">pack (Pack)</option>
-                              </select>
+                              <input
+                                 type="text"
+                                 className="w-full h-14 px-6 rounded-xl border border-[#E5E7EB] bg-white focus:border-[#0F7A4D] focus:ring-4 focus:ring-[#0F7A4D]/5 outline-none font-bold text-sm"
+                                 placeholder="e.g. g, kg, ml, pcs"
+                                 value={formData.unit}
+                                 onChange={e => setFormData({ ...formData, unit: e.target.value })}
+                              />
                            </InputWrapper>
                            <InputWrapper label="Base Stock">
                               <input type="number" className="w-full h-14 px-6 rounded-xl border border-[#E5E7EB] bg-white focus:border-[#0F7A4D] focus:ring-4 focus:ring-[#0F7A4D]/5 outline-none font-bold text-sm" value={formData.stock} onChange={e => setFormData({ ...formData, stock: e.target.value })} />
                            </InputWrapper>
-                           <InputWrapper label="SKU">
-                              <input type="text" className="w-full h-14 px-6 rounded-xl border border-[#E5E7EB] bg-white focus:border-[#0F7A4D] focus:ring-4 focus:ring-[#0F7A4D]/5 outline-none font-bold text-sm uppercase" value={formData.sku} onChange={e => setFormData({ ...formData, sku: e.target.value })} />
-                           </InputWrapper>
+
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -570,7 +567,7 @@ export default function EditProductClient({ id }: { id?: string }) {
                         <Layers size={16} className="text-[#0F7A4D]" />
                         <h3 className="text-[10px] font-black text-[#111827] uppercase tracking-widest">Variant & Inventory Manager</h3>
                      </div>
-                     <button type="button" onClick={() => setFormData({ ...formData, variants: [...formData.variants, { name: '', price: '', originalPrice: '', stock: '0', sku: '', weight: '', unit: 'g', barcode: '' }] })} className="px-3 py-1.5 rounded-lg bg-[#0F7A4D] text-white text-[10px] font-black uppercase tracking-widest hover:bg-[#0c623d] transition-all shadow-sm">+ Add Variant</button>
+                     <button type="button" onClick={() => setFormData({ ...formData, variants: [...formData.variants, { name: '', price: '', originalPrice: '', stock: '0', sku: '', weight: '', unit: '', barcode: '' }] })} className="px-3 py-1.5 rounded-lg bg-[#0F7A4D] text-white text-[10px] font-black uppercase tracking-widest hover:bg-[#0c623d] transition-all shadow-sm">+ Add Variant</button>
                   </div>
                   <div className="p-6 space-y-4">
                      {formData.variants.length === 0 ? (
@@ -583,9 +580,9 @@ export default function EditProductClient({ id }: { id?: string }) {
                                     <th className="pb-3 font-black">Variant Name <span className="font-medium normal-case text-slate-400">(e.g. 500g)</span></th>
                                     <th className="pb-3 font-black">Selling Price</th>
                                     <th className="pb-3 font-black">MRP</th>
-                                    <th className="pb-3 font-black">Weight / Unit</th>
+
                                     <th className="pb-3 font-black">Stock</th>
-                                    <th className="pb-3 font-black">SKU <span className="font-medium normal-case text-slate-400">(Optional)</span></th>
+
                                     <th className="pb-3 font-black text-right">Actions</th>
                                  </tr>
                               </thead>
@@ -594,17 +591,10 @@ export default function EditProductClient({ id }: { id?: string }) {
                                     <tr key={idx} className="group">
                                        <td className="py-3 pr-2"><input type="text" className="w-full h-11 px-4 rounded-xl border border-[#E5E7EB] bg-white text-sm font-bold outline-none focus:border-[#0F7A4D] transition-colors focus:ring-4 focus:ring-[#0F7A4D]/5" placeholder="Variant name" value={variant.name} onChange={e => { const newV = [...formData.variants]; newV[idx].name = e.target.value; setFormData({ ...formData, variants: newV }); }} /></td>
                                        <td className="py-3 pr-2"><input type="number" className="w-full h-11 px-4 rounded-xl border border-[#E5E7EB] bg-white text-sm font-bold outline-none focus:border-[#0F7A4D] transition-colors text-[#0F7A4D] font-black focus:ring-4 focus:ring-[#0F7A4D]/5" placeholder="Price" value={variant.price} onChange={e => { const newV = [...formData.variants]; newV[idx].price = e.target.value; setFormData({ ...formData, variants: newV }); }} /></td>
-                                       <td className="py-3 pr-2"><input type="number" className="w-full h-11 px-4 rounded-xl border border-[#E5E7EB] bg-white text-sm font-bold outline-none focus:border-[#0F7A4D] transition-colors text-[#6B7280] focus:ring-4 focus:ring-[#0F7A4D]/5" placeholder="MRP" value={variant.originalPrice} onChange={e => { const newV = [...formData.variants]; newV[idx].originalPrice = e.target.value; setFormData({ ...formData, variants: newV }); }} /></td>
-                                       <td className="py-3 pr-2">
-                                          <div className="flex gap-2">
-                                             <input type="number" step="any" className="w-1/2 h-11 px-3 rounded-xl border border-[#E5E7EB] bg-white text-sm font-bold outline-none focus:border-[#0F7A4D] transition-colors" placeholder="Wt" value={variant.weight} onChange={e => { const newV = [...formData.variants]; newV[idx].weight = e.target.value; setFormData({ ...formData, variants: newV }); }} />
-                                             <select className="w-1/2 h-11 px-2 rounded-xl border border-[#E5E7EB] bg-white text-sm font-bold outline-none focus:border-[#0F7A4D] transition-colors" value={variant.unit} onChange={e => { const newV = [...formData.variants]; newV[idx].unit = e.target.value; setFormData({ ...formData, variants: newV }); }}>
-                                                <option value="g">g</option><option value="kg">kg</option><option value="ml">ml</option><option value="l">l</option><option value="pcs">pcs</option><option value="pack">pack</option>
-                                             </select>
-                                          </div>
-                                       </td>
+                                       <td className="py-3 pr-2"><input type="number" className="w-full h-11 px-4 rounded-xl border border-[#E5E7EB] bg-white text-sm font-bold outline-none focus:border-[#0F7A4D] transition-colors text-[#0F7A4D] focus:ring-4 focus:ring-[#0F7A4D]/5" placeholder="MRP" value={variant.originalPrice} onChange={e => { const newV = [...formData.variants]; newV[idx].originalPrice = e.target.value; setFormData({ ...formData, variants: newV }); }} /></td>
+
                                        <td className="py-3 pr-2"><input type="number" className="w-full h-11 px-4 rounded-xl border border-[#E5E7EB] bg-white text-sm font-bold outline-none focus:border-[#0F7A4D] transition-colors focus:ring-4 focus:ring-[#0F7A4D]/5" placeholder="Stock" value={variant.stock} onChange={e => { const newV = [...formData.variants]; newV[idx].stock = e.target.value; setFormData({ ...formData, variants: newV }); }} /></td>
-                                       <td className="py-3 pr-2"><input type="text" className="w-full h-11 px-4 rounded-xl border border-[#E5E7EB] bg-white text-sm font-bold outline-none focus:border-[#0F7A4D] transition-colors uppercase focus:ring-4 focus:ring-[#0F7A4D]/5" placeholder="SKU" value={variant.sku} onChange={e => { const newV = [...formData.variants]; newV[idx].sku = e.target.value; setFormData({ ...formData, variants: newV }); }} /></td>
+
                                        <td className="py-3 text-right"><button type="button" onClick={() => { const newV = [...formData.variants]; newV.splice(idx, 1); setFormData({ ...formData, variants: newV }); }} className="h-11 w-11 inline-flex items-center justify-center rounded-xl text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all"><Trash2 size={16} /></button></td>
                                     </tr>
                                  ))}

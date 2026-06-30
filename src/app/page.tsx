@@ -43,12 +43,14 @@ export default function Home() {
   const { data: farmerData, error: farmerError } = useSWR(`${API_URL}/api/products?isFarmerCollection=true&limit=20`, fetcher);
   const { data: allData, error: allError } = useSWR(`${API_URL}/api/products?limit=100`, fetcher);
   const { data: fastDeliveryData, error: fastDeliveryError } = useSWR(`${API_URL}/api/products?isFastDelivery=true&limit=20`, fetcher);
+  const { data: newArrivalsData, error: newArrivalsError } = useSWR(`${API_URL}/api/products?isNewArrival=true&limit=20`, fetcher);
 
   const isLoading = !bestSellersData && !bestSellersError ||
                     !organicData && !organicError ||
                     !farmerData && !farmerError ||
                     !allData && !allError ||
-                    !fastDeliveryData && !fastDeliveryError;
+                    !fastDeliveryData && !fastDeliveryError ||
+                    !newArrivalsData && !newArrivalsError;
 
   if (isLoading) {
     return <PremiumLoader fullScreen={true} />;
@@ -59,10 +61,12 @@ export default function Home() {
   const farmerProducts = getProductsList(farmerData);
   const allProducts = getProductsList(allData);
   const fastDeliveryProducts = getProductsList(fastDeliveryData);
+  const newArrivals = getProductsList(newArrivalsData);
 
   // Deduplicate: organic shouldn't repeat best sellers for carousel
   const bestSellerIds = new Set(bestSellers.map((p: any) => p.id));
   const organicFiltered = organicProducts.filter((p: any) => !bestSellerIds.has(p.id)).slice(0, 12);
+  const organicDisplay = organicFiltered.length > 0 ? organicFiltered : organicProducts.slice(0, 12);
 
   return (
     <div className="flex flex-col bg-white w-full overflow-x-hidden">
@@ -101,47 +105,51 @@ export default function Home() {
         )}
 
         {/* 5. BEST SELLERS — Most Popular Products */}
-        {bestSellers.length > 0 && (
-          <ProductCarousel
-            products={bestSellers}
+        <ProductCarousel
+          products={bestSellers}
             title='BEST <span class="text-accent italic lowercase font-serif font-normal">SELLERS</span>'
             subtitle="Most Popular Products"
             viewAllHref="/best-selling"
             bgClass="bg-slate-50"
             autoScrollInterval={3000}
             bannerType="best_sellers"
-          />
-        )}
+        />
 
         {/* 6. Farmers' Collections — Interactive Products Section */}
-        {farmerProducts.length > 0 && (
-          <FarmersCollection products={farmerProducts} />
-        )}
+        <FarmersCollection products={farmerProducts} />
 
         {/* 7. Organic Collections — Pure & Authentic */}
-        {organicFiltered.length > 0 && (
-          <ProductCarousel
-            products={organicFiltered}
+        <ProductCarousel
+          products={organicDisplay}
             title='Herbal Cosmetics <span class="text-primary italic lowercase font-serif font-normal">Collections</span>'
             subtitle="Pure. Authentic. Heritage."
             viewAllHref="/products"
             bgClass="bg-white"
             autoScrollInterval={3500}
             bannerType="organic_collection"
+        />
+
+        {/* 7.5 New Arrivals */}
+        {newArrivals.length > 0 && (
+          <ProductCarousel
+            products={newArrivals}
+            title='New <span class="text-primary italic lowercase font-serif font-normal">Arrivals</span>'
+            subtitle="Explore our Freshly Stocked Arrivals"
+            viewAllHref="/products"
+            bgClass="bg-white"
+            autoScrollInterval={3800}
           />
         )}
 
         {/* 8. Recently Added Products */}
-        {allProducts.length > 0 && (
-          <ProductCarousel
-            products={allProducts.slice(0, 12)}
+        <ProductCarousel
+          products={allProducts.slice(0, 12)}
             title='Recently <span class="text-accent italic lowercase font-serif font-normal">Added</span>'
             subtitle="Newest Additions to our Marketplace"
             viewAllHref="/products"
             bgClass="bg-slate-50"
-            autoScrollInterval={4000}
-          />
-        )}
+          autoScrollInterval={4000}
+        />
 
         <VendorPromotion />
 

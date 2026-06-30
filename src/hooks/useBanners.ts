@@ -11,6 +11,7 @@ const BANNER_TYPE_MAP: Record<string, string> = {
   'best_sellers': 'best_sellers',
   'organic_collection': 'organic_collection',
   'farmer_collection': 'farmer_collection',
+  'category': 'category',
 
   // Spaced / Capitalized / Legacy
   'best sellers': 'best_sellers',
@@ -20,6 +21,7 @@ const BANNER_TYPE_MAP: Record<string, string> = {
   'best sellers banner': 'best_sellers',
   'organic collection banner': 'organic_collection',
   'farmer collection banner': 'farmer_collection',
+  'category banner': 'category',
 };
 
 export function normalizeType(type?: string | null): string {

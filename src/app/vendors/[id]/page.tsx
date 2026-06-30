@@ -4,13 +4,14 @@ import VendorDetailLoader from './VendorDetailLoader';
 import { API_URL } from '@/lib/api';
 import { Metadata } from 'next';
 
-// export const dynamicParams = true;
+export const dynamicParams = false;
 
 export async function generateStaticParams() {
   try {
     console.log(`[Build] generateStaticParams starting for /vendors/[id]...`);
     console.log(`[Build] Fetching head vendors from: ${API_URL}/api/head-vendors?limit=1000`);
     const res = await fetch(`${API_URL}/api/head-vendors?limit=1000`, { cache: 'no-store' });
+    if (!res.ok) throw new Error(`API fetch failed with status ${res.status}`);
     const data = await res.json();
     const vendors = data.headVendors || [];
     console.log(`[Build] Successfully fetched ${vendors.length} head vendors.`);
@@ -29,8 +30,7 @@ export async function generateStaticParams() {
     return params;
   } catch (error) {
     console.error('[Build ERROR] Failed to fetch vendors in generateStaticParams:', error);
-    console.warn('[Build Warning] Falling back to default vendor ID "1" in generateStaticParams.');
-    return [{ id: '1' }];
+    throw error; // Fail the build as requested
   }
 }
 

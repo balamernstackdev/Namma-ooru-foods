@@ -66,6 +66,13 @@ const BANNER_TYPE_CONFIG: Record<string, {
       autoSlide: true,
       description: 'Displayed in the Farmers Collection section'
    },
+   category: {
+      label: 'Category Banner',
+      section: 'Category Detail Page',
+      width: 1400, height: 320,
+      autoSlide: false,
+      description: 'Banner displayed at the top of category detail pages'
+   },
 };
 
 const getConfig = (type: string) => BANNER_TYPE_CONFIG[type] ?? BANNER_TYPE_CONFIG['hero'];
@@ -88,8 +95,10 @@ export default function BannerForm({ initialData, isEditing }: BannerFormProps) 
          'Best Sellers': 'best_sellers', 'Best Sellers Banner': 'best_sellers',
          'Organic Collection': 'organic_collection', 'Organic Collection Banner': 'organic_collection',
          'Farmer Collection': 'farmer_collection', 'Farmer Collection Banner': 'farmer_collection',
+         'Category': 'category', 'Category Banner': 'category',
          'hero': 'hero', 'best_sellers': 'best_sellers',
-         'organic_collection': 'organic_collection', 'farmer_collection': 'farmer_collection'
+         'organic_collection': 'organic_collection', 'farmer_collection': 'farmer_collection',
+         'category': 'category'
       };
       return map[val] ?? val.toLowerCase();
    };

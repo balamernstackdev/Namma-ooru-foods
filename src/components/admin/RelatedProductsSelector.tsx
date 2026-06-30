@@ -270,7 +270,11 @@ export default function RelatedProductsSelector({
                      >
                         <div className="flex items-center gap-2.5 min-w-0">
                            <div className="h-9 w-9 rounded-lg overflow-hidden bg-slate-50 border border-slate-100 flex items-center justify-center p-0.5 shrink-0">
-                              <img src={prod.image || '/placeholder.png'} className="h-full w-full object-contain" alt="" onError={(e) => { (e.target as any).src = '/placeholder.png'; }} />
+                              {prod.image ? (
+                                 <img src={prod.image} className="h-full w-full object-contain" alt="" />
+                              ) : (
+                                 <span className="text-[6px] font-black text-slate-400 uppercase text-center leading-none">No Image</span>
+                              )}
                            </div>
                            <div className="min-w-0">
                               <span className="text-[11px] font-black text-slate-800 truncate uppercase tracking-tight block">{prod.name}</span>
@@ -347,7 +351,11 @@ export default function RelatedProductsSelector({
 
                            {/* Image */}
                            <div className="h-10 w-10 rounded-lg overflow-hidden bg-white border border-slate-150 flex items-center justify-center p-0.5 shrink-0">
-                              <img src={item.image || '/placeholder.png'} className="h-full w-full object-contain" alt="" onError={(e) => { (e.target as any).src = '/placeholder.png'; }} />
+                               {item.image ? (
+                                  <img src={item.image} className="h-full w-full object-contain" alt="" />
+                               ) : (
+                                  <span className="text-[6px] font-black text-slate-400 uppercase text-center leading-none">No Image</span>
+                               )}
                            </div>
 
                            {/* Info */}

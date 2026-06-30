@@ -18,6 +18,7 @@ import {
 import { useRouter } from 'next/navigation';
 import { API_URL } from '@/lib/api';
 import { useToast } from '@/context/ToastContext';
+import { mutate } from 'swr';
 
 interface BrandFormProps {
   initialData?: any;
@@ -130,11 +131,12 @@ export default function BrandForm({ initialData, mode }: BrandFormProps) {
 
       if (res.ok) {
         addToast('Success', mode === 'edit' ? 'Brand identity synchronized' : 'Brand partner registered');
+        mutate(() => true);
         router.push('/admin/brands');
         router.refresh();
       } else {
         const errorData = await res.json().catch(() => ({}));
-        addToast('Error', errorData.error || 'Failed to save brand details');
+        addToast('Error', errorData.error || errorData.message || 'Failed to save brand details');
       }
     } finally {
       setSubmitting(false);

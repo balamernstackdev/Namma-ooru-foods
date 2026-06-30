@@ -95,13 +95,17 @@ export default function SellerDetailLoader() {
         <div className="absolute bottom-8 left-0 right-0 standard-container">
           <div className="flex items-end gap-6">
             {/* Logo */}
-            <div className="relative h-20 w-20 md:h-28 md:w-28 rounded-[1.5rem] md:rounded-[2rem] bg-white shadow-2xl overflow-hidden border-4 border-white shrink-0">
-              <OptimizedImage
-                src={seller.logo || settings.logo || '/logo.webp'}
-                alt={seller.name}
-                fill
-                className="object-contain p-3"
-              />
+            <div className="relative h-20 w-20 md:h-28 md:w-28 rounded-[1.5rem] md:rounded-[2rem] bg-white shadow-2xl overflow-hidden border-4 border-white shrink-0 flex items-center justify-center">
+              {seller.logo ? (
+                <OptimizedImage
+                  src={seller.logo}
+                  alt={seller.name}
+                  fill
+                  className="object-contain p-3"
+                />
+              ) : (
+                <span className="text-[8px] md:text-[10px] font-black text-slate-300 uppercase tracking-wider text-center p-2">No Logo</span>
+              )}
             </div>
             <div className="pb-1">
               <div className="flex items-center gap-2 mb-2">

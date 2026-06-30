@@ -55,8 +55,11 @@ export default function AnnouncementBar() {
   const [headVendorSubIds, setHeadVendorSubIds] = useState<number[]>([]);
 
   useEffect(() => {
-    if (pathname.includes('/products/detail') && productIdFromUrl) {
-      fetch(`${API_URL}/api/products/${productIdFromUrl}`)
+    const productMatch = pathname.match(/^\/products\/([^/]+)/);
+    const resolvedId = (productMatch && productMatch[1] !== 'detail') ? productMatch[1] : productIdFromUrl;
+
+    if (resolvedId) {
+      fetch(`${API_URL}/api/products/${resolvedId}`)
         .then(res => res.json())
         .then(data => {
           if (data && !data.error) {

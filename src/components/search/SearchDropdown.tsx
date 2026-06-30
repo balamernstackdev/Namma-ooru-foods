@@ -56,7 +56,7 @@ const SearchProductCard = ({
   const { settings } = usePlatformSettings();
   return (
     <Link
-      href={`/products/detail?id=${product.id}`}
+      href={`/products/${product.slug || product.id}`}
       onClick={onClick}
       data-highlighted={isHighlighted}
       className={`flex items-center gap-3 px-3 py-2.5 transition-all duration-200 rounded-xl ${

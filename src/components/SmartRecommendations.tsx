@@ -68,7 +68,7 @@ const SmartRecommendations = () => {
                            viewport={{ once: true }}
                            className="group bg-white/5 backdrop-blur-md rounded-[2rem] p-4 border border-white/10 hover:bg-white/10 transition-all cursor-pointer"
                         >
-                           <Link href={`/products/detail?id=${item.id}`} className="block">
+                           <Link href={`/products/${item.slug || item.id}`} className="block">
                               <div className="aspect-square relative rounded-2xl overflow-hidden mb-4">
                                  <Image src={item.image} alt={item.name} fill className="object-cover group-hover:scale-110 transition-transform duration-700" />
                                  <div className="absolute top-2 right-2 h-8 w-8 rounded-lg bg-emerald-500/80 backdrop-blur-md flex items-center justify-center text-white">

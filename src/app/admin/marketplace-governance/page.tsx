@@ -961,7 +961,7 @@ export default function MarketplaceGovernancePage() {
                                     value={newBrandLogo}
                                     onChange={e => setNewBrandLogo(e.target.value)}
                                     className="w-full h-10 px-3 bg-white border border-slate-200 rounded-lg text-xs font-bold"
-                                    placeholder="/brand_logos/custom_logo.webp"
+                                    placeholder="e.g., /uploads/logo.png"
                                   />
                                 </div>
                                 <div className="space-y-1">
@@ -971,7 +971,7 @@ export default function MarketplaceGovernancePage() {
                                     value={newBrandBanner}
                                     onChange={e => setNewBrandBanner(e.target.value)}
                                     className="w-full h-10 px-3 bg-white border border-slate-200 rounded-lg text-xs font-bold"
-                                    placeholder="/banners/custom_banner.webp"
+                                    placeholder="e.g., /uploads/banner.png"
                                   />
                                 </div>
                               </div>

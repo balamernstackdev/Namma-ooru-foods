@@ -90,12 +90,18 @@ export default function SellersListingClient() {
                 >
                   {/* Logo area */}
                   <div className="relative aspect-[4/3] bg-slate-50 flex items-center justify-center p-8 group-hover:bg-emerald-50/40 transition-colors overflow-hidden">
-                    <OptimizedImage
-                      src={seller.logo || settings.logo || '/logo.webp'}
-                      alt={seller.name}
-                      fill
-                      className="object-contain p-6 group-hover:scale-105 transition-transform duration-500"
-                    />
+                    {seller.logo ? (
+                      <OptimizedImage
+                        src={seller.logo}
+                        alt={seller.name}
+                        fill
+                        className="object-contain p-6 group-hover:scale-105 transition-transform duration-500"
+                      />
+                    ) : (
+                      <div className="flex flex-col items-center justify-center text-center p-4">
+                        <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest">No Logo Uploaded</span>
+                      </div>
+                    )}
                     {/* Verified badge */}
                     <div className="absolute top-4 right-4 h-7 w-7 rounded-full bg-white shadow flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                       <div className="h-3 w-3 rounded-full bg-emerald-500" />

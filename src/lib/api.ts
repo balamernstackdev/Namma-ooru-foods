@@ -1,8 +1,11 @@
-export const API_URL = typeof window !== 'undefined'
-  ? (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname.startsWith('192.168.'))
-    ? 'http://localhost:5000'
-    : 'https://api.nammaorrufoods.com'
-  : 'https://api.nammaorrufoods.com';
+// export const API_URL = typeof window !== 'undefined'
+//   ? (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname.startsWith('192.168.'))
+//     ? 'http://localhost:5000'
+//     : 'https://api.nammaorrufoods.com'
+//   : 'https://api.nammaorrufoods.com';
+
+// export const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.nammaorrufoods.com';
+export const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
 // Global tracking for active network requests (for monitoring/loading bars)
 let activeRequestsCount = 0;
@@ -165,21 +168,35 @@ if (typeof window !== 'undefined' && !(window as any).__api_patched) {
                 attempt++;
                 lastError = err;
 
-                const isTimeout = err.name === 'AbortError';
-                const errorMessage = isTimeout ? `Request Timeout after ${timeoutDuration}ms` : err.message || 'Network connection failed';
+                const isUserAbort = err.name === 'AbortError' && init?.signal?.aborted;
+                const isTimeout = err.name === 'AbortError' && !isUserAbort;
+                const errorMessage = isTimeout
+                    ? `Request Timeout after ${timeoutDuration}ms`
+                    : isUserAbort
+                        ? 'Request aborted by caller'
+                        : err.message || 'Network connection failed';
 
                 if (process.env.NODE_ENV !== 'production') {
-                    console.error(
-                        `%c🔴 [API Error] [ID: ${requestId}] ${errorMessage} ➔ ${method} ${urlString.replace(API_URL, '')}`,
-                        'color: #ef4444; font-weight: bold;',
-                        err
-                    );
+                    if (isUserAbort) {
+                        console.debug(
+                            `%c⚪ [API Aborted] [ID: ${requestId}] ${errorMessage} ➔ ${method} ${urlString.replace(API_URL, '')}`,
+                            'color: #94a3b8; font-weight: bold;'
+                        );
+                    } else {
+                        console.error(
+                            `%c🔴 [API Error] [ID: ${requestId}] ${errorMessage} ➔ ${method} ${urlString.replace(API_URL, '')}`,
+                            'color: #ef4444; font-weight: bold;',
+                            err
+                        );
+                    }
                 }
 
-                // Dispatch api error event for global alert monitors
-                window.dispatchEvent(new CustomEvent('api-error', {
-                    detail: { method, url: urlString, error: errorMessage }
-                }));
+                if (!isUserAbort) {
+                    // Dispatch api error event for global alert monitors
+                    window.dispatchEvent(new CustomEvent('api-error', {
+                        detail: { method, url: urlString, error: errorMessage }
+                    }));
+                }
 
                 if (attempt > maxRetries) {
                     activeRequestsCount--;

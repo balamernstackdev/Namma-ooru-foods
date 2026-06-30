@@ -15,6 +15,7 @@ interface Category {
   icon: string | null;
   isFeatured: boolean;
   promotionalTag: string | null;
+  updatedAt?: string;
   _count?: {
     products: number;
   };
@@ -83,12 +84,23 @@ const CategoryCard = ({ category, index }: { category: Category; index: number }
 
         {/* Image Section */}
         <div className="relative h-[200px] w-full overflow-hidden">
-          <Image
-            src={category.image || '/ai_images/organic_grains_1776231059575.png'}
-            alt={category.name}
-            fill
-            className="object-cover transition-transform duration-700 group-hover:scale-110"
-          />
+          {(() => {
+            const cacheBuster = category.updatedAt ? new Date(category.updatedAt).getTime() : Date.now();
+            const rawImageUrl = (category.image && category.image.trim() !== '') 
+              ? category.image 
+              : `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" fill="%23f1f5f9"><rect width="400" height="400" /><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="24" fill="%2394a3b8">No Image</text></svg>`;
+            const finalImageUrl = rawImageUrl.startsWith('http') ? `${rawImageUrl}?t=${cacheBuster}` : rawImageUrl;
+            
+            return (
+              <Image
+                src={finalImageUrl}
+                alt={category.name}
+                fill
+                className="object-cover transition-transform duration-700 group-hover:scale-110"
+                unoptimized={finalImageUrl.startsWith('http')}
+              />
+            );
+          })()}
           {/* Gradient Overlay */}
           <div className="absolute inset-0 bg-gradient-to-t from-emerald-950/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
         </div>

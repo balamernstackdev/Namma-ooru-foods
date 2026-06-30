@@ -284,7 +284,11 @@ export default function ComboProductsSelector({
                      >
                         <div className="flex items-center gap-2.5 min-w-0">
                            <div className="h-8 w-8 rounded-lg overflow-hidden bg-slate-50 border border-slate-100 flex items-center justify-center shrink-0">
-                              <img src={prod.image || '/placeholder.png'} className="h-full w-full object-contain" alt="" onError={(e) => { (e.target as any).src = '/placeholder.png'; }} />
+                              {prod.image ? (
+                                 <img src={prod.image} className="h-full w-full object-contain" alt="" />
+                              ) : (
+                                 <span className="text-[6px] font-black text-slate-400 uppercase text-center leading-none">No Image</span>
+                              )}
                            </div>
                            <div className="min-w-0">
                               <span className="text-[10px] font-black text-slate-800 truncate uppercase tracking-tight block">{prod.name}</span>
@@ -355,7 +359,11 @@ export default function ComboProductsSelector({
 
                         {/* Image */}
                         <div className="h-20 w-20 rounded-xl overflow-hidden bg-slate-50 border border-slate-100 flex items-center justify-center p-1 shrink-0">
-                           <img src={item.image || '/placeholder.png'} className="h-full w-full object-contain mix-blend-multiply" alt="" onError={(e) => { (e.target as any).src = '/placeholder.png'; }} />
+                           {item.image ? (
+                              <img src={item.image} className="h-full w-full object-contain mix-blend-multiply" alt="" />
+                           ) : (
+                              <span className="text-[8px] font-black text-slate-400 uppercase text-center leading-none">No Image</span>
+                           )}
                         </div>
 
                         {/* Details */}

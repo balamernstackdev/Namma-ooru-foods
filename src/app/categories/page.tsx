@@ -10,7 +10,7 @@ import { motion } from 'framer-motion';
 
 import { useBanners } from '@/hooks/useBanners';
 
-const fetcher = (url: string) => fetch(url).then(res => res.json());
+const fetcher = (url: string) => fetch(url, { cache: 'no-store' }).then(res => res.json());
 
 const CategoriesPage = () => {
   // Pagination State

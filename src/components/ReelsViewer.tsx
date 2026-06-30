@@ -291,7 +291,7 @@ export default function ReelsViewer({ videos, initialIndex, isOpen, onClose }: R
       name: product.name,
       price: product.price,
       quantity: 1,
-      image: product.image || settings.logo || '/logo.webp',
+      image: product.image || '',
       variant: ''
     });
     
@@ -505,8 +505,12 @@ export default function ReelsViewer({ videos, initialIndex, isOpen, onClose }: R
               onClick={(e) => { e.stopPropagation(); setShowProductsDrawer(true); }}
               className="flex items-center gap-2.5 bg-black/40 backdrop-blur-md border border-white/10 p-2 rounded-2xl w-fit pointer-events-auto hover:bg-white/10 active:scale-95 transition-all mt-1"
             >
-              <div className="relative h-10 w-10 rounded-lg overflow-hidden shrink-0 border border-white/15">
-                <img src={activeVideo.product.image || settings.logo || '/logo.webp'} alt="" className="h-full w-full object-cover" />
+              <div className="relative h-10 w-10 rounded-lg overflow-hidden shrink-0 border border-white/15 bg-zinc-900 flex items-center justify-center">
+                {activeVideo.product.image ? (
+                  <img src={activeVideo.product.image} alt="" className="h-full w-full object-cover" />
+                ) : (
+                  <span className="text-[6px] font-black text-slate-500 uppercase tracking-widest text-center">No Image</span>
+                )}
               </div>
               <div className="flex flex-col text-left">
                 <span className="text-[9px] font-black text-white/50 uppercase leading-none tracking-wider">Tap to Shop</span>
@@ -549,14 +553,17 @@ export default function ReelsViewer({ videos, initialIndex, isOpen, onClose }: R
             >
               {/* Full Screen High-Res Farm Background with Glass Overlay */}
               <div className="absolute inset-0 z-0">
-                <img 
-                  src={activeVideo.thumbnail || '/ai_images/cinematic_farm_1776230966841.png'} 
-                  alt="" 
-                  className="w-full h-full object-cover opacity-35 filter brightness-50"
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).src = '/ai_images/cinematic_farm_1776230966841.png';
-                  }}
-                />
+                {activeVideo.thumbnail ? (
+                  <img 
+                    src={activeVideo.thumbnail} 
+                    alt="" 
+                    className="w-full h-full object-cover opacity-35 filter brightness-50"
+                  />
+                ) : (
+                  <div className="absolute inset-0 bg-slate-900/60 flex items-center justify-center">
+                    <span className="text-[11px] font-black text-emerald-400 uppercase tracking-[0.25em]">No Video Thumbnail</span>
+                  </div>
+                )}
                 <div className="absolute inset-0 bg-gradient-to-t from-[#021f18] via-[#022c22]/90 to-transparent" />
               </div>
 
@@ -651,14 +658,15 @@ export default function ReelsViewer({ videos, initialIndex, isOpen, onClose }: R
                               }}
                               className="relative h-16 w-12 rounded-xl bg-[#011a14] overflow-hidden shrink-0 cursor-pointer border border-[#10b981]/20 hover:border-emerald-400 transition-all hover:scale-105 active:scale-95 shadow-md flex items-center justify-center"
                             >
-                              <img 
-                                src={v.thumbnail || '/ai_images/organic_grains_1776231059575.png'} 
-                                alt="" 
-                                className="h-full w-full object-cover" 
-                                onError={(e) => {
-                                  (e.target as HTMLImageElement).src = '/ai_images/organic_grains_1776231059575.png';
-                                }}
-                              />
+                              {v.thumbnail ? (
+                                <img 
+                                  src={v.thumbnail} 
+                                  alt="" 
+                                  className="h-full w-full object-cover" 
+                                />
+                              ) : (
+                                <span className="text-[6px] font-black text-emerald-400/80 uppercase tracking-wider text-center p-0.5">No Thumbnail</span>
+                              )}
                               <div className="absolute inset-0 bg-black/10 hover:bg-transparent transition-colors" />
                             </div>
                           );
@@ -713,15 +721,16 @@ export default function ReelsViewer({ videos, initialIndex, isOpen, onClose }: R
                       key={product.id}
                       className="flex items-center gap-4 bg-slate-50 border border-slate-100 p-3 rounded-2xl hover:bg-emerald-50/20 transition-all duration-300"
                     >
-                      <div className="relative h-16 w-16 rounded-xl overflow-hidden shrink-0 border border-slate-100">
-                        <img 
-                          src={product.image || settings.logo || '/logo.webp'} 
-                          alt={product.name} 
-                          className="w-full h-full object-cover" 
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).src = settings.logo || '/logo.webp';
-                          }}
-                        />
+                      <div className="relative h-16 w-16 rounded-xl overflow-hidden shrink-0 border border-slate-100 bg-slate-100 flex items-center justify-center">
+                        {product.image ? (
+                          <img 
+                            src={product.image} 
+                            alt={product.name} 
+                            className="w-full h-full object-cover" 
+                          />
+                        ) : (
+                          <span className="text-[7px] font-black text-slate-400 uppercase tracking-wider text-center">No Image</span>
+                        )}
                       </div>
 
                       <div className="flex-1 min-w-0 text-left">
@@ -743,7 +752,7 @@ export default function ReelsViewer({ videos, initialIndex, isOpen, onClose }: R
                           <ShoppingCart size={11} /> Add
                         </button>
                         <Link 
-                          href={`/products/detail?id=${product.id}`}
+                          href={`/products/${product.slug || product.id}`}
                           onClick={() => {
                             setShowProductsDrawer(false);
                             onClose();

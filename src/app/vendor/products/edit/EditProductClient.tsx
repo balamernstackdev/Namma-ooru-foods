@@ -756,7 +756,7 @@ export default function EditProductClient({ id }: { id?: string }) {
                                  <th className="pb-3 font-black">Selling Price</th>
                                  <th className="pb-3 font-black">MRP</th>
                                  <th className="pb-3 font-black">Stock</th>
-                                 <th className="pb-3 font-black">SKU <span className="font-medium normal-case text-slate-450">(Optional)</span></th>
+
                                  <th className="pb-3 font-black text-right">Actions</th>
                               </tr>
                            </thead>
@@ -767,7 +767,6 @@ export default function EditProductClient({ id }: { id?: string }) {
                                     <td className="py-3 pr-2"><input type="number" className="w-full h-11 px-4 rounded-xl border border-[#E5E7EB] bg-white text-sm font-bold outline-none focus:border-[#0F7A4D] transition-colors text-[#0F7A4D] font-black focus:ring-4 focus:ring-[#0F7A4D]/5" placeholder="Price" value={variant.price} onChange={e => { const newV = [...formData.variants]; newV[idx].price = e.target.value; setFormData({ ...formData, variants: newV }); }} /></td>
                                     <td className="py-3 pr-2"><input type="number" className="w-full h-11 px-4 rounded-xl border border-[#E5E7EB] bg-white text-sm font-bold outline-none focus:border-[#0F7A4D] transition-colors text-[#6B7280] focus:ring-4 focus:ring-[#0F7A4D]/5" placeholder="MRP" value={variant.originalPrice} onChange={e => { const newV = [...formData.variants]; newV[idx].originalPrice = e.target.value; setFormData({ ...formData, variants: newV }); }} /></td>
                                     <td className="py-3 pr-2"><input type="number" className="w-full h-11 px-4 rounded-xl border border-[#E5E7EB] bg-white text-sm font-bold outline-none focus:border-[#0F7A4D] transition-colors focus:ring-4 focus:ring-[#0F7A4D]/5" placeholder="Stock" value={variant.stock} onChange={e => { const newV = [...formData.variants]; newV[idx].stock = e.target.value; setFormData({ ...formData, variants: newV }); }} /></td>
-                                    <td className="py-3 pr-2"><input type="text" className="w-full h-11 px-4 rounded-xl border border-[#E5E7EB] bg-white text-sm font-bold outline-none focus:border-[#0F7A4D] transition-colors uppercase focus:ring-4 focus:ring-[#0F7A4D]/5" placeholder="SKU" value={variant.sku} onChange={e => { const newV = [...formData.variants]; newV[idx].sku = e.target.value; setFormData({ ...formData, variants: newV }); }} /></td>
                                     <td className="py-3 text-right"><button type="button" onClick={() => { const newV = [...formData.variants]; newV.splice(idx, 1); setFormData({ ...formData, variants: newV }); }} className="h-11 w-11 inline-flex items-center justify-center rounded-xl text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all"><Trash2 size={16} /></button></td>
                                  </tr>
                               ))}

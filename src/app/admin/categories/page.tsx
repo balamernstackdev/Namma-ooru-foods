@@ -10,6 +10,7 @@ import PremiumLoader from '@/components/ui/PremiumLoader';
 import AdminPagination from '@/components/admin/AdminPagination';
 import AdminListToolbar from '@/components/admin/AdminListToolbar';
 import { ActionGroup, ViewButton, EditButton, DeleteButton } from '@/components/ui/ActionButtons';
+import { mutate } from 'swr';
 
 export default function AdminCategoriesPage() {
   const router = useRouter();
@@ -56,10 +57,12 @@ export default function AdminCategoriesPage() {
 
       if (res.ok) {
         addToast('Success', 'Category deleted successfully');
+        mutate(() => true);
+        router.refresh();
         setCategories(categories.filter(c => c.id !== categoryToDelete));
       } else {
         const data = await res.json();
-        addToast('Error', data.error || 'Failed to delete category');
+        addToast('Error', data.error || data.message || 'Failed to delete category');
       }
     } catch (err) {
       addToast('Error', 'Error deleting category');

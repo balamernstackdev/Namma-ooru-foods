@@ -335,13 +335,19 @@ export default function AdminProducts() {
                                  </td>
                                  <td className="px-6 py-4 border-b border-slate-50">
                                     <div className="flex items-center gap-3">
-                                       <div className="h-10 w-10 rounded-xl bg-slate-50 border border-slate-100 overflow-hidden shrink-0 shadow-sm">
-                                          <img
-                                             src={product.image || settings.logo || '/logo.webp'}
-                                             className="h-full w-full object-cover"
-                                             alt={product.name}
-                                          />
-                                       </div>
+                                        <div className="h-10 w-10 rounded-xl bg-slate-50 border border-slate-100 overflow-hidden shrink-0 shadow-sm flex items-center justify-center">
+                                           {product.image ? (
+                                              <img
+                                                 src={product.image}
+                                                 className="h-full w-full object-cover"
+                                                 alt={product.name}
+                                              />
+                                           ) : (
+                                              <div className="h-full w-full bg-slate-100 flex flex-col items-center justify-center text-center p-1">
+                                                 <span className="text-[7px] leading-tight font-black uppercase text-slate-400">No Image</span>
+                                              </div>
+                                           )}
+                                        </div>
                                        <div className="min-w-0">
                                           <p className="text-[13px] font-extrabold text-slate-900 leading-tight truncate">
                                              {product.name}
@@ -485,12 +491,18 @@ export default function AdminProducts() {
                      return (
                         <div key={product.id} className="p-6 space-y-4">
                            <div className="flex items-center gap-3">
-                              <div className="h-12 w-12 rounded-xl bg-slate-50 border border-slate-100 overflow-hidden shrink-0 shadow-sm">
-                                 <img
-                                    src={product.image || settings.logo || '/logo.webp'}
-                                    className="h-full w-full object-cover"
-                                    alt={product.name}
-                                 />
+                              <div className="h-12 w-12 rounded-xl bg-slate-50 border border-slate-100 overflow-hidden shrink-0 shadow-sm flex items-center justify-center">
+                                 {product.image ? (
+                                    <img
+                                       src={product.image}
+                                       className="h-full w-full object-cover"
+                                       alt={product.name}
+                                    />
+                                 ) : (
+                                    <div className="h-full w-full bg-slate-100 flex flex-col items-center justify-center text-center p-1">
+                                       <span className="text-[7px] leading-tight font-black uppercase text-slate-400">No Image</span>
+                                    </div>
+                                 )}
                               </div>
                               <div className="min-w-0 flex-1">
                                  <div className="flex items-center justify-between gap-2">

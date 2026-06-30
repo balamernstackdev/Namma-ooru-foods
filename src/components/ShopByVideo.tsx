@@ -51,17 +51,20 @@ const VideoReelItem = memo(({ video, isHovered, onClick, onHoverStart, onHoverEn
       {/* Media Layer */}
       <div className="absolute inset-0">
         {/* Dual Layer Rendering: Cross-fades opacity instead of unmounting DOM nodes */}
-        <Image
-          src={video.thumbnail || settings.logo || '/logo.webp'}
-          alt={video.title}
-          fill
-          sizes="(max-width: 768px) 50vw, 30vw"
-          className={`object-cover transition-opacity duration-700 group-hover:scale-110 ${isHovered ? 'opacity-0' : 'opacity-100'}`}
-          unoptimized={video.thumbnail?.startsWith('http')}
-          onError={(e) => {
-            (e.target as HTMLImageElement).src = settings.logo || '/logo.webp';
-          }}
-        />
+        {video.thumbnail ? (
+          <Image
+            src={video.thumbnail}
+            alt={video.title}
+            fill
+            sizes="(max-width: 768px) 50vw, 30vw"
+            className={`object-cover transition-opacity duration-700 group-hover:scale-110 ${isHovered ? 'opacity-0' : 'opacity-100'}`}
+            unoptimized={video.thumbnail?.startsWith('http')}
+          />
+        ) : (
+          <div className={`absolute inset-0 bg-slate-800 flex items-center justify-center transition-opacity duration-700 ${isHovered ? 'opacity-0' : 'opacity-100'}`}>
+            <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest text-center px-4">No Video Thumbnail</span>
+          </div>
+        )}
 
         <video
           ref={videoRefLocal}

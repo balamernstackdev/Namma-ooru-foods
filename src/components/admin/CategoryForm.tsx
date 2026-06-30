@@ -20,6 +20,7 @@ import {
 import { useRouter } from 'next/navigation';
 import { API_URL } from '@/lib/api';
 import { useToast } from '@/context/ToastContext';
+import { mutate } from 'swr';
 
 interface CategoryFormProps {
   initialData?: any;
@@ -125,10 +126,13 @@ export default function CategoryForm({ initialData, mode }: CategoryFormProps) {
 
       if (res.ok) {
         addToast('Success', mode === 'edit' ? 'Category is updated' : 'Category architected');
+        addToast('Rebuild Needed', 'A static rebuild is required for this new category to be SEO-indexed as a static page. (Dynamic lookup will work client-side)', 'info');
+        mutate(() => true);
+        router.refresh();
         router.push('/admin/categories');
       } else {
         const err = await res.json();
-        addToast('Error', err.error || 'Failed to save category');
+        addToast('Error', err.error || err.message || 'Failed to save category');
       }
     } finally {
       setSubmitting(false);
@@ -144,6 +148,8 @@ export default function CategoryForm({ initialData, mode }: CategoryFormProps) {
       const res = await fetch(`${API_URL}/api/admin-ops/categories/${formData.id}`, { method: 'DELETE' });
       if (res.ok) {
         addToast('Deleted', 'Category removed from catalog');
+        mutate(() => true);
+        router.refresh();
         router.push('/admin/categories');
       }
     } finally {

@@ -4,12 +4,12 @@ import { CATEGORIES } from '@/lib/staticData';
 import { API_URL } from '@/lib/api';
 import { Metadata } from 'next';
 
-// export const dynamicParams = true;
+export const dynamicParams = false;
 
 export async function generateStaticParams(): Promise<{ id: string }[]> {
   try {
     const res = await fetch(`${API_URL}/api/categories?limit=1000&all=true`, { next: { revalidate: 3600 } });
-    if (!res.ok) throw new Error('API fetch failed');
+    if (!res.ok) throw new Error(`API fetch failed with status ${res.status}`);
     const data = await res.json();
     const categoriesList = Array.isArray(data) ? data : (data && Array.isArray(data.categories) ? data.categories : []);
 
@@ -21,22 +21,13 @@ export async function generateStaticParams(): Promise<{ id: string }[]> {
           params.push({ id: category.slug });
         }
       });
+      console.log(`[Build] Generated ${params.length} static paths for categories.`);
       return params;
     }
     throw new Error('Empty categories list');
   } catch (error) {
-    console.warn('Falling back to static CATEGORIES for generateStaticParams:', error);
-    if (CATEGORIES && CATEGORIES.length > 0) {
-      const params: { id: string }[] = [];
-      CATEGORIES.forEach((category) => {
-        params.push({ id: category.id.toString() });
-        if (category.slug) {
-          params.push({ id: category.slug });
-        }
-      });
-      return params;
-    }
-    return [{ id: '1' }];
+    console.error('[Build ERROR] Failed to fetch categories in generateStaticParams:', error);
+    throw error; // Fail the build as requested
   }
 }
 

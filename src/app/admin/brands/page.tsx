@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import AdminPagination from '@/components/admin/AdminPagination';
 import AdminListToolbar from '@/components/admin/AdminListToolbar';
+import { mutate } from 'swr';
 
 interface Brand {
   id: number;
@@ -62,6 +63,8 @@ export default function AdminBrandsPage() {
       const res = await fetch(`${API_URL}/api/admin-ops/brands/${id}`, { method: 'DELETE' });
       if (res.ok) {
         addToast('Success', 'Brand partner removed from registry');
+        mutate(() => true);
+        router.refresh();
         fetchBrands();
       }
     } catch (err) {
@@ -84,6 +87,8 @@ export default function AdminBrandsPage() {
       }
       addToast('Success', `Successfully removed ${successCount} brand partners`);
       setSelectedIds([]);
+      mutate(() => true);
+      router.refresh();
       fetchBrands();
     } else {
       addToast('Info', 'Approval state changes are not supported for heritage brand partners.');

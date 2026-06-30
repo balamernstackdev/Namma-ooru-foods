@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { mutate } from 'swr';
 import { Save, X, Package, Tag, IndianRupee, Image as ImageIcon, List, ChevronLeft, Sparkles, Plus, Trash2, Layers } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import RelatedProductsSelector from '../admin/RelatedProductsSelector';
@@ -36,7 +37,7 @@ export default function ProductForm({ initialData, isEdit }: ProductFormProps) {
       image: '',
       tags: [] as string[],
       highlights: [] as string[],
-      variants: [] as { name: string; price: number; stock: number; originalPrice?: string; sku?: string; weight?: string; unit?: string }[],
+      variants: [] as { name: string; price: number; stock: number; originalPrice?: string; sku?: string; weight?: string; unit?: string; barcode?: string }[],
       storageInstructions: '',
       isBestSeller: false,
       isOrganic: false,
@@ -151,7 +152,12 @@ export default function ProductForm({ initialData, isEdit }: ProductFormProps) {
             variants: form.variants.map((v: any) => ({
                name: v.name,
                price: v.price ? parseFloat(v.price.toString()) : null,
-               stock: parseInt(v.stock?.toString() || '0')
+               originalPrice: v.originalPrice ? parseFloat(v.originalPrice.toString()) : null,
+               stock: parseInt(v.stock?.toString() || '0'),
+               sku: v.sku && typeof v.sku === 'string' ? v.sku.trim() || null : null,
+               weight: v.weight ? parseFloat(v.weight.toString()) : null,
+               unit: null,
+               barcode: v.barcode && typeof v.barcode === 'string' ? v.barcode.trim() || null : null
             }))
          };
 
@@ -173,10 +179,12 @@ export default function ProductForm({ initialData, isEdit }: ProductFormProps) {
          if (response.ok) {
             const data = await response.json();
             if (isEdit) {
+               mutate(() => true);
                router.push('/vendor/products');
                router.refresh();
             } else {
                if (data && data.success) {
+                  mutate(() => true);
                   router.push('/vendor/products');
                   router.refresh();
                } else {
@@ -404,7 +412,7 @@ export default function ProductForm({ initialData, isEdit }: ProductFormProps) {
                            </div>
                            <h3 className="text-xl font-black text-emerald-950 tracking-tight">Variant & Inventory Manager</h3>
                         </div>
-                        <button type="button" onClick={() => setForm({ ...form, variants: [...form.variants, { name: '', price: 0, originalPrice: '', stock: 0, sku: '', weight: '', unit: 'g' }] })} className="px-4 py-2 rounded-xl bg-emerald-600 text-white text-[11px] font-black uppercase tracking-widest hover:bg-emerald-700 transition-all shadow-sm">+ Add Variant</button>
+                        <button type="button" onClick={() => setForm({ ...form, variants: [...form.variants, { name: '', price: 0, originalPrice: '', stock: 0, sku: '', weight: '', unit: '' }] })} className="px-4 py-2 rounded-xl bg-emerald-600 text-white text-[11px] font-black uppercase tracking-widest hover:bg-emerald-700 transition-all shadow-sm">+ Add Variant</button>
                      </div>
                      <div className="space-y-4">
                         {form.variants.length === 0 ? (
@@ -417,9 +425,7 @@ export default function ProductForm({ initialData, isEdit }: ProductFormProps) {
                                        <th className="pb-3 font-black">Variant Name</th>
                                        <th className="pb-3 font-black">Price</th>
                                        <th className="pb-3 font-black">MRP</th>
-                                       <th className="pb-3 font-black">Weight/Unit</th>
                                        <th className="pb-3 font-black">Stock</th>
-                                       <th className="pb-3 font-black">SKU</th>
                                        <th className="pb-3 font-black text-right">Actions</th>
                                     </tr>
                                  </thead>
@@ -428,15 +434,8 @@ export default function ProductForm({ initialData, isEdit }: ProductFormProps) {
                                        <tr key={idx} className="group">
                                           <td className="py-3 pr-2"><input type="text" className="w-[120px] h-11 px-3 rounded-xl border border-slate-200 text-sm font-bold outline-none focus:border-amber-400 transition-colors" placeholder="e.g. 500g" value={variant.name} onChange={e => { const newV: any = [...form.variants]; newV[idx].name = e.target.value; setForm({ ...form, variants: newV }); }} /></td>
                                           <td className="py-3 pr-2"><input type="number" className="w-[90px] h-11 px-3 rounded-xl border border-slate-200 text-sm font-bold outline-none focus:border-amber-400 transition-colors text-emerald-600" placeholder="Price" value={variant.price} onChange={e => { const newV: any = [...form.variants]; newV[idx].price = e.target.value; setForm({ ...form, variants: newV }); }} /></td>
-                                          <td className="py-3 pr-2"><input type="number" className="w-[90px] h-11 px-3 rounded-xl border border-slate-200 text-sm font-bold outline-none focus:border-amber-400 transition-colors text-slate-400" placeholder="MRP" value={variant.originalPrice} onChange={e => { const newV: any = [...form.variants]; newV[idx].originalPrice = e.target.value; setForm({ ...form, variants: newV }); }} /></td>
-                                          <td className="py-3 pr-2 flex items-center gap-1">
-                                             <input type="number" step="any" className="w-[70px] h-11 px-3 rounded-xl border border-slate-200 text-sm font-bold outline-none focus:border-amber-400 transition-colors" placeholder="Wt" value={variant.weight || ''} onChange={e => { const newV: any = [...form.variants]; newV[idx].weight = e.target.value; setForm({ ...form, variants: newV }); }} />
-                                             <select className="w-[70px] h-11 px-2 rounded-xl border border-slate-200 text-sm font-bold outline-none bg-white" value={variant.unit || 'g'} onChange={e => { const newV: any = [...form.variants]; newV[idx].unit = e.target.value; setForm({ ...form, variants: newV }); }}>
-                                                <option value="g">g</option><option value="kg">kg</option><option value="ml">ml</option><option value="L">L</option><option value="pcs">pcs</option>
-                                             </select>
-                                          </td>
+                                          <td className="py-3 pr-2"><input type="number" className="w-[90px] h-11 px-3 rounded-xl border border-slate-200 text-sm font-bold outline-none focus:border-amber-400 transition-colors text-emerald-600" placeholder="MRP" value={variant.originalPrice} onChange={e => { const newV: any = [...form.variants]; newV[idx].originalPrice = e.target.value; setForm({ ...form, variants: newV }); }} /></td>
                                           <td className="py-3 pr-2"><input type="number" className="w-[80px] h-11 px-3 rounded-xl border border-slate-200 text-sm font-bold outline-none focus:border-amber-400 transition-colors" placeholder="Stock" value={variant.stock} onChange={e => { const newV: any = [...form.variants]; newV[idx].stock = e.target.value; setForm({ ...form, variants: newV }); }} /></td>
-                                          <td className="py-3 pr-2"><input type="text" className="w-[90px] h-11 px-3 rounded-xl border border-slate-200 text-sm font-bold outline-none focus:border-amber-400 transition-colors uppercase" placeholder="SKU" value={variant.sku} onChange={e => { const newV: any = [...form.variants]; newV[idx].sku = e.target.value; setForm({ ...form, variants: newV }); }} /></td>
                                           <td className="py-3 text-right"><button type="button" onClick={() => { const newV = [...form.variants]; newV.splice(idx, 1); setForm({ ...form, variants: newV }); }} className="h-11 w-11 inline-flex items-center justify-center rounded-xl text-slate-300 hover:text-red-500 hover:bg-red-50 transition-all"><Trash2 size={16} /></button></td>
                                        </tr>
                                     ))}
@@ -535,21 +534,17 @@ export default function ProductForm({ initialData, isEdit }: ProductFormProps) {
                               </div>
                               <div className="space-y-3">
                                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">Unit</label>
-                                 <select
-                                    className="w-full h-14 px-6 rounded-2xl bg-slate-50 border-2 border-transparent focus:border-emerald-400 focus:bg-white outline-none font-bold text-emerald-950 bg-white"
+                                 <input
+                                    type="text"
+                                    className="w-full h-14 px-6 rounded-2xl bg-slate-50 border-2 border-transparent focus:border-emerald-400 focus:bg-white outline-none font-bold text-emerald-950"
+                                    placeholder="e.g. g, kg, ml, pcs"
                                     value={form.unit}
                                     onChange={e => setForm({ ...form, unit: e.target.value })}
-                                 >
-                                    <option value="g">g (Grams)</option>
-                                    <option value="kg">kg (Kilograms)</option>
-                                    <option value="ml">ml (Milliliters)</option>
-                                    <option value="L">L (Liters)</option>
-                                    <option value="pcs">pcs (Pieces)</option>
-                                 </select>
+                                 />
                               </div>
                            </div>
 
-                           <div className="grid grid-cols-2 gap-4">
+                           <div className="grid grid-cols-1 gap-4">
                               <div className="space-y-3">
                                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">Base Stock</label>
                                  <input
@@ -557,15 +552,6 @@ export default function ProductForm({ initialData, isEdit }: ProductFormProps) {
                                     className="w-full h-14 px-6 rounded-2xl bg-slate-50 border-2 border-transparent focus:border-emerald-400 focus:bg-white outline-none font-bold text-emerald-950"
                                     value={form.stock}
                                     onChange={e => setForm({ ...form, stock: e.target.value })}
-                                 />
-                              </div>
-                              <div className="space-y-3">
-                                 <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">SKU</label>
-                                 <input
-                                    type="text"
-                                    className="w-full h-14 px-6 rounded-2xl bg-slate-50 border-2 border-transparent focus:border-emerald-400 focus:bg-white outline-none font-bold text-emerald-950 uppercase"
-                                    value={form.sku}
-                                    onChange={e => setForm({ ...form, sku: e.target.value })}
                                  />
                               </div>
                            </div>
