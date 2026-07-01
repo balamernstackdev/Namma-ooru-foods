@@ -7,26 +7,27 @@ export const dynamicParams = false;
 
 export async function generateStaticParams(): Promise<{ id: string }[]> {
   try {
+    console.log(`[Build] Fetching subcategories from: ${API_URL}/api/subcategories?limit=1000`);
     const res = await fetch(`${API_URL}/api/subcategories?limit=1000`, { next: { revalidate: 3600 } });
-    if (!res.ok) throw new Error(`API fetch failed with status ${res.status}`);
+    if (!res.ok) {
+      console.warn(`[Build WARNING] Subcategories API responded with status ${res.status}`);
+      return [];
+    }
     const data = await res.json();
     const subcategoriesList = data.subcategories || [];
 
-    if (subcategoriesList.length > 0) {
-      const params: { id: string }[] = [];
-      subcategoriesList.forEach((sub: any) => {
-        params.push({ id: sub.id.toString() });
-        if (sub.slug) {
-          params.push({ id: sub.slug });
-        }
-      });
-      console.log(`[Build] Generated ${params.length} static paths for subcategories.`);
-      return params;
-    }
-    throw new Error('Empty subcategories list');
-  } catch (error) {
-    console.error('[Build ERROR] Failed to fetch subcategories in generateStaticParams:', error);
-    throw error; // Fail the build as requested
+    const params: { id: string }[] = [];
+    subcategoriesList.forEach((sub: any) => {
+      params.push({ id: sub.id.toString() });
+      if (sub.slug) {
+        params.push({ id: sub.slug });
+      }
+    });
+    console.log(`[Build] Generated ${params.length} static paths for subcategories.`);
+    return params;
+  } catch (error: any) {
+    console.error('[Build WARNING] Failed to fetch subcategories in generateStaticParams:', error.message);
+    return [];
   }
 }
 

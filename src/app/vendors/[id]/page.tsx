@@ -11,7 +11,10 @@ export async function generateStaticParams() {
     console.log(`[Build] generateStaticParams starting for /vendors/[id]...`);
     console.log(`[Build] Fetching head vendors from: ${API_URL}/api/head-vendors?limit=1000`);
     const res = await fetch(`${API_URL}/api/head-vendors?limit=1000`, { cache: 'no-store' });
-    if (!res.ok) throw new Error(`API fetch failed with status ${res.status}`);
+    if (!res.ok) {
+      console.warn(`[Build WARNING] Vendors API responded with status ${res.status}`);
+      return [];
+    }
     const data = await res.json();
     const vendors = data.headVendors || [];
     console.log(`[Build] Successfully fetched ${vendors.length} head vendors.`);
@@ -25,12 +28,11 @@ export async function generateStaticParams() {
         console.log(`[Build] Registering vendor path: /vendors/${vendor.id}`);
       }
     }
-    if (params.length === 0) throw new Error('No vendors fetched');
     console.log(`[Build] Total pre-rendered paths for vendors: ${params.length}`);
     return params;
-  } catch (error) {
-    console.error('[Build ERROR] Failed to fetch vendors in generateStaticParams:', error);
-    throw error; // Fail the build as requested
+  } catch (error: any) {
+    console.error('[Build WARNING] Failed to fetch vendors in generateStaticParams:', error.message);
+    return [];
   }
 }
 

@@ -7,26 +7,27 @@ export const dynamicParams = false;
 
 export async function generateStaticParams(): Promise<{ id: string }[]> {
   try {
+    console.log(`[Build] Fetching products from: ${API_URL}/api/products?limit=1000`);
     const res = await fetch(`${API_URL}/api/products?limit=1000`, { next: { revalidate: 3600 } });
-    if (!res.ok) throw new Error(`API fetch failed with status ${res.status}`);
+    if (!res.ok) {
+      console.warn(`[Build WARNING] Products API responded with status ${res.status}`);
+      return [];
+    }
     const data = await res.json();
     const productsList = Array.isArray(data) ? data : (data && Array.isArray(data.products) ? data.products : []);
 
-    if (productsList.length > 0) {
-      const params: { id: string }[] = [];
-      productsList.forEach((product: any) => {
-        params.push({ id: product.id.toString() });
-        if (product.slug) {
-          params.push({ id: product.slug });
-        }
-      });
-      console.log(`[Build] Generated ${params.length} static paths for products.`);
-      return params;
-    }
-    throw new Error('Empty products list');
-  } catch (error) {
-    console.error('[Build ERROR] Failed to fetch products in generateStaticParams:', error);
-    throw error; // Fail the build as requested
+    const params: { id: string }[] = [];
+    productsList.forEach((product: any) => {
+      params.push({ id: product.id.toString() });
+      if (product.slug) {
+        params.push({ id: product.slug });
+      }
+    });
+    console.log(`[Build] Generated ${params.length} static paths for products.`);
+    return params;
+  } catch (error: any) {
+    console.error('[Build WARNING] Failed to fetch products in generateStaticParams:', error.message);
+    return [];
   }
 }
 

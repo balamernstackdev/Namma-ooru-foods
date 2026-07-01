@@ -86,6 +86,14 @@ export default function HubLayout({ children }: { children: React.ReactNode }) {
     return null;
   }
 
+  const hubPermissions = user?.hubPermissions;
+
+  const hasAccess = (moduleName: string) => {
+    if (role === 'admin') return true;
+    if (!hubPermissions || Object.keys(hubPermissions).length === 0) return true;
+    return hubPermissions[moduleName]?.view !== false;
+  };
+
   const toggleGroup = (label: string) => {
     setCollapsedGroups(prev =>
       prev.includes(label) ? prev.filter(l => l !== label) : [...prev, label]
@@ -166,6 +174,23 @@ export default function HubLayout({ children }: { children: React.ReactNode }) {
             {navGroups.map(group => {
               const isCollapsed = collapsedGroups.includes(group.label);
               const hideHeader = (group as any).hideHeader === true;
+              
+              const visibleItems = group.items.filter(item => {
+                let moduleName = '';
+                if (item.label === 'Dashboard') moduleName = 'dashboard';
+                else if (item.label === 'Hub Vendors') moduleName = 'subVendors';
+                else if (item.label === 'Hub Products') moduleName = 'products';
+                else if (item.label === 'Hub Orders') moduleName = 'orders';
+                else if (item.label === 'Hub Customers') moduleName = 'customers';
+                else if (item.label === 'Hub Payouts') moduleName = 'payouts';
+                else if (item.label === 'Reports') moduleName = 'reports';
+                
+                if (!moduleName) return true;
+                return hasAccess(moduleName);
+              });
+
+              if (visibleItems.length === 0) return null;
+
               return (
                 <div key={group.label} className={hideHeader ? "mb-1" : "mb-4"}>
                   {!hideHeader && (
@@ -179,7 +204,7 @@ export default function HubLayout({ children }: { children: React.ReactNode }) {
                     </button>
                   )}
                   <div className="flex flex-col gap-1 mt-1">
-                    {(!isCollapsed || hideHeader) && group.items.map(item => {
+                    {(!isCollapsed || hideHeader) && visibleItems.map(item => {
                       const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
                       return (
                         <Link

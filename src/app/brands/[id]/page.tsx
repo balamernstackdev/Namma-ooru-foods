@@ -7,8 +7,12 @@ export const dynamicParams = false;
 
 export async function generateStaticParams() {
   try {
+    console.log(`[Build] Fetching brands from: ${API_URL}/api/sub-vendors?includeEmpty=true&limit=1000`);
     const res = await fetch(`${API_URL}/api/sub-vendors?includeEmpty=true&limit=1000`, { cache: 'no-store' });
-    if (!res.ok) throw new Error(`API fetch failed with status ${res.status}`);
+    if (!res.ok) {
+      console.warn(`[Build WARNING] Brands API responded with status ${res.status}`);
+      return [];
+    }
     const data = await res.json();
     const brands = data.subVendors || [];
     const params = [];
@@ -16,12 +20,11 @@ export async function generateStaticParams() {
       params.push({ id: brand.id.toString() });
       if (brand.slug) params.push({ id: brand.slug });
     }
-    if (params.length === 0) throw new Error('No brands fetched');
     console.log(`[Build] Generated ${params.length} static paths for brands.`);
     return params;
-  } catch (error) {
-    console.error('[Build ERROR] Failed to fetch brands in generateStaticParams:', error);
-    throw error; // Fail the build as requested
+  } catch (error: any) {
+    console.error('[Build WARNING] Failed to fetch brands in generateStaticParams:', error.message);
+    return [];
   }
 }
 

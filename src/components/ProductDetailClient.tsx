@@ -685,31 +685,34 @@ export default function ProductDetailClient({ product: initialProduct, allProduc
                            Frequently Asked Questions
                         </h4>
 
-                        <div className="space-y-3">
-                           {(product.faqs?.length ? product.faqs : [
-                              { q: "Is this product 100% organic?", a: "Yes, our products are sourced directly from traditional farms and are free from chemical pesticides and synthetic fertilizers." },
-                              { q: "What is the expected shipping time?", a: "We typically deliver within 2-3 business days in metro areas, and 4-5 days in other regions across India." },
-                              { q: "What is your return policy?", a: "We offer a 7-day hassle-free replacement policy for any damaged, defective, or incorrect items received." },
-                              { q: "How should I store this?", a: "For maximum shelf life, store the product in a cool, dry place inside an airtight container. Keep away from direct sunlight." }
-                           ]).map((faq: any, i: number) => (
-                              <details key={i} className="group bg-white border border-slate-200 rounded-2xl overflow-hidden [&_summary::-webkit-details-marker]:hidden shadow-sm">
-                                 <summary className="flex items-center justify-between p-4 cursor-pointer font-black text-[13px] text-slate-800 select-none hover:bg-slate-50 transition-colors">
-                                    <span>{faq.q || faq.question}</span>
-                                    <span className="transition-transform duration-300 group-open:rotate-180 text-emerald-700 shrink-0 ml-4">
-                                       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6" /></svg>
-                                    </span>
-                                 </summary>
-                                 <div className="px-4 pb-4 text-[13px] text-slate-600 leading-relaxed border-t border-slate-100 pt-3 bg-white">
-                                    {(faq.a || faq.answer) ? (
-                                       <div
-                                          className="prose prose-sm max-w-none text-[13px] text-slate-600 leading-relaxed"
-                                          dangerouslySetInnerHTML={{ __html: renderHtml(faq.a || faq.answer) }}
-                                       />
-                                    ) : null}
-                                 </div>
-                              </details>
-                           ))}
-                        </div>
+                        {product.faqs && product.faqs.length > 0 ? (
+                           <div className="space-y-3">
+                              {product.faqs.map((faq: any, i: number) => (
+                                 <details key={i} className="group bg-white border border-slate-200 rounded-2xl overflow-hidden [&_summary::-webkit-details-marker]:hidden shadow-sm">
+                                    <summary className="flex items-center justify-between p-4 cursor-pointer font-black text-[13px] text-slate-800 select-none hover:bg-slate-50 transition-colors">
+                                       <span>{faq.q || faq.question}</span>
+                                       <span className="transition-transform duration-300 group-open:rotate-180 text-emerald-700 shrink-0 ml-4">
+                                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6" /></svg>
+                                       </span>
+                                    </summary>
+                                    <div className="px-4 pb-4 text-[13px] text-slate-600 leading-relaxed border-t border-slate-100 pt-3 bg-white">
+                                       {(faq.a || faq.answer) ? (
+                                          <div
+                                             className="prose prose-sm max-w-none text-[13px] text-slate-600 leading-relaxed"
+                                             dangerouslySetInnerHTML={{ __html: renderHtml(faq.a || faq.answer) }}
+                                          />
+                                       ) : null}
+                                    </div>
+                                 </details>
+                              ))}
+                           </div>
+                        ) : (
+                           <div className="flex flex-col items-center justify-center py-10 px-4 bg-white/50 rounded-2xl border border-dashed border-slate-200 text-center">
+                              <span className="text-2xl mb-2">📦</span>
+                              <h5 className="text-sm font-black text-slate-700 uppercase tracking-wider mb-1">No FAQs Available</h5>
+                              <p className="text-slate-400 font-medium text-xs">There are no questions answered for this product yet.</p>
+                           </div>
+                        )}
                      </div>
                   </div>
                </div>

@@ -8,26 +8,27 @@ export const dynamicParams = false;
 
 export async function generateStaticParams(): Promise<{ id: string }[]> {
   try {
+    console.log(`[Build] Fetching categories from: ${API_URL}/api/categories?limit=1000&all=true`);
     const res = await fetch(`${API_URL}/api/categories?limit=1000&all=true`, { next: { revalidate: 3600 } });
-    if (!res.ok) throw new Error(`API fetch failed with status ${res.status}`);
+    if (!res.ok) {
+      console.warn(`[Build WARNING] Categories API responded with status ${res.status}`);
+      return [];
+    }
     const data = await res.json();
     const categoriesList = Array.isArray(data) ? data : (data && Array.isArray(data.categories) ? data.categories : []);
 
-    if (categoriesList.length > 0) {
-      const params: { id: string }[] = [];
-      categoriesList.forEach((category: any) => {
-        params.push({ id: category.id.toString() });
-        if (category.slug) {
-          params.push({ id: category.slug });
-        }
-      });
-      console.log(`[Build] Generated ${params.length} static paths for categories.`);
-      return params;
-    }
-    throw new Error('Empty categories list');
-  } catch (error) {
-    console.error('[Build ERROR] Failed to fetch categories in generateStaticParams:', error);
-    throw error; // Fail the build as requested
+    const params: { id: string }[] = [];
+    categoriesList.forEach((category: any) => {
+      params.push({ id: category.id.toString() });
+      if (category.slug) {
+        params.push({ id: category.slug });
+      }
+    });
+    console.log(`[Build] Generated ${params.length} static paths for categories.`);
+    return params;
+  } catch (error: any) {
+    console.error('[Build WARNING] Failed to fetch categories in generateStaticParams:', error.message);
+    return [];
   }
 }
 

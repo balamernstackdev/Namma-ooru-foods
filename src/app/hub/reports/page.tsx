@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import useSWR from 'swr';
 import { API_URL } from '@/lib/api';
 import {
@@ -42,12 +43,17 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 };
 
 export default function VendorHubReports() {
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
   const { data: stats } = useSWR(`${API_URL}/api/vendor-hub/dashboard`, fetcher);
   const { data: subVendorsData } = useSWR(`${API_URL}/api/vendor-hub/sub-vendors?limit=100`, fetcher);
   const { data: payoutsData } = useSWR(`${API_URL}/api/vendor-hub/payouts?limit=10`, fetcher);
 
   const subVendors = subVendorsData?.subVendors || [];
   const payouts = payoutsData?.payouts || [];
+
+  const totalPages = Math.ceil(subVendors.length / itemsPerPage);
+  const paginatedSubVendors = subVendors.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   // Build order status breakdown pie data
   const orderBreakdown = stats ? [
@@ -315,7 +321,7 @@ export default function VendorHubReports() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50 text-xs font-semibold text-slate-700">
-              {subVendors.map((sv: any) => {
+              {paginatedSubVendors.map((sv: any) => {
                 const svStatus = sv.deletedAt ? 'Disabled' : (sv.userId ? 'Active' : 'Pending');
                 return (
                   <tr key={sv.id} className="group hover:bg-slate-50/50">
@@ -365,6 +371,29 @@ export default function VendorHubReports() {
             </tbody>
           </table>
         </div>
+        {totalPages > 1 && (
+          <div className="flex justify-between items-center px-6 py-4 border-t border-slate-50 bg-slate-50/30 rounded-b-3xl mt-4">
+            <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest">
+              Page {currentPage} of {totalPages}
+            </span>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                className="px-3 py-1.5 rounded-lg border border-slate-200 text-slate-600 font-black uppercase tracking-widest text-[9px] hover:bg-white hover:text-emerald-600 disabled:opacity-50 disabled:hover:bg-transparent"
+              >
+                Previous
+              </button>
+              <button
+                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages}
+                className="px-3 py-1.5 rounded-lg border border-slate-200 text-slate-600 font-black uppercase tracking-widest text-[9px] hover:bg-white hover:text-emerald-600 disabled:opacity-50 disabled:hover:bg-transparent"
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

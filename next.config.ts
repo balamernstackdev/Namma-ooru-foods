@@ -1,8 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  output: 'export', // Removed to support ISR/SSR and prevent 404s for dynamically added routes
-  trailingSlash: true,
+  output: 'export',
+  trailingSlash: false,
   images: {
     unoptimized: true,
     qualities: [75, 90],

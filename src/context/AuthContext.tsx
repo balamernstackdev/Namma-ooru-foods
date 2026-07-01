@@ -23,6 +23,7 @@ interface User {
     state: string;
     pincode: string;
   };
+  hubPermissions?: Record<string, any>;
 }
 
 interface AuthContextType {

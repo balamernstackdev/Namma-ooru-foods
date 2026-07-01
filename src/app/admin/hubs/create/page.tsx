@@ -460,24 +460,24 @@ export default function CreateHubPage() {
               <input type="text" name="shortDescription" value={formData.shortDescription} onChange={handleInputChange} className="w-full bg-slate-50 rounded-xl px-4 py-3 text-sm font-bold border border-slate-200 outline-none focus:border-emerald-500 transition-colors" />
             </div>
             
-            <div className="md:col-span-2 grid grid-cols-2 gap-6">
-              <div>
-                <label className="block text-[10px] font-black uppercase text-slate-500 mb-2">Logo Upload</label>
-                <div className="relative h-32 bg-slate-50 border-2 border-dashed border-slate-200 rounded-xl flex items-center justify-center overflow-hidden hover:border-emerald-300 transition-colors">
-                  <input type="file" accept="image/*" className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" onChange={e => handleFileUpload(e, 'logo')} />
-                  {isUploading === 'logo' ? <Loader2 className="animate-spin text-emerald-500" /> : 
-                    formData.logo ? <img src={formData.logo} className="w-full h-full object-contain" /> : 
-                    <div className="flex flex-col items-center text-slate-400"><ImageIcon className="mb-2" /> <span className="text-xs font-bold uppercase">Upload Logo</span></div>}
-                </div>
-              </div>
-              <div>
-                <label className="block text-[10px] font-black uppercase text-slate-500 mb-2">Banner Upload (Optional)</label>
-                <div className="relative h-32 bg-slate-50 border-2 border-dashed border-slate-200 rounded-xl flex items-center justify-center overflow-hidden hover:border-emerald-300 transition-colors">
-                  <input type="file" accept="image/*" className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" onChange={e => handleFileUpload(e, 'banner')} />
-                  {isUploading === 'banner' ? <Loader2 className="animate-spin text-emerald-500" /> : 
-                    formData.banner ? <img src={formData.banner} className="w-full h-full object-cover" /> : 
-                    <div className="flex flex-col items-center text-slate-400"><ImageIcon className="mb-2" /> <span className="text-xs font-bold uppercase">Upload Banner</span></div>}
-                </div>
+            <div className="md:col-span-2">
+              <label className="block text-[10px] font-black uppercase text-slate-500 mb-2">Logo Upload</label>
+              <div className="relative w-28 h-28 bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl flex items-center justify-center overflow-hidden hover:border-emerald-300 transition-colors shadow-sm">
+                <input type="file" accept="image/*" className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" onChange={e => handleFileUpload(e, 'logo')} />
+                {isUploading === 'logo' ? <Loader2 className="animate-spin text-emerald-500" /> : 
+                  formData.logo ? (
+                    <div className="relative w-full h-full p-2 flex items-center justify-center">
+                      <img src={formData.logo} className="max-w-full max-h-full object-contain rounded-lg" />
+                      <button type="button" onClick={(e) => { e.stopPropagation(); setFormData(prev => ({ ...prev, logo: '' })); }} className="absolute top-1 right-1 bg-rose-500 text-white rounded-full p-1 shadow hover:bg-rose-600 transition-all z-20">
+                        <X size={12} />
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center text-slate-400">
+                      <ImageIcon size={20} className="mb-1" />
+                      <span className="text-[9px] font-black uppercase tracking-wider">Logo</span>
+                    </div>
+                  )}
               </div>
             </div>
           </div>
@@ -488,27 +488,9 @@ export default function CreateHubPage() {
           <h2 className="text-lg font-black text-slate-900 uppercase tracking-wide border-b border-slate-100 pb-4 mb-6 flex items-center gap-2">
             <MapPin className="text-emerald-500" /> 3. Address
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div>
-              <label className="block text-[10px] font-black uppercase text-slate-500 mb-1">State</label>
-              <input type="text" name="state" value={formData.state} onChange={handleInputChange} className="w-full bg-slate-50 rounded-xl px-4 py-3 text-sm font-bold border border-slate-200 outline-none focus:border-emerald-500 transition-colors" />
-            </div>
-            <div>
-              <label className="block text-[10px] font-black uppercase text-slate-500 mb-1">District</label>
-              <input type="text" name="district" value={formData.district} onChange={handleInputChange} className="w-full bg-slate-50 rounded-xl px-4 py-3 text-sm font-bold border border-slate-200 outline-none focus:border-emerald-500 transition-colors" />
-            </div>
-            <div>
-              <label className="block text-[10px] font-black uppercase text-slate-500 mb-1">City</label>
-              <input type="text" name="city" value={formData.city} onChange={handleInputChange} className="w-full bg-slate-50 rounded-xl px-4 py-3 text-sm font-bold border border-slate-200 outline-none focus:border-emerald-500 transition-colors" />
-            </div>
-            <div>
-              <label className="block text-[10px] font-black uppercase text-slate-500 mb-1">Pincode</label>
-              <input type="text" name="pincode" value={formData.pincode} onChange={handleInputChange} className="w-full bg-slate-50 rounded-xl px-4 py-3 text-sm font-bold border border-slate-200 outline-none focus:border-emerald-500 transition-colors" />
-            </div>
-            <div className="md:col-span-2 lg:col-span-4">
-              <label className="block text-[10px] font-black uppercase text-slate-500 mb-1">Address</label>
-              <textarea name="address" value={formData.address} onChange={handleInputChange} rows={2} className="w-full bg-slate-50 rounded-xl px-4 py-3 text-sm font-bold border border-slate-200 outline-none focus:border-emerald-500 transition-colors" />
-            </div>
+          <div>
+            <label className="block text-[10px] font-black uppercase text-slate-500 mb-1">Address</label>
+            <textarea name="address" value={formData.address} onChange={handleInputChange} rows={3} className="w-full bg-slate-50 rounded-xl px-4 py-3 text-sm font-bold border border-slate-200 outline-none focus:border-emerald-500 transition-colors" />
           </div>
         </div>
 
