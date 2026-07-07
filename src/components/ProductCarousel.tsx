@@ -29,6 +29,8 @@ export default function ProductCarousel({
 }: ProductCarouselProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
+  const [canScrollLeft, setCanScrollLeft] = useState(true);
+  const [canScrollRight, setCanScrollRight] = useState(true);
 
   // Mouse drag scrolling support
   const [isMouseDown, setIsMouseDown] = useState(false);
@@ -88,6 +90,10 @@ export default function ProductCarousel({
     const gap = window.innerWidth < 768 ? 12 : 32;
     const index = Math.round(el.scrollLeft / (itemWidth + gap));
     setActiveIndex(index);
+
+    const isScrollable = el.scrollWidth > el.clientWidth;
+    setCanScrollLeft(isScrollable);
+    setCanScrollRight(isScrollable);
   }, []);
 
   const scrollLeft = useCallback(() => {
@@ -154,28 +160,8 @@ export default function ProductCarousel({
               prefetch={false}
               className="hidden md:inline-flex text-[10px] font-black uppercase tracking-widest whitespace-nowrap text-slate-400 hover:text-emerald-950 transition-colors"
             >
-              View All →
+              View All
             </Link>
-
-            {/* Redesigned Carousel Navigation Arrows */}
-            <div className="hidden md:flex items-center gap-2">
-              <button
-                type="button"
-                onClick={scrollLeft}
-                aria-label="Previous"
-                className="w-11 h-11 rounded-full bg-white border border-[#E5E7EB] shadow-[0_8px_24px_rgba(0,0,0,0.08)] flex items-center justify-center text-slate-800 hover:bg-[#0F8A5F] hover:text-white hover:border-[#0F8A5F] transition-all duration-300 hover:scale-105 focus:outline-none shrink-0"
-              >
-                <ChevronLeft size={20} strokeWidth={2.5} />
-              </button>
-              <button
-                type="button"
-                onClick={scrollRight}
-                aria-label="Next"
-                className="w-11 h-11 rounded-full bg-white border border-[#E5E7EB] shadow-[0_8px_24px_rgba(0,0,0,0.08)] flex items-center justify-center text-slate-800 hover:bg-[#0F8A5F] hover:text-white hover:border-[#0F8A5F] transition-all duration-300 hover:scale-105 focus:outline-none shrink-0"
-              >
-                <ChevronRight size={20} strokeWidth={2.5} />
-              </button>
-            </div>
           </div>
         </div>
 
@@ -188,6 +174,18 @@ export default function ProductCarousel({
 
         {/* Scrollable row - contained */}
         <div className="relative z-10 group/carousel w-full">
+          {/* Banner style Left Arrow */}
+          <button
+            type="button"
+            onClick={scrollLeft}
+            aria-label="Previous"
+            className={`absolute left-0 top-[45%] -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-white border border-[#E5E7EB] shadow-[0_8px_24px_rgba(0,0,0,0.08)] flex items-center justify-center text-slate-800 hover:bg-[#0F8A5F] hover:text-white hover:border-[#0F8A5F] transition-all duration-300 hover:scale-105 focus:outline-none shrink-0 transition-opacity duration-300 hidden md:flex ${
+              canScrollLeft ? 'opacity-100' : 'opacity-0 pointer-events-none'
+            }`}
+          >
+            <ChevronLeft size={20} strokeWidth={2.5} />
+          </button>
+
           <div
             ref={scrollRef}
             onMouseDown={onMouseDown}
@@ -209,6 +207,18 @@ export default function ProductCarousel({
               </div>
             ))}
           </div>
+
+          {/* Banner style Right Arrow */}
+          <button
+            type="button"
+            onClick={scrollRight}
+            aria-label="Next"
+            className={`absolute right-0 top-[45%] -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-white border border-[#E5E7EB] shadow-[0_8px_24px_rgba(0,0,0,0.08)] flex items-center justify-center text-slate-800 hover:bg-[#0F8A5F] hover:text-white hover:border-[#0F8A5F] transition-all duration-300 hover:scale-105 focus:outline-none shrink-0 transition-opacity duration-300 hidden md:flex ${
+              canScrollRight ? 'opacity-100' : 'opacity-0 pointer-events-none'
+            }`}
+          >
+            <ChevronRight size={20} strokeWidth={2.5} />
+          </button>
         </div>
 
         {/* Mobile Pagination Dots */}

@@ -36,6 +36,7 @@ interface AuthContextType {
   completeOnboardingProfile: (phone: string, name: string, email: string, pass: string) => Promise<void>;
   logout: () => void;
   isLoading: boolean;
+  hasPermission: (moduleName: string, action: string) => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -93,6 +94,23 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const hasPermission = (moduleName: string, action: string): boolean => {
+    if (!user) return false;
+    
+    // Super admins / Admins bypass all checks
+    if (user.role?.toLowerCase() === 'admin' || user.role?.toLowerCase() === 'superadmin') {
+      return true;
+    }
+
+    // Check if the user is a hub user and has permissions in their object
+    if ((user.role?.toLowerCase() === 'hub' || user.role?.toLowerCase() === 'vendor') && user.hubPermissions) {
+      return !!user.hubPermissions[moduleName]?.[action];
+    }
+
+    // Default to false for anything else
+    return false;
   };
 
   const requestAuthOTP = async (phone: string) => {
@@ -199,7 +217,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, requestAuthOTP, verifyAuthOTP, requestOnboardingOTP, verifyOnboardingOTP, completeOnboardingProfile, logout, isLoading }}>
+    <AuthContext.Provider value={{ user, login, requestAuthOTP, verifyAuthOTP,        requestOnboardingOTP,
+        verifyOnboardingOTP,
+        completeOnboardingProfile,
+        logout,
+        isLoading,
+        hasPermission
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

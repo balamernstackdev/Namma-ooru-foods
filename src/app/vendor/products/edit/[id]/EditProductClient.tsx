@@ -23,6 +23,8 @@ import {
    Sparkles,
    ChevronUp
 } from 'lucide-react';
+import RelatedProductsSelector from '@/components/admin/RelatedProductsSelector';
+import ComboProductsSelector from '@/components/admin/ComboProductsSelector';
 import useSWR from 'swr';
 import { useToast } from '@/context/ToastContext';
 import { API_URL } from '@/lib/api';
@@ -81,6 +83,8 @@ export default function EditProductClient({ id }: { id?: string }) {
    const productId = id || (params.id as string);
 
    // Form State
+   const [relatedProducts, setRelatedProducts] = useState<any[]>([]);
+   const [comboProducts, setComboProducts] = useState<any[]>([]);
    const [formData, setFormData] = useState({
       name: '',
       description: '',
@@ -99,6 +103,7 @@ export default function EditProductClient({ id }: { id?: string }) {
       variants: [] as { id?: number; name: string; price: string; originalPrice: string; stock: string; sku: string; weight: string; unit: string; barcode: string }[],
       comboOffer: '',
       freeDelivery: '',
+      isComboFallbackEnabled: true,
       productHighlights: [] as { title: string; description: string; sortOrder: number; isActive: boolean }[]
    });
 
@@ -168,8 +173,18 @@ export default function EditProductClient({ id }: { id?: string }) {
                isActive: h.isActive
             })) : [],
             comboOffer: product.comboOffer || '',
-            freeDelivery: product.freeDelivery || ''
+            freeDelivery: product.freeDelivery || '',
+            isComboFallbackEnabled: product.isComboFallbackEnabled ?? true
          });
+         if (product.relatedProducts) {
+            setRelatedProducts(product.relatedProducts);
+         }
+         if (product.comboProducts) {
+            setComboProducts(product.comboProducts.map((cp: any) => ({
+               ...cp,
+               price: cp.price || (product.price || 0)
+            })));
+         }
          setIsHydrated(true);
       }
    }, [product, categories, isHydrated]);
@@ -224,6 +239,9 @@ export default function EditProductClient({ id }: { id?: string }) {
             brandId: user.brandId,
             comboOffer: formData.comboOffer,
             freeDelivery: formData.freeDelivery,
+            isComboFallbackEnabled: formData.isComboFallbackEnabled,
+            relatedProducts: relatedProducts.map(rp => rp.relatedProductId || rp.id),
+            productCombos: comboProducts,
             inventoryMode: formData.inventoryMode,
             productHighlights: formData.productHighlights.map((h: any, idx: number) => ({
                title: h.title,
@@ -705,6 +723,33 @@ export default function EditProductClient({ id }: { id?: string }) {
                   )}
                </div>
             </div>
+            {/* 4. RELATED & COMBO PRODUCTS */}
+            <div className="bg-white rounded-[20px] border border-[#E5E7EB] shadow-[0_4px_12px_rgba(0,0,0,0.05)] overflow-hidden">
+               <SectionHeader title="Cross-Sell & Upsell" icon={Package} colorClass="text-[#0F7A4D]" />
+               <div className="p-8 space-y-6">
+                  <div className="space-y-4">
+                     <label className="text-[10px] font-black text-[#6B7280] uppercase tracking-widest">Related Products (Alternative Options)</label>
+                     <RelatedProductsSelector
+                        relatedProducts={relatedProducts}
+                        onChange={setRelatedProducts}
+                        isAdmin={false}
+                        currentProductId={Number(productId)}
+                     />
+                  </div>
+                  <div className="space-y-4 mt-8 border-t border-[#E5E7EB] pt-8">
+                     <label className="text-[10px] font-black text-[#6B7280] uppercase tracking-widest">Combo Offer (Pairs Well With)</label>
+                     <ComboProductsSelector
+                        comboProducts={comboProducts}
+                        onChange={setComboProducts}
+                        isAdmin={false}
+                        currentProductId={Number(productId)}
+                        isFallbackEnabled={formData.isComboFallbackEnabled}
+                        onFallbackToggle={(val: boolean) => setFormData(prev => ({ ...prev, isComboFallbackEnabled: val }))}
+                     />
+                  </div>
+               </div>
+            </div>
+
          </form>
       </div>
    );

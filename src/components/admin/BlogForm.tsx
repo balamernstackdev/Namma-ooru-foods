@@ -136,10 +136,10 @@ export default function BlogForm({ editId, initialData }: BlogFormProps) {
     ],
   }), []);
 
-  const quillFormats = [
+  const quillFormats = useMemo(() => [
     'header', 'bold', 'italic', 'underline', 'strike',
     'list', 'align', 'link', 'image'
-  ];
+  ], []);
 
   return (
     <div className="w-full pb-24 animate-in fade-in duration-1000 bg-[#f8fafc]">

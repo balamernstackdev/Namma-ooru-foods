@@ -97,7 +97,7 @@ const Navbar = () => {
       { label: 'Our Vision', href: '/about', icon: Star },
       { label: 'Categories', href: '/products', icon: LayoutGrid },
       { label: 'Best Sellers', href: '/best-selling', icon: TrendingUp },
-      { label: 'Sellers', href: '/sellers', icon: Star }
+      { label: 'Re Sellers', href: '/sellers', icon: Star }
     ]
   });
 
@@ -218,9 +218,9 @@ const Navbar = () => {
                     ? '/hub/dashboard'
                     : user.role?.toLowerCase() === 'vendor'
                       ? '/vendor'
-                    : user.role?.toLowerCase() === 'admin'
-                      ? '/admin'
-                      : '/account/profile'}
+                      : user.role?.toLowerCase() === 'admin'
+                        ? '/admin'
+                        : '/account/profile'}
                   prefetch={false}
                   className="hidden sm:flex items-center gap-3 group"
                 >

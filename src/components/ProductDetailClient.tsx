@@ -34,6 +34,7 @@ import {
 import { useCartStore } from '@/store/useCartStore';
 import { useToast } from '@/context/ToastContext';
 import ProductCard from '@/components/ProductCard';
+import ProductBadges from '@/components/ProductBadges';
 import ProductReviews from '@/components/ProductReviews';
 import RecommendedProductsSection from '@/components/RecommendedProductsSection';
 import ComboBuilder from '@/components/ComboBuilder';
@@ -320,12 +321,7 @@ export default function ProductDetailClient({ product: initialProduct, allProduc
                         />
 
                         {/* FLOATING BADGES */}
-                        <div className="absolute top-4 left-4 pointer-events-none">
-                           <div className="bg-[#052e16] backdrop-blur-md text-white text-[9px] font-black px-2.5 py-1 rounded-md uppercase tracking-wider flex items-center gap-1.5 shadow-lg">
-                              <TrendingUp size={10} className="text-amber-400" />
-                              Best Seller
-                           </div>
-                        </div>
+                        <ProductBadges product={product} variant="floating" />
 
                         {/* WISHLIST FLOATING */}
                         <button
@@ -371,7 +367,7 @@ export default function ProductDetailClient({ product: initialProduct, allProduc
                            <h1 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight leading-[1.1] mt-1 flex flex-wrap items-center gap-3">
                               {product.name}
                               <span className="text-[12px] bg-slate-100 text-slate-600 px-2 py-1 rounded-md font-mono border border-slate-200 shrink-0 font-medium tracking-normal mt-1 md:mt-0">
-                                 {selectedVariant?.skuCode || product.skuCode || `SKU-${product.id.toString().padStart(3, '0')}`}
+                                 {selectedVariant?.skuCode || selectedVariant?.sku || (product.variants?.length ? null : product.skuCode) || `SKU-${product.id.toString().padStart(3, '0')}`}
                               </span>
                            </h1>
                         </div>
@@ -411,14 +407,7 @@ export default function ProductDetailClient({ product: initialProduct, allProduc
                            </a>
                         )}
                         {Number(product.reviewCount || 0) > 0 && <span className="text-slate-300">•</span>}
-                        <div className="flex gap-2">
-                           <span className="bg-emerald-50 text-emerald-800 text-[8px] font-black uppercase tracking-wider px-2 py-0.5 rounded border border-emerald-100 flex items-center gap-1">
-                              <CheckCircle2 size={10} className="text-emerald-700" /> Organic Verified
-                           </span>
-                           <span className="bg-amber-50 text-amber-800 text-[8px] font-black uppercase tracking-wider px-2 py-0.5 rounded border border-amber-100 flex items-center gap-1">
-                              <Award size={10} className="text-amber-700" /> Bestseller
-                           </span>
-                        </div>
+                        <ProductBadges product={product} variant="inline" />
                      </div>
 
                      {/* COMPACT INTEGRATED PRICING ROW */}

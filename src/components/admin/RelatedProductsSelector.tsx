@@ -7,7 +7,12 @@ import {
 } from 'lucide-react';
 import { API_URL } from '@/lib/api';
 
-const fetcher = (url: string) => fetch(url).then(res => res.json());
+const fetcher = (url: string) => {
+   const token = typeof window !== 'undefined' ? localStorage.getItem('namma_orru_token') : null;
+   return fetch(url, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {}
+   }).then(res => res.json());
+};
 
 
 interface RelatedProductItem {

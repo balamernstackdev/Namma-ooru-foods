@@ -113,6 +113,7 @@ export default function ProductForm({ initialData, mode }: ProductFormProps) {
       price: initialData?.price || '',
       originalPrice: initialData?.originalPrice || '',
       whatIsProduct: initialData?.whatIsProduct || '',
+      ingredientsInfo: initialData?.ingredientsInfo || '',
       healthBenefits: initialData?.healthBenefits || '',
       whyChoose: initialData?.whyChoose || '',
       whoShouldEat: initialData?.whoShouldEat || '',
@@ -213,6 +214,7 @@ export default function ProductForm({ initialData, mode }: ProductFormProps) {
             price: initialData.price || '',
             originalPrice: initialData.originalPrice || '',
             whatIsProduct: initialData.whatIsProduct || '',
+            ingredientsInfo: initialData.ingredientsInfo || '',
             healthBenefits: initialData.healthBenefits || '',
             whyChoose: initialData.whyChoose || '',
             whoShouldEat: initialData.whoShouldEat || '',
@@ -948,6 +950,11 @@ export default function ProductForm({ initialData, mode }: ProductFormProps) {
                      <InputWrapper label="Product Description">
                         <div className="rich-text-container">
                            <ReactQuill theme="snow" value={formData.whatIsProduct} onChange={val => setFormData({ ...formData, whatIsProduct: val })} modules={quillModules} formats={quillFormats} />
+                        </div>
+                     </InputWrapper>
+                     <InputWrapper label="Ingredients">
+                        <div className="rich-text-container">
+                           <ReactQuill theme="snow" value={formData.ingredientsInfo} onChange={val => setFormData({ ...formData, ingredientsInfo: val })} modules={quillModules} formats={quillFormats} />
                         </div>
                      </InputWrapper>
                      <InputWrapper label="Wellness & Health Benefits">

@@ -45,7 +45,7 @@ const navGroups = [
 ];
 
 export default function HubLayout({ children }: { children: React.ReactNode }) {
-  const { user, logout, isLoading } = useAuth();
+  const { user, logout, isLoading, hasPermission } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
   const [collapsedGroups, setCollapsedGroups] = useState<string[]>([]);
@@ -85,14 +85,6 @@ export default function HubLayout({ children }: { children: React.ReactNode }) {
   if (!user || (role !== 'hub' && role !== 'admin')) {
     return null;
   }
-
-  const hubPermissions = user?.hubPermissions;
-
-  const hasAccess = (moduleName: string) => {
-    if (role === 'admin') return true;
-    if (!hubPermissions || Object.keys(hubPermissions).length === 0) return true;
-    return hubPermissions[moduleName]?.view !== false;
-  };
 
   const toggleGroup = (label: string) => {
     setCollapsedGroups(prev =>
@@ -186,7 +178,7 @@ export default function HubLayout({ children }: { children: React.ReactNode }) {
                 else if (item.label === 'Reports') moduleName = 'reports';
                 
                 if (!moduleName) return true;
-                return hasAccess(moduleName);
+                return hasPermission(moduleName, 'view');
               });
 
               if (visibleItems.length === 0) return null;

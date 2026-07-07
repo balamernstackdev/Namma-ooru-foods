@@ -40,18 +40,35 @@ export default function AdminHubsPage() {
       .finally(() => setLoading(false));
   };
 
-  const handleDelete = async (id: number) => {
-    if (!confirm('Are you sure you want to permanently delete this Regional Hub? It may break associated brands.')) return;
+  const handleDelete = async (id: number, hubName: string, force = false) => {
+    const hub = hubs.find(h => h.id === id);
+    const brandCount = hub?._count?.subVendors || 0;
+
+    if (!force) {
+      if (brandCount > 0) {
+        const confirmForce = confirm(
+          `⚠️ "${hubName}" has ${brandCount} brand(s) attached.\n\nForce deleting will DEACTIVATE all attached brands permanently.\n\nDo you want to force delete this hub anyway?`
+        );
+        if (!confirmForce) return;
+        return handleDelete(id, hubName, true);
+      }
+      if (!confirm(`Are you sure you want to permanently delete "${hubName}"? This cannot be undone.`)) return;
+    }
+
     try {
-      const res = await fetch(`${API_URL}/api/admin-ops/hubs/${id}`, { method: 'DELETE' });
+      const url = force
+        ? `${API_URL}/api/admin-ops/hubs/${id}?force=true`
+        : `${API_URL}/api/admin-ops/hubs/${id}`;
+      const res = await fetch(url, { method: 'DELETE' });
+      const data = await res.json();
       if (res.ok) {
         setHubs(prev => prev.filter(h => h.id !== id));
-        addToast('Success', 'Hub deleted successfully');
+        addToast('Success', data.message || 'Hub deleted successfully');
       } else {
-        addToast('Error', 'Failed to delete Hub');
+        addToast('Error', data.message || data.error || 'Failed to delete Hub');
       }
     } catch (err) {
-      addToast('Error', 'Failed to delete Hub');
+      addToast('Error', 'Failed to delete Hub due to a network error');
     }
   };
 
@@ -141,7 +158,7 @@ export default function AdminHubsPage() {
                         <Edit2 size={16} />
                       </button>
                       <button
-                        onClick={() => handleDelete(hub.id)}
+                        onClick={() => handleDelete(hub.id, hub.name)}
                         className="h-10 w-10 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-red-300 hover:bg-red-500 hover:text-white transition-all shadow-sm"
                       >
                         <Trash2 size={16} />
@@ -204,7 +221,7 @@ export default function AdminHubsPage() {
                   <Edit2 size={14} /> Edit Hub
                 </button>
                 <button
-                  onClick={() => handleDelete(hub.id)}
+                  onClick={() => handleDelete(hub.id, hub.name)}
                   className="h-11 px-4 flex items-center justify-center rounded-xl bg-red-50 border border-red-100 text-red-600 hover:bg-red-500 hover:text-white transition-all"
                 >
                   <Trash2 size={14} />

@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
-import { Search, Package, ChevronRight, LayoutGrid, ArrowRight, Store } from 'lucide-react';
+import { Search, Package, ChevronRight, ChevronLeft, LayoutGrid, ArrowRight, Store } from 'lucide-react';
 import { motion } from 'framer-motion';
 import useSWR from 'swr';
 import { API_URL } from '@/lib/api';
@@ -21,21 +21,23 @@ const formatName = (name: string) => {
 };
 
 export default function SellersListingClient() {
+  const [page, setPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
   const { settings } = usePlatformSettings();
 
   // Fetch sub-vendors (brands/sellers) — never expose head-vendor groups
   const { data: responseData, isLoading } = useSWR(
-    `${API_URL}/api/sub-vendors?limit=200`,
+    `${API_URL}/api/sub-vendors?page=${page}&limit=20&search=${encodeURIComponent(searchQuery)}`,
     fetcher
   );
+  
   const sellers = (responseData?.subVendors || []) as any[];
+  const totalPages = responseData?.totalPages || 1;
 
-  const filtered = useMemo(() =>
-    sellers.filter((s: any) =>
-      s.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      s.description?.toLowerCase().includes(searchQuery.toLowerCase())
-    ), [sellers, searchQuery]);
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+    setPage(1);
+  };
 
   if (isLoading) {
     return (
@@ -65,7 +67,7 @@ export default function SellersListingClient() {
               type="text"
               placeholder="Search sellers..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={handleSearchChange}
               className="w-full h-12 pl-11 pr-4 bg-slate-50 rounded-2xl border border-slate-100 text-sm font-semibold text-emerald-950 placeholder:text-slate-400 outline-none focus:border-emerald-400 transition-all"
             />
           </div>
@@ -74,80 +76,111 @@ export default function SellersListingClient() {
 
       {/* ─── SELLER GRID ─── */}
       <div className="standard-container py-12 md:py-16">
-        {filtered.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 md:gap-6">
-            {filtered.map((seller: any, idx: number) => (
-              <motion.div
-                key={seller.id}
-                initial={{ opacity: 0, y: 24 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: (idx % 12) * 0.04, duration: 0.4 }}
-              >
-                <Link
-                  href={`/sellers/detail?slug=${encodeURIComponent(seller.slug || seller.id)}`}
-                  className="group flex flex-col bg-white rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 overflow-hidden"
+        {sellers.length > 0 ? (
+          <div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-5">
+              {sellers.map((seller: any, idx: number) => (
+                <motion.div
+                  key={seller.id}
+                  initial={{ opacity: 0, y: 24 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: (idx % 12) * 0.04, duration: 0.4 }}
                 >
-                  {/* Logo area */}
-                  <div className="relative aspect-[4/3] bg-slate-50 flex items-center justify-center p-8 group-hover:bg-emerald-50/40 transition-colors overflow-hidden">
-                    {seller.logo ? (
-                      <OptimizedImage
-                        src={seller.logo}
-                        alt={seller.name}
-                        fill
-                        className="object-contain p-6 group-hover:scale-105 transition-transform duration-500"
-                      />
-                    ) : (
-                      <div className="flex flex-col items-center justify-center text-center p-4">
-                        <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest">No Logo Uploaded</span>
-                      </div>
-                    )}
-                    {/* Verified badge */}
-                    <div className="absolute top-4 right-4 h-7 w-7 rounded-full bg-white shadow flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                      <div className="h-3 w-3 rounded-full bg-emerald-500" />
-                    </div>
-                  </div>
-
-                  {/* Info */}
-                  <div className="flex flex-col flex-1 p-5 gap-3">
-                    <div>
-                      <h3 className="text-base font-[900] text-emerald-950 tracking-tight line-clamp-2 leading-snug group-hover:text-emerald-700 transition-colors">
-                        {formatName(seller.name)}
-                      </h3>
-                      {seller.description && (
-                        <p className="mt-1.5 text-[12px] font-medium text-slate-400 line-clamp-2 leading-relaxed">
-                          {seller.description}
-                        </p>
-                      )}
-                    </div>
-
-                    {/* Stats row */}
-                    <div className="flex items-center gap-4 pt-3 border-t border-slate-50 mt-auto">
-                      <div className="flex items-center gap-1.5">
-                        <Package size={13} className="text-slate-300 shrink-0" />
-                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">
-                          {seller._count?.products ?? 0} Products
-                        </span>
-                      </div>
-                      {seller._count?.categories != null && (
-                        <div className="flex items-center gap-1.5">
-                          <LayoutGrid size={13} className="text-slate-300 shrink-0" />
-                          <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">
-                            {seller._count.categories} Categories
-                          </span>
+                  <Link
+                    href={`/sellers/detail?slug=${encodeURIComponent(seller.slug || seller.id)}`}
+                    className="group flex flex-col bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 overflow-hidden h-full"
+                  >
+                    {/* Logo area */}
+                    <div className="relative aspect-[16/10] bg-slate-50 flex items-center justify-center p-4 group-hover:bg-emerald-50/20 transition-colors overflow-hidden">
+                      {seller.logo ? (
+                        <OptimizedImage
+                          src={seller.logo}
+                          alt={seller.name}
+                          fill
+                          className="object-contain p-2.5 group-hover:scale-105 transition-transform duration-500"
+                        />
+                      ) : (
+                        <div className="flex flex-col items-center justify-center text-center p-2">
+                          <span className="text-[9px] font-black text-slate-300 uppercase tracking-widest">No Logo</span>
                         </div>
                       )}
+                      {/* Verified badge */}
+                      <div className="absolute top-2.5 right-2.5 h-5 w-5 rounded-full bg-white shadow flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="h-2 w-2 rounded-full bg-emerald-500" />
+                      </div>
                     </div>
 
-                    {/* CTA */}
-                    <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-emerald-600 group-hover:text-emerald-700 transition-colors pt-1">
-                      <span>View Products</span>
-                      <ArrowRight size={12} className="group-hover:translate-x-1 transition-transform" />
+                    {/* Info */}
+                    <div className="flex flex-col flex-1 p-4 gap-2">
+                      <div>
+                        <h3 className="text-xs font-[900] text-emerald-950 tracking-tight line-clamp-1 leading-snug group-hover:text-emerald-700 transition-colors">
+                          {formatName(seller.name)}
+                        </h3>
+                        {seller.description && (
+                          <p className="mt-1 text-[10px] font-semibold text-slate-400 line-clamp-2 leading-relaxed">
+                            {seller.description}
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Stats row */}
+                      <div className="flex items-center gap-3 pt-2 border-t border-slate-50 mt-auto">
+                        <div className="flex items-center gap-1">
+                          <Package size={11} className="text-slate-300 shrink-0" />
+                          <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider">
+                            {seller._count?.products ?? 0} Products
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* CTA */}
+                      <div className="flex items-center gap-1 text-[9px] font-black uppercase tracking-wider text-emerald-600 group-hover:text-emerald-700 transition-colors pt-0.5">
+                        <span>View Products</span>
+                        <ArrowRight size={10} className="group-hover:translate-x-0.5 transition-transform" />
+                      </div>
                     </div>
-                  </div>
-                </Link>
-              </motion.div>
-            ))}
+                  </Link>
+                </motion.div>
+              ))}
+            </div>
+
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-center gap-2 mt-12 md:mt-16">
+                <button
+                  onClick={() => setPage(p => Math.max(1, p - 1))}
+                  disabled={page === 1}
+                  className="h-10 w-10 flex items-center justify-center rounded-xl bg-slate-50 border border-slate-200 text-slate-600 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-100 hover:text-emerald-950 active:scale-95 transition-all shadow-sm"
+                >
+                  <ChevronLeft size={16} />
+                </button>
+
+                <div className="flex items-center gap-1.5">
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((pNum) => (
+                    <button
+                      key={pNum}
+                      onClick={() => setPage(pNum)}
+                      className={`h-10 px-4 rounded-xl text-xs font-black uppercase transition-all shadow-sm active:scale-95 ${
+                        page === pNum
+                          ? 'bg-emerald-600 text-white border border-emerald-600'
+                          : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'
+                      }`}
+                    >
+                      {pNum}
+                    </button>
+                  ))}
+                </div>
+
+                <button
+                  onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                  disabled={page === totalPages}
+                  className="h-10 w-10 flex items-center justify-center rounded-xl bg-slate-50 border border-slate-200 text-slate-600 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-100 hover:text-emerald-950 active:scale-95 transition-all shadow-sm"
+                >
+                  <ChevronRight size={16} />
+                </button>
+              </div>
+            )}
           </div>
         ) : (
           <div className="py-24 flex flex-col items-center gap-4 text-center">

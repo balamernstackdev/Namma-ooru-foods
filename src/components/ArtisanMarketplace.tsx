@@ -77,6 +77,8 @@ export default function ArtisanMarketplace() {
   // Vendor visibility should not depend on product count
   const activeBrands = brands;
   const [activeIndex, setActiveIndex] = useState(0);
+  const [canScrollLeft, setCanScrollLeft] = useState(true);
+  const [canScrollRight, setCanScrollRight] = useState(true);
 
   const checkScrollLimits = React.useCallback(() => {
     const el = scrollRef.current;
@@ -87,6 +89,10 @@ export default function ArtisanMarketplace() {
     const gap = window.innerWidth < 768 ? 24 : 40;
     const index = Math.round(el.scrollLeft / (itemWidth + gap));
     setActiveIndex(index);
+
+    const isScrollable = el.scrollWidth > el.clientWidth;
+    setCanScrollLeft(isScrollable);
+    setCanScrollRight(isScrollable);
   }, []);
 
   const getScrollStep = (el: HTMLElement) => el.clientWidth < 640 ? 164 : 220;
@@ -145,33 +151,24 @@ export default function ArtisanMarketplace() {
           <div className="flex items-center gap-4">
             <Link href="/brands" className="hidden sm:flex items-center gap-1 text-[11px] font-black text-slate-400 hover:text-emerald-950 uppercase tracking-[0.2em] transition-colors group">
               <span>View All Brands</span>
-              <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform text-slate-400 group-hover:text-emerald-950" />
             </Link>
-
-            {/* Redesigned Carousel Navigation Arrows */}
-            <div className="hidden md:flex items-center gap-2">
-              <button
-                type="button"
-                onClick={scrollLeft}
-                aria-label="Previous"
-                className="w-11 h-11 rounded-full bg-white border border-[#E5E7EB] shadow-[0_8px_24px_rgba(0,0,0,0.08)] flex items-center justify-center text-slate-800 hover:bg-[#0F8A5F] hover:text-white hover:border-[#0F8A5F] transition-all duration-300 hover:scale-105 focus:outline-none shrink-0"
-              >
-                <ChevronLeft size={20} strokeWidth={2.5} />
-              </button>
-              <button
-                type="button"
-                onClick={scrollRight}
-                aria-label="Next"
-                className="w-11 h-11 rounded-full bg-white border border-[#E5E7EB] shadow-[0_8px_24px_rgba(0,0,0,0.08)] flex items-center justify-center text-slate-800 hover:bg-[#0F8A5F] hover:text-white hover:border-[#0F8A5F] transition-all duration-300 hover:scale-105 focus:outline-none shrink-0"
-              >
-                <ChevronRight size={20} strokeWidth={2.5} />
-              </button>
-            </div>
           </div>
         </div>
 
         {/* --- The Premium Squircle Deck matching Vendors --- */}
         <div className="relative group/carousel w-full">
+          {/* Banner style Left Arrow */}
+          <button
+            type="button"
+            onClick={scrollLeft}
+            aria-label="Previous"
+            className={`absolute left-0 top-[40%] -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-white border border-[#E5E7EB] shadow-[0_8px_24px_rgba(0,0,0,0.08)] flex items-center justify-center text-slate-800 hover:bg-[#0F8A5F] hover:text-white hover:border-[#0F8A5F] transition-all duration-300 hover:scale-105 focus:outline-none shrink-0 transition-opacity duration-300 hidden md:flex ${
+              canScrollLeft ? 'opacity-100' : 'opacity-0 pointer-events-none'
+            }`}
+          >
+            <ChevronLeft size={20} strokeWidth={2.5} />
+          </button>
+
           <div
             ref={scrollRef}
             onMouseDown={onMouseDown}
@@ -242,6 +239,17 @@ export default function ArtisanMarketplace() {
             )}
           </div>
 
+          {/* Banner style Right Arrow */}
+          <button
+            type="button"
+            onClick={scrollRight}
+            aria-label="Next"
+            className={`absolute right-0 top-[40%] -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-white border border-[#E5E7EB] shadow-[0_8px_24px_rgba(0,0,0,0.08)] flex items-center justify-center text-slate-800 hover:bg-[#0F8A5F] hover:text-white hover:border-[#0F8A5F] transition-all duration-300 hover:scale-105 focus:outline-none shrink-0 transition-opacity duration-300 hidden md:flex ${
+              canScrollRight ? 'opacity-100' : 'opacity-0 pointer-events-none'
+            }`}
+          >
+            <ChevronRight size={20} strokeWidth={2.5} />
+          </button>
         </div>
 
         {/* Mobile Pagination Dots */}

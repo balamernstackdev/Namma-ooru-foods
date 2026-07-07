@@ -11,6 +11,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useWishlistStore } from '@/store/useWishlistStore';
 import OptimizedImage from '@/components/ui/OptimizedImage';
 import ProductDetailSuccessAnimation from '@/components/ProductDetailSuccessAnimation';
+import ProductBadges from '@/components/ProductBadges';
 
 interface ProductCardProps {
   product: {
@@ -136,7 +137,8 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           <div className="absolute inset-0 bg-black/[0.02] group-hover:bg-transparent transition-colors pointer-events-none" />
         </Link>
 
-
+        {/* FLOATING BADGES */}
+        <ProductBadges product={product} variant="floating" />
 
         {/* WISHLIST BUTTON */}
         <button
@@ -225,9 +227,8 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                 <span>✓ Added to Cart</span>
               </div>
             ) : (
-              <div className="flex items-center gap-1.5 text-emerald-700">
-                <CheckCircle2 size={12} strokeWidth={3} className="shrink-0" />
-                <span className="text-[9px] font-black tracking-wide uppercase">100% Organic • Farm Fresh</span>
+              <div className="flex items-center">
+                <ProductBadges product={product} variant="inline" />
               </div>
             )}
           </div>

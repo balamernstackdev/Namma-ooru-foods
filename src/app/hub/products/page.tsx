@@ -29,6 +29,7 @@ interface Product {
    variants?: { id: number; name: string; price: number; stock?: number }[];
    status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'DRAFT';
    slug?: string;
+   ingredientsInfo?: string;
 }
 
 const STATUS_CONFIG: Record<string, { label: string; dot: string; bg: string; text: string; border: string }> = {
@@ -98,7 +99,7 @@ export default function HubProducts() {
    const router = useRouter();
    const searchParams = useSearchParams();
    const pathname = usePathname();
-   const { user } = useAuth();
+   const { user, hasPermission } = useAuth();
    const { settings } = usePlatformSettings();
    const { addToast } = useToast();
 
@@ -113,6 +114,12 @@ export default function HubProducts() {
    const [searchTerm, setSearchTerm] = useState(urlSearch);
    const [showExportMenu, setShowExportMenu] = useState(false);
 
+   const hasCreatePerm = hasPermission('products', 'create');
+   const hasEditPerm = hasPermission('products', 'edit');
+   const hasViewPerm = hasPermission('products', 'view');
+   const hasDeletePerm = hasPermission('products', 'delete');
+   const hasApprovePerm = hasPermission('products', 'approve');
+   const hasExportPerm = hasPermission('products', 'export');
 
    const itemsPerPage = 12;
 
@@ -379,17 +386,18 @@ export default function HubProducts() {
                   />
 
                   {/* Export Options */}
-                  <div className="relative w-full sm:w-auto">
-                     <button
-                        onClick={() => setShowExportMenu(!showExportMenu)}
-                        className="h-11 px-4 rounded-2xl border border-slate-200 bg-white text-xs font-bold text-slate-600 flex items-center justify-between sm:justify-start gap-2 hover:bg-slate-50 transition-all w-full sm:w-auto"
-                     >
-                        <span className="flex items-center gap-2">
-                           <Download size={14} />
-                           <span>Export</span>
-                        </span>
-                        <ChevronDown size={12} className="ml-auto sm:ml-0" />
-                     </button>
+                  {hasExportPerm && (
+                     <div className="relative w-full sm:w-auto">
+                        <button
+                           onClick={() => setShowExportMenu(!showExportMenu)}
+                           className="h-11 px-4 rounded-2xl border border-slate-200 bg-white text-xs font-bold text-slate-600 flex items-center justify-between sm:justify-start gap-2 hover:bg-slate-50 transition-all w-full sm:w-auto"
+                        >
+                           <span className="flex items-center gap-2">
+                              <Download size={14} />
+                              <span>Export</span>
+                           </span>
+                           <ChevronDown size={12} className="ml-auto sm:ml-0" />
+                        </button>
 
                      {showExportMenu && (
                         <>
@@ -411,6 +419,17 @@ export default function HubProducts() {
                         </>
                      )}
                   </div>
+                  )}
+
+                  {hasCreatePerm && (
+                     <Link
+                        href="/hub/products/new"
+                        className="h-11 px-4 rounded-2xl bg-emerald-600 text-white text-xs font-bold flex items-center justify-center gap-2 hover:bg-emerald-700 transition-all shadow-sm w-full sm:w-auto ml-2"
+                     >
+                        <Plus size={14} />
+                        <span>Create Product</span>
+                     </Link>
+                  )}
                </div>
             </div>
 
@@ -476,6 +495,7 @@ export default function HubProducts() {
                      <tr className="bg-slate-50/50">
                         <th className="px-6 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100">Product Info</th>
                         <th className="px-6 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100">Category</th>
+                        <th className="px-6 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100">Ingredients</th>
                         <th className="px-6 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100">Stock Status</th>
                         <th className="px-6 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100">Price</th>
                         <th className="px-6 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100 text-right">Actions</th>
@@ -486,7 +506,7 @@ export default function HubProducts() {
                      {isLoading ? (
                         Array.from({ length: 6 }).map((_, i) => (
                            <tr key={i} className="animate-pulse">
-                              <td className="px-6 py-4 border-b border-slate-50" colSpan={6}>
+                              <td className="px-6 py-4 border-b border-slate-50" colSpan={7}>
                                  <div className="flex items-center gap-4 py-2">
                                     <div className="h-10 w-10 bg-slate-100 rounded-xl" />
                                     <div className="space-y-1.5 flex-1">
@@ -499,7 +519,7 @@ export default function HubProducts() {
                         ))
                      ) : products.length === 0 ? (
                         <tr>
-                           <td colSpan={6} className="py-20 text-center">
+                           <td colSpan={7} className="py-20 text-center">
                               <div className="max-w-md mx-auto flex flex-col items-center gap-3">
                                  <div className="h-12 w-12 bg-slate-50 rounded-full flex items-center justify-center text-slate-400">
                                     <Package size={20} />
@@ -566,6 +586,12 @@ export default function HubProducts() {
                                     >
                                        {product.category?.name || 'Heritage Foods'}
                                     </button>
+                                 </td>
+
+                                 <td className="px-6 py-4 border-b border-slate-50">
+                                    <span className="text-xs text-slate-500 font-semibold max-w-[150px] truncate block" title={product.ingredientsInfo ? product.ingredientsInfo.replace(/<[^>]*>/g, '') : '—'}>
+                                       {product.ingredientsInfo ? product.ingredientsInfo.replace(/<[^>]*>/g, '') : '—'}
+                                    </span>
                                  </td>
 
                                  <td className="px-6 py-4 border-b border-slate-50">
@@ -715,13 +741,23 @@ export default function HubProducts() {
                            </div>
 
                            <div className="flex items-center gap-2 pt-1">
-                              <Link
-                                 href={`/product/${product.slug || product.id}`}
-                                 target="_blank"
-                                 className="h-11 flex-1 flex items-center justify-center gap-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-all text-xs font-bold no-underline"
-                              >
-                                 <Eye size={14} /> View
-                              </Link>
+                              {hasViewPerm && (
+                                 <Link
+                                    href={`/product/${product.slug || product.id}`}
+                                    target="_blank"
+                                    className="h-11 flex-1 flex items-center justify-center gap-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-all text-xs font-bold no-underline"
+                                 >
+                                    <Eye size={14} /> View
+                                 </Link>
+                              )}
+                              {hasEditPerm && (
+                                 <Link
+                                    href={`/hub/products/${product.id}/edit`}
+                                    className="h-11 flex-1 flex items-center justify-center gap-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-all text-xs font-bold no-underline"
+                                 >
+                                    <Edit2 size={14} /> Edit
+                                 </Link>
+                              )}
                            </div>
                         </div>
                      );

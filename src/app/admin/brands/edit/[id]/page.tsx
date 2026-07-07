@@ -5,7 +5,7 @@ import EditBrandClient from './EditBrandClient';
 
 // This satisfies the 'output: export' requirement for dynamic routes
 export function generateStaticParams() {
-  return Array.from({ length: 300 }, (_, i) => ({ id: (i + 1).toString() }));
+  return Array.from({ length: 2000 }, (_, i) => ({ id: (i + 1).toString() }));
 }
 
 export default async function Page({ params }: { params: Promise<{ id: string }> }) {

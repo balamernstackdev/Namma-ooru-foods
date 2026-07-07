@@ -213,14 +213,14 @@ export default function UserForm({ initialData, mode }: UserFormProps) {
                         >
                           <option value="USER">Customer / Consumer</option>
                           <option value="ADMIN">System Administrator</option>
-                          <option value="VENDOR">Partner Vendor / Reseller</option>
+                          <option value="VENDOR">Partner Seller / Reseller</option>
                         </select>
                         <ChevronDown size={14} className="absolute right-6 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
                       </div>
                     </InputWrapper>
 
                     {formData.role === 'VENDOR' && (
-                      <InputWrapper label="Assign to Regional Hub" helpText="The top-level collective this vendor belongs to.">
+                      <InputWrapper label="Assign to Regional Hub" helpText="The top-level collective this seller belongs to.">
                         <div className="relative">
                           <Database size={16} className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400" />
                           <select
@@ -325,7 +325,7 @@ export default function UserForm({ initialData, mode }: UserFormProps) {
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                       {/* Left side: Brand Name & Description */}
                       <div className="lg:col-span-8 space-y-8 flex flex-col justify-center">
-                        <InputWrapper label="Brand / Store Name" helpText="The public-facing name for this vendor's brand.">
+                        <InputWrapper label="Brand / Store Name" helpText="The public-facing name for this seller's brand.">
                           <div className="relative">
                             <Store size={16} className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400" />
                             <input
@@ -337,7 +337,7 @@ export default function UserForm({ initialData, mode }: UserFormProps) {
                           </div>
                         </InputWrapper>
 
-                        <InputWrapper label="Brand Description" helpText="A brief description of what this vendor's brand offers.">
+                        <InputWrapper label="Brand Description" helpText="A brief description of what this seller's brand offers.">
                           <div className="relative">
                             <FileText size={16} className="absolute left-6 top-4 text-slate-400" />
                             <textarea

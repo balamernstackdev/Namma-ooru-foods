@@ -26,6 +26,7 @@ interface Product {
    image?: string;
    stock?: number;
    status?: 'PENDING' | 'APPROVED' | 'REJECTED' | 'DRAFT';
+   ingredientsInfo?: string;
 }
 
 const fetcher = (url: string) => fetch(url).then(res => res.json());
@@ -191,6 +192,7 @@ export default function VendorProducts() {
                      <tr className="bg-[#F8FAF7] border-b border-[#E5E7EB]">
                         <th className="px-10 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-[#6B7280]">Product Detail</th>
                         <th className="px-10 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-[#6B7280]">Category</th>
+                        <th className="px-10 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-[#6B7280]">Ingredients</th>
                         <th className="px-10 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-[#6B7280]">Status</th>
                         <th className="px-10 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-[#6B7280]">Price</th>
                         <th className="px-10 py-6 text-right text-[10px] font-black uppercase tracking-[0.2em] text-[#6B7280]">Actions</th>
@@ -235,6 +237,11 @@ export default function VendorProducts() {
                                  <td className="px-10 py-8">
                                     <span className="px-4 py-2 rounded-full bg-[#DCFCE7] text-[#15803D] text-[10px] font-black uppercase tracking-widest">
                                        {product.category?.name || 'Uncategorized'}
+                                    </span>
+                                 </td>
+                                 <td className="px-10 py-8">
+                                    <span className="text-xs text-slate-500 font-semibold max-w-[150px] truncate block" title={product.ingredientsInfo ? product.ingredientsInfo.replace(/<[^>]*>/g, '') : '—'}>
+                                       {product.ingredientsInfo ? product.ingredientsInfo.replace(/<[^>]*>/g, '') : '—'}
                                     </span>
                                  </td>
                                  <td className="px-10 py-8">

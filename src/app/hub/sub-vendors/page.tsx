@@ -6,6 +6,7 @@ import useSWR from 'swr';
 import { API_URL } from '@/lib/api';
 import { Search, ArrowUpRight, Users2 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { useAuth } from '@/context/AuthContext';
 
 const fetcher = (url: string) => {
   const token = typeof window !== 'undefined' ? localStorage.getItem('namma_orru_token') : null;
@@ -33,6 +34,9 @@ export default function SubVendorsList() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [page, setPage] = useState(1);
+  const { hasPermission } = useAuth();
+  const hasEditPerm = hasPermission('subVendors', 'edit');
+  const hasCreatePerm = hasPermission('subVendors', 'create');
 
   const { data, error, isLoading, mutate } = useSWR(
     `${API_URL}/api/vendor-hub/sub-vendors?page=${page}&limit=10&search=${searchTerm}`,
@@ -180,20 +184,22 @@ export default function SubVendorsList() {
                             View <ArrowUpRight size={12} />
                           </Link>
                           <span className="text-slate-200">|</span>
-                          {status === 'Disabled' ? (
-                            <button
-                              onClick={() => handleStatusUpdate(vendor.id, 'Restore')}
-                              className="text-green-600 hover:text-green-800 font-bold text-[10px] uppercase tracking-wider"
-                            >
-                              Restore
-                            </button>
-                          ) : (
-                            <button
-                              onClick={() => handleStatusUpdate(vendor.id, 'Disabled')}
-                              className="text-red-500 hover:text-red-700 font-bold text-[10px] uppercase tracking-wider"
-                            >
-                              Disable
-                            </button>
+                          {hasEditPerm && (
+                            status === 'Disabled' ? (
+                              <button
+                                onClick={() => handleStatusUpdate(vendor.id, 'Restore')}
+                                className="text-green-600 hover:text-green-800 font-bold text-[10px] uppercase tracking-wider"
+                              >
+                                Restore
+                              </button>
+                            ) : (
+                              <button
+                                onClick={() => handleStatusUpdate(vendor.id, 'Disabled')}
+                                className="text-red-500 hover:text-red-700 font-bold text-[10px] uppercase tracking-wider"
+                              >
+                                Disable
+                              </button>
+                            )
                           )}
                         </div>
                       </td>

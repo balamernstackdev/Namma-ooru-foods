@@ -35,8 +35,15 @@ const fetcher = (url: string) => {
   });
 };
 
+import { useAuth } from '@/context/AuthContext';
+
 export default function HubPayoutsPage() {
   const [isMounted, setIsMounted] = useState(false);
+  const { hasPermission } = useAuth();
+  
+  const hasExportPerm = hasPermission('payouts', 'export');
+  const hasCreatePerm = hasPermission('payouts', 'create');
+  const hasApprovePerm = hasPermission('payouts', 'approve');
 
   useEffect(() => {
     setIsMounted(true);
@@ -292,28 +299,34 @@ export default function HubPayoutsPage() {
         </div>
 
         <div className="flex flex-wrap items-center gap-4 shrink-0">
-          <button
-            onClick={handleExportPDF}
-            className="h-12 px-6 rounded-2xl bg-white border border-slate-200 text-slate-700 text-[11px] font-black uppercase tracking-widest flex items-center gap-2 shadow-sm hover:border-emerald-200 hover:text-emerald-600 transition-all"
-          >
-            <FileSpreadsheet size={16} /> Export PDF
-          </button>
-          
-          <button
-            onClick={handleExportCSV}
-            className="h-12 px-6 rounded-2xl bg-white border border-slate-200 text-slate-700 text-[11px] font-black uppercase tracking-widest flex items-center gap-2 shadow-sm hover:border-emerald-200 hover:text-emerald-600 transition-all"
-          >
-            <FileSpreadsheet size={16} /> Export Excel
-          </button>
+          {hasExportPerm && (
+            <>
+              <button
+                onClick={handleExportPDF}
+                className="h-12 px-6 rounded-2xl bg-white border border-slate-200 text-slate-700 text-[11px] font-black uppercase tracking-widest flex items-center gap-2 shadow-sm hover:border-emerald-200 hover:text-emerald-600 transition-all"
+              >
+                <FileSpreadsheet size={16} /> Export PDF
+              </button>
+              
+              <button
+                onClick={handleExportCSV}
+                className="h-12 px-6 rounded-2xl bg-white border border-slate-200 text-slate-700 text-[11px] font-black uppercase tracking-widest flex items-center gap-2 shadow-sm hover:border-emerald-200 hover:text-emerald-600 transition-all"
+              >
+                <FileSpreadsheet size={16} /> Export Excel
+              </button>
+            </>
+          )}
 
-          <button
-            onClick={handleCalculatePayouts}
-            disabled={isCalculating}
-            className="flex items-center gap-2 h-12 px-6 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-[11px] uppercase tracking-widest shadow-lg shadow-emerald-600/20 active:scale-95 transition-all"
-          >
-            <RefreshCw className={`h-4 w-4 ${isCalculating ? 'animate-spin' : ''}`} />
-            Generate Payout
-          </button>
+          {hasCreatePerm && (
+            <button
+              onClick={handleCalculatePayouts}
+              disabled={isCalculating}
+              className="flex items-center gap-2 h-12 px-6 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-[11px] uppercase tracking-widest shadow-lg shadow-emerald-600/20 active:scale-95 transition-all"
+            >
+              <RefreshCw className={`h-4 w-4 ${isCalculating ? 'animate-spin' : ''}`} />
+              Generate Payout
+            </button>
+          )}
         </div>
       </div>
 
@@ -543,7 +556,7 @@ export default function HubPayoutsPage() {
                           <Eye size={15} />
                         </button>
                         
-                        {(p.status === 'PENDING' || p.status === 'PROCESSING') && (
+                        {hasApprovePerm && (p.status === 'PENDING' || p.status === 'PROCESSING') && (
                           <button
                             onClick={() => openSettleModal(p)}
                             className="h-9 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-[10px] uppercase tracking-widest transition-all shadow-md shadow-emerald-600/10 flex items-center justify-center gap-1.5"
@@ -638,7 +651,7 @@ export default function HubPayoutsPage() {
                   <button className="h-11 flex-1 flex items-center justify-center gap-1.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-600 hover:bg-slate-100 text-xs font-bold transition-all no-underline">
                     <Eye size={14} /> View Details
                   </button>
-                  {(p.status === 'PENDING' || p.status === 'PROCESSING') && (
+                  {hasApprovePerm && (p.status === 'PENDING' || p.status === 'PROCESSING') && (
                     <button
                       onClick={() => openSettleModal(p)}
                       className="h-11 px-6 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs uppercase tracking-wider transition-all shadow-md shadow-emerald-600/10 flex items-center justify-center gap-1.5"

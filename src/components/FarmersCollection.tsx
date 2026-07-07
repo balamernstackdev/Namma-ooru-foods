@@ -19,6 +19,8 @@ export default function FarmersCollection({ products }: FarmersCollectionProps) 
   const [activeTab, setActiveTab] = useState<FilterTab>('all');
   const scrollRef = React.useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(true);
 
   // Mouse drag scrolling support
   const [isMouseDown, setIsMouseDown] = useState(false);
@@ -70,6 +72,9 @@ export default function FarmersCollection({ products }: FarmersCollectionProps) 
     const gap = window.innerWidth < 768 ? 16 : 32;
     const index = Math.round(el.scrollLeft / (itemWidth + gap));
     setActiveIndex(index);
+
+    setCanScrollLeft(el.scrollLeft > 10);
+    setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 10);
   }, []);
 
   // Fetch dynamic banners client-side
@@ -193,28 +198,7 @@ export default function FarmersCollection({ products }: FarmersCollectionProps) 
               className="flex items-center gap-2 text-[11px] font-black text-emerald-800 hover:text-emerald-950 uppercase tracking-[0.2em] transition-all bg-white hover:bg-emerald-50 px-6 py-3.5 rounded-full border border-slate-200/80 shadow-sm hover:shadow group"
             >
               <span>Explore Full Catalog</span>
-              <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
             </Link>
-
-            {/* Redesigned Carousel Navigation Arrows */}
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={scrollLeft}
-                aria-label="Previous"
-                className="w-11 h-11 rounded-full bg-white border border-[#E5E7EB] shadow-[0_8px_24px_rgba(0,0,0,0.08)] flex items-center justify-center text-slate-800 hover:bg-[#0F8A5F] hover:text-white hover:border-[#0F8A5F] transition-all duration-300 hover:scale-105 focus:outline-none shrink-0"
-              >
-                <ChevronLeft size={20} strokeWidth={2.5} />
-              </button>
-              <button
-                type="button"
-                onClick={scrollRightManual}
-                aria-label="Next"
-                className="w-11 h-11 rounded-full bg-white border border-[#E5E7EB] shadow-[0_8px_24px_rgba(0,0,0,0.08)] flex items-center justify-center text-slate-800 hover:bg-[#0F8A5F] hover:text-white hover:border-[#0F8A5F] transition-all duration-300 hover:scale-105 focus:outline-none shrink-0"
-              >
-                <ChevronRight size={20} strokeWidth={2.5} />
-              </button>
-            </div>
           </div>
         </div>
 
@@ -262,6 +246,18 @@ export default function FarmersCollection({ products }: FarmersCollectionProps) 
 
         {/* --- DYNAMIC PRODUCT GRID WITH ANIMATIONS --- */}
         <div className="relative group/carousel w-full">
+          {/* Banner style Left Arrow */}
+          <button
+            type="button"
+            onClick={scrollLeft}
+            aria-label="Previous"
+            className={`absolute left-0 top-[40%] -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-white border border-[#E5E7EB] shadow-[0_8px_24px_rgba(0,0,0,0.08)] flex items-center justify-center text-slate-800 hover:bg-[#0F8A5F] hover:text-white hover:border-[#0F8A5F] transition-all duration-300 hover:scale-105 focus:outline-none shrink-0 transition-opacity duration-300 hidden md:flex ${
+              canScrollLeft ? 'opacity-100' : 'opacity-0 pointer-events-none'
+            }`}
+          >
+            <ChevronLeft size={20} strokeWidth={2.5} />
+          </button>
+
           <motion.div
             layout
             ref={scrollRef}
@@ -289,6 +285,18 @@ export default function FarmersCollection({ products }: FarmersCollectionProps) 
               ))}
             </AnimatePresence>
           </motion.div>
+
+          {/* Banner style Right Arrow */}
+          <button
+            type="button"
+            onClick={scrollRightManual}
+            aria-label="Next"
+            className={`absolute right-0 top-[40%] -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-white border border-[#E5E7EB] shadow-[0_8px_24px_rgba(0,0,0,0.08)] flex items-center justify-center text-slate-800 hover:bg-[#0F8A5F] hover:text-white hover:border-[#0F8A5F] transition-all duration-300 hover:scale-105 focus:outline-none shrink-0 transition-opacity duration-300 hidden md:flex ${
+              canScrollRight ? 'opacity-100' : 'opacity-0 pointer-events-none'
+            }`}
+          >
+            <ChevronRight size={20} strokeWidth={2.5} />
+          </button>
         </div>
 
         {/* Mobile Pagination Dots */}

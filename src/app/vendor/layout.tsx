@@ -71,24 +71,42 @@ export default function VendorLayout({ children }: { children: React.ReactNode }
   const userRole = user?.role?.toLowerCase();
   if (!user || (userRole !== 'vendor' && userRole !== 'admin')) return null;
 
-  const menuItems = [
-    { label: 'Store Overview', href: '/vendor', icon: LayoutDashboard },
-    { label: 'My Products', href: '/vendor/products', icon: Package },
-    { label: 'Customer Orders', href: '/vendor/orders', icon: ShoppingBag },
+  const hasViewPerm = (moduleKey: string) => {
+    if (userRole === 'admin') return true;
+    if (!user.hubPermissions) return false;
+    return user.hubPermissions[moduleKey]?.view === true;
+  };
+
+  const rawMenuItems = [
+    { id: 'dashboard', label: 'Store Overview', href: '/vendor', icon: LayoutDashboard },
+    { id: 'products', label: 'My Products', href: '/vendor/products', icon: Package },
+    { id: 'orders', label: 'Customer Orders', href: '/vendor/orders', icon: ShoppingBag },
     {
+      id: 'marketing',
       label: 'Marketing',
       icon: Megaphone,
       isSubmenu: true,
       subItems: [
-        { label: 'Coupons', href: '/vendor/marketing/coupons', icon: Ticket },
-        { label: 'Announcements', href: '/vendor/marketing/announcements', icon: Megaphone },
+        { id: 'coupons', label: 'Coupons', href: '/vendor/marketing/coupons', icon: Ticket },
+        { id: 'notifications', label: 'Announcements', href: '/vendor/marketing/announcements', icon: Megaphone },
       ]
     },
-    { label: 'Payout History', href: '/vendor/payouts', icon: Landmark },
-    { label: 'Notifications', href: '/vendor/notifications', icon: Bell },
-    { label: 'Store Settings', href: '/vendor/settings', icon: Settings },
-    { label: 'Go to Website', href: '/', icon: Store },
+    { id: 'payments', label: 'Payout History', href: '/vendor/payouts', icon: Landmark },
+    { id: 'notifications', label: 'Notifications', href: '/vendor/notifications', icon: Bell },
+    { id: 'settings', label: 'Store Settings', href: '/vendor/settings', icon: Settings },
+    { id: 'website', label: 'Go to Website', href: '/', icon: Store, bypass: true },
   ];
+
+  const menuItems = rawMenuItems.map(item => {
+    if (item.bypass) return item;
+    if (item.isSubmenu) {
+      const filteredSub = item.subItems?.filter(sub => hasViewPerm(sub.id));
+      if (!filteredSub || filteredSub.length === 0) return null;
+      return { ...item, subItems: filteredSub };
+    }
+    if (!hasViewPerm(item.id)) return null;
+    return item;
+  }).filter(Boolean) as any[];
 
   return (
     <div id="vendor-root" className="min-h-screen flex bg-[#F8FAF7] transition-colors duration-500">

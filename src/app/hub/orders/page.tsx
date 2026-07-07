@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { API_URL } from '@/lib/api';
 import { Search, ShoppingBag, ChevronRight, ChevronLeft, Download, ListFilter } from 'lucide-react';
 import { format } from 'date-fns';
+import { useAuth } from '@/context/AuthContext';
 
 const fetcher = (url: string) => {
   const token = typeof window !== 'undefined' ? localStorage.getItem('namma_orru_token') : null;
@@ -32,6 +33,8 @@ export default function HubOrdersPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [page, setPage] = useState(1);
+  const { hasPermission } = useAuth();
+  const hasExportPerm = hasPermission('orders', 'export');
 
   const { data, error, isLoading } = useSWR(
     `${API_URL}/api/vendor-hub/orders?page=${page}&limit=10&search=${searchTerm}${statusFilter ? `&status=${statusFilter}` : ''}`,
@@ -61,12 +64,14 @@ export default function HubOrdersPage() {
           </p>
         </div>
         <div className="flex items-center gap-3 shrink-0">
-          <button
-            className="flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200/70 rounded-xl text-xs font-bold uppercase tracking-wider text-slate-600 hover:bg-slate-50 hover:border-slate-300 transition-all shadow-sm"
-          >
-            <Download size={15} />
-            Export
-          </button>
+          {hasExportPerm && (
+            <button
+              className="flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200/70 rounded-xl text-xs font-bold uppercase tracking-wider text-slate-600 hover:bg-slate-50 hover:border-slate-300 transition-all shadow-sm"
+            >
+              <Download size={15} />
+              Export
+            </button>
+          )}
         </div>
       </div>
 

@@ -24,6 +24,7 @@ interface Product {
    stock?: number;
    variants?: { id: number; name: string; price: number; stock?: number }[];
    status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'DRAFT';
+   ingredientsInfo?: string;
 }
 
 const STATUS_CONFIG: Record<string, { label: string; dot: string; bg: string; text: string; border: string }> = {
@@ -281,6 +282,7 @@ export default function AdminProducts() {
                         </th>
                         <th className="px-6 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100">Product Info</th>
                         <th className="px-6 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100">Category</th>
+                        <th className="px-6 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100">Ingredients</th>
                         <th className="px-6 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100">Stock Status</th>
                         <th className="px-6 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100">Price</th>
                         <th className="px-6 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100 text-right">Actions</th>
@@ -291,7 +293,7 @@ export default function AdminProducts() {
                      {isLoading ? (
                         Array.from({ length: 6 }).map((_, i) => (
                            <tr key={i} className="animate-pulse">
-                              <td className="px-6 py-4 border-b border-slate-50" colSpan={6}>
+                              <td className="px-6 py-4 border-b border-slate-50" colSpan={7}>
                                  <div className="flex items-center gap-4 py-2">
                                     <div className="h-10 w-10 bg-slate-100 rounded-xl" />
                                     <div className="space-y-1.5 flex-1">
@@ -304,7 +306,7 @@ export default function AdminProducts() {
                         ))
                      ) : filteredAndSorted.length === 0 ? (
                         <tr>
-                           <td colSpan={6} className="py-20 text-center">
+                           <td colSpan={7} className="py-20 text-center">
                               <div className="max-w-md mx-auto flex flex-col items-center gap-3">
                                  <div className="h-12 w-12 bg-slate-50 rounded-full flex items-center justify-center text-slate-400">
                                     <Package size={20} />
@@ -375,6 +377,12 @@ export default function AdminProducts() {
                                  <td className="px-6 py-4 border-b border-slate-50">
                                     <span className="inline-block text-[10px] font-black uppercase tracking-wider text-slate-600 px-3 py-1.5 bg-slate-50 rounded-xl whitespace-nowrap max-w-[160px] truncate">
                                        {product.category?.name || 'Heritage Foods'}
+                                    </span>
+                                 </td>
+
+                                 <td className="px-6 py-4 border-b border-slate-50">
+                                    <span className="text-xs text-slate-500 font-semibold max-w-[150px] truncate block" title={product.ingredientsInfo ? product.ingredientsInfo.replace(/<[^>]*>/g, '') : '—'}>
+                                       {product.ingredientsInfo ? product.ingredientsInfo.replace(/<[^>]*>/g, '') : '—'}
                                     </span>
                                  </td>
 

@@ -83,8 +83,11 @@ export default function CreateProduct() {
 
    const isAdmin = user?.role?.toLowerCase() === 'admin';
 
-   // Fetch all brands (subvendors), including those with 0 products
-   const { data: subVendorsRes } = useSWR(`${API_URL}/api/sub-vendors?includeEmpty=true&limit=1000`, fetcher);
+   // Fetch all brands (subvendors) assigned to this Hub
+   const { data: subVendorsRes } = useSWR(user ? `${API_URL}/api/vendor-hub/sub-vendors?limit=1000` : null, (url: string) => {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('namma_orru_token') : null;
+      return fetch(url, { headers: token ? { Authorization: `Bearer ${token}` } : {} }).then(r => r.json());
+   });
    const subVendors = subVendorsRes?.subVendors || [];
 
    // Synchronize selected brand state with the user's active session brand
@@ -300,9 +303,8 @@ export default function CreateProduct() {
             brandId: parseInt(activeBrandId),
             comboOffer: formData.comboOffer,
             freeDelivery: formData.freeDelivery,
-            isComboFallbackEnabled: formData.isComboFallbackEnabled,
-            whatIsProduct: formData.whatIsProduct,
             ingredientsInfo: formData.ingredientsInfo,
+            isComboFallbackEnabled: formData.isComboFallbackEnabled,
             relatedProducts: relatedProducts.map(rp => rp.relatedProductId || rp.id),
             productCombos: comboProducts,
             metaKeywords: formData.metaKeywords.join(', '),
@@ -339,7 +341,7 @@ export default function CreateProduct() {
             const data = await res.json();
             if (data && data.success) {
                addToast('Success', data.message || 'Product created successfully');
-               router.push('/vendor/products');
+               router.push('/hub/products');
             } else {
                addToast('Error', data.message || 'Failed to create product');
             }
@@ -529,8 +531,7 @@ export default function CreateProduct() {
                      />
                   </InputWrapper>
 
-                  {(isAdmin || !user?.brandId) && (
-                     <InputWrapper label="Associated Brand / Sub-Vendor" helpText="Specify the vendor brand that Products or produces this item.">
+                  <InputWrapper label="Associated Brand / Sub-Vendor" helpText="Specify the vendor brand that produces this item.">
                         <div className="relative">
                            <select
                               required
@@ -548,7 +549,6 @@ export default function CreateProduct() {
                            <ChevronDown className="absolute right-6 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={16} />
                         </div>
                      </InputWrapper>
-                  )}
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                      <InputWrapper label="Primary Category">

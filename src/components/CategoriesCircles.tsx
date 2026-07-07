@@ -14,7 +14,7 @@ const fetcher = (url: string) => fetch(url, { cache: 'no-store' }).then(res => r
 export default function CategoriesCircles() {
   const { data: responseData, error } = useSWR(`${API_URL}/api/categories?limit=1000&all=true`, fetcher);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollLeft, setCanScrollLeft] = useState(true);
   const [canScrollRight, setCanScrollRight] = useState(true);
 
   // Mouse drag scrolling support
@@ -74,8 +74,9 @@ export default function CategoriesCircles() {
     const index = Math.round(el.scrollLeft / (itemWidth + gap));
     setActiveIndex(index);
 
-    setCanScrollLeft(el.scrollLeft > 10);
-    setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 10);
+    const isScrollable = el.scrollWidth > el.clientWidth;
+    setCanScrollLeft(isScrollable);
+    setCanScrollRight(isScrollable);
   }, []);
 
   const getScrollStep = (el: HTMLElement) => el.clientWidth < 640 ? 164 : 220;
@@ -152,33 +153,24 @@ export default function CategoriesCircles() {
               className="hidden sm:flex items-center gap-1 text-[11px] font-black text-slate-400 hover:text-emerald-950 uppercase tracking-[0.2em] transition-colors"
             >
               <span>View All</span>
-              <ChevronRight size={14} />
             </Link>
-
-            {/* Redesigned Carousel Navigation Arrows */}
-            <div className="hidden md:flex items-center gap-2">
-              <button
-                type="button"
-                onClick={scrollLeft}
-                aria-label="Previous"
-                className="w-11 h-11 rounded-full bg-white border border-[#E5E7EB] shadow-[0_8px_24px_rgba(0,0,0,0.08)] flex items-center justify-center text-slate-800 hover:bg-[#0F8A5F] hover:text-white hover:border-[#0F8A5F] transition-all duration-300 hover:scale-105 focus:outline-none shrink-0"
-              >
-                <ChevronLeft size={20} strokeWidth={2.5} />
-              </button>
-              <button
-                type="button"
-                onClick={scrollRight}
-                aria-label="Next"
-                className="w-11 h-11 rounded-full bg-white border border-[#E5E7EB] shadow-[0_8px_24px_rgba(0,0,0,0.08)] flex items-center justify-center text-slate-800 hover:bg-[#0F8A5F] hover:text-white hover:border-[#0F8A5F] transition-all duration-300 hover:scale-105 focus:outline-none shrink-0"
-              >
-                <ChevronRight size={20} strokeWidth={2.5} />
-              </button>
-            </div>
           </div>
         </div>
 
         {/* --- THE PREMIUM SQUIRCLE DECK --- */}
         <div className="relative group/carousel w-full">
+          {/* Banner style Left Arrow */}
+          <button
+            type="button"
+            onClick={scrollLeft}
+            aria-label="Previous"
+            className={`absolute left-0 top-[40%] -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-white border border-[#E5E7EB] shadow-[0_8px_24px_rgba(0,0,0,0.08)] flex items-center justify-center text-slate-800 hover:bg-[#0F8A5F] hover:text-white hover:border-[#0F8A5F] transition-all duration-300 hover:scale-105 focus:outline-none shrink-0 transition-opacity duration-300 hidden md:flex ${
+              canScrollLeft ? 'opacity-100' : 'opacity-0 pointer-events-none'
+            }`}
+          >
+            <ChevronLeft size={20} strokeWidth={2.5} />
+          </button>
+
           <div
             ref={scrollRef}
             onMouseDown={onMouseDown}
@@ -247,7 +239,17 @@ export default function CategoriesCircles() {
             })}
           </div>
 
-          {/* Floating Navigation Arrows - Hidden on Mobile, styled as requested */}
+          {/* Banner style Right Arrow */}
+          <button
+            type="button"
+            onClick={scrollRight}
+            aria-label="Next"
+            className={`absolute right-0 top-[40%] -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-white border border-[#E5E7EB] shadow-[0_8px_24px_rgba(0,0,0,0.08)] flex items-center justify-center text-slate-800 hover:bg-[#0F8A5F] hover:text-white hover:border-[#0F8A5F] transition-all duration-300 hover:scale-105 focus:outline-none shrink-0 transition-opacity duration-300 hidden md:flex ${
+              canScrollRight ? 'opacity-100' : 'opacity-0 pointer-events-none'
+            }`}
+          >
+            <ChevronRight size={20} strokeWidth={2.5} />
+          </button>
         </div>
 
         {/* Mobile Pagination Progress Bar */}

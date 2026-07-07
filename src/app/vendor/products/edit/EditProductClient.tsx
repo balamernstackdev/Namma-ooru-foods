@@ -398,13 +398,13 @@ export default function EditProductClient({ id }: { id?: string }) {
       ],
    }), []);
 
-   const quillFormats = [
+   const quillFormats = useMemo(() => [
       'header',
       'bold', 'italic', 'underline', 'strike',
       'list',
       'align',
       'link'
-   ];
+   ], []);
 
    const hasError = productError || (product && (product as any).error);
    const errorMessage = productError
@@ -784,27 +784,27 @@ export default function EditProductClient({ id }: { id?: string }) {
                   <div className="grid grid-cols-1 gap-10">
                      <InputWrapper label="Product Description">
                         <div className="rich-text-container">
-                           <ReactQuill theme="snow" value={formData.whatIsProduct} onChange={val => setFormData({ ...formData, whatIsProduct: val })} modules={quillModules} formats={quillFormats} />
+                           <ReactQuill theme="snow" value={formData.whatIsProduct} onChange={val => setFormData(prev => ({ ...prev, whatIsProduct: val }))} modules={quillModules} formats={quillFormats} />
                         </div>
                      </InputWrapper>
                      <InputWrapper label="Wellness & Health Benefits">
                         <div className="rich-text-container">
-                           <ReactQuill theme="snow" value={formData.healthBenefits} onChange={val => setFormData({ ...formData, healthBenefits: val })} modules={quillModules} formats={quillFormats} />
+                           <ReactQuill theme="snow" value={formData.healthBenefits} onChange={val => setFormData(prev => ({ ...prev, healthBenefits: val }))} modules={quillModules} formats={quillFormats} />
                         </div>
                      </InputWrapper>
                      <InputWrapper label="Usage & Consumption Guide">
                         <div className="rich-text-container">
-                           <ReactQuill theme="snow" value={formData.howToEat} onChange={val => setFormData({ ...formData, howToEat: val })} modules={quillModules} formats={quillFormats} />
+                           <ReactQuill theme="snow" value={formData.howToEat} onChange={val => setFormData(prev => ({ ...prev, howToEat: val }))} modules={quillModules} formats={quillFormats} />
                         </div>
                      </InputWrapper>
                      <InputWrapper label="Product specification">
                         <div className="rich-text-container">
-                           <ReactQuill theme="snow" value={formData.whoShouldEat} onChange={val => setFormData({ ...formData, whoShouldEat: val })} modules={quillModules} formats={quillFormats} />
+                           <ReactQuill theme="snow" value={formData.whoShouldEat} onChange={val => setFormData(prev => ({ ...prev, whoShouldEat: val }))} modules={quillModules} formats={quillFormats} />
                         </div>
                      </InputWrapper>
                      <InputWrapper label="Quality Details">
                         <div className="rich-text-container">
-                           <ReactQuill theme="snow" value={formData.whyChoose} onChange={val => setFormData({ ...formData, whyChoose: val })} modules={quillModules} formats={quillFormats} />
+                           <ReactQuill theme="snow" value={formData.whyChoose} onChange={val => setFormData(prev => ({ ...prev, whyChoose: val }))} modules={quillModules} formats={quillFormats} />
                         </div>
                      </InputWrapper>
                   </div>

@@ -46,12 +46,11 @@ const navGroups = [
     ]
   },
   {
-    label: 'Vendors',
+    label: 'Sellers',
     items: [
-      { label: 'Vendor Registrations', href: '/admin/vendor-requests', icon: Shield, adminOnly: true },
-      { label: 'Vendor Management', href: '/admin/marketplace-governance', icon: Shield, adminOnly: true },
-      { label: 'Vendors Hub', href: '/admin/hubs', icon: Layers, adminOnly: true },
-      { label: 'Vendor Payouts', href: '/admin/vendor-payouts', icon: ClipboardList, adminOnly: true },
+      { label: 'Seller Registrations', href: '/admin/vendor-requests', icon: Shield, adminOnly: true },
+      { label: 'Seller Hub', href: '/admin/hubs', icon: Layers, adminOnly: true },
+      { label: 'Seller Payouts', href: '/admin/vendor-payouts', icon: ClipboardList, adminOnly: true },
     ]
   },
   {
@@ -83,7 +82,7 @@ const navGroups = [
       { label: 'Announcement Bars', href: '/admin/marketing/announcement-bar', icon: Megaphone },
       { label: 'Popup Campaigns', href: '/admin/marketing/popup-campaigns', icon: Layers },
       { label: 'Email Subscribers', href: '/admin/marketing/subscribers', icon: Mail },
-      { label: 'Vendor Approvals', href: '/admin/marketing/vendor-approvals', icon: ShieldCheck },
+      // { label: 'Vendor Approvals', href: '/admin/marketing/vendor-approvals', icon: ShieldCheck },
     ]
   },
   {
@@ -467,7 +466,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <div className="flex flex-col min-w-0 flex-1">
               <span className="text-[13px] font-bold tracking-tight leading-none text-slate-900 truncate">{user.name || 'Administrator'}</span>
               <span className="text-[9px] font-black uppercase tracking-[0.3em] text-emerald-600 mt-2">
-                {userRole === 'admin' ? 'Super Admin' : 'Vendor Access'}
+                {userRole === 'admin' ? 'Super Admin' : 'Seller Access'}
               </span>
             </div>
             <button

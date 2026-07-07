@@ -6,27 +6,43 @@ import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard, Package, Layers, Tag, ShoppingCart, Users,
   BarChart3, Settings, Bell, Image as ImageIcon, Ticket, Star,
-  Truck, RotateCcw, BookOpen, ChevronDown
+  Truck, RotateCcw, BookOpen, ChevronDown, Shield, ClipboardList
 } from 'lucide-react';
 import { useState } from 'react';
 
 const navGroups = [
   {
-    label: 'Core',
+    label: 'Dashboard',
     items: [
       { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
+    ]
+  },
+  {
+    label: 'Customers',
+    items: [
+      { name: 'Users', href: '/admin/users', icon: Users },
+      { name: 'Reviews', href: '/admin/reviews', icon: Star },
+    ]
+  },
+  {
+    label: 'Sellers',
+    items: [
+      { name: 'Seller Registrations', href: '/admin/vendor-requests', icon: Shield },
+      { name: 'Seller Hub', href: '/admin/hubs', icon: Layers },
+      { name: 'Seller Payouts', href: '/admin/vendor-payouts', icon: ClipboardList },
+    ]
+  },
+  {
+    label: 'Products',
+    items: [
       { name: 'Products', href: '/admin/products', icon: Package },
       { name: 'Categories', href: '/admin/categories', icon: Layers },
-      // { name: 'Brands', href: '/admin/brands', icon: Tag },
-      { name: 'Orders', href: '/admin/orders', icon: ShoppingCart },
-      { name: 'Users', href: '/admin/users', icon: Users },
     ]
   },
   {
     label: 'Commerce',
     items: [
       { name: 'Coupons', href: '/admin/coupons', icon: Ticket },
-      { name: 'Reviews', href: '/admin/reviews', icon: Star },
       { name: 'Promotions', href: '/admin/promotions', icon: ImageIcon },
       { name: 'Banners', href: '/admin/banners', icon: ImageIcon },
     ]
