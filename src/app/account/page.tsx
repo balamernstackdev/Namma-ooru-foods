@@ -126,8 +126,8 @@ export default function AccountPage() {
       const role = user.role?.toLowerCase();
       if (role === 'admin') {
         router.push('/admin');
-      } else if (role === 'vendor') {
-        router.push('/vendor');
+      } else if (role === 'vendor' || role === 'seller') {
+        router.push('/seller');
       } else if (role === 'hub') {
         router.push('/hub/dashboard');
       } else {

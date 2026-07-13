@@ -120,7 +120,7 @@ export default function UserDetailClient({ id }: UserDetailClientProps) {
         <div className="flex items-center gap-3">
           <span className={`inline-flex px-4 py-2 rounded-full text-xs font-black uppercase tracking-wider ${
             userInfo.role === 'ADMIN' ? 'bg-purple-100 text-purple-700' :
-            userInfo.role === 'VENDOR' ? 'bg-emerald-100 text-emerald-700' :
+            (userInfo.role === 'VENDOR' || userInfo.role === 'SELLER') ? 'bg-emerald-100 text-emerald-700' :
             'bg-blue-100 text-blue-700'
           }`}>
             Role: {userInfo.role}

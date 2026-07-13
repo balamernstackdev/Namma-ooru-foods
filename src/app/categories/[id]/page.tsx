@@ -6,6 +6,7 @@ import { Metadata } from 'next';
 
 export const dynamicParams = false;
 
+
 export async function generateStaticParams(): Promise<{ id: string }[]> {
   try {
     console.log(`[Build] Fetching categories from: ${API_URL}/api/categories?limit=1000&all=true`);

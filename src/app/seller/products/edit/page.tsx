@@ -1,7 +1,7 @@
 'use client';
 
 import React, { Suspense } from 'react';
-import EditProductClient from '@/app/vendor/products/edit/EditProductClient';
+import EditProductClient from '@/app/seller/products/edit/EditProductClient';
 import { useSearchParams } from 'next/navigation';
 
 function EditProductWrapper() {

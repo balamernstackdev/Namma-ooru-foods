@@ -3,11 +3,28 @@
   RewriteEngine On
   RewriteBase /
 
+  # Disable directory listing (prevents Infinityfree from generating index.txt)
+  Options -Indexes
+
+  # Fix Infinityfree /index.txt bug: strip /index.txt from any URL
+  RewriteCond %{REQUEST_URI} ^(.+)/index\.txt(/?)$
+  RewriteRule ^(.+)/index\.txt(/?)$ /$1/ [R=301,L]
+
+  # Also handle bare index.txt at root
+  RewriteCond %{REQUEST_URI} ^/index\.txt$
+  RewriteRule ^index\.txt$ / [R=301,L]
+
   # Force trailing slash on directories (e.g. /about -> /about/)
   # This matches Next.js trailingSlash: true configuration
   RewriteCond %{REQUEST_FILENAME} !-f
   RewriteCond %{REQUEST_URI} !(.*)/$
   RewriteRule ^(.*)$ /$1/ [R=301,L]
+
+  # SPA Fallback: serve index.html for any path that is not a real file or directory
+  # This makes hard refreshes on deep routes work correctly
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule ^ /index.html [L]
 
   # Custom 404 Error Document
   ErrorDocument 404 /404.html

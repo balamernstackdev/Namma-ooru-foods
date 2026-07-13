@@ -1,14 +1,16 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // 'export' produces a static HTML/CSS/JS output
   output: 'export',
   trailingSlash: true,
   images: {
     unoptimized: true,
-    qualities: [75, 90],
   },
   typescript: {
     ignoreBuildErrors: true,
+  },
+  experimental: {
   },
 };
 

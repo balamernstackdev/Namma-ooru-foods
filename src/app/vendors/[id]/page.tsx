@@ -6,6 +6,7 @@ import { Metadata } from 'next';
 
 export const dynamicParams = false;
 
+
 export async function generateStaticParams() {
   try {
     console.log(`[Build] generateStaticParams starting for /vendors/[id]...`);

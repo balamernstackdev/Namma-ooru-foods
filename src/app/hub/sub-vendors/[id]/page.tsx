@@ -1,3 +1,4 @@
+export const dynamicParams = false;
 import ClientPage from './client';
 
 export async function generateStaticParams() {

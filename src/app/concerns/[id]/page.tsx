@@ -1,3 +1,4 @@
+export const dynamicParams = false;
 import React from 'react';
 import ConcernDetailLoader from './ConcernDetailLoader';
 

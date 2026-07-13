@@ -4,8 +4,8 @@
 //     : 'https://api.nammaorrufoods.com'
 //   : 'https://api.nammaorrufoods.com';
 
-// export const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.nammaorrufoods.com';
-export const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+export const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.nammaorrufoods.com';
+// export const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
 // Global tracking for active network requests (for monitoring/loading bars)
 let activeRequestsCount = 0;

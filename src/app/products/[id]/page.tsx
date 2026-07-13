@@ -3,7 +3,8 @@ import ProductDetailLoader from './ProductDetailLoader';
 import { API_URL } from '@/lib/api';
 import { Metadata } from 'next';
 
-export const dynamicParams = false;
+export const dynamicParams = false; // Note: In output: export, dynamicParams must be false
+
 
 export async function generateStaticParams(): Promise<{ id: string }[]> {
   try {

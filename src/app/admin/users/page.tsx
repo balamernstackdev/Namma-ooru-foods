@@ -99,8 +99,13 @@ export default function AdminUsersPage() {
     if (filterSellerId) params.set('sellerId', filterSellerId);
     if (filterAdminRole) params.set('adminRole', filterAdminRole);
 
-    router.replace(`/admin/users?${params.toString()}`);
-  }, [activeTab, currentPage, debouncedSearch, filterStatus, filterName, filterEmail, filterMobile, filterBusinessName, filterSellerId, filterAdminRole, router]);
+    const newQueryString = params.toString();
+    const currentQueryString = searchParams.toString();
+    
+    if (newQueryString !== currentQueryString) {
+      router.replace(`/admin/users?${newQueryString}`, { scroll: false });
+    }
+  }, [activeTab, currentPage, debouncedSearch, filterStatus, filterName, filterEmail, filterMobile, filterBusinessName, filterSellerId, filterAdminRole, searchParams]); // omit router as it can cause loops, but include searchParams to read currentQueryString
 
   // Fetch Users on state/filter changes
   useEffect(() => {
@@ -596,7 +601,7 @@ export default function AdminUsersPage() {
                         <>
                           <td className="px-8 py-5">
                             <span className="text-[11px] font-black text-slate-400 bg-slate-50 border border-slate-200/60 px-2 py-1 rounded-md uppercase tracking-wider">
-                              PC-20{user.id}
+                              PC-{String(user.id).padStart(3, '0')}
                             </span>
                           </td>
                           <td className="px-8 py-5">
@@ -648,7 +653,7 @@ export default function AdminUsersPage() {
                         <>
                           <td className="px-8 py-5">
                             <span className="text-[11px] font-black text-slate-400 bg-slate-50 border border-slate-200/60 px-2 py-1 rounded-md uppercase tracking-wider">
-                              PS-20{user.id}
+                              PS-{String(user.id).padStart(3, '0')}
                             </span>
                           </td>
                           <td className="px-8 py-5">
@@ -709,7 +714,7 @@ export default function AdminUsersPage() {
                         <>
                           <td className="px-8 py-5">
                             <span className="text-[11px] font-black text-slate-400 bg-slate-50 border border-slate-200/60 px-2 py-1 rounded-md uppercase tracking-wider">
-                              PA-20{user.id}
+                              PA-{String(user.id).padStart(3, '0')}
                             </span>
                           </td>
                           <td className="px-8 py-5">

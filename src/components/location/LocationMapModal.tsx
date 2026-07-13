@@ -155,7 +155,7 @@ export default function LocationMapModal({ onClose }: LocationMapModalProps) {
         setAddressDetails(data);
       }
     } catch (err) {
-      console.error(err);
+      console.warn("Location detection failed:", err);
     }
   };
 

@@ -104,8 +104,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       return true;
     }
 
+    // Hub users always get full access to products as requested
+    if (user.role?.toLowerCase() === 'hub' && moduleName === 'products') {
+      return true;
+    }
+
     // Check if the user is a hub user and has permissions in their object
-    if ((user.role?.toLowerCase() === 'hub' || user.role?.toLowerCase() === 'vendor') && user.hubPermissions) {
+    if ((user.role?.toLowerCase() === 'hub' || user.role?.toLowerCase() === 'vendor' || user.role?.toLowerCase() === 'seller') && user.hubPermissions) {
       return !!user.hubPermissions[moduleName]?.[action];
     }
 

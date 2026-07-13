@@ -5,6 +5,7 @@ import { API_URL } from '@/lib/api';
 import { Metadata } from 'next';
 export const dynamicParams = false;
 
+
 export async function generateStaticParams() {
   try {
     console.log(`[Build] Fetching brands from: ${API_URL}/api/sub-vendors?includeEmpty=true&limit=1000`);

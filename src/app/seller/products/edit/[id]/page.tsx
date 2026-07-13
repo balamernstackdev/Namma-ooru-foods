@@ -1,8 +1,8 @@
 import React from 'react';
 import { PRODUCTS } from '@/lib/staticData';
-import EditProductClient from '@/app/vendor/products/edit/[id]/EditProductClient';
+import EditProductClient from '@/app/seller/products/edit/[id]/EditProductClient';
 
-// export const dynamicParams = true;
+export const dynamicParams = false;
 
 // Provide a dynamic static array for static export configuration
 export async function generateStaticParams() {

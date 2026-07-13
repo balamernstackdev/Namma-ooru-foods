@@ -3,9 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "clean": "npx rimraf .next out build.zip out.zip",
-    "build": "npm run clean && node scripts/validate-slugs.js && npm install && next build",
+    "dev": "next dev --webpack",
+    "clean": "npx --yes rimraf .next out build.zip out.zip",
+    "build": "npm run clean && node scripts/validate-slugs.js && npm install && next build --webpack",
     "postbuild": "node scripts/verify-deployment.js && node scripts/zip-build.js",
     "verify-build": "node scripts/verify-deployment.js",
     "zip-build": "node scripts/zip-build.js",

@@ -2,7 +2,7 @@ import React from 'react';
 import PromotionEditClient from './PromotionEditClient';
 import { PROMOTIONS } from '@/lib/staticData';
 
-// export const dynamicParams = true;
+export const dynamicParams = false;
 
 export function generateStaticParams() {
   const promoIds = PROMOTIONS.map((p) => ({ id: p.id.toString() }));

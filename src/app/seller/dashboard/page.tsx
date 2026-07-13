@@ -123,7 +123,7 @@ export default function VendorDashboard() {
                   <h3 className="text-xl font-black text-[#0F7A4D] tracking-tight">Earnings Overview</h3>
                   <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Weekly payouts analytics & statements</p>
                </div>
-               <Link href="/vendor/payouts" className="text-[10px] font-black uppercase tracking-widest text-[#0F7A4D] hover:text-emerald-800 flex items-center gap-2">
+               <Link href="/seller/payouts" className="text-[10px] font-black uppercase tracking-widest text-[#0F7A4D] hover:text-emerald-800 flex items-center gap-2">
                   View History <ArrowUpRight size={14} />
                </Link>
             </div>
@@ -153,7 +153,7 @@ export default function VendorDashboard() {
          <motion.div variants={itemVariants} className="bg-white rounded-[3rem] border border-slate-100 p-10 space-y-8 relative overflow-hidden shadow-sm">
             <div className="flex items-center justify-between relative z-10">
                <h3 className="text-xl font-black text-[#0F7A4D] tracking-tight">Rapid Fulfillment Queue</h3>
-               <Link href="/vendor/orders" className="text-[10px] font-black uppercase tracking-widest text-[#0F7A4D] hover:text-emerald-800 flex items-center gap-2">
+               <Link href="/seller/orders" className="text-[10px] font-black uppercase tracking-widest text-[#0F7A4D] hover:text-emerald-800 flex items-center gap-2">
                   Open Desk <ArrowUpRight size={14} />
                </Link>
             </div>

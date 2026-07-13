@@ -213,13 +213,14 @@ export default function UserForm({ initialData, mode }: UserFormProps) {
                         >
                           <option value="USER">Customer / Consumer</option>
                           <option value="ADMIN">System Administrator</option>
-                          <option value="VENDOR">Partner Seller / Reseller</option>
+                          <option value="VENDOR">Partner Vendor / Reseller (Legacy)</option>
+                          <option value="SELLER">Partner Seller / Reseller</option>
                         </select>
                         <ChevronDown size={14} className="absolute right-6 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
                       </div>
                     </InputWrapper>
 
-                    {formData.role === 'VENDOR' && (
+                    {(formData.role === 'VENDOR' || formData.role === 'SELLER') && (
                       <InputWrapper label="Assign to Regional Hub" helpText="The top-level collective this seller belongs to.">
                         <div className="relative">
                           <Database size={16} className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -310,7 +311,7 @@ export default function UserForm({ initialData, mode }: UserFormProps) {
               </div>
 
               {/* Vendor Brand Details Section - Only visible when role is VENDOR */}
-              {formData.role === 'VENDOR' && !initialData && (
+              {(formData.role === 'VENDOR' || formData.role === 'SELLER') && !initialData && (
                 <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
                   <SectionHeader title="Brand / Store Details" icon={Store} colorClass="text-emerald-600" />
                   <div className="p-8 space-y-8">

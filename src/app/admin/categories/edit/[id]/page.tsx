@@ -1,7 +1,7 @@
 import React from 'react';
 import EditCategoryClient from './EditCategoryClient';
 
-// export const dynamicParams = true;
+export const dynamicParams = false;
 
 export function generateStaticParams() {
   return Array.from({ length: 2000 }, (_, i) => ({ id: (i + 1).toString() }));

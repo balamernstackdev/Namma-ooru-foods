@@ -393,7 +393,7 @@ export default function MarketplaceGovernancePage() {
       if (usersData && usersData.users) {
         const allBrandsForCount = brandsData?.subVendors || [];
         mappedVendors = usersData.users
-          .filter((u: any) => u.role === 'VENDOR')
+          .filter((u: any) => u.role === 'VENDOR' || u.role === 'SELLER')
           .map((u: any) => {
             const userBrands = allBrandsForCount.filter((sv: any) => sv.userId === u.id);
             return {

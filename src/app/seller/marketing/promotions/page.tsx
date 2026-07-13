@@ -73,13 +73,13 @@ export default function VendorPromotionsPage() {
             </p>
           </div>
           <div className="flex flex-col sm:flex-row gap-3">
-            <Link href="/vendor/marketing/coupons"
+            <Link href="/seller/marketing/coupons"
               className="flex items-center gap-3 bg-[#0F7A4D] text-white px-6 py-3.5 rounded-2xl font-black text-[11px] uppercase tracking-widest hover:bg-[#0c623d] transition-all shadow-[0_4px_12px_rgba(15,122,77,0.2)] group">
               <Ticket size={15} />
               Manage Coupons
               <ArrowRight size={13} className="ml-auto group-hover:translate-x-1 transition-transform" />
             </Link>
-            <Link href="/vendor/marketing/announcements"
+            <Link href="/seller/marketing/announcements"
               className="flex items-center gap-3 bg-white text-[#111827] border border-[#E5E7EB] px-6 py-3.5 rounded-2xl font-black text-[11px] uppercase tracking-widest hover:bg-slate-50 transition-all group">
               <Megaphone size={15} className="text-[#0F7A4D]" />
               Manage Banners
@@ -115,7 +115,7 @@ export default function VendorPromotionsPage() {
               </div>
               <h2 className="text-[13px] font-black uppercase tracking-widest text-[#111827]">Recent Coupons</h2>
             </div>
-            <Link href="/vendor/marketing/coupons"
+            <Link href="/seller/marketing/coupons"
               className="text-[10px] font-black uppercase tracking-widest text-[#0F7A4D] hover:text-[#0c623d] flex items-center gap-1">
               View All <ArrowRight size={12} />
             </Link>
@@ -156,7 +156,7 @@ export default function VendorPromotionsPage() {
               </div>
               <h2 className="text-[13px] font-black uppercase tracking-widest text-[#111827]">Announcement Bars</h2>
             </div>
-            <Link href="/vendor/marketing/announcements"
+            <Link href="/seller/marketing/announcements"
               className="text-[10px] font-black uppercase tracking-widest text-[#0F7A4D] hover:text-[#0c623d] flex items-center gap-1">
               View All <ArrowRight size={12} />
             </Link>

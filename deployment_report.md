@@ -24,8 +24,10 @@ This report validates the static production build structure, folder hierarchy, a
 
 ## Deployment Recommendations
 
-1. Deploy this build using out.zip, which contains the nested static files structure with forward slash separators.
-2. Upload out.zip to Hostinger and extract it directly inside public_html or your target subdomain directory.
+1. Chunk subfolder for "vendor" not found in chunks folder.
+2. Folder for "vendor" does not exist in out/. Verify if build successfully pre-rendered pages.
+3. Deploy this build using out.zip, which contains the nested static files structure with forward slash separators.
+4. Upload out.zip to Hostinger and extract it directly inside public_html or your target subdomain directory.
 
 ---
-*Report generated on 2026-07-07T10:09:48.534Z*
+*Report generated on 2026-07-13T10:31:43.429Z*

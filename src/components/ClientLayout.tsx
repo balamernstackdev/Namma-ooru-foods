@@ -11,7 +11,7 @@ import GlobalApiLoader from "@/components/GlobalApiLoader";
 
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const isDashboardPath = pathname?.startsWith('/admin') || pathname === '/vendor' || pathname?.startsWith('/vendor/') || pathname === '/hub' || pathname?.startsWith('/hub/');
+  const isDashboardPath = pathname?.startsWith('/admin') || pathname === '/vendor' || pathname?.startsWith('/vendor/') || pathname === '/seller' || pathname?.startsWith('/seller/') || pathname === '/hub' || pathname?.startsWith('/hub/');
 
   React.useEffect(() => {
     window.scrollTo(0, 0);

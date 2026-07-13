@@ -53,7 +53,7 @@ export default function VendorLayout({ children }: { children: React.ReactNode }
     
     if (!isLoading) {
       const role = user?.role?.toLowerCase();
-      if (!user || (role !== 'vendor' && role !== 'admin')) {
+      if (!user || (role !== 'vendor' && role !== 'seller' && role !== 'admin')) {
         router.replace('/account');
       }
     }
@@ -69,7 +69,7 @@ export default function VendorLayout({ children }: { children: React.ReactNode }
   }
 
   const userRole = user?.role?.toLowerCase();
-  if (!user || (userRole !== 'vendor' && userRole !== 'admin')) return null;
+  if (!user || (userRole !== 'vendor' && userRole !== 'seller' && userRole !== 'admin')) return null;
 
   const hasViewPerm = (moduleKey: string) => {
     if (userRole === 'admin') return true;
@@ -78,22 +78,22 @@ export default function VendorLayout({ children }: { children: React.ReactNode }
   };
 
   const rawMenuItems = [
-    { id: 'dashboard', label: 'Store Overview', href: '/vendor', icon: LayoutDashboard },
-    { id: 'products', label: 'My Products', href: '/vendor/products', icon: Package },
-    { id: 'orders', label: 'Customer Orders', href: '/vendor/orders', icon: ShoppingBag },
+    { id: 'dashboard', label: 'Store Overview', href: '/seller', icon: LayoutDashboard },
+    { id: 'products', label: 'My Products', href: '/seller/products', icon: Package },
+    { id: 'orders', label: 'Customer Orders', href: '/seller/orders', icon: ShoppingBag },
     {
       id: 'marketing',
       label: 'Marketing',
       icon: Megaphone,
       isSubmenu: true,
       subItems: [
-        { id: 'coupons', label: 'Coupons', href: '/vendor/marketing/coupons', icon: Ticket },
-        { id: 'notifications', label: 'Announcements', href: '/vendor/marketing/announcements', icon: Megaphone },
+        { id: 'coupons', label: 'Coupons', href: '/seller/marketing/coupons', icon: Ticket },
+        { id: 'notifications', label: 'Announcements', href: '/seller/marketing/announcements', icon: Megaphone },
       ]
     },
-    { id: 'payments', label: 'Payout History', href: '/vendor/payouts', icon: Landmark },
-    { id: 'notifications', label: 'Notifications', href: '/vendor/notifications', icon: Bell },
-    { id: 'settings', label: 'Store Settings', href: '/vendor/settings', icon: Settings },
+    { id: 'payments', label: 'Payout History', href: '/seller/payouts', icon: Landmark },
+    { id: 'notifications', label: 'Notifications', href: '/seller/notifications', icon: Bell },
+    { id: 'settings', label: 'Store Settings', href: '/seller/settings', icon: Settings },
     { id: 'website', label: 'Go to Website', href: '/', icon: Store, bypass: true },
   ];
 

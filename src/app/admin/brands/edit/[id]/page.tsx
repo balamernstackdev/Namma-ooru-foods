@@ -1,7 +1,7 @@
 import React from 'react';
 import EditBrandClient from './EditBrandClient';
 
-// export const dynamicParams = true;
+export const dynamicParams = false;
 
 // This satisfies the 'output: export' requirement for dynamic routes
 export function generateStaticParams() {

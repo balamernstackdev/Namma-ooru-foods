@@ -28,7 +28,7 @@ export default function SellerDetailLoader() {
 
   // Fetch seller (sub-vendor) — NO head-vendor data exposed
   const { data: seller, error, isLoading } = useSWR(
-    slug ? `${API_URL}/api/sub-vendors/${slug}` : null,
+    slug ? `${API_URL}/api/sub-vendors/slug/${slug}` : null,
     fetcher
   );
 

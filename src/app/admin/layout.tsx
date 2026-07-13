@@ -165,7 +165,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   React.useEffect(() => {
     if (!isLoading) {
       const role = user?.role?.toLowerCase();
-      if (!user || (role !== 'admin' && role !== 'vendor')) {
+      if (!user || (role !== 'admin' && role !== 'vendor' && role !== 'seller')) {
         router.replace('/account');
       }
     }
@@ -196,7 +196,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }
 
   const userRole = user?.role?.toLowerCase();
-  if (!user || (userRole !== 'admin' && userRole !== 'vendor')) return null;
+  if (!user || (userRole !== 'admin' && userRole !== 'vendor' && userRole !== 'seller')) return null;
 
   const toggleGroup = (label: string) => {
     setCollapsedGroups(prev =>

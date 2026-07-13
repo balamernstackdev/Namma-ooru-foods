@@ -109,7 +109,7 @@ export default function BrandForm({ initialData, mode }: BrandFormProps) {
   useEffect(() => {
     fetch(`${API_URL}/api/admin-ops/users`)
       .then(r => r.json())
-      .then(data => setUsers(data.filter((u: any) => u.role === 'VENDOR')))
+      .then(data => setUsers(data.filter((u: any) => u.role === 'VENDOR' || u.role === 'SELLER')))
       .catch(() => { });
   }, []);
 

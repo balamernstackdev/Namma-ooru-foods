@@ -28,7 +28,7 @@ export default function VendorVariantsPage() {
                </div>
             </div>
             <Link
-               href="/vendor/variants/new"
+               href="/seller/variants/new"
                className="h-11 px-5 rounded-xl bg-[#0F7A4D] hover:bg-[#0c633e] text-white font-bold text-[11px] uppercase tracking-widest flex items-center justify-center gap-2 transition-all active:scale-95 shadow-sm w-full md:w-auto text-center"
             >
                <Plus size={16} />

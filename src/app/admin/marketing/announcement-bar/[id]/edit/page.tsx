@@ -1,3 +1,4 @@
+export const dynamicParams = false;
 import EditAnnouncementClient from './EditAnnouncementClient';
 
 export function generateStaticParams() {
