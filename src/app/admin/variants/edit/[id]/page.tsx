@@ -1,7 +1,7 @@
 import React from 'react';
 import EditVariantClient from './EditVariantClient';
 
-export const dynamicParams = false;
+export const dynamicParams = true;
 
 export function generateStaticParams() {
   return Array.from({ length: 2000 }, (_, i) => ({ id: (i + 1).toString() }));

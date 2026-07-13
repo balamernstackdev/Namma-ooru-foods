@@ -1,4 +1,4 @@
-export const dynamicParams = false;
+export const dynamicParams = true;
 import React from 'react';
 import OrderDetailClient from './OrderDetailClient';
 

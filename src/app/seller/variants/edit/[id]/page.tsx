@@ -2,7 +2,7 @@ import React from 'react';
 import EditVariantClient from './EditVariantClient';
 import { PRODUCTS } from '@/lib/staticData';
 
-export const dynamicParams = false;
+export const dynamicParams = true;
 
 export async function generateStaticParams() {
   const variantIds = PRODUCTS.flatMap(p => p.variants || []).map(v => ({ id: v.id.toString() }));

@@ -3,7 +3,7 @@ import SubcategoryDetailLoader from './SubcategoryDetailLoader';
 import { API_URL } from '@/lib/api';
 import { Metadata } from 'next';
 
-export const dynamicParams = false;
+export const dynamicParams = true;
 
 
 export async function generateStaticParams(): Promise<{ id: string }[]> {

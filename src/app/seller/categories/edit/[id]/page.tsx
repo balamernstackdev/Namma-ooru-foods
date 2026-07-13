@@ -2,7 +2,7 @@ import React from 'react';
 import EditCategoryClient from './EditCategoryClient';
 import { CATEGORIES } from '@/lib/staticData';
 
-export const dynamicParams = false;
+export const dynamicParams = true;
 
 export async function generateStaticParams() {
   const categoryIds = CATEGORIES.map((c) => ({ id: c.id.toString() }));
