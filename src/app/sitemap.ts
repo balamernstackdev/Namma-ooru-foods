@@ -8,7 +8,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = 'https://nammaoorufoods.com';
 
   try {
-    const res = await fetch(`${API_URL}/api/products`);
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 3000);
+    const res = await fetch(`${API_URL}/api/products`, { signal: controller.signal });
+    clearTimeout(timeoutId);
+    if (!res.ok) throw new Error('API failed');
     const data = await res.json();
     const productsList = Array.isArray(data) ? data : (data && Array.isArray(data.products) ? data.products : []);
 

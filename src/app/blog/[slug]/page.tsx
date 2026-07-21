@@ -18,7 +18,13 @@ interface BlogPost {
 
 async function getPost(slug: string): Promise<BlogPost | null> {
   try {
-    const res = await fetch(`${API_URL}/api/blog/${slug}`, { next: { revalidate: 3600 } });
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 3000);
+    const res = await fetch(`${API_URL}/api/blog/${slug}`, { 
+      next: { revalidate: 3600 },
+      signal: controller.signal
+    });
+    clearTimeout(timeoutId);
     if (!res.ok) return null;
     return res.json();
   } catch { return null; }
@@ -26,8 +32,11 @@ async function getPost(slug: string): Promise<BlogPost | null> {
 
 export async function generateStaticParams() {
   try {
-    const res = await fetch(`${API_URL}/api/blog`);
-    if (!res.ok) return [{ slug: 'ecommerce-blog' }];
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 3000);
+    const res = await fetch(`${API_URL}/api/blog`, { signal: controller.signal });
+    clearTimeout(timeoutId);
+    if (!res.ok) return [];
     const data = await res.json();
     const postsList = Array.isArray(data) ? data : (data && Array.isArray(data.posts) ? data.posts : (data && Array.isArray(data.data) ? data.data : []));
     if (postsList.length > 0) {
@@ -35,9 +44,9 @@ export async function generateStaticParams() {
         slug: post.slug,
       }));
     }
-    throw new Error('Empty posts list');
+    return [];
   } catch {
-    return [{ slug: 'ecommerce-blog' }];
+    return [];
   }
 }
 

@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev --webpack",
     "clean": "npx --yes rimraf .next out build.zip out.zip",
-    "build": "npm run clean && node scripts/validate-slugs.js && npm install && next build --webpack",
+    "build": "npm run clean && node scripts/validate-slugs.js && next build --webpack",
     "verify-build": "node scripts/verify-deployment.js",
     "start": "next start",
     "lint": "eslint"
