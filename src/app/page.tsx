@@ -3,12 +3,7 @@
 import React from 'react';
 import useSWR from 'swr';
 import Hero from "@/components/Hero";
-import Link from "next/link";
 import ProductCarousel from "@/components/ProductCarousel";
-import CategoryBanner from "@/components/CategoryBanner";
-import BrandBanner from "@/components/BrandBanner";
-import OfferBanner from "@/components/OfferBanner";
-import MarketingPopupWrapper from '@/components/MarketingPopupWrapper';
 import ArtisanMarketplace from '@/components/ArtisanMarketplace';
 import FarmersCollection from '@/components/FarmersCollection';
 import LazyHomeSections from '@/components/HomePageSections';
@@ -16,6 +11,7 @@ import nextDynamic from 'next/dynamic';
 import { CategoryCircleSkeleton } from '@/components/Skeleton';
 import VendorPromotion from "@/components/VendorPromotion";
 import PremiumLoader from '@/components/ui/PremiumLoader';
+import MarketingPopupWrapper from '@/components/MarketingPopupWrapper';
 
 import { API_URL } from '@/lib/api';
 
@@ -44,13 +40,15 @@ export default function Home() {
   const { data: allData, error: allError } = useSWR(`${API_URL}/api/products?limit=100`, fetcher);
   const { data: fastDeliveryData, error: fastDeliveryError } = useSWR(`${API_URL}/api/products?isFastDelivery=true&limit=20`, fetcher);
   const { data: newArrivalsData, error: newArrivalsError } = useSWR(`${API_URL}/api/products?isNewArrival=true&limit=20`, fetcher);
+  const { data: featuredData, error: featuredError } = useSWR(`${API_URL}/api/products?isFeatured=true&limit=20`, fetcher);
 
   const isLoading = !bestSellersData && !bestSellersError ||
                     !organicData && !organicError ||
                     !farmerData && !farmerError ||
                     !allData && !allError ||
                     !fastDeliveryData && !fastDeliveryError ||
-                    !newArrivalsData && !newArrivalsError;
+                    !newArrivalsData && !newArrivalsError ||
+                    !featuredData && !featuredError;
 
   if (isLoading) {
     return <PremiumLoader fullScreen={true} />;
@@ -62,6 +60,7 @@ export default function Home() {
   const allProducts = getProductsList(allData);
   const fastDeliveryProducts = getProductsList(fastDeliveryData);
   const newArrivals = getProductsList(newArrivalsData);
+  const featuredProducts = getProductsList(featuredData);
 
   // Deduplicate: organic shouldn't repeat best sellers for carousel
   const bestSellerIds = new Set(bestSellers.map((p: any) => p.id));
@@ -107,13 +106,26 @@ export default function Home() {
         {/* 5. BEST SELLERS — Most Popular Products */}
         <ProductCarousel
           products={bestSellers}
-            title='BEST <span class="text-accent italic lowercase font-serif font-normal">SELLERS</span>'
-            subtitle="Most Popular Products"
-            viewAllHref="/best-selling"
-            bgClass="bg-slate-50"
-            autoScrollInterval={3000}
-            bannerType="best_sellers"
+          title='BEST <span class="text-accent italic lowercase font-serif font-normal">SELLERS</span>'
+          subtitle="Most Popular Products"
+          viewAllHref="/best-selling"
+          bgClass="bg-slate-50"
+          autoScrollInterval={3000}
+          bannerType="best_sellers"
         />
+
+        {/* Featured Products */}
+        {featuredProducts.length > 0 && (
+          <ProductCarousel
+            products={featuredProducts}
+            title='Featured <span class="text-emerald-600 italic lowercase font-serif font-normal">Products</span>'
+            subtitle="Handpicked Premium Choices"
+            viewAllHref="/products?featured=true"
+            bgClass="bg-white"
+            autoScrollInterval={3300}
+            bannerType="featured_products"
+          />
+        )}
 
         {/* 6. Farmers' Collections — Interactive Products Section */}
         <FarmersCollection products={farmerProducts} />
@@ -121,12 +133,12 @@ export default function Home() {
         {/* 7. Organic Collections — Pure & Authentic */}
         <ProductCarousel
           products={organicDisplay}
-            title='Herbal Cosmetics <span class="text-primary italic lowercase font-serif font-normal">Collections</span>'
-            subtitle="Pure. Authentic. Heritage."
-            viewAllHref="/products"
-            bgClass="bg-white"
-            autoScrollInterval={3500}
-            bannerType="organic_collection"
+          title='Herbal Cosmetics <span class="text-primary italic lowercase font-serif font-normal">Collections</span>'
+          subtitle="Pure. Authentic. Heritage."
+          viewAllHref="/products"
+          bgClass="bg-white"
+          autoScrollInterval={3500}
+          bannerType="organic_collection"
         />
 
         {/* 7.5 New Arrivals */}
@@ -144,10 +156,10 @@ export default function Home() {
         {/* 8. Recently Added Products */}
         <ProductCarousel
           products={allProducts.slice(0, 12)}
-            title='Recently <span class="text-accent italic lowercase font-serif font-normal">Added</span>'
-            subtitle="Newest Additions to our Marketplace"
-            viewAllHref="/products"
-            bgClass="bg-slate-50"
+          title='Recently <span class="text-accent italic lowercase font-serif font-normal">Added</span>'
+          subtitle="Newest Additions to our Marketplace"
+          viewAllHref="/products"
+          bgClass="bg-slate-50"
           autoScrollInterval={4000}
         />
 

@@ -320,8 +320,8 @@ export default function ProductDetailClient({ product: initialProduct, allProduc
                            alt={product.name}
                         />
 
-                        {/* FLOATING BADGES */}
-                        <ProductBadges product={product} variant="floating" />
+                        {/* FLOATING BADGES — hidden on detail page */}
+                        {/* <ProductBadges product={product} variant="floating" /> */}
 
                         {/* WISHLIST FLOATING */}
                         <button
@@ -356,9 +356,6 @@ export default function ProductDetailClient({ product: initialProduct, allProduc
                      {/* Brand, Share Icon, and Title */}
                      <div className="flex items-start justify-between gap-4">
                         <div className="space-y-1">
-                           <div className="text-[12px] text-gray-500 font-mono mb-2 font-medium">
-                              {product.productIdStr || `PROD-${product.id.toString().padStart(3, '0')}`}
-                           </div>
                            <div className="flex flex-wrap items-center gap-x-2 text-[10px] md:text-[11px] font-black tracking-[0.25em] text-emerald-750 uppercase">
                               <Link href={`/artisans/${encodeURIComponent(product.subVendor?.slug || product.subVendor?.id || product.brand?.slug || product.brand?.id || '')}`} className="hover:text-emerald-950 transition-colors">
                                  {product.subVendor?.name || product.brand?.name || 'Namma Ooru Store'}
@@ -366,8 +363,8 @@ export default function ProductDetailClient({ product: initialProduct, allProduc
                            </div>
                            <h1 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight leading-[1.1] mt-1 flex flex-wrap items-center gap-3">
                               {product.name}
-                              <span className="text-[12px] bg-slate-100 text-slate-600 px-2 py-1 rounded-md font-mono border border-slate-200 shrink-0 font-medium tracking-normal mt-1 md:mt-0">
-                                 {selectedVariant?.skuCode || selectedVariant?.sku || (product.variants?.length ? null : product.skuCode) || `SKU-${product.id.toString().padStart(3, '0')}`}
+                              <span className="text-[11px] bg-slate-100 text-slate-500 px-2 py-0.5 rounded font-mono border border-slate-200 shrink-0 font-bold tracking-normal mt-1 md:mt-0">
+                                 {product.productIdStr || `Prod-${product.id.toString().padStart(2, '0')}`}
                               </span>
                            </h1>
                         </div>
@@ -407,6 +404,7 @@ export default function ProductDetailClient({ product: initialProduct, allProduc
                            </a>
                         )}
                         {Number(product.reviewCount || 0) > 0 && <span className="text-slate-300">•</span>}
+                        {/* Badges hidden on detail page */}
                         <ProductBadges product={product} variant="inline" />
                      </div>
 
@@ -520,21 +518,21 @@ export default function ProductDetailClient({ product: initialProduct, allProduc
 
          {/* SECTION: ICON GRID HIGHLIGHTS — dynamic, hides when empty */}
          {product.productHighlights && product.productHighlights.filter((h: any) => h.isActive !== false).length > 0 && (
-         <section className="py-10 bg-slate-50">
-            <div className="standard-container grid grid-cols-2 md:grid-cols-4 gap-4">
-               {product.productHighlights.filter((h: any) => h.isActive !== false).map((h: any, i: number) => (
-                  <div key={h.id || i} className="flex flex-col md:flex-row items-center text-center md:text-left gap-3 bg-white p-5 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow duration-300">
-                     <div className="h-12 w-12 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0">
-                        <CheckCircle2 size={24} className="text-emerald-700" />
+            <section className="py-10 bg-slate-50">
+               <div className="standard-container grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {product.productHighlights.filter((h: any) => h.isActive !== false).map((h: any, i: number) => (
+                     <div key={h.id || i} className="flex flex-col md:flex-row items-center text-center md:text-left gap-3 bg-white p-5 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow duration-300">
+                        <div className="h-12 w-12 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0">
+                           <CheckCircle2 size={24} className="text-emerald-700" />
+                        </div>
+                        <div>
+                           <h4 className="text-[14px] font-black text-slate-900 leading-tight">{h.title}</h4>
+                           <p className="text-[12px] text-slate-500 mt-0.5 font-medium leading-tight">{h.description}</p>
+                        </div>
                      </div>
-                     <div>
-                        <h4 className="text-[14px] font-black text-slate-900 leading-tight">{h.title}</h4>
-                        <p className="text-[12px] text-slate-500 mt-0.5 font-medium leading-tight">{h.description}</p>
-                     </div>
-                  </div>
-               ))}
-            </div>
-         </section>
+                  ))}
+               </div>
+            </section>
          )}
 
          {/* SECTION: COMPACT PRODUCT DETAILS & TABS */}
@@ -637,29 +635,31 @@ export default function ProductDetailClient({ product: initialProduct, allProduc
                            <div className="flex items-center gap-2 font-black text-emerald-900 uppercase text-[12px]">
                               <ShieldCheck size={16} /> Storage Instructions
                            </div>
-                            <div className="bg-slate-50 p-5 rounded-2xl border border-slate-100">
-                               {product.storageInstructions || product.shelfLife ? (
-                                  <div
-                                     className="prose prose-sm prose-slate max-w-none text-[14px] text-slate-700 font-medium leading-relaxed break-words"
-                                     dangerouslySetInnerHTML={{ __html: renderHtml(product.storageInstructions || product.shelfLife) }}
-                                  />
-                               ) : (
-                                  <p className="text-[14px] text-slate-700 font-medium leading-relaxed">Store in a cool, dry, airtight environment away from excessive heat.</p>
-                               )}
-                            </div>
+                           <div className="bg-slate-50 p-5 rounded-2xl border border-slate-100">
+                              {product.storageInstructions || product.shelfLife ? (
+                                 <div
+                                    className="prose prose-sm prose-slate max-w-none text-[14px] text-slate-700 font-medium leading-relaxed break-words"
+                                    dangerouslySetInnerHTML={{ __html: renderHtml(product.storageInstructions || product.shelfLife) }}
+                                 />
+                              ) : (
+                                 <p className="text-[14px] text-slate-700 font-medium leading-relaxed">Store in a cool, dry, airtight environment away from excessive heat.</p>
+                              )}
+                           </div>
                         </div>
                      </div>
 
-                      {/* SECTION: DYNAMIC PRODUCT-SPECIFIC COMBO BUILDER */}
-                      <ComboBuilder
-                         mainProduct={product}
-                         comboData={comboData}
-                         isLoading={!comboData && !comboError}
-                         currentPrice={currentPrice}
-                         mainProductImage={galleryImages[0] || product.image || fallbackImage}
-                         fallbackImage={fallbackImage}
-                         selectedVariant={selectedVariant}
-                      />
+                     {/* SECTION: DYNAMIC PRODUCT-SPECIFIC COMBO BUILDER — only shown when combo products exist */}
+                     {((!comboData && !comboError) || (comboData?.comboProducts?.length > 0)) && (
+                        <ComboBuilder
+                           mainProduct={product}
+                           comboData={comboData}
+                           isLoading={!comboData && !comboError}
+                           currentPrice={currentPrice}
+                           mainProductImage={galleryImages[0] || product.image || fallbackImage}
+                           fallbackImage={fallbackImage}
+                           selectedVariant={selectedVariant}
+                        />
+                     )}
 
                      {/* REVIEWS */}
                      <div id="reviews" className="scroll-mt-24 pt-4">

@@ -1,12 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
-import { useRef, useEffect, useCallback, useState } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import React, { useRef, useEffect, useCallback, useState } from 'react';
+import { ArrowRight } from 'lucide-react';
 import ProductCard from './ProductCard';
 import Link from 'next/link';
 import BannerCarousel from './BannerCarousel';
 import { useBanners } from '@/hooks/useBanners';
+import CarouselNavigation from './CarouselNavigation';
 
 interface ProductCarouselProps {
   products: any[];
@@ -16,6 +17,7 @@ interface ProductCarouselProps {
   bgClass?: string;
   autoScrollInterval?: number; // ms, default 3000
   bannerType?: string; // e.g., 'best_sellers', 'organic_collection'
+  children?: React.ReactNode; // For filters or sub-headers in sections
 }
 
 export default function ProductCarousel({
@@ -24,12 +26,13 @@ export default function ProductCarousel({
   subtitle,
   viewAllHref = '/products',
   bgClass = 'bg-white',
-  autoScrollInterval: _autoScrollInterval = 3000,
+  autoScrollInterval = 3000,
   bannerType,
+  children,
 }: ProductCarouselProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
-  const [canScrollLeft, setCanScrollLeft] = useState(true);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
 
   // Mouse drag scrolling support
@@ -77,43 +80,48 @@ export default function ProductCarousel({
   const { allBanners } = useBanners();
   const banners = bannerType ? allBanners.filter((b: any) => b.type === bannerType) : [];
 
-  // Card width is ~320px + 32px gap = ~352px
-
-  const SCROLL_STEP = 352;
-
   const handleScroll = useCallback(() => {
     const el = scrollRef.current;
     if (!el) return;
 
-    // Mobile dots calculation
+    // Dot navigation index calculation
     const itemWidth = el.children[0]?.clientWidth || 165;
-    const gap = window.innerWidth < 768 ? 12 : 32;
+    const gap = window.innerWidth < 768 ? 16 : (window.innerWidth < 1440 ? 20 : 24);
     const index = Math.round(el.scrollLeft / (itemWidth + gap));
     setActiveIndex(index);
 
-    const isScrollable = el.scrollWidth > el.clientWidth;
-    setCanScrollLeft(isScrollable);
-    setCanScrollRight(isScrollable);
+    setCanScrollLeft(el.scrollLeft > 10);
+    setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 10);
   }, []);
 
   const scrollLeft = useCallback(() => {
     const el = scrollRef.current;
     if (!el) return;
+
+    const itemWidth = el.children[0]?.clientWidth || 320;
+    const gap = window.innerWidth < 768 ? 16 : (window.innerWidth < 1440 ? 20 : 24);
+    const scrollStep = itemWidth + gap;
+
     if (el.scrollLeft <= 10) {
       el.scrollTo({ left: el.scrollWidth, behavior: 'smooth' });
     } else {
-      el.scrollBy({ left: -SCROLL_STEP, behavior: 'smooth' });
+      el.scrollBy({ left: -scrollStep, behavior: 'smooth' });
     }
   }, []);
 
   const scrollRight = useCallback(() => {
     const el = scrollRef.current;
     if (!el) return;
+
+    const itemWidth = el.children[0]?.clientWidth || 320;
+    const gap = window.innerWidth < 768 ? 16 : (window.innerWidth < 1440 ? 20 : 24);
+    const scrollStep = itemWidth + gap;
+
     // If at end, loop back to start
-    if (el.scrollLeft + el.clientWidth >= el.scrollWidth - 20) {
+    if (el.scrollLeft + el.clientWidth >= el.scrollWidth - 15) {
       el.scrollTo({ left: 0, behavior: 'smooth' });
     } else {
-      el.scrollBy({ left: SCROLL_STEP, behavior: 'smooth' });
+      el.scrollBy({ left: scrollStep, behavior: 'smooth' });
     }
   }, []);
 
@@ -121,13 +129,14 @@ export default function ProductCarousel({
     const el = scrollRef.current;
     if (!el) return;
     el.addEventListener('scroll', handleScroll, { passive: true });
-    handleScroll();
+    // Initial check
+    setTimeout(handleScroll, 200);
     return () => el.removeEventListener('scroll', handleScroll);
-  }, [handleScroll]);
+  }, [handleScroll, products]);
 
   // Auto-scroll logic (pauses on hover)
   useEffect(() => {
-    if (!_autoScrollInterval || products.length === 0) return;
+    if (!autoScrollInterval || products.length === 0) return;
 
     let intervalId: NodeJS.Timeout;
     let isHovered = false;
@@ -137,7 +146,7 @@ export default function ProductCarousel({
         if (!isHovered) {
           scrollRight();
         }
-      }, _autoScrollInterval);
+      }, autoScrollInterval);
     };
 
     startInterval();
@@ -164,7 +173,7 @@ export default function ProductCarousel({
         el.removeEventListener('mouseleave', handleMouseLeave);
       }
     };
-  }, [scrollRight, _autoScrollInterval, products.length]);
+  }, [scrollRight, autoScrollInterval, products.length]);
 
   if (products.length === 0) {
     return (
@@ -181,52 +190,50 @@ export default function ProductCarousel({
       </section>
     );
   }
+
   return (
-    <section className={`py-4 md:py-8 ${bgClass} flex justify-center`}>
+    <section className={`py-6 md:py-8 ${bgClass} flex justify-center`}>
       <div className="standard-container w-full">
-        {/* Header */}
-        <div className="flex items-end justify-between mb-3 px-1">
-          <div>
-            <span className="text-[10px] font-black uppercase tracking-[0.4em] text-amber-500 mb-4 inline-block">
-              {subtitle}
-            </span>
+        
+        {/* Header Block */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-3 md:mb-4 gap-4">
+          <div className="space-y-1">
+            {subtitle && (
+              <span className="text-[10px] md:text-xs font-black uppercase tracking-[0.35em] text-amber-500 block mb-1">
+                {subtitle}
+              </span>
+            )}
             <h2
-              className="text-emerald-950 font-black tracking-tighter text-2xl md:text-4xl lg:text-5xl leading-none uppercase"
+              className="text-emerald-950 font-black tracking-tighter text-2xl md:text-3xl lg:text-4xl leading-tight uppercase"
               dangerouslySetInnerHTML={{ __html: title }}
             />
           </div>
-          <div className="flex items-center gap-4">
+
+          {/* Desktop & Tablet Navigation Link (Arrows removed) */}
+          <div className="hidden md:flex items-center shrink-0">
             <Link
               href={viewAllHref}
               prefetch={false}
-              className="hidden md:inline-flex text-[10px] font-black uppercase tracking-widest whitespace-nowrap text-slate-400 hover:text-emerald-950 transition-colors"
+              className="text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-emerald-950 transition-colors"
             >
               View All
             </Link>
           </div>
         </div>
 
-        {/* Banners (if present) */}
+        {/* Children slot (Filters or category tabs) */}
+        {children && <div className="mb-4">{children}</div>}
+
+        {/* Banners */}
         {banners && banners.length > 0 && (
-          <div className="mb-4 px-1">
+          <div className="mb-4">
             <BannerCarousel banners={banners} />
           </div>
         )}
 
-        {/* Scrollable row - contained */}
-        <div className="relative z-10 group/carousel w-full">
-          {/* Banner style Left Arrow */}
-          <button
-            type="button"
-            onClick={scrollLeft}
-            aria-label="Previous"
-            className={`absolute -left-4 lg:-left-6 top-[45%] -translate-y-1/2 z-30 w-11 h-11 rounded-full bg-white border border-[#E5E7EB] shadow-[0_8px_24px_rgba(0,0,0,0.12)] flex items-center justify-center text-slate-800 hover:bg-[#0F8A5F] hover:text-white hover:border-[#0F8A5F] transition-all duration-300 hover:scale-105 focus:outline-none shrink-0 hidden md:flex ${
-              canScrollLeft ? 'opacity-100' : 'opacity-0 pointer-events-none'
-            }`}
-          >
-            <ChevronLeft size={20} strokeWidth={2.5} />
-          </button>
-
+        {/* Scrollable Track with standardized float arrows wrapper */}
+        {/* px-8 creates space for the absolute arrows so they float outside the track without overlapping cards */}
+        <div className="relative w-full px-8">
           <div
             ref={scrollRef}
             onMouseDown={onMouseDown}
@@ -235,48 +242,48 @@ export default function ProductCarousel({
             onMouseMove={onMouseMove}
             onKeyDown={onKeyDown}
             tabIndex={0}
-            className="flex gap-4 md:gap-8 overflow-x-auto scroll-smooth pb-8 pt-2 snap-x snap-mandatory no-scrollbar px-4 md:px-8 cursor-grab active:cursor-grabbing focus:outline-none"
-            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+            className="product-carousel-track pb-3 pt-1 cursor-grab active:cursor-grabbing focus:outline-none items-stretch overflow-hidden"
           >
-            {products.map((product: any) => (
+            {products.map((product: any, index: number) => (
               <div
                 key={product.id}
-                className="shrink-0 w-[165px] md:w-[320px] snap-start h-full flex flex-col"
+                className="product-carousel-item"
               >
-                <ProductCard product={product} />
+                <ProductCard product={product} index={index} />
               </div>
             ))}
           </div>
 
-          {/* Banner style Right Arrow */}
-          <button
-            type="button"
-            onClick={scrollRight}
-            aria-label="Next"
-            className={`absolute -right-4 lg:-right-6 top-[45%] -translate-y-1/2 z-30 w-11 h-11 rounded-full bg-white border border-[#E5E7EB] shadow-[0_8px_24px_rgba(0,0,0,0.12)] flex items-center justify-center text-slate-800 hover:bg-[#0F8A5F] hover:text-white hover:border-[#0F8A5F] transition-all duration-300 hover:scale-105 focus:outline-none shrink-0 hidden md:flex ${
-              canScrollRight ? 'opacity-100' : 'opacity-0 pointer-events-none'
-            }`}
-          >
-            <ChevronRight size={20} strokeWidth={2.5} />
-          </button>
+          {/* Reusable premium navigation arrows float outside */}
+          <CarouselNavigation
+            onPrev={scrollLeft}
+            onNext={scrollRight}
+            canPrev={canScrollLeft}
+            canNext={canScrollRight}
+          />
         </div>
 
         {/* Mobile Pagination Dots */}
-        <div className="md:hidden flex justify-center gap-1.5 mt-[-10px] mb-4">
-          {products.slice(0, 10).map((_, idx) => (
+        <div className="md:hidden flex justify-center gap-1.5 mt-1.5 mb-2">
+          {products.slice(0, Math.min(10, products.length)).map((_, idx) => (
             <div
               key={idx}
-              className={`h-1.5 rounded-full transition-all duration-300 ${idx === activeIndex ? 'w-4 bg-[#0f9d58]' : 'w-1.5 bg-slate-300'}`}
+              className={`h-1 rounded-full transition-all duration-300 ${idx === activeIndex ? 'w-4 bg-[#0f9d58]' : 'w-1 bg-slate-300'}`}
             />
           ))}
         </div>
 
-        {/* Mobile view-all */}
-        <div className="md:hidden flex justify-center mt-0">
-          <Link href={viewAllHref} prefetch={false} className="text-[10px] font-black uppercase tracking-widest text-primary hover:text-accent transition-colors border-b border-primary/20 pb-1">
-            View All Products →
+        {/* Mobile centered View All link */}
+        <div className="md:hidden flex justify-center mt-1.5">
+          <Link
+            href={viewAllHref}
+            prefetch={false}
+            className="h-10 px-8 rounded-full border border-slate-200 bg-white flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-600 hover:bg-slate-50 transition-all shadow-sm"
+          >
+            Explore All Products <ArrowRight size={13} />
           </Link>
         </div>
+
       </div>
     </section>
   );

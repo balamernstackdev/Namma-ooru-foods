@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import { 
   TrendingUp, 
@@ -24,13 +26,16 @@ interface ProductBadgesProps {
 }
 
 export default function ProductBadges({ product, variant = 'inline' }: ProductBadgesProps) {
+
+
   if (!product) return null;
 
-  const badges = [];
+  const allPossibleBadges = [];
 
-  // Mapping logic
+  // Priority mapping logic:
+  // 1. Best Seller
   if (product.isBestSeller) {
-    badges.push({
+    allPossibleBadges.push({
       id: 'bestseller',
       label: 'Best Seller',
       floatingBg: 'bg-[#052e16]',
@@ -43,8 +48,9 @@ export default function ProductBadges({ product, variant = 'inline' }: ProductBa
     });
   }
 
+  // 2. Featured
   if (product.isFeatured) {
-    badges.push({
+    allPossibleBadges.push({
       id: 'featured',
       label: 'Featured',
       floatingBg: 'bg-blue-900',
@@ -57,8 +63,9 @@ export default function ProductBadges({ product, variant = 'inline' }: ProductBa
     });
   }
 
+  // 3. Organic
   if (product.isOrganic) {
-    badges.push({
+    allPossibleBadges.push({
       id: 'organic',
       label: 'Organic',
       floatingBg: 'bg-emerald-700',
@@ -71,8 +78,9 @@ export default function ProductBadges({ product, variant = 'inline' }: ProductBa
     });
   }
 
+  // 4. Farmer Collection
   if (product.isFarmerCollection) {
-    badges.push({
+    allPossibleBadges.push({
       id: 'farmer',
       label: 'Farmer Collection',
       floatingBg: 'bg-orange-700',
@@ -85,22 +93,9 @@ export default function ProductBadges({ product, variant = 'inline' }: ProductBa
     });
   }
 
-  if (product.isNewArrival) {
-    badges.push({
-      id: 'new',
-      label: 'New Arrival',
-      floatingBg: 'bg-purple-800',
-      floatingText: 'text-white',
-      floatingIcon: <Star size={10} className="text-purple-300 fill-purple-300" />,
-      inlineBg: 'bg-purple-50',
-      inlineText: 'text-purple-800',
-      inlineBorder: 'border-purple-100',
-      inlineIcon: <Star size={10} className="text-purple-700" />
-    });
-  }
-
+  // 5. Fast Delivery
   if (product.isFastDelivery) {
-    badges.push({
+    allPossibleBadges.push({
       id: 'fast',
       label: 'Fast Delivery',
       floatingBg: 'bg-rose-700',
@@ -113,12 +108,27 @@ export default function ProductBadges({ product, variant = 'inline' }: ProductBa
     });
   }
 
-  if (badges.length === 0) return null;
+  // 6. New Arrival
+  if (product.isNewArrival) {
+    allPossibleBadges.push({
+      id: 'new',
+      label: 'New Arrival',
+      floatingBg: 'bg-purple-800',
+      floatingText: 'text-white',
+      floatingIcon: <Star size={10} className="text-purple-300 fill-purple-300" />,
+      inlineBg: 'bg-purple-50',
+      inlineText: 'text-purple-800',
+      inlineBorder: 'border-purple-100',
+      inlineIcon: <Star size={10} className="text-purple-700" />
+    });
+  }
+
+  if (allPossibleBadges.length === 0) return null;
 
   if (variant === 'floating') {
     return (
       <div className="absolute top-2 left-2 pointer-events-none flex flex-col gap-1.5 z-10">
-        {badges.map((badge) => (
+        {allPossibleBadges.slice(0, 2).map((badge) => (
           <div 
             key={badge.id}
             className={`${badge.floatingBg} backdrop-blur-md ${badge.floatingText} text-[9px] font-black px-2 py-1 rounded shadow-md uppercase tracking-wider flex items-center gap-1.5`}
@@ -131,16 +141,17 @@ export default function ProductBadges({ product, variant = 'inline' }: ProductBa
     );
   }
 
-  // Inline variant
+  const visibleBadges = allPossibleBadges;
+
   return (
-    <div className="flex flex-wrap gap-1">
-      {badges.map((badge) => (
+    <div className="flex flex-wrap gap-1 items-center min-w-0">
+      {visibleBadges.map((badge) => (
         <span 
           key={badge.id}
-          className={`${badge.inlineBg} ${badge.inlineText} text-[8px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded border ${badge.inlineBorder} flex items-center gap-1 leading-none`}
+          className={`${badge.inlineBg} ${badge.inlineText} text-[8px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded border ${badge.inlineBorder} flex items-center gap-1 leading-none shrink-0`}
         >
           {badge.inlineIcon}
-          {badge.label}
+          <span>{badge.label}</span>
         </span>
       ))}
     </div>

@@ -102,10 +102,10 @@ function ComboProductCard({
    const [imgErr, setImgErr] = useState(false);
    const price = Number(product.price || 0);
    const originalPrice = Number(product.originalPrice || 0);
-   
+
    // If it's a combo product, use the configured final price.
-   const comboFinalPrice = !isMain && product.comboData?.finalPrice !== undefined 
-      ? Number(product.comboData.finalPrice) 
+   const comboFinalPrice = !isMain && product.comboData?.finalPrice !== undefined
+      ? Number(product.comboData.finalPrice)
       : price;
 
    const discountBadgeText = (() => {
@@ -232,7 +232,7 @@ export default function ComboBuilder({
    // Derived totals
    const selectedItems = comboProducts.filter(p => selectedComboIds.includes(p.id));
    const comboSubtotal = currentPrice + selectedItems.reduce((sum, p) => sum + Number(p.price || 0), 0);
-   
+
    const bundlePrice = currentPrice + selectedItems.reduce((sum, p) => {
       const pFinal = p.comboData?.finalPrice !== undefined ? Number(p.comboData.finalPrice) : Number(p.price || 0);
       return sum + pFinal;
@@ -251,7 +251,7 @@ export default function ComboBuilder({
 
    const handleAddBundle = () => {
       const sortedItemIds = selectedItems.map(p => p.id).sort().join(',');
-      
+
       addToCart({
          productId: mainProduct.id,
          name: `${mainProduct.name} Bundle`,
@@ -323,41 +323,41 @@ export default function ComboBuilder({
                      {/* Mobile: horizontal scroll | Desktop: horizontal scroll */}
                      <div className="flex flex-row items-stretch gap-2.5 overflow-x-auto pt-3.5 pb-4 md:pt-0 md:pb-4 w-full snap-x [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar-track]:bg-slate-100/50 [&::-webkit-scrollbar-thumb]:bg-slate-300 [&::-webkit-scrollbar-thumb]:rounded-full min-h-[250px]">
                         {/* Main product */}
-                     <ComboProductCard
-                        product={{
-                           id: mainProduct.id,
-                           name: mainProduct.name,
-                           price: currentPrice,
-                           originalPrice: mainProduct.originalPrice,
-                           image: mainProductImage,
-                           subVendor: mainProduct.subVendor,
-                           avgRating: mainProduct.avgRating || mainProduct.averageRating,
-                        }}
-                        isMain
-                        fallbackImage={fallbackImage}
-                     />
+                        <ComboProductCard
+                           product={{
+                              id: mainProduct.id,
+                              name: mainProduct.name,
+                              price: currentPrice,
+                              originalPrice: mainProduct.originalPrice,
+                              image: mainProductImage,
+                              subVendor: mainProduct.subVendor,
+                              avgRating: mainProduct.avgRating || mainProduct.averageRating,
+                           }}
+                           isMain
+                           fallbackImage={fallbackImage}
+                        />
 
-                     {comboProducts.map((item, idx) => (
-                        <React.Fragment key={item.id}>
-                           {/* Plus connector */}
-                           <motion.div
-                              initial={{ scale: 0 }}
-                              animate={{ scale: 1 }}
-                              className="w-7 h-7 rounded-full bg-white border border-slate-200 shadow-sm text-slate-400 flex items-center justify-center shrink-0 self-center"
-                           >
-                              <Plus size={13} strokeWidth={2.5} />
-                           </motion.div>
+                        {comboProducts.map((item, idx) => (
+                           <React.Fragment key={item.id}>
+                              {/* Plus connector */}
+                              <motion.div
+                                 initial={{ scale: 0 }}
+                                 animate={{ scale: 1 }}
+                                 className="w-7 h-7 rounded-full bg-white border border-slate-200 shadow-sm text-slate-400 flex items-center justify-center shrink-0 self-center"
+                              >
+                                 <Plus size={13} strokeWidth={2.5} />
+                              </motion.div>
 
-                           {/* Combo product */}
-                           <ComboProductCard
-                              product={item}
-                              isSelected={selectedComboIds.includes(item.id)}
-                              onToggle={() => handleToggle(item.id)}
-                              fallbackImage={fallbackImage}
-                           />
-                        </React.Fragment>
-                     ))}
-                  </div>
+                              {/* Combo product */}
+                              <ComboProductCard
+                                 product={item}
+                                 isSelected={selectedComboIds.includes(item.id)}
+                                 onToggle={() => handleToggle(item.id)}
+                                 fallbackImage={fallbackImage}
+                              />
+                           </React.Fragment>
+                        ))}
+                     </div>
 
                      {/* Click-to-toggle hint */}
                      <p className="text-[9px] text-slate-400 font-medium text-center flex items-center justify-center gap-1 mt-4">
@@ -370,85 +370,85 @@ export default function ComboBuilder({
                {/* Right: Bundle Summary */}
                <div className="w-full lg:w-[320px] xl:w-[340px] shrink-0 flex">
                   <div className="w-full bg-gradient-to-br from-[#0f5132] to-[#14532d] rounded-[1.75rem] p-5 text-white flex flex-col justify-between shadow-xl relative overflow-hidden">
-                  {/* Decorative orbs */}
-                  <div className="absolute top-0 right-0 -mr-8 -mt-8 w-36 h-36 bg-emerald-400/10 rounded-full blur-3xl pointer-events-none" />
-                  <div className="absolute bottom-0 left-0 -ml-8 -mb-8 w-28 h-28 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
+                     {/* Decorative orbs */}
+                     <div className="absolute top-0 right-0 -mr-8 -mt-8 w-36 h-36 bg-emerald-400/10 rounded-full blur-3xl pointer-events-none" />
+                     <div className="absolute bottom-0 left-0 -ml-8 -mb-8 w-28 h-28 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
 
-                  <div className="space-y-4 relative z-10">
-                     <div className="flex items-center justify-between">
-                        <span className="text-[9px] font-black uppercase tracking-[0.25em] text-emerald-300">Bundle Summary</span>
-                        {comboData.isManual && (
-                           <span className="text-[7px] font-black uppercase tracking-widest bg-emerald-800/50 text-emerald-300 px-2 py-0.5 rounded-full border border-emerald-700/30">
-                              Curated
-                           </span>
-                        )}
-                     </div>
+                     <div className="space-y-4 relative z-10">
+                        <div className="flex items-center justify-between">
+                           <span className="text-[9px] font-black uppercase tracking-[0.25em] text-emerald-300">Bundle Summary</span>
+                           {comboData.isManual && (
+                              <span className="text-[7px] font-black uppercase tracking-widest bg-emerald-800/50 text-emerald-300 px-2 py-0.5 rounded-full border border-emerald-700/30">
+                                 Curated
+                              </span>
+                           )}
+                        </div>
 
-                     <div className="space-y-2 border-b border-emerald-800/40 pb-4">
-                        <div className="flex justify-between text-xs text-emerald-100 font-bold">
-                           <span>Items Selected</span>
+                        <div className="space-y-2 border-b border-emerald-800/40 pb-4">
+                           <div className="flex justify-between text-xs text-emerald-100 font-bold">
+                              <span>Items Selected</span>
+                              <AnimatePresence mode="wait">
+                                 <motion.span
+                                    key={totalCount}
+                                    initial={{ opacity: 0, y: -4 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: 4 }}
+                                 >
+                                    {totalCount} Products
+                                 </motion.span>
+                              </AnimatePresence>
+                           </div>
+                           <div className="flex justify-between text-xs text-emerald-100 font-bold">
+                              <span>Original Price</span>
+                              <AnimatePresence mode="wait">
+                                 <motion.span key={comboSubtotal} initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                                    {formatCurrency(comboSubtotal)}
+                                 </motion.span>
+                              </AnimatePresence>
+                           </div>
+                           <div className="flex justify-between text-xs text-emerald-300 font-extrabold">
+                              <span>Bundle Savings ({displayDiscountPercent}%)</span>
+                              <AnimatePresence mode="wait">
+                                 <motion.span key={bundleDiscount} initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                                    -{formatCurrency(bundleDiscount)}
+                                 </motion.span>
+                              </AnimatePresence>
+                           </div>
+                        </div>
+
+                        {/* Final Price */}
+                        <div className="flex items-baseline justify-between">
+                           <span className="text-sm font-black uppercase tracking-wider text-emerald-100">Bundle Price</span>
                            <AnimatePresence mode="wait">
                               <motion.span
-                                 key={totalCount}
-                                 initial={{ opacity: 0, y: -4 }}
-                                 animate={{ opacity: 1, y: 0 }}
-                                 exit={{ opacity: 0, y: 4 }}
+                                 key={bundlePrice}
+                                 initial={{ scale: 0.9, opacity: 0 }}
+                                 animate={{ scale: 1, opacity: 1 }}
+                                 className="text-[26px] font-[900] text-amber-400 leading-none"
                               >
-                                 {totalCount} Products
-                              </motion.span>
-                           </AnimatePresence>
-                        </div>
-                        <div className="flex justify-between text-xs text-emerald-100 font-bold">
-                           <span>Original Price</span>
-                           <AnimatePresence mode="wait">
-                              <motion.span key={comboSubtotal} initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                                 {formatCurrency(comboSubtotal)}
-                              </motion.span>
-                           </AnimatePresence>
-                        </div>
-                        <div className="flex justify-between text-xs text-emerald-300 font-extrabold">
-                           <span>Bundle Savings ({displayDiscountPercent}%)</span>
-                           <AnimatePresence mode="wait">
-                              <motion.span key={bundleDiscount} initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                                 -{formatCurrency(bundleDiscount)}
+                                 {formatCurrency(bundlePrice)}
                               </motion.span>
                            </AnimatePresence>
                         </div>
                      </div>
 
-                     {/* Final Price */}
-                     <div className="flex items-baseline justify-between">
-                        <span className="text-sm font-black uppercase tracking-wider text-emerald-100">Bundle Price</span>
-                        <AnimatePresence mode="wait">
-                           <motion.span
-                              key={bundlePrice}
-                              initial={{ scale: 0.9, opacity: 0 }}
-                              animate={{ scale: 1, opacity: 1 }}
-                              className="text-[26px] font-[900] text-amber-400 leading-none"
-                           >
-                              {formatCurrency(bundlePrice)}
-                           </motion.span>
-                        </AnimatePresence>
+                     {/* CTA Buttons */}
+                     <div className="space-y-2.5 mt-5 relative z-10">
+                        <button
+                           disabled={selectedItems.length === 0}
+                           onClick={handleAddBundle}
+                           className="w-full py-3.5 bg-amber-500 hover:bg-amber-400 active:scale-95 transition-all rounded-xl text-[10px] font-black uppercase tracking-widest text-[#0f5132] shadow-lg shadow-emerald-950/30 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                        >
+                           <ShoppingBag size={13} strokeWidth={2.5} />
+                           Add Bundle to Cart
+                        </button>
+                        <Link
+                           href="/products"
+                           className="w-full py-2.5 bg-emerald-800/40 hover:bg-emerald-800/60 transition-all rounded-xl text-[9px] font-black uppercase tracking-widest text-emerald-200 flex items-center justify-center gap-1"
+                        >
+                           Browse All Products <ChevronRight size={11} />
+                        </Link>
                      </div>
-                  </div>
-
-                  {/* CTA Buttons */}
-                  <div className="space-y-2.5 mt-5 relative z-10">
-                     <button
-                        disabled={selectedItems.length === 0}
-                        onClick={handleAddBundle}
-                        className="w-full py-3.5 bg-amber-500 hover:bg-amber-400 active:scale-95 transition-all rounded-xl text-[10px] font-black uppercase tracking-widest text-[#0f5132] shadow-lg shadow-emerald-950/30 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                     >
-                        <ShoppingBag size={13} strokeWidth={2.5} />
-                        Add Bundle to Cart
-                     </button>
-                     <Link
-                        href="/products"
-                        className="w-full py-2.5 bg-emerald-800/40 hover:bg-emerald-800/60 transition-all rounded-xl text-[9px] font-black uppercase tracking-widest text-emerald-200 flex items-center justify-center gap-1"
-                     >
-                        Browse All Products <ChevronRight size={11} />
-                     </Link>
-                  </div>
                   </div>
                </div>
             </div>

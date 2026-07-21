@@ -4,8 +4,9 @@ import React, { useRef, useState, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import useSWR from 'swr';
-import { ChevronLeft, ChevronRight, Sparkle, ArrowUpRight } from 'lucide-react';
+import { Sparkle, ArrowUpRight } from 'lucide-react';
 import { motion } from 'framer-motion';
+import CarouselNavigation from './CarouselNavigation';
 
 import { API_URL } from '@/lib/api';
 
@@ -14,7 +15,7 @@ const fetcher = (url: string) => fetch(url, { cache: 'no-store' }).then(res => r
 export default function CategoriesCircles() {
   const { data: responseData, error } = useSWR(`${API_URL}/api/categories?limit=1000&all=true`, fetcher);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const [canScrollLeft, setCanScrollLeft] = useState(true);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
 
   // Mouse drag scrolling support
@@ -74,9 +75,8 @@ export default function CategoriesCircles() {
     const index = Math.round(el.scrollLeft / (itemWidth + gap));
     setActiveIndex(index);
 
-    const isScrollable = el.scrollWidth > el.clientWidth;
-    setCanScrollLeft(isScrollable);
-    setCanScrollRight(isScrollable);
+    setCanScrollLeft(el.scrollLeft > 10);
+    setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 10);
   }, []);
 
   const getScrollStep = (el: HTMLElement) => el.clientWidth < 640 ? 164 : 220;
@@ -108,7 +108,7 @@ export default function CategoriesCircles() {
       setTimeout(checkScrollLimits, 500);
     }
     return () => el?.removeEventListener('scroll', checkScrollLimits);
-  }, [checkScrollLimits]);
+  }, [checkScrollLimits, displayCategories]);
 
   // Auto-scroll logic (pauses on hover)
   React.useEffect(() => {
@@ -170,8 +170,6 @@ export default function CategoriesCircles() {
   return (
     <section className="w-full pt-2 md:pt-4 pb-4 md:pb-6 bg-white relative overflow-hidden">
 
-      {/* Decorative luxurious ambient glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-radial from-amber-50/40 to-transparent rounded-full pointer-events-none opacity-70" />
 
       <div className="standard-container relative z-10">
 
@@ -187,7 +185,7 @@ export default function CategoriesCircles() {
             </h2>
           </div>
 
-          {/* Clean Discovery Controls */}
+          {/* Clean Discovery Controls (No arrows next to it) */}
           <div className="flex items-center gap-4">
             <Link
               href="/categories"
@@ -200,18 +198,7 @@ export default function CategoriesCircles() {
 
         {/* --- THE PREMIUM SQUIRCLE DECK --- */}
         <div className="relative group/carousel w-full">
-          {/* Banner style Left Arrow */}
-          <button
-            type="button"
-            onClick={scrollLeft}
-            aria-label="Previous"
-            className={`absolute -left-4 lg:-left-6 top-[40%] -translate-y-1/2 z-30 w-11 h-11 rounded-full bg-white border border-[#E5E7EB] shadow-[0_8px_24px_rgba(0,0,0,0.12)] flex items-center justify-center text-slate-800 hover:bg-[#0F8A5F] hover:text-white hover:border-[#0F8A5F] transition-all duration-300 hover:scale-105 focus:outline-none shrink-0 hidden md:flex ${
-              canScrollLeft ? 'opacity-100' : 'opacity-0 pointer-events-none'
-            }`}
-          >
-            <ChevronLeft size={20} strokeWidth={2.5} />
-          </button>
-
+          
           <div
             ref={scrollRef}
             onMouseDown={onMouseDown}
@@ -280,17 +267,13 @@ export default function CategoriesCircles() {
             })}
           </div>
 
-          {/* Banner style Right Arrow */}
-          <button
-            type="button"
-            onClick={scrollRight}
-            aria-label="Next"
-            className={`absolute -right-4 lg:-right-6 top-[40%] -translate-y-1/2 z-30 w-11 h-11 rounded-full bg-white border border-[#E5E7EB] shadow-[0_8px_24px_rgba(0,0,0,0.12)] flex items-center justify-center text-slate-800 hover:bg-[#0F8A5F] hover:text-white hover:border-[#0F8A5F] transition-all duration-300 hover:scale-105 focus:outline-none shrink-0 hidden md:flex ${
-              canScrollRight ? 'opacity-100' : 'opacity-0 pointer-events-none'
-            }`}
-          >
-            <ChevronRight size={20} strokeWidth={2.5} />
-          </button>
+          {/* Standardized Navigation Arrows */}
+          <CarouselNavigation
+            onPrev={scrollLeft}
+            onNext={scrollRight}
+            canPrev={canScrollLeft}
+            canNext={canScrollRight}
+          />
         </div>
 
         {/* Mobile Pagination Progress Bar */}

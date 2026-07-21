@@ -2,28 +2,16 @@
 
 import React, { useRef, useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Sparkles, ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 import useSWR from 'swr';
 import { motion } from 'framer-motion';
 import { usePlatformSettings } from '@/context/PlatformSettingsContext';
+import CarouselNavigation from './CarouselNavigation';
 
 import { API_URL } from '@/lib/api';
 import OptimizedImage from './ui/OptimizedImage';
 
 const fetcher = (url: string) => fetch(url).then(res => res.json());
-
-const formatBrandName = (name: string) => {
-  if (!name) return '';
-  return name
-    .replace(/[-_]+/g, ' ')
-    .split(' ')
-    .map(w => {
-      let cleaned = w.charAt(0).toUpperCase() + w.slice(1).toLowerCase();
-      if (cleaned === 'Prod' || cleaned === 'Prods') return 'Products';
-      return cleaned;
-    })
-    .join(' ');
-};
 
 export default function ArtisanMarketplace() {
   const { settings } = usePlatformSettings();
@@ -77,7 +65,7 @@ export default function ArtisanMarketplace() {
   // Vendor visibility should not depend on product count
   const activeBrands = brands;
   const [activeIndex, setActiveIndex] = useState(0);
-  const [canScrollLeft, setCanScrollLeft] = useState(true);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
 
   const checkScrollLimits = React.useCallback(() => {
@@ -90,9 +78,8 @@ export default function ArtisanMarketplace() {
     const index = Math.round(el.scrollLeft / (itemWidth + gap));
     setActiveIndex(index);
 
-    const isScrollable = el.scrollWidth > el.clientWidth;
-    setCanScrollLeft(isScrollable);
-    setCanScrollRight(isScrollable);
+    setCanScrollLeft(el.scrollLeft > 10);
+    setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 10);
   }, []);
 
   const getScrollStep = (el: HTMLElement) => el.clientWidth < 640 ? 164 : 220;
@@ -124,7 +111,7 @@ export default function ArtisanMarketplace() {
       setTimeout(checkScrollLimits, 500);
     }
     return () => el?.removeEventListener('scroll', checkScrollLimits);
-  }, [checkScrollLimits]);
+  }, [checkScrollLimits, activeBrands]);
 
   // Auto-scroll logic (pauses on hover)
   useEffect(() => {
@@ -172,8 +159,6 @@ export default function ArtisanMarketplace() {
   return (
     <section className="w-full pt-2 md:pt-4 pb-4 md:pb-6 bg-white relative overflow-hidden">
 
-      {/* Decorative luxurious ambient glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-radial from-amber-50/40 to-transparent rounded-full pointer-events-none opacity-70" />
 
       <div className="standard-container relative z-10">
 
@@ -198,17 +183,6 @@ export default function ArtisanMarketplace() {
 
         {/* --- The Premium Squircle Deck matching Vendors --- */}
         <div className="relative group/carousel w-full">
-          {/* Banner style Left Arrow */}
-          <button
-            type="button"
-            onClick={scrollLeft}
-            aria-label="Previous"
-            className={`absolute -left-4 lg:-left-6 top-[40%] -translate-y-1/2 z-30 w-11 h-11 rounded-full bg-white border border-[#E5E7EB] shadow-[0_8px_24px_rgba(0,0,0,0.12)] flex items-center justify-center text-slate-800 hover:bg-[#0F8A5F] hover:text-white hover:border-[#0F8A5F] transition-all duration-300 hover:scale-105 focus:outline-none shrink-0 hidden md:flex ${
-              canScrollLeft ? 'opacity-100' : 'opacity-0 pointer-events-none'
-            }`}
-          >
-            <ChevronLeft size={20} strokeWidth={2.5} />
-          </button>
 
           <div
             ref={scrollRef}
@@ -276,17 +250,13 @@ export default function ArtisanMarketplace() {
             )}
           </div>
 
-          {/* Banner style Right Arrow */}
-          <button
-            type="button"
-            onClick={scrollRight}
-            aria-label="Next"
-            className={`absolute -right-4 lg:-right-6 top-[40%] -translate-y-1/2 z-30 w-11 h-11 rounded-full bg-white border border-[#E5E7EB] shadow-[0_8px_24px_rgba(0,0,0,0.12)] flex items-center justify-center text-slate-800 hover:bg-[#0F8A5F] hover:text-white hover:border-[#0F8A5F] transition-all duration-300 hover:scale-105 focus:outline-none shrink-0 hidden md:flex ${
-              canScrollRight ? 'opacity-100' : 'opacity-0 pointer-events-none'
-            }`}
-          >
-            <ChevronRight size={20} strokeWidth={2.5} />
-          </button>
+          {/* Standardized Navigation Arrows */}
+          <CarouselNavigation
+            onPrev={scrollLeft}
+            onNext={scrollRight}
+            canPrev={canScrollLeft}
+            canNext={canScrollRight}
+          />
         </div>
 
         {/* Mobile Pagination Dots */}
