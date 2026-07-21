@@ -171,7 +171,7 @@ export default function VendorShowcase() {
                 className="snap-start shrink-0 w-[140px] md:w-[180px]"
               >
                 <Link
-                  href={`/sellers/detail?slug=${vendor.slug || vendor.id}`}
+                  href={`/hubs/detail?slug=${vendor.slug || vendor.id}`}
                   prefetch={false}
                   className="group flex flex-col items-center text-center"
                 >

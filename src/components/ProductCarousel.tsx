@@ -125,6 +125,47 @@ export default function ProductCarousel({
     return () => el.removeEventListener('scroll', handleScroll);
   }, [handleScroll]);
 
+  // Auto-scroll logic (pauses on hover)
+  useEffect(() => {
+    if (!_autoScrollInterval || products.length === 0) return;
+
+    let intervalId: NodeJS.Timeout;
+    let isHovered = false;
+
+    const startInterval = () => {
+      intervalId = setInterval(() => {
+        if (!isHovered) {
+          scrollRight();
+        }
+      }, _autoScrollInterval);
+    };
+
+    startInterval();
+
+    const el = scrollRef.current;
+    const handleMouseEnter = () => {
+      isHovered = true;
+      clearInterval(intervalId);
+    };
+    const handleMouseLeave = () => {
+      isHovered = false;
+      startInterval();
+    };
+
+    if (el) {
+      el.addEventListener('mouseenter', handleMouseEnter);
+      el.addEventListener('mouseleave', handleMouseLeave);
+    }
+
+    return () => {
+      clearInterval(intervalId);
+      if (el) {
+        el.removeEventListener('mouseenter', handleMouseEnter);
+        el.removeEventListener('mouseleave', handleMouseLeave);
+      }
+    };
+  }, [scrollRight, _autoScrollInterval, products.length]);
+
   if (products.length === 0) {
     return (
       <section className={`py-4 md:py-8 ${bgClass} flex justify-center`}>
@@ -179,7 +220,7 @@ export default function ProductCarousel({
             type="button"
             onClick={scrollLeft}
             aria-label="Previous"
-            className={`absolute left-0 top-[45%] -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-white border border-[#E5E7EB] shadow-[0_8px_24px_rgba(0,0,0,0.08)] flex items-center justify-center text-slate-800 hover:bg-[#0F8A5F] hover:text-white hover:border-[#0F8A5F] transition-all duration-300 hover:scale-105 focus:outline-none shrink-0 transition-opacity duration-300 hidden md:flex ${
+            className={`absolute left-2 md:left-4 xl:left-10 top-[45%] -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-white border border-[#E5E7EB] shadow-[0_8px_24px_rgba(0,0,0,0.08)] flex items-center justify-center text-slate-800 hover:bg-[#0F8A5F] hover:text-white hover:border-[#0F8A5F] transition-all duration-300 hover:scale-105 focus:outline-none shrink-0 transition-opacity duration-300 hidden md:flex ${
               canScrollLeft ? 'opacity-100' : 'opacity-0 pointer-events-none'
             }`}
           >
@@ -194,14 +235,13 @@ export default function ProductCarousel({
             onMouseMove={onMouseMove}
             onKeyDown={onKeyDown}
             tabIndex={0}
-            className={`flex gap-3 md:gap-8 overflow-x-auto scroll-smooth pb-10 pt-4 snap-x snap-mandatory no-scrollbar px-[10px] md:px-[20px] xl:px-[70px] cursor-grab active:cursor-grabbing focus:outline-none ${products.length < 4 ? 'lg:justify-center' : ''
-              }`}
+            className="flex gap-3 md:gap-8 overflow-x-auto scroll-smooth pb-10 pt-4 snap-x snap-mandatory no-scrollbar px-[10px] md:px-[20px] xl:px-[70px] cursor-grab active:cursor-grabbing focus:outline-none"
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           >
             {products.map((product: any) => (
               <div
                 key={product.id}
-                className="shrink-0 w-[165px] md:w-[320px] snap-start h-full"
+                className="shrink-0 w-[165px] md:w-[320px] snap-start h-full flex flex-col"
               >
                 <ProductCard product={product} />
               </div>
@@ -213,7 +253,7 @@ export default function ProductCarousel({
             type="button"
             onClick={scrollRight}
             aria-label="Next"
-            className={`absolute right-0 top-[45%] -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-white border border-[#E5E7EB] shadow-[0_8px_24px_rgba(0,0,0,0.08)] flex items-center justify-center text-slate-800 hover:bg-[#0F8A5F] hover:text-white hover:border-[#0F8A5F] transition-all duration-300 hover:scale-105 focus:outline-none shrink-0 transition-opacity duration-300 hidden md:flex ${
+            className={`absolute right-2 md:right-4 xl:right-10 top-[45%] -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-white border border-[#E5E7EB] shadow-[0_8px_24px_rgba(0,0,0,0.08)] flex items-center justify-center text-slate-800 hover:bg-[#0F8A5F] hover:text-white hover:border-[#0F8A5F] transition-all duration-300 hover:scale-105 focus:outline-none shrink-0 transition-opacity duration-300 hidden md:flex ${
               canScrollRight ? 'opacity-100' : 'opacity-0 pointer-events-none'
             }`}
           >

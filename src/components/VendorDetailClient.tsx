@@ -95,9 +95,9 @@ function VendorInformationView({ vendor, averageRating, totalProducts }: { vendo
               )}
             </div>
 
-            {vendor.description && (
+            {(vendor.shortDescription || vendor.description) && (
               <p className="text-slate-600 text-sm font-medium leading-relaxed max-w-3xl">
-                {vendor.description}
+                {vendor.shortDescription}
               </p>
             )}
 
@@ -106,130 +106,124 @@ function VendorInformationView({ vendor, averageRating, totalProducts }: { vendo
 
         {/* Detailed Sections */}
         <div className="flex flex-col gap-8">
-            {/* About Vendor */}
-            {(vendor.companyOverview || vendor.mission || vendor.vision || vendor.yearsOfExperience || vendor.description) && (
-              <section className="bg-white rounded-[24px] shadow-sm p-8 border border-slate-100">
-                <h2 className="text-lg font-[900] text-emerald-950 uppercase tracking-wide mb-6 flex items-center gap-2">
-                  <FileText size={18} className="text-emerald-600" /> About Vendor
-                </h2>
-                <div className="space-y-6">
-                  {vendor.description && !vendor.companyOverview && (
-                    <div>
-                      <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Description</h3>
-                      <p className="text-slate-600 text-sm">{vendor.description}</p>
-                    </div>
-                  )}
-                  {vendor.companyOverview && (
-                    <div>
-                      <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Company Overview</h3>
-                      <p className="text-slate-600 text-sm">{vendor.companyOverview}</p>
-                    </div>
-                  )}
-                  {vendor.mission && (
-                    <div>
-                      <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Mission</h3>
-                      <p className="text-slate-600 text-sm">{vendor.mission}</p>
-                    </div>
-                  )}
-                  {vendor.vision && (
-                    <div>
-                      <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Vision</h3>
-                      <p className="text-slate-600 text-sm">{vendor.vision}</p>
-                    </div>
-                  )}
-                  {vendor.yearsOfExperience && (
-                    <div>
-                      <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Years of Experience</h3>
-                      <p className="text-slate-600 text-sm">{vendor.yearsOfExperience} Years</p>
-                    </div>
-                  )}
-                </div>
-              </section>
-            )}
-
-            {/* Gallery */}
-            {vendor.gallery && vendor.gallery.length > 0 && (
-              <section className="bg-white rounded-[24px] shadow-sm p-8 border border-slate-100">
-                <h2 className="text-lg font-[900] text-emerald-950 uppercase tracking-wide mb-6">Gallery</h2>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                  {vendor.gallery.map((img: string, idx: number) => (
-                    <div key={idx} className="relative aspect-square rounded-xl overflow-hidden bg-slate-100 border border-slate-200">
-                      <OptimizedImage src={img} alt={`Gallery image ${idx + 1}`} fill className="object-cover" />
-                    </div>
-                  ))}
-                </div>
-              </section>
-            )}
-            
-            {/* Certifications */}
-            {vendor.certifications && vendor.certifications.length > 0 && (
-              <section className="bg-white rounded-[24px] shadow-sm p-8 border border-slate-100">
-                <h2 className="text-lg font-[900] text-emerald-950 uppercase tracking-wide mb-6">Certifications</h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {vendor.certifications.map((cert: any, idx: number) => (
-                    <div key={idx} className="flex items-center gap-3 p-4 rounded-xl bg-slate-50 border border-slate-100">
-                      <Award className="text-emerald-600 shrink-0" size={24} />
-                      <div>
-                        <p className="text-sm font-bold text-slate-800">{cert.name || cert.type}</p>
-                        {cert.issuer && <p className="text-xs text-slate-500">{cert.issuer}</p>}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </section>
-            )}
-            {/* Address */}
-            {hasAddress && (
-              <section className="bg-white rounded-[24px] shadow-sm p-8 border border-slate-100">
-                <h2 className="text-lg font-[900] text-emerald-950 uppercase tracking-wide mb-6">Address</h2>
-                <div className="text-sm font-medium text-slate-700 leading-relaxed mb-4">
-                  {fullAddress}
-                </div>
-                {/* Optional Google Map Embed if coordinates exist */}
-                {vendor.address?.coordinates?.lat && vendor.address?.coordinates?.lng && (
-                  <div className="w-full h-48 rounded-xl overflow-hidden bg-slate-100 border border-slate-200 mt-4">
-                    <iframe
-                      width="100%"
-                      height="100%"
-                      style={{ border: 0 }}
-                      loading="lazy"
-                      allowFullScreen
-                      referrerPolicy="no-referrer-when-downgrade"
-                      src={`https://www.google.com/maps/embed/v1/view?key=YOUR_API_KEY&center=${vendor.address.coordinates.lat},${vendor.address.coordinates.lng}&zoom=15`}
-                    ></iframe>
+          {/* About Vendor — only if extra info beyond description exists */}
+          {(vendor.companyOverview || vendor.mission || vendor.vision || vendor.yearsOfExperience) && (
+            <section className="bg-white rounded-[24px] shadow-sm p-8 border border-slate-100">
+              <h2 className="text-lg font-[900] text-emerald-950 uppercase tracking-wide mb-6 flex items-center gap-2">
+                <FileText size={18} className="text-emerald-600" /> About Vendor
+              </h2>
+              <div className="space-y-6">
+                {vendor.companyOverview && (
+                  <div>
+                    <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Company Overview</h3>
+                    <p className="text-slate-600 text-sm">{vendor.companyOverview}</p>
                   </div>
                 )}
-              </section>
-            )}
+                {vendor.mission && (
+                  <div>
+                    <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Mission</h3>
+                    <p className="text-slate-600 text-sm">{vendor.mission}</p>
+                  </div>
+                )}
+                {vendor.vision && (
+                  <div>
+                    <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Vision</h3>
+                    <p className="text-slate-600 text-sm">{vendor.vision}</p>
+                  </div>
+                )}
+                {vendor.yearsOfExperience && (
+                  <div>
+                    <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Years of Experience</h3>
+                    <p className="text-slate-600 text-sm">{vendor.yearsOfExperience} Years</p>
+                  </div>
+                )}
+              </div>
+            </section>
+          )}
 
-            {/* Social Links */}
-            {vendor.socialLinks && (vendor.socialLinks.facebook || vendor.socialLinks.instagram || vendor.socialLinks.youtube || vendor.socialLinks.website) && (
-              <section className="bg-white rounded-[24px] shadow-sm p-8 border border-slate-100">
-                <h2 className="text-lg font-[900] text-emerald-950 uppercase tracking-wide mb-6">Social Links</h2>
-                <div className="flex flex-wrap gap-3">
-                  {vendor.socialLinks.facebook && (
-                    <a href={vendor.socialLinks.facebook} target="_blank" rel="noopener noreferrer" className="px-4 py-2 rounded-xl bg-[#1877F2]/10 text-[#1877F2] text-xs font-bold hover:bg-[#1877F2]/20 transition-colors">
-                      Facebook
-                    </a>
-                  )}
-                  {vendor.socialLinks.instagram && (
-                    <a href={vendor.socialLinks.instagram} target="_blank" rel="noopener noreferrer" className="px-4 py-2 rounded-xl bg-[#E4405F]/10 text-[#E4405F] text-xs font-bold hover:bg-[#E4405F]/20 transition-colors">
-                      Instagram
-                    </a>
-                  )}
-                  {vendor.socialLinks.youtube && (
-                    <a href={vendor.socialLinks.youtube} target="_blank" rel="noopener noreferrer" className="px-4 py-2 rounded-xl bg-[#FF0000]/10 text-[#FF0000] text-xs font-bold hover:bg-[#FF0000]/20 transition-colors">
-                      YouTube
-                    </a>
-                  )}
-                  {vendor.socialLinks.website && (
-                    <a href={vendor.socialLinks.website} target="_blank" rel="noopener noreferrer" className="px-4 py-2 rounded-xl bg-slate-100 text-slate-600 text-xs font-bold hover:bg-slate-200 transition-colors">
-                      Website
-                    </a>
-                  )}
+          {/* Gallery */}
+          {vendor.gallery && vendor.gallery.length > 0 && (
+            <section className="bg-white rounded-[24px] shadow-sm p-8 border border-slate-100">
+              <h2 className="text-lg font-[900] text-emerald-950 uppercase tracking-wide mb-6">Gallery</h2>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                {vendor.gallery.map((img: string, idx: number) => (
+                  <div key={idx} className="relative aspect-square rounded-xl overflow-hidden bg-slate-100 border border-slate-200">
+                    <OptimizedImage src={img} alt={`Gallery image ${idx + 1}`} fill className="object-cover" />
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* Certifications */}
+          {vendor.certifications && vendor.certifications.length > 0 && (
+            <section className="bg-white rounded-[24px] shadow-sm p-8 border border-slate-100">
+              <h2 className="text-lg font-[900] text-emerald-950 uppercase tracking-wide mb-6">Certifications</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {vendor.certifications.map((cert: any, idx: number) => (
+                  <div key={idx} className="flex items-center gap-3 p-4 rounded-xl bg-slate-50 border border-slate-100">
+                    <Award className="text-emerald-600 shrink-0" size={24} />
+                    <div>
+                      <p className="text-sm font-bold text-slate-800">{cert.name || cert.type}</p>
+                      {cert.issuer && <p className="text-xs text-slate-500">{cert.issuer}</p>}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+          {/* Address */}
+          {hasAddress && (
+            <section className="bg-white rounded-[24px] shadow-sm p-8 border border-slate-100">
+              <h2 className="text-lg font-[900] text-emerald-950 uppercase tracking-wide mb-6">Address</h2>
+              <div className="text-sm font-medium text-slate-700 leading-relaxed mb-4">
+                {fullAddress}
+              </div>
+              {/* Optional Google Map Embed if coordinates exist */}
+              {vendor.address?.coordinates?.lat && vendor.address?.coordinates?.lng && (
+                <div className="w-full h-48 rounded-xl overflow-hidden bg-slate-100 border border-slate-200 mt-4">
+                  <iframe
+                    width="100%"
+                    height="100%"
+                    style={{ border: 0 }}
+                    loading="lazy"
+                    allowFullScreen
+                    referrerPolicy="no-referrer-when-downgrade"
+                    src={`https://www.google.com/maps/embed/v1/view?key=YOUR_API_KEY&center=${vendor.address.coordinates.lat},${vendor.address.coordinates.lng}&zoom=15`}
+                  ></iframe>
                 </div>
-              </section>
-            )}
+              )}
+            </section>
+          )}
+
+          {/* Social Links */}
+          {vendor.socialLinks && (vendor.socialLinks.facebook || vendor.socialLinks.instagram || vendor.socialLinks.youtube || vendor.socialLinks.website) && (
+            <section className="bg-white rounded-[24px] shadow-sm p-8 border border-slate-100">
+              <h2 className="text-lg font-[900] text-emerald-950 uppercase tracking-wide mb-6">Social Links</h2>
+              <div className="flex flex-wrap gap-3">
+                {vendor.socialLinks.facebook && (
+                  <a href={vendor.socialLinks.facebook} target="_blank" rel="noopener noreferrer" className="px-4 py-2 rounded-xl bg-[#1877F2]/10 text-[#1877F2] text-xs font-bold hover:bg-[#1877F2]/20 transition-colors">
+                    Facebook
+                  </a>
+                )}
+                {vendor.socialLinks.instagram && (
+                  <a href={vendor.socialLinks.instagram} target="_blank" rel="noopener noreferrer" className="px-4 py-2 rounded-xl bg-[#E4405F]/10 text-[#E4405F] text-xs font-bold hover:bg-[#E4405F]/20 transition-colors">
+                    Instagram
+                  </a>
+                )}
+                {vendor.socialLinks.youtube && (
+                  <a href={vendor.socialLinks.youtube} target="_blank" rel="noopener noreferrer" className="px-4 py-2 rounded-xl bg-[#FF0000]/10 text-[#FF0000] text-xs font-bold hover:bg-[#FF0000]/20 transition-colors">
+                    YouTube
+                  </a>
+                )}
+                {vendor.socialLinks.website && (
+                  <a href={vendor.socialLinks.website} target="_blank" rel="noopener noreferrer" className="px-4 py-2 rounded-xl bg-slate-100 text-slate-600 text-xs font-bold hover:bg-slate-200 transition-colors">
+                    Website
+                  </a>
+                )}
+              </div>
+            </section>
+          )}
         </div>
       </div>
     </div>
@@ -280,34 +274,19 @@ function VendorProductsView({ vendor, averageRating, allProducts, categories }: 
 
   return (
     <div className="ent-page bg-[#fafaf9] min-h-screen">
-      {/* Vendor Cover/Header */}
-      <div className="relative w-full h-40 md:h-64 bg-gradient-to-r from-emerald-950 via-emerald-900 to-teal-950 overflow-hidden">
-        {vendor.banner ? (
-          <OptimizedImage
-            src={vendor.banner}
-            alt={`${vendor.name} Cover`}
-            fill
-            className="object-cover opacity-85"
-            priority
-          />
-        ) : (
-          <div className="absolute inset-0 bg-gradient-to-r from-emerald-950 via-emerald-900 to-teal-950" />
-        )}
-        <div className="absolute inset-0 bg-gradient-to-t from-emerald-950/40 via-transparent to-black/30" />
-        
-        {/* Floating Back Button */}
-        <div className="absolute top-4 left-4 md:top-6 md:left-8 z-20">
-          <Link href="/sellers" className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 backdrop-blur-md text-[10px] font-black uppercase tracking-[0.2em] text-white transition-colors">
-            <ArrowLeft size={12} strokeWidth={3} /> All Vendors
-          </Link>
-        </div>
+
+      {/* Back Button */}
+      <div className="standard-container pt-6 pb-2">
+        <Link href="/sellers" className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white border border-slate-200 text-[10px] font-black uppercase tracking-[0.2em] text-emerald-950 hover:bg-slate-50 transition-colors shadow-sm">
+          <ArrowLeft size={12} strokeWidth={3} /> All Vendors
+        </Link>
       </div>
 
       {/* Vendor Info Section */}
-      <div className="standard-container pb-8">
-        <div className="flex flex-col md:flex-row items-center md:items-end gap-6 md:gap-8 -mt-12 md:-mt-16 relative z-10 px-4 md:px-0">
+      <div className="standard-container pb-8 pt-4">
+        <div className="bg-white rounded-[24px] shadow-sm p-8 border border-slate-100 flex flex-col md:flex-row items-start gap-8">
           {/* Logo container */}
-          <div className="relative w-24 h-24 md:w-32 md:h-32 rounded-[2rem] bg-white border-4 border-white shadow-xl overflow-hidden p-2 flex items-center justify-center shrink-0">
+          <div className="relative w-24 h-24 md:w-32 md:h-32 rounded-2xl bg-slate-50 border border-slate-100 overflow-hidden flex items-center justify-center shrink-0">
             {vendor.logo ? (
               <OptimizedImage
                 src={vendor.logo}
@@ -324,8 +303,8 @@ function VendorProductsView({ vendor, averageRating, allProducts, categories }: 
           </div>
 
           {/* Details container */}
-          <div className="flex-1 text-center md:text-left space-y-2 md:pt-16">
-            <div className="flex flex-wrap items-center justify-center md:justify-start gap-3">
+          <div className="flex-1 space-y-3">
+            <div className="flex flex-wrap items-center gap-3">
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-100 text-emerald-900 text-[9px] font-black uppercase tracking-[0.1em]">
                 <Store size={12} /> Marketplace Vendor
               </span>
@@ -338,13 +317,13 @@ function VendorProductsView({ vendor, averageRating, allProducts, categories }: 
               </span>
             </div>
 
-            <h1 className="text-3xl md:text-5xl font-[900] text-emerald-950 tracking-tighter uppercase leading-none">
+            <h1 className="text-3xl md:text-4xl font-[900] text-emerald-950 tracking-tighter uppercase leading-none">
               {vendor.name}
             </h1>
 
-            {vendor.description && (
+            {(vendor.shortDescription || vendor.description) && (
               <p className="text-slate-500 text-sm md:text-base font-medium leading-relaxed max-w-3xl">
-                {vendor.description}
+                {vendor.shortDescription || vendor.description}
               </p>
             )}
           </div>
@@ -360,8 +339,8 @@ function VendorProductsView({ vendor, averageRating, allProducts, categories }: 
               <button
                 onClick={() => setSelectedCategoryId(null)}
                 className={`h-11 px-6 rounded-2xl text-[10px] font-black uppercase tracking-widest whitespace-nowrap transition-all border ${selectedCategoryId === null
-                    ? 'bg-emerald-950 border-emerald-950 text-white shadow-xl shadow-emerald-950/10'
-                    : 'bg-slate-50 border-slate-100 text-slate-400 hover:border-slate-300'
+                  ? 'bg-emerald-950 border-emerald-950 text-white shadow-xl shadow-emerald-950/10'
+                  : 'bg-slate-50 border-slate-100 text-slate-400 hover:border-slate-300'
                   }`}
               >
                 Full Catalog
@@ -371,8 +350,8 @@ function VendorProductsView({ vendor, averageRating, allProducts, categories }: 
                   key={cat.id}
                   onClick={() => setSelectedCategoryId(cat.id)}
                   className={`h-11 px-6 rounded-2xl text-[10px] font-black uppercase tracking-widest whitespace-nowrap transition-all border ${selectedCategoryId === cat.id
-                      ? 'bg-emerald-950 border-emerald-950 text-white shadow-xl shadow-emerald-950/10'
-                      : 'bg-slate-50 border-slate-100 text-slate-400 hover:border-slate-300'
+                    ? 'bg-emerald-950 border-emerald-950 text-white shadow-xl shadow-emerald-950/10'
+                    : 'bg-slate-50 border-slate-100 text-slate-400 hover:border-slate-300'
                     }`}
                 >
                   {cat.name}
@@ -491,9 +470,8 @@ function VendorProductsView({ vendor, averageRating, allProducts, categories }: 
 // ==========================================
 // Main Client Component
 // ==========================================
-export default function VendorDetailClient({ vendor }: { vendor: any }) {
-  const { user } = useAuth();
-  
+export default function VendorDetailClient({ vendor, forcePublicView = false }: { vendor: any, forcePublicView?: boolean }) {
+
   const subBrands = vendor.subVendors || [];
 
   // Aggregate all products from all sub-brands
@@ -525,27 +503,21 @@ export default function VendorDetailClient({ vendor }: { vendor: any }) {
     return Number((sum / ratedProducts.length).toFixed(1));
   }, [allProducts]);
 
-  const isHubUser = 
-    (user?.role as string) === 'HUB_MANAGER' || 
-    (user?.role as string) === 'HUB_USER' || 
-    user?.role?.toLowerCase() === 'hub' || 
-    user?.role?.toLowerCase() === 'vendor' || 
-    user?.role?.toLowerCase() === 'admin';
-
-  if (isHubUser) {
+  // Page-based view: /hubs/detail/ shows description view; /sellers/detail/ shows products
+  if (!forcePublicView) {
     return (
-      <VendorInformationView 
-        vendor={vendor} 
-        averageRating={averageRating} 
-        totalProducts={allProducts.length} 
+      <VendorInformationView
+        vendor={vendor}
+        averageRating={averageRating}
+        totalProducts={allProducts.length}
       />
     );
   }
 
   return (
-    <VendorProductsView 
-      vendor={vendor} 
-      averageRating={averageRating} 
+    <VendorProductsView
+      vendor={vendor}
+      averageRating={averageRating}
       allProducts={allProducts}
       categories={categories}
     />

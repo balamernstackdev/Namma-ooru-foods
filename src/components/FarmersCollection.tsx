@@ -52,6 +52,15 @@ export default function FarmersCollection({ products }: FarmersCollectionProps) 
     const walk = (x - startX) * 1.5;
     el.scrollLeft = scrollLeftPos - walk;
   };
+  const scrollRightManual = React.useCallback(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    if (el.scrollLeft + el.clientWidth >= el.scrollWidth - 10) {
+      el.scrollTo({ left: 0, behavior: 'smooth' });
+    } else {
+      el.scrollBy({ left: 316, behavior: 'smooth' });
+    }
+  }, []);
 
   const onKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
     if (e.key === 'ArrowLeft') {
@@ -133,6 +142,47 @@ export default function FarmersCollection({ products }: FarmersCollectionProps) 
     return () => el?.removeEventListener('scroll', checkScrollLimits);
   }, [checkScrollLimits]);
 
+  // Auto-scroll logic (pauses on hover)
+  React.useEffect(() => {
+    if (filteredProducts.length === 0) return;
+
+    let intervalId: NodeJS.Timeout;
+    let isHovered = false;
+
+    const startInterval = () => {
+      intervalId = setInterval(() => {
+        if (!isHovered) {
+          scrollRightManual();
+        }
+      }, 5000);
+    };
+
+    startInterval();
+
+    const el = scrollRef.current;
+    const handleMouseEnter = () => {
+      isHovered = true;
+      clearInterval(intervalId);
+    };
+    const handleMouseLeave = () => {
+      isHovered = false;
+      startInterval();
+    };
+
+    if (el) {
+      el.addEventListener('mouseenter', handleMouseEnter);
+      el.addEventListener('mouseleave', handleMouseLeave);
+    }
+
+    return () => {
+      clearInterval(intervalId);
+      if (el) {
+        el.removeEventListener('mouseenter', handleMouseEnter);
+        el.removeEventListener('mouseleave', handleMouseLeave);
+      }
+    };
+  }, [scrollRightManual, filteredProducts.length]);
+
   const scrollLeft = React.useCallback(() => {
     const el = scrollRef.current;
     if (!el) return;
@@ -143,15 +193,7 @@ export default function FarmersCollection({ products }: FarmersCollectionProps) 
     }
   }, []);
 
-  const scrollRightManual = React.useCallback(() => {
-    const el = scrollRef.current;
-    if (!el) return;
-    if (el.scrollLeft + el.clientWidth >= el.scrollWidth - 10) {
-      el.scrollTo({ left: 0, behavior: 'smooth' });
-    } else {
-      el.scrollBy({ left: 316, behavior: 'smooth' });
-    }
-  }, []);
+
 
   if (!products || products.length === 0) {
     return (
@@ -251,9 +293,8 @@ export default function FarmersCollection({ products }: FarmersCollectionProps) 
             type="button"
             onClick={scrollLeft}
             aria-label="Previous"
-            className={`absolute left-0 top-[40%] -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-white border border-[#E5E7EB] shadow-[0_8px_24px_rgba(0,0,0,0.08)] flex items-center justify-center text-slate-800 hover:bg-[#0F8A5F] hover:text-white hover:border-[#0F8A5F] transition-all duration-300 hover:scale-105 focus:outline-none shrink-0 transition-opacity duration-300 hidden md:flex ${
-              canScrollLeft ? 'opacity-100' : 'opacity-0 pointer-events-none'
-            }`}
+            className={`absolute left-2 md:left-4 xl:left-10 top-[40%] -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-white border border-[#E5E7EB] shadow-[0_8px_24px_rgba(0,0,0,0.08)] flex items-center justify-center text-slate-800 hover:bg-[#0F8A5F] hover:text-white hover:border-[#0F8A5F] transition-all duration-300 hover:scale-105 focus:outline-none shrink-0 transition-opacity duration-300 hidden md:flex ${canScrollLeft ? 'opacity-100' : 'opacity-0 pointer-events-none'
+              }`}
           >
             <ChevronLeft size={20} strokeWidth={2.5} />
           </button>
@@ -278,7 +319,7 @@ export default function FarmersCollection({ products }: FarmersCollectionProps) 
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.95 }}
                   transition={{ duration: 0.35, ease: 'easeOut' }}
-                  className="w-[165px] md:w-[300px] shrink-0 snap-start h-full"
+                  className="w-[165px] md:w-[300px] shrink-0 snap-start h-full flex flex-col"
                 >
                   <ProductCard product={product} />
                 </motion.div>
@@ -291,9 +332,8 @@ export default function FarmersCollection({ products }: FarmersCollectionProps) 
             type="button"
             onClick={scrollRightManual}
             aria-label="Next"
-            className={`absolute right-0 top-[40%] -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-white border border-[#E5E7EB] shadow-[0_8px_24px_rgba(0,0,0,0.08)] flex items-center justify-center text-slate-800 hover:bg-[#0F8A5F] hover:text-white hover:border-[#0F8A5F] transition-all duration-300 hover:scale-105 focus:outline-none shrink-0 transition-opacity duration-300 hidden md:flex ${
-              canScrollRight ? 'opacity-100' : 'opacity-0 pointer-events-none'
-            }`}
+            className={`absolute right-2 md:right-4 xl:right-10 top-[40%] -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-white border border-[#E5E7EB] shadow-[0_8px_24px_rgba(0,0,0,0.08)] flex items-center justify-center text-slate-800 hover:bg-[#0F8A5F] hover:text-white hover:border-[#0F8A5F] transition-all duration-300 hover:scale-105 focus:outline-none shrink-0 transition-opacity duration-300 hidden md:flex ${canScrollRight ? 'opacity-100' : 'opacity-0 pointer-events-none'
+              }`}
           >
             <ChevronRight size={20} strokeWidth={2.5} />
           </button>

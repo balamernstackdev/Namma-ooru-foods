@@ -110,6 +110,47 @@ export default function CategoriesCircles() {
     return () => el?.removeEventListener('scroll', checkScrollLimits);
   }, [checkScrollLimits]);
 
+  // Auto-scroll logic (pauses on hover)
+  React.useEffect(() => {
+    if (displayCategories.length === 0) return;
+
+    let intervalId: NodeJS.Timeout;
+    let isHovered = false;
+
+    const startInterval = () => {
+      intervalId = setInterval(() => {
+        if (!isHovered) {
+          scrollRight();
+        }
+      }, 4000);
+    };
+
+    startInterval();
+
+    const el = scrollRef.current;
+    const handleMouseEnter = () => {
+      isHovered = true;
+      clearInterval(intervalId);
+    };
+    const handleMouseLeave = () => {
+      isHovered = false;
+      startInterval();
+    };
+
+    if (el) {
+      el.addEventListener('mouseenter', handleMouseEnter);
+      el.addEventListener('mouseleave', handleMouseLeave);
+    }
+
+    return () => {
+      clearInterval(intervalId);
+      if (el) {
+        el.removeEventListener('mouseenter', handleMouseEnter);
+        el.removeEventListener('mouseleave', handleMouseLeave);
+      }
+    };
+  }, [scrollRight, displayCategories.length]);
+
   if (error) return null;
   if (!responseData) {
     return (
@@ -164,7 +205,7 @@ export default function CategoriesCircles() {
             type="button"
             onClick={scrollLeft}
             aria-label="Previous"
-            className={`absolute left-0 top-[40%] -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-white border border-[#E5E7EB] shadow-[0_8px_24px_rgba(0,0,0,0.08)] flex items-center justify-center text-slate-800 hover:bg-[#0F8A5F] hover:text-white hover:border-[#0F8A5F] transition-all duration-300 hover:scale-105 focus:outline-none shrink-0 transition-opacity duration-300 hidden md:flex ${
+            className={`absolute left-2 md:left-4 xl:left-10 top-[40%] -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-white border border-[#E5E7EB] shadow-[0_8px_24px_rgba(0,0,0,0.08)] flex items-center justify-center text-slate-800 hover:bg-[#0F8A5F] hover:text-white hover:border-[#0F8A5F] transition-all duration-300 hover:scale-105 focus:outline-none shrink-0 transition-opacity duration-300 hidden md:flex ${
               canScrollLeft ? 'opacity-100' : 'opacity-0 pointer-events-none'
             }`}
           >
@@ -244,7 +285,7 @@ export default function CategoriesCircles() {
             type="button"
             onClick={scrollRight}
             aria-label="Next"
-            className={`absolute right-0 top-[40%] -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-white border border-[#E5E7EB] shadow-[0_8px_24px_rgba(0,0,0,0.08)] flex items-center justify-center text-slate-800 hover:bg-[#0F8A5F] hover:text-white hover:border-[#0F8A5F] transition-all duration-300 hover:scale-105 focus:outline-none shrink-0 transition-opacity duration-300 hidden md:flex ${
+            className={`absolute right-2 md:right-4 xl:right-10 top-[40%] -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-white border border-[#E5E7EB] shadow-[0_8px_24px_rgba(0,0,0,0.08)] flex items-center justify-center text-slate-800 hover:bg-[#0F8A5F] hover:text-white hover:border-[#0F8A5F] transition-all duration-300 hover:scale-105 focus:outline-none shrink-0 transition-opacity duration-300 hidden md:flex ${
               canScrollRight ? 'opacity-100' : 'opacity-0 pointer-events-none'
             }`}
           >
