@@ -2,7 +2,7 @@ export const dynamicParams = true;
 import EditAnnouncementClient from './EditAnnouncementClient';
 
 export function generateStaticParams() {
-  return Array.from({ length: 300 }, (_, i) => ({ id: (i + 1).toString() }));
+  return [];
 }
 
 export default async function Page({ params }: { params: Promise<{ id: string }> }) {

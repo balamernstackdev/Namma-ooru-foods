@@ -3,7 +3,7 @@ import React from 'react';
 import OrderDetailClient from './OrderDetailClient';
 
 export function generateStaticParams() {
-  return Array.from({ length: 300 }, (_, i) => ({ id: (i + 1).toString() }));
+  return [];
 }
 
 export default async function Page({ params }: { params: Promise<{ id: string }> }) {
