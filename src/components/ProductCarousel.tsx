@@ -99,7 +99,7 @@ export default function ProductCarousel({
     if (!el) return;
 
     const itemWidth = el.children[0]?.clientWidth || 320;
-    const gap = window.innerWidth < 768 ? 16 : (window.innerWidth < 1440 ? 20 : 24);
+    const gap = window.innerWidth < 768 ? 12 : (window.innerWidth < 1440 ? 20 : 24);
     const scrollStep = itemWidth + gap;
 
     if (el.scrollLeft <= 10) {
@@ -114,7 +114,7 @@ export default function ProductCarousel({
     if (!el) return;
 
     const itemWidth = el.children[0]?.clientWidth || 320;
-    const gap = window.innerWidth < 768 ? 16 : (window.innerWidth < 1440 ? 20 : 24);
+    const gap = window.innerWidth < 768 ? 12 : (window.innerWidth < 1440 ? 20 : 24);
     const scrollStep = itemWidth + gap;
 
     // If at end, loop back to start
@@ -233,7 +233,7 @@ export default function ProductCarousel({
 
         {/* Scrollable Track with standardized float arrows wrapper */}
         {/* px-8 creates space for the absolute arrows so they float outside the track without overlapping cards */}
-        <div className="relative w-full px-8">
+        <div className="relative w-full px-0 md:px-8">
           <div
             ref={scrollRef}
             onMouseDown={onMouseDown}
@@ -242,7 +242,7 @@ export default function ProductCarousel({
             onMouseMove={onMouseMove}
             onKeyDown={onKeyDown}
             tabIndex={0}
-            className="product-carousel-track pb-3 pt-1 cursor-grab active:cursor-grabbing focus:outline-none items-stretch overflow-hidden"
+            className="product-carousel-track pb-3 pt-1 cursor-grab active:cursor-grabbing focus:outline-none items-stretch overflow-x-auto px-4 md:px-0"
           >
             {products.map((product: any, index: number) => (
               <div

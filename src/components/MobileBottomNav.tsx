@@ -27,7 +27,7 @@ const MobileBottomNav = () => {
   if (isDashboard || isCheckout) return null;
 
   return (
-    <div className="lg:hidden fixed bottom-0 left-0 right-0 z-[100] bg-white/80 backdrop-blur-xl border-t border-slate-100 px-6 h-20 flex items-center justify-between pb-2">
+    <div className="lg:hidden fixed bottom-0 left-0 right-0 z-[100] bg-white/80 backdrop-blur-xl border-t border-slate-100 px-6 h-[60px] flex items-center justify-between">
       {navItems.map((item) => {
         const isActive = pathname === item.href;
         const Icon = item.icon;

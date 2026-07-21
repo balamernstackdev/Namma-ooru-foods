@@ -356,12 +356,12 @@ export default function ProductDetailClient({ product: initialProduct, allProduc
                      {/* Brand, Share Icon, and Title */}
                      <div className="flex items-start justify-between gap-4">
                         <div className="space-y-1">
-                           <div className="flex flex-wrap items-center gap-x-2 text-[10px] md:text-[11px] font-black tracking-[0.25em] text-emerald-750 uppercase">
+                           <div className="flex flex-wrap items-center gap-x-2 text-[11px] md:text-[12px] font-black tracking-[0.25em] text-emerald-750 uppercase">
                               <Link href={`/artisans/${encodeURIComponent(product.subVendor?.slug || product.subVendor?.id || product.brand?.slug || product.brand?.id || '')}`} className="hover:text-emerald-950 transition-colors">
                                  {product.subVendor?.name || product.brand?.name || 'Namma Ooru Store'}
                               </Link>
                            </div>
-                           <h1 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight leading-[1.1] mt-1 flex flex-wrap items-center gap-3">
+                           <h1 className="text-[15px] sm:text-[18px] md:text-[20px] lg:text-[22px] font-black text-slate-900 tracking-tight leading-tight mt-1 flex flex-wrap items-center gap-3">
                               {product.name}
                               <span className="text-[11px] bg-slate-100 text-slate-500 px-2 py-0.5 rounded font-mono border border-slate-200 shrink-0 font-bold tracking-normal mt-1 md:mt-0">
                                  {product.productIdStr || `Prod-${product.id.toString().padStart(2, '0')}`}

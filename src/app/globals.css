@@ -461,42 +461,42 @@ body {
   max-width: none;
 }
 
-/* Mobile: 1.2 cards visible at <768px, 16px gap */
+/* Mobile: Amazon-style layout (2.2 cards visible, edge-to-edge scroll, no cropping) */
 @media (max-width: 767px) {
   .product-carousel-track {
-    gap: 16px;
+    gap: 12px;
   }
   .product-carousel-item {
-    flex-basis: 85%;
-    width: 85%;
-    height: 375px;
+    flex-basis: 44%;
+    width: 44%;
+    height: 330px !important;
   }
 }
 
-/* Tablet: 2 cards visible at 768px–1023px, 20px gap */
+/* Tablet: 3 cards visible at 768px–1023px, 20px gap */
 @media (min-width: 768px) and (max-width: 1023px) {
   .product-carousel-item {
-    flex-basis: calc((100% - 20px) / 2);
-    width: calc((100% - 20px) / 2);
-    height: 410px;
+    flex-basis: calc((100% - 40px) / 3);
+    width: calc((100% - 40px) / 3);
+    height: 380px !important;
   }
 }
 
-/* Tablet/Laptop: 3 cards visible at 1024px–1439px, 20px gap */
+/* Laptop: 3 cards visible at 1024px–1439px, 20px gap */
 @media (min-width: 1024px) and (max-width: 1439px) {
   .product-carousel-item {
     flex-basis: calc((100% - 40px) / 3);
     width: calc((100% - 40px) / 3);
-    height: 430px;
+    height: 430px !important;
   }
 }
 
-/* Laptop: 4 cards visible at 1440px–1599px, 20px gap */
+/* Large Laptop: 4 cards visible at 1440px–1599px, 20px gap */
 @media (min-width: 1440px) and (max-width: 1599px) {
   .product-carousel-item {
     flex-basis: calc((100% - 60px) / 4);
     width: calc((100% - 60px) / 4);
-    height: 445px;
+    height: 445px !important;
   }
 }
 
@@ -505,7 +505,32 @@ body {
   .product-carousel-item {
     flex-basis: calc((100% - 80px) / 5);
     width: calc((100% - 80px) / 5);
-    height: 445px; /* Desktop height (430–470px range) */
+    height: 445px !important;
+  }
+}
+
+/* 13. Spacing Container with Consistent Padding */
+.standard-container {
+  width: 100%;
+  max-width: 1400px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 12px;
+  padding-right: 12px;
+  box-sizing: border-box;
+}
+
+@media (min-width: 768px) {
+  .standard-container {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .standard-container {
+    padding-left: 24px;
+    padding-right: 24px;
   }
 }
 

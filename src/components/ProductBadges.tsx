@@ -141,19 +141,25 @@ export default function ProductBadges({ product, variant = 'inline' }: ProductBa
     );
   }
 
-  const visibleBadges = allPossibleBadges;
+  const visibleBadges = allPossibleBadges.slice(0, 2);
+  const remainingCount = allPossibleBadges.length - 2;
 
   return (
-    <div className="flex flex-wrap gap-1 items-center min-w-0">
+    <div className="flex flex-nowrap whitespace-nowrap gap-1 items-center w-full overflow-hidden text-[10px] md:text-xs h-full">
       {visibleBadges.map((badge) => (
         <span 
           key={badge.id}
-          className={`${badge.inlineBg} ${badge.inlineText} text-[8px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded border ${badge.inlineBorder} flex items-center gap-1 leading-none shrink-0`}
+          className={`${badge.inlineBg} ${badge.inlineText} text-[9px] md:text-[10px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded border ${badge.inlineBorder} flex items-center gap-1 leading-none shrink-0`}
         >
           {badge.inlineIcon}
           <span>{badge.label}</span>
         </span>
       ))}
+      {remainingCount > 0 && (
+        <span className="bg-slate-100 text-slate-650 text-[9px] md:text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded border border-slate-200 flex items-center leading-none shrink-0">
+          +{remainingCount} More
+        </span>
+      )}
     </div>
   );
 }

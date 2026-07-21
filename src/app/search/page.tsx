@@ -145,7 +145,7 @@ function SearchResultsContent() {
               </Link>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 md:gap-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
               {results.map(product => (
                 <ProductCard key={product.id} product={product} />
               ))}
