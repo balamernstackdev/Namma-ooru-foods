@@ -18,6 +18,23 @@ try {
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || envApiUrl || "http://localhost:5000";
 
+async function fetchWithTimeout(resource, options = {}) {
+  const { timeout = 3000 } = options;
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeout);
+  try {
+    const response = await fetch(resource, {
+      ...options,
+      signal: controller.signal
+    });
+    clearTimeout(id);
+    return response;
+  } catch (err) {
+    clearTimeout(id);
+    throw err;
+  }
+}
+
 async function run() {
   console.log("\n=========================================");
   console.log("🚀 STARTING BUILD-TIME SLUG VALIDATION...");
@@ -31,62 +48,66 @@ async function run() {
   let brands = [];
   let products = [];
 
-  // 1. Audit Categories & Check DB Connectivity
-  try {
-    const res = await fetch(`${API_URL}/api/categories?limit=1000&all=true`);
-    if (!res.ok) {
-      console.warn(`⚠️ [API Warning] Categories API responded with status ${res.status}`);
-    } else {
-      const data = await res.json();
-      categories = data.categories || (Array.isArray(data) ? data : []);
-      dbConnected = true; // Succeeded in fetching real data from DB
-      console.log(`✅ Categories API: HTTP 200 OK (${categories.length} items parsed)`);
-    }
-  } catch (err) {
-    console.warn("⚠️ [API Connection Failure] Categories API could not be reached:", err.message);
-  }
+  const fetchPromises = [
+    // 1. Audit Categories & Check DB Connectivity
+    fetchWithTimeout(`${API_URL}/api/categories?limit=1000&all=true`, { timeout: 3000 })
+      .then(async res => {
+        if (!res.ok) {
+          console.warn(`⚠️ [API Warning] Categories API responded with status ${res.status}`);
+        } else {
+          const data = await res.json();
+          categories = data.categories || (Array.isArray(data) ? data : []);
+          dbConnected = true;
+          console.log(`✅ Categories API: HTTP 200 OK (${categories.length} items parsed)`);
+        }
+      }).catch(err => {
+        console.warn("⚠️ [API Connection Failure] Categories API could not be reached:", err.message);
+      }),
 
-  // 2. Audit Subcategories
-  try {
-    const res = await fetch(`${API_URL}/api/subcategories?limit=1000`);
-    if (!res.ok) {
-      console.warn(`⚠️ [API Warning] Subcategories API responded with status ${res.status}`);
-    } else {
-      const data = await res.json();
-      subcategories = data.subcategories || [];
-      console.log(`✅ Subcategories API: HTTP 200 OK (${subcategories.length} items parsed)`);
-    }
-  } catch (err) {
-    console.warn("⚠️ [API Connection Failure] Subcategories API could not be reached:", err.message);
-  }
+    // 2. Audit Subcategories
+    fetchWithTimeout(`${API_URL}/api/subcategories?limit=1000`, { timeout: 3000 })
+      .then(async res => {
+        if (!res.ok) {
+          console.warn(`⚠️ [API Warning] Subcategories API responded with status ${res.status}`);
+        } else {
+          const data = await res.json();
+          subcategories = data.subcategories || [];
+          console.log(`✅ Subcategories API: HTTP 200 OK (${subcategories.length} items parsed)`);
+        }
+      }).catch(err => {
+        console.warn("⚠️ [API Connection Failure] Subcategories API could not be reached:", err.message);
+      }),
 
-  // 3. Audit Brands (Sub-vendors)
-  try {
-    const res = await fetch(`${API_URL}/api/sub-vendors?limit=1000&includeEmpty=true`);
-    if (!res.ok) {
-      console.warn(`⚠️ [API Warning] Brands (Sub-vendors) API responded with status ${res.status}`);
-    } else {
-      const data = await res.json();
-      brands = data.subVendors || [];
-      console.log(`✅ Brands API: HTTP 200 OK (${brands.length} items parsed)`);
-    }
-  } catch (err) {
-    console.warn("⚠️ [API Connection Failure] Brands API could not be reached:", err.message);
-  }
+    // 3. Audit Brands (Sub-vendors)
+    fetchWithTimeout(`${API_URL}/api/sub-vendors?limit=1000&includeEmpty=true`, { timeout: 3000 })
+      .then(async res => {
+        if (!res.ok) {
+          console.warn(`⚠️ [API Warning] Brands (Sub-vendors) API responded with status ${res.status}`);
+        } else {
+          const data = await res.json();
+          brands = data.subVendors || [];
+          console.log(`✅ Brands API: HTTP 200 OK (${brands.length} items parsed)`);
+        }
+      }).catch(err => {
+        console.warn("⚠️ [API Connection Failure] Brands API could not be reached:", err.message);
+      }),
 
-  // 4. Audit Products
-  try {
-    const res = await fetch(`${API_URL}/api/products?limit=1000&status=all`);
-    if (!res.ok) {
-      console.warn(`⚠️ [API Warning] Products API responded with status ${res.status}`);
-    } else {
-      const data = await res.json();
-      products = Array.isArray(data) ? data : (data?.products || []);
-      console.log(`✅ Products API: HTTP 200 OK (${products.length} items parsed)`);
-    }
-  } catch (err) {
-    console.warn("⚠️ [API Connection Failure] Products API could not be reached:", err.message);
-  }
+    // 4. Audit Products
+    fetchWithTimeout(`${API_URL}/api/products?limit=1000&status=all`, { timeout: 3000 })
+      .then(async res => {
+        if (!res.ok) {
+          console.warn(`⚠️ [API Warning] Products API responded with status ${res.status}`);
+        } else {
+          const data = await res.json();
+          products = Array.isArray(data) ? data : (data?.products || []);
+          console.log(`✅ Products API: HTTP 200 OK (${products.length} items parsed)`);
+        }
+      }).catch(err => {
+        console.warn("⚠️ [API Connection Failure] Products API could not be reached:", err.message);
+      })
+  ];
+
+  await Promise.all(fetchPromises);
 
   console.log("\n=========================================");
   console.log("📊 BUILD DIAGNOSTICS & SUMMARY");
