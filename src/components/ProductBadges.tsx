@@ -133,11 +133,11 @@ export default function ProductBadges({ product, variant = 'inline' }: ProductBa
 
   // Inline variant
   return (
-    <div className="flex flex-wrap gap-1.5">
+    <div className="flex flex-wrap gap-1">
       {badges.map((badge) => (
         <span 
           key={badge.id}
-          className={`${badge.inlineBg} ${badge.inlineText} text-[8px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded border ${badge.inlineBorder} flex items-center gap-1`}
+          className={`${badge.inlineBg} ${badge.inlineText} text-[8px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded border ${badge.inlineBorder} flex items-center gap-1 leading-none`}
         >
           {badge.inlineIcon}
           {badge.label}

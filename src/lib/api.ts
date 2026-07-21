@@ -4,8 +4,8 @@
 //     : 'https://api.nammaorrufoods.com'
 //   : 'https://api.nammaorrufoods.com';
 
-// export const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.nammaorrufoods.com';
-export const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+export const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.nammaorrufoods.com';
+// export const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
 // Global tracking for active network requests (for monitoring/loading bars)
 let activeRequestsCount = 0;
@@ -77,14 +77,6 @@ if (typeof window !== 'undefined' && !(window as any).__api_patched) {
 
         // Timeout configurations (Default 10s timeout)
         const timeoutDuration = 10000;
-        const controller = new AbortController();
-
-        // Merge user's signal if present
-        if (requestOptions.signal) {
-            const userSignal = requestOptions.signal;
-            userSignal.addEventListener('abort', () => controller.abort());
-        }
-        requestOptions.signal = controller.signal;
 
         // Styled Console Logging (Request)
         if (process.env.NODE_ENV !== 'production' || localStorage.getItem('api_debug') === 'true') {
@@ -113,6 +105,20 @@ if (typeof window !== 'undefined' && !(window as any).__api_patched) {
 
         while (attempt <= maxRetries) {
             let timeoutId: NodeJS.Timeout | null = null;
+            const controller = new AbortController();
+            let userAbortHandler: (() => void) | null = null;
+            const originalSignal = init?.signal;
+
+            if (originalSignal) {
+                if (originalSignal.aborted) {
+                    controller.abort();
+                } else {
+                    userAbortHandler = () => controller.abort();
+                    originalSignal.addEventListener('abort', userAbortHandler);
+                }
+            }
+            requestOptions.signal = controller.signal;
+
             try {
                 if (attempt > 0) {
                     if (process.env.NODE_ENV !== 'production') {
@@ -133,6 +139,9 @@ if (typeof window !== 'undefined' && !(window as any).__api_patched) {
                 const response = await originalFetch(urlString, requestOptions);
 
                 if (timeoutId) clearTimeout(timeoutId);
+                if (originalSignal && userAbortHandler) {
+                    originalSignal.removeEventListener('abort', userAbortHandler);
+                }
 
                 const endTime = performance.now();
                 const duration = Math.round(endTime - startTime);
@@ -165,6 +174,9 @@ if (typeof window !== 'undefined' && !(window as any).__api_patched) {
 
             } catch (err: any) {
                 if (timeoutId) clearTimeout(timeoutId);
+                if (originalSignal && userAbortHandler) {
+                    originalSignal.removeEventListener('abort', userAbortHandler);
+                }
                 attempt++;
                 lastError = err;
 

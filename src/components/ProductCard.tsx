@@ -224,7 +224,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           </div>
 
           {/* COMPACT TRUST / REGULATORY INFO (Fixed height box so all cards line up bottom buttons) */}
-          <div className="flex flex-col gap-0.5 border-t border-slate-100 pt-1.5 h-[26px] overflow-hidden justify-center">
+          <div className="flex flex-col gap-0.5 border-t border-slate-100 pt-1 h-[32px] overflow-hidden justify-center">
             {quantity > 0 || justAdded ? (
               <div className="text-[10px] text-emerald-600 font-bold flex items-center gap-1 animate-in fade-in duration-200 select-none">
                 <span>✓ Added to Cart</span>
