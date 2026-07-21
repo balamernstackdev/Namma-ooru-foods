@@ -37,6 +37,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   const { id } = await params;
   try {
     const res = await fetch(`${API_URL}/api/categories`);
+    if (!res.ok) return { title: 'Category' };
     const categories = await res.json();
     const category = Array.isArray(categories) ? categories.find((c: any) => c.id.toString() === id) : null;
 

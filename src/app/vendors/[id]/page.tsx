@@ -42,6 +42,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   const { id } = resolvedParams;
   try {
     const res = await fetch(`${API_URL}/api/head-vendors/${id}`);
+    if (!res.ok) return { title: 'Marketplace Vendor | namma ooru Foods' };
     const vendor = await res.json();
 
     if (!vendor || vendor.error) return { title: 'Marketplace Vendor | namma ooru Foods' };

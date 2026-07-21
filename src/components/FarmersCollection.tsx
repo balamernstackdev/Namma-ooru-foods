@@ -293,7 +293,7 @@ export default function FarmersCollection({ products }: FarmersCollectionProps) 
             type="button"
             onClick={scrollLeft}
             aria-label="Previous"
-            className={`absolute left-2 md:left-4 xl:left-10 top-[40%] -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-white border border-[#E5E7EB] shadow-[0_8px_24px_rgba(0,0,0,0.08)] flex items-center justify-center text-slate-800 hover:bg-[#0F8A5F] hover:text-white hover:border-[#0F8A5F] transition-all duration-300 hover:scale-105 focus:outline-none shrink-0 transition-opacity duration-300 hidden md:flex ${canScrollLeft ? 'opacity-100' : 'opacity-0 pointer-events-none'
+            className={`absolute -left-4 lg:-left-6 top-[40%] -translate-y-1/2 z-30 w-11 h-11 rounded-full bg-white border border-[#E5E7EB] shadow-[0_8px_24px_rgba(0,0,0,0.12)] flex items-center justify-center text-slate-800 hover:bg-[#0F8A5F] hover:text-white hover:border-[#0F8A5F] transition-all duration-300 hover:scale-105 focus:outline-none shrink-0 hidden md:flex ${canScrollLeft ? 'opacity-100' : 'opacity-0 pointer-events-none'
               }`}
           >
             <ChevronLeft size={20} strokeWidth={2.5} />
@@ -308,7 +308,7 @@ export default function FarmersCollection({ products }: FarmersCollectionProps) 
             onMouseMove={onMouseMove}
             onKeyDown={onKeyDown}
             tabIndex={0}
-            className="flex gap-4 md:gap-8 overflow-x-auto pb-4 md:pb-8 snap-x snap-mandatory no-scrollbar scroll-smooth px-[10px] md:px-[20px] xl:px-[70px] cursor-grab active:cursor-grabbing focus:outline-none"
+            className="flex gap-4 md:gap-8 overflow-x-auto pb-8 pt-2 snap-x snap-mandatory no-scrollbar scroll-smooth px-4 md:px-8 cursor-grab active:cursor-grabbing focus:outline-none"
           >
             <AnimatePresence mode="popLayout">
               {filteredProducts.map((product) => (
@@ -332,7 +332,7 @@ export default function FarmersCollection({ products }: FarmersCollectionProps) 
             type="button"
             onClick={scrollRightManual}
             aria-label="Next"
-            className={`absolute right-2 md:right-4 xl:right-10 top-[40%] -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-white border border-[#E5E7EB] shadow-[0_8px_24px_rgba(0,0,0,0.08)] flex items-center justify-center text-slate-800 hover:bg-[#0F8A5F] hover:text-white hover:border-[#0F8A5F] transition-all duration-300 hover:scale-105 focus:outline-none shrink-0 transition-opacity duration-300 hidden md:flex ${canScrollRight ? 'opacity-100' : 'opacity-0 pointer-events-none'
+            className={`absolute -right-4 lg:-right-6 top-[40%] -translate-y-1/2 z-30 w-11 h-11 rounded-full bg-white border border-[#E5E7EB] shadow-[0_8px_24px_rgba(0,0,0,0.12)] flex items-center justify-center text-slate-800 hover:bg-[#0F8A5F] hover:text-white hover:border-[#0F8A5F] transition-all duration-300 hover:scale-105 focus:outline-none shrink-0 hidden md:flex ${canScrollRight ? 'opacity-100' : 'opacity-0 pointer-events-none'
               }`}
           >
             <ChevronRight size={20} strokeWidth={2.5} />

@@ -36,6 +36,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   const { id } = await params;
   try {
     const res = await fetch(`${API_URL}/api/subcategories/${id}`);
+    if (!res.ok) return { title: 'Subcategory' };
     const subcategory = await res.json();
 
     if (!subcategory || subcategory.error) return { title: 'Subcategory' };

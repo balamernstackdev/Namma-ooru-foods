@@ -36,6 +36,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   const { id } = await params;
   try {
     const res = await fetch(`${API_URL}/api/products/${id}`);
+    if (!res.ok) return { title: 'Product Details' };
     const product = await res.json();
 
     if (!product || product.error || !product.name) return { title: 'Product Details' };

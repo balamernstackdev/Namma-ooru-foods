@@ -34,9 +34,8 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   const { id } = resolvedParams;
   try {
     const res = await fetch(`${API_URL}/api/sub-vendors/${id}`);
+    if (!res.ok) return { title: 'Heritage Brand | namma ooru Foods' };
     const brand = await res.json();
-
-    if (!brand || brand.error) return { title: 'Heritage Brand | namma ooru Foods' };
 
     return {
       title: `${brand.name} | Heritage Brand`,

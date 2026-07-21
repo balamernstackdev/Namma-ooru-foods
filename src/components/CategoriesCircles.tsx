@@ -205,7 +205,7 @@ export default function CategoriesCircles() {
             type="button"
             onClick={scrollLeft}
             aria-label="Previous"
-            className={`absolute left-2 md:left-4 xl:left-10 top-[40%] -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-white border border-[#E5E7EB] shadow-[0_8px_24px_rgba(0,0,0,0.08)] flex items-center justify-center text-slate-800 hover:bg-[#0F8A5F] hover:text-white hover:border-[#0F8A5F] transition-all duration-300 hover:scale-105 focus:outline-none shrink-0 transition-opacity duration-300 hidden md:flex ${
+            className={`absolute -left-4 lg:-left-6 top-[40%] -translate-y-1/2 z-30 w-11 h-11 rounded-full bg-white border border-[#E5E7EB] shadow-[0_8px_24px_rgba(0,0,0,0.12)] flex items-center justify-center text-slate-800 hover:bg-[#0F8A5F] hover:text-white hover:border-[#0F8A5F] transition-all duration-300 hover:scale-105 focus:outline-none shrink-0 hidden md:flex ${
               canScrollLeft ? 'opacity-100' : 'opacity-0 pointer-events-none'
             }`}
           >
@@ -220,7 +220,7 @@ export default function CategoriesCircles() {
             onMouseMove={onMouseMove}
             onKeyDown={onKeyDown}
             tabIndex={0}
-            className="flex overflow-x-auto no-scrollbar pb-4 snap-x snap-mandatory scroll-smooth items-start px-[10px] md:px-[20px] xl:px-[70px] gap-6 md:gap-10 cursor-grab active:cursor-grabbing focus:outline-none"
+            className="flex overflow-x-auto no-scrollbar pb-4 pt-2 snap-x snap-mandatory scroll-smooth items-start px-4 md:px-8 gap-6 md:gap-10 cursor-grab active:cursor-grabbing focus:outline-none"
           >
             {displayCategories.map((category: any, idx: number) => {
               const count = category._count?.products || 0;
@@ -285,7 +285,7 @@ export default function CategoriesCircles() {
             type="button"
             onClick={scrollRight}
             aria-label="Next"
-            className={`absolute right-2 md:right-4 xl:right-10 top-[40%] -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-white border border-[#E5E7EB] shadow-[0_8px_24px_rgba(0,0,0,0.08)] flex items-center justify-center text-slate-800 hover:bg-[#0F8A5F] hover:text-white hover:border-[#0F8A5F] transition-all duration-300 hover:scale-105 focus:outline-none shrink-0 transition-opacity duration-300 hidden md:flex ${
+            className={`absolute -right-4 lg:-right-6 top-[40%] -translate-y-1/2 z-30 w-11 h-11 rounded-full bg-white border border-[#E5E7EB] shadow-[0_8px_24px_rgba(0,0,0,0.12)] flex items-center justify-center text-slate-800 hover:bg-[#0F8A5F] hover:text-white hover:border-[#0F8A5F] transition-all duration-300 hover:scale-105 focus:outline-none shrink-0 hidden md:flex ${
               canScrollRight ? 'opacity-100' : 'opacity-0 pointer-events-none'
             }`}
           >

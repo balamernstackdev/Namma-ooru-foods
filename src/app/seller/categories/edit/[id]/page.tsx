@@ -5,9 +5,7 @@ import { CATEGORIES } from '@/lib/staticData';
 export const dynamicParams = true;
 
 export async function generateStaticParams() {
-  const categoryIds = CATEGORIES.map((c) => ({ id: c.id.toString() }));
-  const placeholders = Array.from({ length: 300 }, (_, i) => ({ id: (i + 1).toString() }));
-  return [...categoryIds, ...placeholders];
+  return [];
 }
 
 export default async function Page({ params }: { params: Promise<{ id: string }> }) {

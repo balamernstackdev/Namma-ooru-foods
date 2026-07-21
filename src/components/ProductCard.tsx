@@ -122,7 +122,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   };
 
   return (
-    <div className="group relative flex flex-col bg-white rounded-2xl border border-slate-200 transition-all duration-300 hover:shadow-[0_15px_30px_-10px_rgba(0,0,0,0.08)] overflow-hidden w-full h-full min-h-[390px] md:min-h-[460px]">
+    <div className="group relative flex flex-col bg-white rounded-2xl border border-slate-200 transition-all duration-300 hover:shadow-[0_15px_30px_-10px_rgba(0,0,0,0.08)] overflow-hidden w-full h-full min-h-[410px] md:min-h-[480px]">
 
       {/* 1. IMAGE SECTION (Compact & High Density) */}
       <div className="relative w-full h-[160px] md:h-[210px] shrink-0 p-2">
@@ -132,13 +132,10 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             alt={product.name}
             fill
             sizes="(max-width: 768px) 50vw, 33vw"
-            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+            className="w-full h-full object-contain p-1 transition-transform duration-500 group-hover:scale-105"
           />
           <div className="absolute inset-0 bg-black/[0.02] group-hover:bg-transparent transition-colors pointer-events-none" />
         </Link>
-
-        {/* FLOATING BADGES */}
-        <ProductBadges product={product} variant="floating" />
 
         {/* WISHLIST BUTTON */}
         <button
@@ -152,13 +149,13 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       {/* 2. PRODUCT INFO (Tight spacing for fast scanning) */}
       <div className="flex flex-col flex-1 p-3 md:p-4 pt-0 pb-4 md:pb-5 min-h-0 justify-between">
         
-        <div className="text-[10px] text-gray-400 font-mono mb-1.5 font-medium mt-2">
+        <div className="text-[10px] text-gray-400 font-mono mb-1 font-medium mt-1">
           {product.productIdStr || `PROD-${product.id.toString().padStart(3, '0')}`}
         </div>
 
         <div className="space-y-1">
-          <div className="flex items-center gap-2 mb-1">
-            <div className="h-6 w-6 md:h-7 md:w-7 rounded-full overflow-hidden border border-slate-100 flex-shrink-0 bg-slate-50 flex items-center justify-center relative">
+          <div className="flex items-center gap-1.5 mb-1 overflow-hidden min-w-0">
+            <div className="h-5 w-5 md:h-6 md:w-6 rounded-full overflow-hidden border border-slate-100 flex-shrink-0 bg-slate-50 flex items-center justify-center relative">
               {brandLogo ? (
                 <OptimizedImage
                   src={brandLogo}
@@ -168,25 +165,31 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                   fallback="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
                 />
               ) : (
-                <span className="text-[10px] md:text-[11px] font-black text-emerald-800">{brandName.charAt(0)}</span>
+                <span className="text-[9px] md:text-[10px] font-black text-emerald-800">{brandName.charAt(0)}</span>
               )}
             </div>
-            <div className="text-[9px] md:text-[10px] font-black tracking-wider uppercase text-emerald-600 truncate">
-              {brandName}
-            </div>
-            <span className="text-slate-300">•</span>
-            <div className="text-[9px] md:text-[10px] font-bold tracking-wider uppercase text-slate-400 truncate">
-              {categoryName || 'Organic'}
+            <div className="flex items-center gap-1 min-w-0 overflow-hidden text-[9px] md:text-[10px]">
+              {brandName && (
+                <span className="font-black tracking-wider uppercase text-emerald-700 truncate max-w-[110px] md:max-w-[130px]">
+                  {brandName}
+                </span>
+              )}
+              {brandName && categoryName && <span className="text-slate-300 shrink-0">•</span>}
+              {categoryName && (
+                <span className="font-bold tracking-wider uppercase text-slate-400 truncate">
+                  {categoryName}
+                </span>
+              )}
             </div>
           </div>
 
-          {/* Product Name (Max 2 lines, 18px weight 700) */}
-          <Link href={`/products/${product.slug || product.id}`} prefetch={false} className="block group/link">
+          {/* Product Name (Fixed height box so 1-line and 2-line titles take equal height) */}
+          <Link href={`/products/${product.slug || product.id}`} prefetch={false} className="block group/link h-[42px] md:h-[48px] overflow-hidden">
             <div className="flex justify-between items-start gap-2">
-              <p className="text-[15px] md:text-[17px] font-bold text-[#1e293b] leading-snug line-clamp-2 tracking-tight group-hover/link:text-[#052e16] transition-colors">
+              <p className="text-[14px] md:text-[16px] font-bold text-[#1e293b] leading-snug line-clamp-2 tracking-tight group-hover/link:text-[#052e16] transition-colors">
                 {product.name}
               </p>
-              <span className="text-[11px] bg-slate-100 text-slate-600 px-2 py-1 rounded font-mono shrink-0 mt-0.5 border border-slate-200 font-bold">
+              <span className="text-[10px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded font-mono shrink-0 mt-0.5 border border-slate-200 font-bold">
                 {product.skuCode || selectedVariant?.skuCode || `SKU-${product.id.toString().padStart(3, '0')}`}
               </span>
             </div>
@@ -205,29 +208,29 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         <div className="space-y-2 mt-auto">
           {/* PRICE HIERARCHY (Consolidated row) */}
           <div className="flex items-baseline flex-wrap gap-x-1">
-            <span className="text-[18px] md:text-[24px] font-[900] text-[#0f172a] tracking-tight leading-none">
+            <span className="text-[18px] md:text-[22px] font-[900] text-[#0f172a] tracking-tight leading-none">
               ₹{displayPrice}
             </span>
             {displayOriginalPrice > displayPrice && (
-              <span className="text-[11px] md:text-[13px] text-slate-400 line-through font-semibold opacity-80 leading-none">
+              <span className="text-[11px] md:text-[12px] text-slate-400 line-through font-semibold opacity-80 leading-none">
                 ₹{displayOriginalPrice}
               </span>
             )}
             {discountPercent > 0 && (
-              <span className="text-[10px] md:text-[12px] text-emerald-600 font-black uppercase tracking-wide leading-none whitespace-nowrap">
+              <span className="text-[10px] md:text-[11px] text-emerald-600 font-black uppercase tracking-wide leading-none whitespace-nowrap">
                 {discountPercent}% OFF
               </span>
             )}
           </div>
 
-          {/* COMPACT TRUST / REGULATORY INFO */}
-          <div className="flex flex-col gap-0.5 border-t border-slate-100 pt-2 min-h-[22px] h-auto justify-center">
+          {/* COMPACT TRUST / REGULATORY INFO (Fixed height box so all cards line up bottom buttons) */}
+          <div className="flex flex-col gap-0.5 border-t border-slate-100 pt-1.5 h-[26px] overflow-hidden justify-center">
             {quantity > 0 || justAdded ? (
               <div className="text-[10px] text-emerald-600 font-bold flex items-center gap-1 animate-in fade-in duration-200 select-none">
                 <span>✓ Added to Cart</span>
               </div>
             ) : (
-              <div className="flex items-center">
+              <div className="flex items-center overflow-hidden">
                 <ProductBadges product={product} variant="inline" />
               </div>
             )}

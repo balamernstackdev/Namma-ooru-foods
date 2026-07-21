@@ -220,7 +220,7 @@ const handleResponse = async (response: Response) => {
             errorData = await response.json();
         } catch {
             try {
-                errorData = await response.text();
+                errorData = { message: await response.text() };
             } catch {
                 errorData = { error: 'Unknown response format' };
             }
@@ -232,7 +232,12 @@ const handleResponse = async (response: Response) => {
     if (contentType.includes('application/json')) {
         return response.json();
     }
-    return response.text();
+    const text = await response.text();
+    try {
+        return JSON.parse(text);
+    } catch {
+        return { message: text };
+    }
 };
 
 // Centralized API Client Service (Axios-like interface)

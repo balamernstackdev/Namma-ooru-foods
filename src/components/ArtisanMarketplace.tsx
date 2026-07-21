@@ -203,7 +203,7 @@ export default function ArtisanMarketplace() {
             type="button"
             onClick={scrollLeft}
             aria-label="Previous"
-            className={`absolute left-2 md:left-4 xl:left-10 top-[40%] -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-white border border-[#E5E7EB] shadow-[0_8px_24px_rgba(0,0,0,0.08)] flex items-center justify-center text-slate-800 hover:bg-[#0F8A5F] hover:text-white hover:border-[#0F8A5F] transition-all duration-300 hover:scale-105 focus:outline-none shrink-0 transition-opacity duration-300 hidden md:flex ${
+            className={`absolute -left-4 lg:-left-6 top-[40%] -translate-y-1/2 z-30 w-11 h-11 rounded-full bg-white border border-[#E5E7EB] shadow-[0_8px_24px_rgba(0,0,0,0.12)] flex items-center justify-center text-slate-800 hover:bg-[#0F8A5F] hover:text-white hover:border-[#0F8A5F] transition-all duration-300 hover:scale-105 focus:outline-none shrink-0 hidden md:flex ${
               canScrollLeft ? 'opacity-100' : 'opacity-0 pointer-events-none'
             }`}
           >
@@ -218,7 +218,7 @@ export default function ArtisanMarketplace() {
             onMouseMove={onMouseMove}
             onKeyDown={onKeyDown}
             tabIndex={0}
-            className="flex overflow-x-auto no-scrollbar pb-4 snap-x snap-mandatory scroll-smooth items-start justify-start px-[10px] md:px-[20px] xl:px-[70px] gap-6 md:gap-10 cursor-grab active:cursor-grabbing focus:outline-none"
+            className="flex overflow-x-auto no-scrollbar pb-4 pt-2 snap-x snap-mandatory scroll-smooth items-start justify-start px-4 md:px-8 gap-6 md:gap-10 cursor-grab active:cursor-grabbing focus:outline-none"
           >
             {isLoading ? (
               // Loading Skeleton
@@ -239,11 +239,11 @@ export default function ArtisanMarketplace() {
                   className="snap-start shrink-0 w-[140px] md:w-[180px]"
                 >
                   <Link
-                    href={`/brands/${brand.slug || brand.id}`}
+                    href={`/brands/detail?slug=${brand.slug || brand.id}`}
                     prefetch={false}
                     className="group flex flex-col items-center text-center"
                   >
-                    {/* Premium Squircle Image Box - 100% Identical to Vendors Showcase */}
+                    {/* Premium Squircle Image Box */}
                     <div className="relative w-full aspect-square rounded-[2rem] md:rounded-[2.8rem] overflow-hidden bg-[#fafaf9] border border-slate-200 shadow-[0_8px_30px_rgba(0,0,0,0.02)] transition-all duration-700 group-hover:shadow-[0_24px_48px_-12px_rgba(6,78,59,0.12)] group-hover:-translate-y-2 group-hover:border-emerald-100 relative flex items-center justify-center">
 
                       <div className="absolute inset-0 m-2 rounded-[1.6rem] md:rounded-[2.2rem] overflow-hidden bg-white shadow-inner p-3 flex items-center justify-center">
@@ -252,7 +252,7 @@ export default function ArtisanMarketplace() {
                             src={brand.logo}
                             alt={brand.name}
                             fill
-                            className="object-contain p-1 scale-100 group-hover:scale-105 transition-transform duration-[1000ms] ease-[0.25,1,0.5,1]"
+                            className="object-contain p-1 scale-100 group-hover:scale-110 transition-transform duration-[1000ms] ease-[0.25,1,0.5,1]"
                           />
                         ) : (
                           <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest text-center p-2">No Logo</span>
@@ -265,15 +265,11 @@ export default function ArtisanMarketplace() {
 
                     {/* Text Block placed BELOW the card */}
                     <div className="mt-5 w-full flex flex-col items-center gap-2">
-                      <p className="text-emerald-950 text-[10px] md:text-[12px] font-[900] uppercase tracking-[0.06em] group-hover:text-amber-600 transition-colors duration-300 leading-[1.4] text-center px-1 break-words w-full">
-                        {formatBrandName(brand.name)}
+                      <p className="text-emerald-950 text-[10px] md:text-[12px] font-[900] uppercase tracking-[0.08em] group-hover:text-amber-600 transition-colors duration-300 leading-[1.3] text-center px-1">
+                        {brand.name}
                       </p>
-                      {(!brand._count?.products || brand._count.products === 0) && (
-                        <span className="text-[9px] md:text-[10px] font-bold text-amber-600 uppercase tracking-widest leading-none shrink-0 bg-amber-50 px-2 py-0.5 rounded">
-                          Coming Soon
-                        </span>
-                      )}
                     </div>
+
                   </Link>
                 </motion.div>
               ))
@@ -285,7 +281,7 @@ export default function ArtisanMarketplace() {
             type="button"
             onClick={scrollRight}
             aria-label="Next"
-            className={`absolute right-2 md:right-4 xl:right-10 top-[40%] -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-white border border-[#E5E7EB] shadow-[0_8px_24px_rgba(0,0,0,0.08)] flex items-center justify-center text-slate-800 hover:bg-[#0F8A5F] hover:text-white hover:border-[#0F8A5F] transition-all duration-300 hover:scale-105 focus:outline-none shrink-0 transition-opacity duration-300 hidden md:flex ${
+            className={`absolute -right-4 lg:-right-6 top-[40%] -translate-y-1/2 z-30 w-11 h-11 rounded-full bg-white border border-[#E5E7EB] shadow-[0_8px_24px_rgba(0,0,0,0.12)] flex items-center justify-center text-slate-800 hover:bg-[#0F8A5F] hover:text-white hover:border-[#0F8A5F] transition-all duration-300 hover:scale-105 focus:outline-none shrink-0 hidden md:flex ${
               canScrollRight ? 'opacity-100' : 'opacity-0 pointer-events-none'
             }`}
           >
