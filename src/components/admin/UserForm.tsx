@@ -77,10 +77,10 @@ export default function UserForm({ initialData, mode }: UserFormProps) {
     groupId: initialData?.groupId?.toString() || '',
     segmentId: initialData?.segmentId?.toString() || '',
     password: '',
-    headVendorId: '',
-    brandName: '',
-    brandDescription: '',
-    brandLogo: '',
+    headVendorId: initialData?.subVendor?.headVendorId?.toString() || '',
+    brandName: initialData?.subVendor?.name || '',
+    brandDescription: initialData?.subVendor?.description || '',
+    brandLogo: initialData?.subVendor?.logo || '',
     failedLoginAttempts: initialData?.failedLoginAttempts || 0,
     lockoutUntil: initialData?.lockoutUntil ? new Date(initialData.lockoutUntil).toISOString().slice(0, 16) : ''
   });
@@ -310,16 +310,17 @@ export default function UserForm({ initialData, mode }: UserFormProps) {
                 </div>
               </div>
 
-              {/* Vendor Brand Details Section - Only visible when role is VENDOR */}
-              {(formData.role === 'VENDOR' || formData.role === 'SELLER') && !initialData && (
+              {/* Vendor Brand Details Section - Only visible when role is VENDOR or SELLER */}
+              {(formData.role === 'VENDOR' || formData.role === 'SELLER') && (
                 <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
                   <SectionHeader title="Brand / Store Details" icon={Store} colorClass="text-emerald-600" />
                   <div className="p-8 space-y-8">
                     <div className="bg-emerald-50/50 border border-emerald-100 rounded-xl p-4 flex items-start gap-3">
                       <ShieldCheck size={16} className="text-emerald-600 mt-0.5 shrink-0" />
                       <p className="text-[11px] font-bold text-emerald-800 leading-relaxed">
-                        A new brand store will be automatically created under the selected Regional Hub.
-                        Fill in the brand details below, or leave defaults to use auto-generated values.
+                        {initialData 
+                          ? "Fill in or update the brand details below. Changes will sync immediately."
+                          : "A new brand store will be automatically created under the selected Regional Hub. Fill in the brand details below, or leave defaults to use auto-generated values."}
                       </p>
                     </div>
 
