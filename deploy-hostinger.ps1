@@ -24,6 +24,7 @@ if (Test-Path $ZIP_PATH)   { Remove-Item -Force $ZIP_PATH }
 # ---- Step 2: Build Next.js ----
 Write-Host "[2/5] Building Next.js (output: standalone)..." -ForegroundColor Yellow
 Set-Location $ROOT
+$env:NEXT_PUBLIC_API_URL = "https://api.nammaorrufoods.com"
 npm run build
 if ($LASTEXITCODE -ne 0) {
     Write-Host "Build FAILED. Fix errors and try again." -ForegroundColor Red
@@ -40,6 +41,7 @@ if (-not (Test-Path $STANDALONE)) {
     Write-Host "ERROR: .next\standalone not found. Make sure next.config.ts has output: 'standalone'" -ForegroundColor Red
     exit 1
 }
+New-Item -ItemType Directory -Force $DEPLOY_DIR | Out-Null
 Copy-Item -Recurse -Force "$STANDALONE\*" "$DEPLOY_DIR\"
 
 # Copy .next/static into deploy/.next/static (required for CSS/JS assets)
