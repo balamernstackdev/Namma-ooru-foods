@@ -15,6 +15,18 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
 
   React.useEffect(() => {
     window.scrollTo(0, 0);
+
+    // Auto-recover from stale deployment chunk 404 errors
+    const handleChunkError = (event: ErrorEvent) => {
+      const isChunkError = event?.message?.includes('Loading chunk') || event?.message?.includes('404') || event?.target?.toString().includes('.js');
+      if (isChunkError) {
+        console.warn('⚠️ Stale deployment chunk detected. Auto-refreshing...');
+        window.location.reload();
+      }
+    };
+
+    window.addEventListener('error', handleChunkError, true);
+    return () => window.removeEventListener('error', handleChunkError, true);
   }, [pathname]);
 
   return (
