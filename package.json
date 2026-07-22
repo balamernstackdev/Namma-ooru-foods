@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "clean": "npx --yes rimraf .next out build.zip out.zip",
+    "clean": "rm -rf .next out build.zip out.zip",
     "build": "npm run clean && next build",
     "verify-build": "node scripts/verify-deployment.js",
     "start": "next start",
