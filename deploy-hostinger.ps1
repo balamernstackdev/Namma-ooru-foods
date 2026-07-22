@@ -24,7 +24,7 @@ if (Test-Path $ZIP_PATH)   { Remove-Item -Force $ZIP_PATH }
 # ---- Step 2: Build Next.js ----
 Write-Host "[2/5] Building Next.js (output: standalone)..." -ForegroundColor Yellow
 Set-Location $ROOT
-$env:NEXT_PUBLIC_API_URL = "https://api.nammaorrufoods.com"
+$env:NEXT_PUBLIC_API_URL = "https://api.nammaoorufoods.com"
 npm run build
 if ($LASTEXITCODE -ne 0) {
     Write-Host "Build FAILED. Fix errors and try again." -ForegroundColor Red
@@ -74,7 +74,7 @@ Write-Host "[4/5] Creating production .env file..." -ForegroundColor Yellow
 $ENV_CONTENT = @"
 NODE_ENV=production
 NEXT_PUBLIC_API_URL=https://api.nammaorrufoods.com
-NEXT_PUBLIC_BASE_URL=https://nammaorrufoods.com
+NEXT_PUBLIC_BASE_URL=https://nammaoorufoods.com
 "@
 Set-Content -Path "$DEPLOY_DIR\.env" -Value $ENV_CONTENT
 Write-Host "  → .env created (PORT is managed dynamically by Hostinger)" -ForegroundColor Gray

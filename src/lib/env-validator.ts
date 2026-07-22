@@ -25,7 +25,7 @@ export function validateEnv(): EnvConfig {
     port = isNaN(parsed) ? rawPort : parsed;
   }
 
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://nammaorrufoods.com';
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://nammaoorufoods.com';
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.nammaorrufoods.com';
 
   if (!process.env.NEXT_PUBLIC_API_URL) {
@@ -33,7 +33,7 @@ export function validateEnv(): EnvConfig {
   }
 
   if (!process.env.NEXT_PUBLIC_BASE_URL) {
-    warnings.push('NEXT_PUBLIC_BASE_URL not set in process.env; defaulting to https://nammaorrufoods.com');
+    warnings.push('NEXT_PUBLIC_BASE_URL not set in process.env; defaulting to https://nammaoorufoods.com');
   }
 
   if (warnings.length > 0 && typeof window === 'undefined') {

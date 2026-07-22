@@ -54,7 +54,7 @@ loadEnvFile(path.join(__dirname, '.env'));
 loadEnvFile(path.join(__dirname, '.env.production'));
 
 process.env.NEXT_PUBLIC_API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.nammaorrufoods.com';
-process.env.NEXT_PUBLIC_BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://nammaorrufoods.com';
+process.env.NEXT_PUBLIC_BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://nammaoorufoods.com';
 
 // ─── 3. Socket vs TCP Port Resolution ─────────────────────────────────────────
 const rawPort = process.env.PORT;
