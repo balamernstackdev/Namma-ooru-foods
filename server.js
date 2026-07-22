@@ -145,6 +145,15 @@ server.on('error', (err) => {
 // CRITICAL FOR PHUSION PASSENGER & UNIX SOCKETS:
 // Do NOT pass `hostname` as 2nd argument when `port` is a socket path string!
 if (isSocket) {
+  try {
+    if (typeof port === 'string' && fs.existsSync(port)) {
+      fs.unlinkSync(port);
+      console.log(`[Socket] Removed stale socket file at: ${port}`);
+    }
+  } catch (e) {
+    console.warn(`[Socket] Could not remove existing socket file ${port}:`, e.message);
+  }
+
   server.listen(port, () => {
     isNextReady = true;
     console.log(`[Success] Server is active and listening on Unix Socket: ${port}`);

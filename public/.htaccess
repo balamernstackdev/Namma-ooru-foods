@@ -1,34 +1,4 @@
-# Apache Configuration for Next.js Static Export (trailingSlash: true)
-<IfModule mod_rewrite.c>
-  RewriteEngine On
-  RewriteBase /
-
-  # Disable directory listing (prevents Infinityfree from generating index.txt)
-  Options -Indexes
-
-  # Fix Infinityfree /index.txt bug: strip /index.txt from any URL
-  RewriteCond %{REQUEST_URI} ^(.+)/index\.txt(/?)$
-  RewriteRule ^(.+)/index\.txt(/?)$ /$1/ [R=301,L]
-
-  # Also handle bare index.txt at root
-  RewriteCond %{REQUEST_URI} ^/index\.txt$
-  RewriteRule ^index\.txt$ / [R=301,L]
-
-  # Force trailing slash on directories (e.g. /about -> /about/)
-  # This matches Next.js trailingSlash: true configuration
-  RewriteCond %{REQUEST_FILENAME} !-f
-  RewriteCond %{REQUEST_URI} !(.*)/$
-  RewriteRule ^(.*)$ /$1/ [R=301,L]
-
-  # SPA Fallback: serve index.html for any path that is not a real file or directory
-  # This makes hard refreshes on deep routes work correctly
-  RewriteCond %{REQUEST_FILENAME} !-f
-  RewriteCond %{REQUEST_FILENAME} !-d
-  RewriteRule ^ /index.html [L]
-
-  # Custom 404 Error Document
-  ErrorDocument 404 /404.html
-</IfModule>
+# Hostinger Apache / Passenger Configuration for Next.js Node.js Application
 
 # Gzip/Brotli Compression
 <IfModule mod_deflate.c>
@@ -38,11 +8,9 @@
   AddOutputFilterByType BROTLI_COMPRESS text/html text/css application/javascript application/json image/svg+xml
 </IfModule>
 
-# Browser Caching
+# Browser Caching for Static Assets
 <IfModule mod_expires.c>
   ExpiresActive On
-  
-  # CSS, JS, Fonts, Images
   ExpiresByType text/css "access plus 1 year"
   ExpiresByType application/javascript "access plus 1 year"
   ExpiresByType font/ttf "access plus 1 year"
@@ -53,14 +21,13 @@
   ExpiresByType image/png "access plus 1 year"
   ExpiresByType image/svg+xml "access plus 1 year"
   ExpiresByType image/gif "access plus 1 year"
-
-  # HTML should not be cached to ensure fresh updates
   ExpiresByType text/html "access plus 0 seconds"
   ExpiresDefault "access plus 0 seconds"
 </IfModule>
 
-# Prevent viewing of .env or hidden files
+# Prevent direct access to hidden files (.env, .git)
 <FilesMatch "^\.">
     Order allow,deny
     Deny from all
 </FilesMatch>
+
