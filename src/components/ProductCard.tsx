@@ -204,7 +204,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, index }) => {
           </div>
         </div>
 
-        <div className="space-y-1 mt-0.5">
+        <div className="space-y-1 mt-auto pt-1.5">
           {/* PRICE SECTION (Single row, never wraps, never overflows) */}
           <div className="flex items-center flex-nowrap whitespace-nowrap gap-x-1 overflow-hidden leading-none pt-0.5">
             <span className="text-[14px] xs:text-[18px] font-black text-[#0f172a] tracking-tight shrink-0">
@@ -236,7 +236,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, index }) => {
           </div>
 
           {/* DIRECT CTA QUICK ADD BUTTON (Fixed Height, Bottom Aligned, Full Width) */}
-          <div className="h-[32px] xs:h-[38px] md:h-[40px] mt-0.5 xs:mt-1 relative w-full" ref={containerBtnRef}>
+          <div className="h-[28px] xs:h-[32px] md:h-[36px] mt-0.5 xs:mt-1 relative w-full" ref={containerBtnRef}>
             <AnimatePresence>
               {showSuccessAnimation && (
                 <ProductDetailSuccessAnimation
@@ -260,7 +260,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, index }) => {
                     e.stopPropagation();
                     router.push('/cart');
                   }}
-                  className="absolute inset-0 w-full h-full bg-[#059669] text-slate-50 rounded-[20px] text-[10px] xs:text-[13px] font-[900] uppercase tracking-wider transition-all active:scale-[0.97] flex items-center justify-center gap-1 xs:gap-2 hover:bg-[#047857] border border-[#059669] shadow-sm shadow-emerald-900/5 cursor-pointer whitespace-nowrap"
+                  className="absolute inset-0 w-full h-full bg-[#059669] text-slate-50 rounded-full text-[9px] xs:text-[10px] md:text-[12px] font-bold uppercase tracking-wider transition-all active:scale-[0.97] flex items-center justify-center gap-1 hover:bg-[#047857] border border-[#059669] shadow-sm shadow-emerald-900/5 cursor-pointer whitespace-nowrap"
                 >
                   <span>CART →</span>
                 </motion.button>
@@ -273,9 +273,9 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, index }) => {
                   transition={{ duration: 0.15 }}
                   type="button"
                   onClick={handleAddToCart}
-                  className="absolute inset-0 w-full h-full bg-[#059669] text-slate-50 rounded-[20px] text-[10px] xs:text-[13px] font-[900] uppercase tracking-wider transition-all active:scale-[0.97] flex items-center justify-center gap-1 xs:gap-2 hover:bg-[#047857] border border-[#059669] shadow-sm shadow-emerald-900/5 group/btn whitespace-nowrap cursor-pointer"
+                  className="absolute inset-0 w-full h-full bg-[#059669] text-slate-50 rounded-full text-[9px] xs:text-[10px] md:text-[12px] font-bold uppercase tracking-wider transition-all active:scale-[0.97] flex items-center justify-center gap-1 hover:bg-[#047857] border border-[#059669] shadow-sm shadow-emerald-900/5 group/btn whitespace-nowrap cursor-pointer"
                 >
-                  <Plus size={11} className="transition-transform group-hover/btn:rotate-90 shrink-0" strokeWidth={3} />
+                  <Plus size={10} className="transition-transform group-hover/btn:rotate-90 shrink-0" strokeWidth={3} />
                   <span>ADD TO CART</span>
                 </motion.button>
               )}
