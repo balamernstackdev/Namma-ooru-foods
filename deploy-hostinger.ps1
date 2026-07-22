@@ -69,10 +69,9 @@ Write-Host "[4/5] Creating production .env file..." -ForegroundColor Yellow
 $ENV_CONTENT = @"
 NODE_ENV=production
 NEXT_PUBLIC_API_URL=https://api.nammaorrufoods.com
-PORT=3000
 "@
 Set-Content -Path "$DEPLOY_DIR\.env" -Value $ENV_CONTENT
-Write-Host "  → .env created" -ForegroundColor Gray
+Write-Host "  → .env created (PORT is managed dynamically by Hostinger)" -ForegroundColor Gray
 
 # ---- Step 5: Zip it ----
 Write-Host "[5/5] Creating hostinger-deploy.zip..." -ForegroundColor Yellow
