@@ -7,7 +7,7 @@ import { Search, SlidersHorizontal, ArrowUpDown, ArrowRight } from 'lucide-react
 import ProductCard from '@/components/ProductCard';
 import Link from 'next/link';
 import { API_URL } from '@/lib/api';
-
+//dd
 function SearchResultsContent() {
   const searchParams = useSearchParams();
   const q = searchParams.get('q') || '';
@@ -50,7 +50,7 @@ function SearchResultsContent() {
           </h1>
           {!loading && <p className="text-xs font-bold text-emerald-600/60 uppercase tracking-widest mt-3">{total} artifacts found in network</p>}
         </div>
-        
+
         <div className="flex items-center gap-3">
           <div className="h-px w-12 bg-slate-100 hidden md:block" />
           <p className="text-[10px] font-black uppercase text-slate-300 tracking-widest">Filtered Search Results</p>
