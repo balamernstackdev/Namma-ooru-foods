@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "clean": "node -e \"const fs=require('fs'); fs.rmSync('.next', {recursive:true, force:true}); fs.rmSync('out', {recursive:true, force:true});\"",
-    "build": "npm run clean && next build",
+    "build": "npm run clean && next build && cp -r public .next/standalone/ && cp -r .next/static .next/standalone/.next/",
     "verify-build": "node scripts/verify-deployment.js",
     "start": "next start",
     "lint": "eslint"
