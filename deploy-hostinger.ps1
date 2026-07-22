@@ -74,8 +74,8 @@ Set-Content -Path "$DEPLOY_DIR\.env" -Value $ENV_CONTENT
 Write-Host "  → .env created (PORT is managed dynamically by Hostinger)" -ForegroundColor Gray
 
 # ---- Step 5: Zip it ----
-Write-Host "[5/5] Creating hostinger-deploy.zip..." -ForegroundColor Yellow
-Compress-Archive -Path "$DEPLOY_DIR\*" -DestinationPath $ZIP_PATH -Force
+Write-Host "[5/5] Creating hostinger-deploy.zip using tar.exe..." -ForegroundColor Yellow
+tar.exe -a -c -f $ZIP_PATH -C $DEPLOY_DIR .
 Write-Host "ZIP created at: $ZIP_PATH" -ForegroundColor Green
 
 # ---- Done ----
