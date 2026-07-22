@@ -44,6 +44,11 @@ if (-not (Test-Path $STANDALONE)) {
 New-Item -ItemType Directory -Force $DEPLOY_DIR | Out-Null
 Copy-Item -Recurse -Force "$STANDALONE\*" "$DEPLOY_DIR\"
 
+# Copy root server.js (Hostinger socket-compatible launcher)
+if (Test-Path "$ROOT\server.js") {
+    Copy-Item -Force "$ROOT\server.js" "$DEPLOY_DIR\server.js"
+}
+
 # Copy .next/static into deploy/.next/static (required for CSS/JS assets)
 Write-Host "  → Copying static assets..." -ForegroundColor Gray
 $STATIC_SRC = "$ROOT\.next\static"
@@ -69,6 +74,7 @@ Write-Host "[4/5] Creating production .env file..." -ForegroundColor Yellow
 $ENV_CONTENT = @"
 NODE_ENV=production
 NEXT_PUBLIC_API_URL=https://api.nammaorrufoods.com
+NEXT_PUBLIC_BASE_URL=https://nammaorrufoods.com
 "@
 Set-Content -Path "$DEPLOY_DIR\.env" -Value $ENV_CONTENT
 Write-Host "  → .env created (PORT is managed dynamically by Hostinger)" -ForegroundColor Gray

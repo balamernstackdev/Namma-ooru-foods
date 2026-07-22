@@ -9,7 +9,7 @@ import { Suspense } from 'react';
 import useSWR from 'swr';
 import { Phone, Mail } from 'lucide-react';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+import { API_URL } from '@/lib/api';
 const fetcher = (url: string) => fetch(url).then(res => res.json());
 
 function PaymentFailureContent() {
