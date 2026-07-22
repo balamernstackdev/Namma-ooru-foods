@@ -1,7 +1,7 @@
 // export const API_URL = typeof window !== 'undefined'
 //   ? (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname.startsWith('192.168.'))
 //     ? 'http://localhost:5000'
-//     : 'https://api.nammaorrufoods.com'
+//     : 'https://api.nammaorrufoods.com'sss
 //   : 'https://api.nammaorrufoods.com';
 
 export const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.nammaorrufoods.com';
