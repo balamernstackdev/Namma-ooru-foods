@@ -19,11 +19,10 @@
 
 # production
 /build
-
+/hostinger-deploy
 # misc
 .DS_Store
 *.pem
-/hostinger-deploy
 # debug
 npm-debug.log*
 yarn-debug.log*
