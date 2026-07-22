@@ -8,33 +8,8 @@ export const dynamicParams = true;
 
 
 export async function generateStaticParams() {
-  try {
-    console.log(`[Build] generateStaticParams starting for /vendors/[id]...`);
-    console.log(`[Build] Fetching head vendors from: ${API_URL}/api/head-vendors?limit=1000`);
-    const res = await fetch(`${API_URL}/api/head-vendors?limit=1000`, { cache: 'no-store' });
-    if (!res.ok) {
-      console.warn(`[Build WARNING] Vendors API responded with status ${res.status}`);
-      return [];
-    }
-    const data = await res.json();
-    const vendors = data.headVendors || [];
-    console.log(`[Build] Successfully fetched ${vendors.length} head vendors.`);
-    const params = [];
-    for (const vendor of vendors) {
-      params.push({ id: vendor.id.toString() });
-      if (vendor.slug) {
-        params.push({ id: vendor.slug });
-        console.log(`[Build] Registering vendor path: /vendors/${vendor.slug} (ID: ${vendor.id})`);
-      } else {
-        console.log(`[Build] Registering vendor path: /vendors/${vendor.id}`);
-      }
-    }
-    console.log(`[Build] Total pre-rendered paths for vendors: ${params.length}`);
-    return params;
-  } catch (error: any) {
-    console.error('[Build WARNING] Failed to fetch vendors in generateStaticParams:', error.message);
-    return [];
-  }
+  // Return empty array to generate pages on-demand and avoid hitting Hostinger WAF/CDN rate limits during build
+  return [];
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {

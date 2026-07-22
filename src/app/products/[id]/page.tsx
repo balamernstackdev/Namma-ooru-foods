@@ -7,29 +7,8 @@ export const dynamicParams = true; // Note: In output: export, dynamicParams mus
 
 
 export async function generateStaticParams(): Promise<{ id: string }[]> {
-  try {
-    console.log(`[Build] Fetching products from: ${API_URL}/api/products?limit=1000`);
-    const res = await fetch(`${API_URL}/api/products?limit=1000`, { next: { revalidate: 3600 } });
-    if (!res.ok) {
-      console.warn(`[Build WARNING] Products API responded with status ${res.status}`);
-      return [];
-    }
-    const data = await res.json();
-    const productsList = Array.isArray(data) ? data : (data && Array.isArray(data.products) ? data.products : []);
-
-    const params: { id: string }[] = [];
-    productsList.forEach((product: any) => {
-      params.push({ id: product.id.toString() });
-      if (product.slug) {
-        params.push({ id: product.slug });
-      }
-    });
-    console.log(`[Build] Generated ${params.length} static paths for products.`);
-    return params;
-  } catch (error: any) {
-    console.error('[Build WARNING] Failed to fetch products in generateStaticParams:', error.message);
-    return [];
-  }
+  // Return empty array to generate pages on-demand and avoid hitting Hostinger WAF/CDN rate limits during build
+  return [];
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
