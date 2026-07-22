@@ -1,25 +1,31 @@
 /**
  * Hostinger Production Entry Point for Next.js Application
- * Compatible with Phusion Passenger, Unix Domain Sockets, and TCP Ports.
+ * Fully compatible with Phusion Passenger, Unix Domain Sockets, and TCP Ports.
  */
 
+const http = require('http');
 const path = require('path');
 const fs = require('fs');
+const next = require('next');
 
 // Ensure production environment
 process.env.NODE_ENV = 'production';
 process.chdir(__dirname);
 
-// ─── 1. Global Process Safety Handlers ─────────────────────────────────────
+// ─── 1. Global Crash Protection & Diagnostics ─────────────────────────────────
 process.on('uncaughtException', (err) => {
-  console.error('[FATAL] Uncaught Exception:', err?.stack || err);
+  console.error('[FATAL] Uncaught Exception at:', new Date().toISOString());
+  console.error('Error Name:', err?.name || 'Unknown');
+  console.error('Message   :', err?.message || String(err));
+  console.error('Stack     :', err?.stack || 'No stack trace available');
 });
 
 process.on('unhandledRejection', (reason, promise) => {
-  console.error('[WARN] Unhandled Promise Rejection at:', promise, 'reason:', reason);
+  console.error('[WARN] Unhandled Promise Rejection at:', promise);
+  console.error('Reason:', reason?.stack || reason);
 });
 
-// ─── 2. Zero-Dependency Environment Variables Loader ──────────────────────
+// ─── 2. Environment Variables Loader ──────────────────────────────────────────
 function loadEnvFile(filePath) {
   if (fs.existsSync(filePath)) {
     try {
@@ -47,11 +53,10 @@ function loadEnvFile(filePath) {
 loadEnvFile(path.join(__dirname, '.env'));
 loadEnvFile(path.join(__dirname, '.env.production'));
 
-// Set standard production fallbacks if missing
 process.env.NEXT_PUBLIC_API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.nammaorrufoods.com';
 process.env.NEXT_PUBLIC_BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://nammaorrufoods.com';
 
-// ─── 3. Socket vs Port Binding Resolution ──────────────────────────────────
+// ─── 3. Socket vs TCP Port Resolution ─────────────────────────────────────────
 const rawPort = process.env.PORT;
 let port;
 let isSocket = false;
@@ -71,57 +76,103 @@ if (rawPort) {
 const hostname = process.env.HOSTNAME || '0.0.0.0';
 
 console.log('===================================================');
-console.log('  Namma Ooru Foods - Hostinger Next.js Server     ');
+console.log('  Namma Ooru Foods - Hostinger Production Server   ');
 console.log('===================================================');
-console.log(`[Startup] Node Version : ${process.version}`);
-console.log(`[Startup] NODE_ENV     : ${process.env.NODE_ENV}`);
-console.log(`[Startup] Binding Type : ${isSocket ? 'Unix Domain Socket' : 'TCP Port'}`);
-console.log(`[Startup] Address      : ${isSocket ? port : `${hostname}:${port}`}`);
-console.log(`[Startup] API URL      : ${process.env.NEXT_PUBLIC_API_URL}`);
+console.log(`[Startup] Node Version  : ${process.version}`);
+console.log(`[Startup] NODE_ENV      : ${process.env.NODE_ENV}`);
+console.log(`[Startup] Working Dir   : ${process.cwd()}`);
+console.log(`[Startup] Script Dir    : ${__dirname}`);
+console.log(`[Startup] Raw PORT Env  : ${rawPort || 'undefined (using fallback 3000)'}`);
+console.log(`[Startup] Binding Mode  : ${isSocket ? 'Unix Socket / Pipe' : 'TCP Port'}`);
+console.log(`[Startup] Address/Port  : ${isSocket ? port : `${hostname}:${port}`}`);
+console.log(`[Startup] API URL       : ${process.env.NEXT_PUBLIC_API_URL}`);
 console.log('===================================================');
 
-// ─── 4. Bootstrap Next.js Standalone Server ────────────────────────────────
-let startServer;
-try {
-  startServer = require('next/dist/server/lib/start-server').startServer;
-} catch (e) {
-  console.error('[FATAL] Failed to load Next.js startServer module:', e);
-  process.exit(1);
-}
+// ─── 4. Bootstrap Next.js App & HTTP Server ───────────────────────────────────
+let handle;
+let isNextReady = false;
 
-let nextConfig;
-try {
-  const requiredFiles = require('./.next/required-server-files.json');
-  nextConfig = requiredFiles.config;
-} catch (e) {
-  console.warn('[Startup] could not read required-server-files.json, using fallback config');
-  nextConfig = {
-    output: 'standalone',
-    trailingSlash: true,
-    images: { unoptimized: true }
-  };
-}
-
-startServer({
+const app = next({
+  dev: false,
   dir: __dirname,
-  isDev: false,
-  config: nextConfig,
-  hostname,
-  port,
-  allowRetry: false,
-})
+  conf: fs.existsSync(path.join(__dirname, '.next/required-server-files.json'))
+    ? require('./.next/required-server-files.json').config
+    : { output: 'standalone', trailingSlash: true, images: { unoptimized: true } }
+});
+
+handle = app.getRequestHandler();
+
+const server = http.createServer(async (req, res) => {
+  // Ultra-fast HTTP Health Check Endpoint
+  if (req.url === '/api/health' || req.url === '/health') {
+    res.writeHead(200, {
+      'Content-Type': 'application/json',
+      'Cache-Control': 'no-store, max-age=0'
+    });
+    return res.end(JSON.stringify({
+      status: 'ok',
+      service: 'nammaoorufoods-frontend',
+      nodeVersion: process.version,
+      uptimeSeconds: Math.floor(process.uptime()),
+      bindingMode: isSocket ? 'socket' : 'tcp',
+      port: port,
+      isNextReady: isNextReady,
+      memoryUsageMB: {
+        rss: Math.round(process.memoryUsage().rss / 1024 / 1024),
+        heapTotal: Math.round(process.memoryUsage().heapTotal / 1024 / 1024),
+        heapUsed: Math.round(process.memoryUsage().heapUsed / 1024 / 1024)
+      }
+    }));
+  }
+
+  try {
+    await handle(req, res);
+  } catch (err) {
+    console.error('[Error] Request handling error for:', req.url, err);
+    if (!res.headersSent) {
+      res.statusCode = 500;
+      res.end('Internal Server Error');
+    }
+  }
+});
+
+server.on('error', (err) => {
+  console.error('[FATAL] HTTP Server Listener Error:', err);
+  console.error('Error code:', err.code);
+  console.error('Stack trace:', err.stack);
+});
+
+// CRITICAL FOR PHUSION PASSENGER & UNIX SOCKETS:
+// Do NOT pass `hostname` as 2nd argument when `port` is a socket path string!
+if (isSocket) {
+  server.listen(port, () => {
+    isNextReady = true;
+    console.log(`[Success] Server is active and listening on Unix Socket: ${port}`);
+  });
+} else {
+  server.listen(port, hostname, () => {
+    isNextReady = true;
+    console.log(`[Success] Server is active and listening on TCP ${hostname}:${port}`);
+  });
+}
+
+// ─── 5. Prepare Next.js in Background ─────────────────────────────────────────
+app.prepare()
   .then(() => {
-    console.log(`[Success] Server is running and listening on ${isSocket ? port : `${hostname}:${port}`}`);
+    isNextReady = true;
+    console.log('[Success] Next.js application prepared successfully');
   })
   .catch((err) => {
-    console.error('[FATAL] Server launch failed:', err);
-    process.exit(1);
+    console.error('[FATAL] Failed to prepare Next.js application:', err);
   });
 
-// ─── 5. Graceful Shutdown Handlers ──────────────────────────────────────────
+// ─── 6. Graceful Termination Handlers ─────────────────────────────────────────
 const gracefulShutdown = (signal) => {
-  console.log(`[System] Received ${signal}. Shutting down gracefully...`);
-  process.exit(0);
+  console.log(`[System] Signal ${signal} received. Closing HTTP server...`);
+  server.close(() => {
+    console.log('[System] HTTP server closed gracefully.');
+    process.exit(0);
+  });
 };
 
 process.on('SIGINT', () => gracefulShutdown('SIGINT'));
