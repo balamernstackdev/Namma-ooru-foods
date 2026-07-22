@@ -1,6 +1,6 @@
 import React from 'react';
 import SubcategoryDetailLoader from './SubcategoryDetailLoader';
-import { API_URL } from '@/lib/api';
+import { API_URL, fetchWithTimeout } from '@/lib/api';
 import { Metadata } from 'next';
 
 export const dynamicParams = true;
@@ -14,7 +14,7 @@ export async function generateStaticParams(): Promise<{ id: string }[]> {
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id } = await params;
   try {
-    const res = await fetch(`${API_URL}/api/subcategories/${id}`);
+    const res = await fetchWithTimeout(`${API_URL}/api/subcategories/${id}`);
     if (!res.ok) return { title: 'Subcategory' };
     const subcategory = await res.json();
 

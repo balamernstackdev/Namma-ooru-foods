@@ -1,7 +1,7 @@
 // Cache-buster dummy update: trigger next dev route update
 import React from 'react';
 import BrandDetailLoader from './BrandDetailLoader';
-import { API_URL } from '@/lib/api';
+import { API_URL, fetchWithTimeout } from '@/lib/api';
 import { Metadata } from 'next';
 export const dynamicParams = true;
 
@@ -15,7 +15,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   const resolvedParams = await params;
   const { id } = resolvedParams;
   try {
-    const res = await fetch(`${API_URL}/api/sub-vendors/${id}`);
+    const res = await fetchWithTimeout(`${API_URL}/api/sub-vendors/${id}`);
     if (!res.ok) return { title: 'Heritage Brand | namma ooru Foods' };
     const brand = await res.json();
 

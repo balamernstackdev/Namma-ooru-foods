@@ -1,7 +1,7 @@
 // Cache-buster dummy update: trigger next dev route update
 import React from 'react';
 import VendorDetailLoader from './VendorDetailLoader';
-import { API_URL } from '@/lib/api';
+import { API_URL, fetchWithTimeout } from '@/lib/api';
 import { Metadata } from 'next';
 
 export const dynamicParams = true;
@@ -16,7 +16,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   const resolvedParams = await params;
   const { id } = resolvedParams;
   try {
-    const res = await fetch(`${API_URL}/api/head-vendors/${id}`);
+    const res = await fetchWithTimeout(`${API_URL}/api/head-vendors/${id}`);
     if (!res.ok) return { title: 'Marketplace Vendor | namma ooru Foods' };
     const vendor = await res.json();
 
