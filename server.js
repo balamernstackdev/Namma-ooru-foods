@@ -19,23 +19,33 @@ process.on('unhandledRejection', (reason, promise) => {
   console.error('[WARN] Unhandled Promise Rejection at:', promise, 'reason:', reason);
 });
 
-// ─── 2. Environment Variables Initialization ──────────────────────────────
-const envPath = path.join(__dirname, '.env');
-const envProdPath = path.join(__dirname, '.env.production');
-
-if (fs.existsSync(envPath)) {
-  try {
-    require('dotenv').config({ path: envPath });
-  } catch (e) {
-    console.warn('[Env] Failed to load .env file:', e.message);
-  }
-} else if (fs.existsSync(envProdPath)) {
-  try {
-    require('dotenv').config({ path: envProdPath });
-  } catch (e) {
-    console.warn('[Env] Failed to load .env.production file:', e.message);
+// ─── 2. Zero-Dependency Environment Variables Loader ──────────────────────
+function loadEnvFile(filePath) {
+  if (fs.existsSync(filePath)) {
+    try {
+      const content = fs.readFileSync(filePath, 'utf8');
+      content.split('\n').forEach(line => {
+        const trimmed = line.trim();
+        if (trimmed && !trimmed.startsWith('#') && trimmed.includes('=')) {
+          const idx = trimmed.indexOf('=');
+          const key = trimmed.slice(0, idx).trim();
+          let val = trimmed.slice(idx + 1).trim();
+          if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) {
+            val = val.slice(1, -1);
+          }
+          if (!process.env[key]) {
+            process.env[key] = val;
+          }
+        }
+      });
+    } catch (e) {
+      console.warn('[Env] Error reading env file:', e.message);
+    }
   }
 }
+
+loadEnvFile(path.join(__dirname, '.env'));
+loadEnvFile(path.join(__dirname, '.env.production'));
 
 // Set standard production fallbacks if missing
 process.env.NEXT_PUBLIC_API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.nammaorrufoods.com';
