@@ -92,15 +92,35 @@ console.log('===================================================');
 let handle;
 let isNextReady = false;
 
-const app = next({
-  dev: false,
-  dir: __dirname,
-  conf: fs.existsSync(path.join(__dirname, '.next/required-server-files.json'))
-    ? require('./.next/required-server-files.json').config
-    : { output: 'standalone', trailingSlash: true, images: { unoptimized: true } }
-});
+try {
+  const NextServer = require('next/dist/server/next-server').default;
+  const reqFilesPath = path.join(__dirname, '.next/required-server-files.json');
+  const requiredServerFiles = fs.existsSync(reqFilesPath) ? require(reqFilesPath) : { config: {} };
 
-handle = app.getRequestHandler();
+  const nextServer = new NextServer({
+    hostname: typeof port === 'number' ? hostname : '0.0.0.0',
+    port: typeof port === 'number' ? port : 3000,
+    dir: __dirname,
+    dev: false,
+    customServer: false,
+    conf: requiredServerFiles.config,
+  });
+  handle = nextServer.getRequestHandler();
+  isNextReady = true;
+  console.log('[Success] NextServer initialized successfully via NextServer engine');
+} catch (err) {
+  console.warn('[Startup Warning] Direct NextServer initialization failed, trying fallback next():', err.message);
+  const app = next({
+    dev: false,
+    dir: __dirname,
+    hostname: typeof port === 'number' ? hostname : undefined,
+    port: typeof port === 'number' ? port : undefined,
+    conf: fs.existsSync(path.join(__dirname, '.next/required-server-files.json'))
+      ? require(path.join(__dirname, '.next/required-server-files.json')).config
+      : undefined
+  });
+  handle = app.getRequestHandler();
+}
 
 const server = http.createServer(async (req, res) => {
   // Ultra-fast HTTP Health Check Endpoint
@@ -131,7 +151,8 @@ const server = http.createServer(async (req, res) => {
     console.error('[Error] Request handling error for:', req.url, err);
     if (!res.headersSent) {
       res.statusCode = 500;
-      res.end('Internal Server Error');
+      res.setHeader('Content-Type', 'text/plain');
+      res.end('Internal Server Error:\n' + (err.stack || err.message || String(err)));
     }
   }
 });
