@@ -207,7 +207,7 @@ export default function BrandDetailClient({ brand }: { brand: any }) {
         <AnimatePresence mode="wait">
           <motion.div
             key={`${selectedCategoryId}-${sortBy}-${searchQuery}`}
-            className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-10"
+            className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2.5 sm:gap-4 lg:gap-6"
           >
             {filteredAndSortedProducts.length > 0 ? (
               filteredAndSortedProducts.map((product: any, idx: number) => (

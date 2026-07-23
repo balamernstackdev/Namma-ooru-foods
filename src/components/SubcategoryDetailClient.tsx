@@ -126,7 +126,7 @@ export default function SubcategoryDetailClient({ subcategoryId, subcategory, su
             {subcategoryProducts.length > 0 ? (
               <motion.div 
                 layout
-                className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-[12px] md:gap-[28px]"
+                className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2.5 sm:gap-4 lg:gap-6"
               >
                 {subcategoryProducts.map((product) => (
                   <motion.div

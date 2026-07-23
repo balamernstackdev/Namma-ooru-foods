@@ -51,6 +51,7 @@ export default function CategoryDetailClient({
     if (category?.subcategories && category.subcategories.length > 0) {
       return category.subcategories;
     }
+    const childrenList = category?.children || [];
     return childrenList.map((c: any, idx: number) => {
       const slug = c.slug || c.name.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-');
       const count = (categoryProducts || []).filter(
@@ -67,6 +68,43 @@ export default function CategoryDetailClient({
       };
     });
   }, [category, categoryProducts]);
+
+  const categoryName = category?.name || categoryId
+    .split('-')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+
+  // Admin Banner Matching
+  const { categoryBanners } = useBanners();
+  const activeBanners = categoryBanners.filter((b: any) => b.isActive !== false);
+  const matchedBanner = activeBanners.find((b: any) => {
+    let ld = b.linkData;
+    if (typeof ld === 'string') {
+      try { ld = JSON.parse(ld); } catch { ld = null; }
+    }
+    if (!ld) return false;
+    const { linkType, targetId } = ld;
+    if (linkType !== 'category') return false;
+    return (
+      String(targetId) === String(category?.id) ||
+      String(targetId) === String(category?.slug) ||
+      (categoryId && String(targetId) === String(categoryId))
+    );
+  }) || activeBanners?.[0] || null;
+
+  const bannerImage = matchedBanner?.banner_image || category?.image || null;
+  const bannerTitle = matchedBanner?.title || categoryName;
+  const bannerSubtitle = matchedBanner?.subtitle || category?.description || `Explore our premium range of ${categoryName.toLowerCase()} sourced directly from native farms.`;
+  const bannerTagline = matchedBanner?.tagline || '100% Organic & Native';
+  const bannerLink = (matchedBanner as any)?.linkUrl || null;
+  const buttonText = matchedBanner?.buttonText || 'Shop Collection';
+
+  const categoryDesc = category?.description || `Explore our premium range of ${categoryName.toLowerCase()} sourced directly from native farms.`;
+  const totalProductsCount = category?.totalProductsCount ?? categoryProducts.length;
+  const totalSubcategoriesCount = category?.totalSubcategoriesCount ?? subcategoriesList.length;
+
+  const isSubcategoryPage = Boolean(initialSubSlug && initialSubSlug !== 'all');
+  const hasSubcategories = subcategoriesList.length > 0;
 
   // Selected subcategory slug state
   const [activeSubSlug, setActiveSubSlug] = useState<string>(initialSubSlug || 'all');
@@ -115,43 +153,6 @@ export default function CategoryDetailClient({
         (p.category?.slug && p.category.slug === activeSubcategory.slug)
     );
   }, [categoryProducts, activeSubSlug, activeSubcategory]);
-
-  const categoryName = category?.name || categoryId
-    .split('-')
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ');
-
-  // Admin Banner Matching
-  const { categoryBanners } = useBanners();
-  const activeBanners = categoryBanners.filter((b: any) => b.isActive !== false);
-  const matchedBanner = activeBanners.find((b: any) => {
-    let ld = b.linkData;
-    if (typeof ld === 'string') {
-      try { ld = JSON.parse(ld); } catch { ld = null; }
-    }
-    if (!ld) return false;
-    const { linkType, targetId } = ld;
-    if (linkType !== 'category') return false;
-    return (
-      String(targetId) === String(category?.id) ||
-      String(targetId) === String(category?.slug) ||
-      (categoryId && String(targetId) === String(categoryId))
-    );
-  }) || activeBanners?.[0] || null;
-
-  const bannerImage = matchedBanner?.banner_image || category?.image || null;
-  const bannerTitle = matchedBanner?.title || categoryName;
-  const bannerSubtitle = matchedBanner?.subtitle || category?.description || `Explore our premium range of ${categoryName.toLowerCase()} sourced directly from native farms.`;
-  const bannerTagline = matchedBanner?.tagline || '100% Organic & Native';
-  const bannerLink = matchedBanner?.linkUrl || null;
-  const buttonText = matchedBanner?.buttonText || 'Shop Collection';
-
-  const categoryDesc = category?.description || `Explore our premium range of ${categoryName.toLowerCase()} sourced directly from native farms.`;
-  const totalProductsCount = category?.totalProductsCount ?? categoryProducts.length;
-  const totalSubcategoriesCount = category?.totalSubcategoriesCount ?? subcategoriesList.length;
-
-  const isSubcategoryPage = Boolean(initialSubSlug && initialSubSlug !== 'all');
-  const hasSubcategories = subcategoriesList.length > 0;
 
   return (
     <div className="flex flex-col bg-white w-full min-h-screen font-sans">
@@ -333,16 +334,31 @@ export default function CategoryDetailClient({
           {hasSubcategories && (
             <div className="w-full py-8 bg-slate-50/60 border-y border-slate-100">
               <div className="standard-container px-4">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-700 block">Subcategories</span>
+                    <h3 className="text-lg md:text-xl font-black text-slate-900 uppercase tracking-tight">Select a Subcategory</h3>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleSelectSubcategory('all')}
+                    className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all border ${activeSubSlug === 'all' ? 'bg-emerald-950 text-white border-emerald-950 shadow-sm' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'}`}
+                  >
+                    All Products ({totalProductsCount})
+                  </button>
+                </div>
+
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
                   {subcategoriesList.map((sub, idx) => {
                     const subImg = sub.image || category.image || '/ai_images/organic_grains_1776231059575.png';
                     const subCode = sub.code || `SUB-${String(idx + 1).padStart(2, '0')}`;
+                    const isSelected = activeSubSlug === sub.slug;
                     return (
                       <button
                         key={sub.id}
                         type="button"
                         onClick={() => handleSelectSubcategory(sub.slug)}
-                        className="relative flex flex-col h-full rounded-2xl bg-white border text-left transition-all duration-300 group cursor-pointer overflow-hidden border-slate-200/90 hover:border-emerald-600 hover:shadow-xl shadow-xs"
+                        className={`relative flex flex-col h-full rounded-2xl bg-white border text-left transition-all duration-300 group cursor-pointer overflow-hidden ${isSelected ? 'border-emerald-600 ring-2 ring-emerald-600/20 shadow-lg' : 'border-slate-200/90 hover:border-emerald-600 hover:shadow-xl shadow-xs'}`}
                       >
                         {/* Top Image Box */}
                         <div className="relative w-full aspect-square bg-slate-50 overflow-hidden flex items-center justify-center p-2 border-b border-slate-100">
@@ -388,8 +404,8 @@ export default function CategoryDetailClient({
                             )}
                           </div>
 
-                          <div className="mt-2 w-full h-8.5 rounded-xl font-black text-[10px] uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all shadow-xs bg-slate-100 text-slate-700 group-hover:bg-emerald-950 group-hover:text-white">
-                            <span>View Collection</span>
+                          <div className={`mt-2 w-full h-8.5 rounded-xl font-black text-[10px] uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all shadow-xs ${isSelected ? 'bg-emerald-950 text-white' : 'bg-slate-100 text-slate-700 group-hover:bg-emerald-950 group-hover:text-white'}`}>
+                            <span>{isSelected ? 'Selected' : 'View Collection'}</span>
                             <ArrowRight size={12} />
                           </div>
                         </div>
@@ -403,13 +419,13 @@ export default function CategoryDetailClient({
         </>
       )}
 
-      {/* PRODUCT LISTING GRID (Displayed on Dedicated Subcategory Page OR if main category has no subcategories) */}
-      {(isSubcategoryPage || !hasSubcategories) && (
+      {/* PRODUCT LISTING GRID (Loaded when a subcategory or All Products is selected, or if main category has no subcategories) */}
+      {(isSubcategoryPage || !hasSubcategories || activeSubSlug !== 'all') && (
         <div className="w-full py-8">
           <div className="standard-container px-4">
             <div className="flex items-center justify-between mb-6 pb-3 border-b border-slate-100">
               <span className="text-[10px] md:text-xs font-black text-slate-400 uppercase tracking-widest">
-                Showing {displayedProducts.length} Premium Item{displayedProducts.length === 1 ? '' : 's'}
+                Showing {displayedProducts.length} Premium Item{displayedProducts.length === 1 ? '' : 's'} {activeSubcategory ? `in ${activeSubcategory.name}` : ''}
               </span>
               <div className="flex items-center gap-2 text-slate-400 text-[10px] font-black uppercase tracking-widest">
                 <LayoutGrid size={14} className="text-emerald-800" /> Grid View
@@ -420,7 +436,7 @@ export default function CategoryDetailClient({
               {displayedProducts.length > 0 ? (
                 <motion.div
                   layout
-                  className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-6"
+                  className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2.5 sm:gap-4 lg:gap-6"
                 >
                   {displayedProducts.map((product) => (
                     <motion.div

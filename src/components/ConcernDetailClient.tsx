@@ -48,7 +48,7 @@ export default function ConcernDetailClient({ concernId, matchedProducts }: Conc
           </div>
 
           {matchedProducts.length > 0 ? (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4" style={{ gap: '1.5rem' }}>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2.5 sm:gap-4 lg:gap-6">
               {matchedProducts.map((product) => (
                 <ProductCard key={product.id} product={product} />
               ))}

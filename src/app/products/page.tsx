@@ -284,7 +284,7 @@ function ProductsContent() {
                   <div className="bg-white border border-slate-200 rounded-xl p-4 md:p-5 flex flex-col md:flex-row gap-4 items-start md:items-center justify-between shadow-sm shadow-slate-100">
                      <div className="flex flex-col">
                         <h1 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight uppercase leading-none mb-1.5">
-                           {activeCategory === 'All' ? 'Organic Pantry' : activeCategory}
+                           {activeCategory === 'All' ? 'All Products' : activeCategory}
                         </h1>
                         <span className="text-xs text-slate-400 font-medium">
                            Showing <strong className="text-slate-800 font-black">{sortedProducts.length}</strong> farm products discovered
@@ -355,7 +355,7 @@ function ProductsContent() {
                   ) : (
                      <div className="w-full">
                         {/* COMPACT HIGH DENSITY GRID */}
-                        <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 gap-4 md:gap-5 lg:gap-6">
+                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2.5 sm:gap-4 lg:gap-6">
                            <AnimatePresence mode='popLayout'>
                               {paginatedProducts.map((product: any) => (
                                  <motion.div
@@ -417,8 +417,8 @@ function ProductsContent() {
                </span>
             </button>
             {(activeCategory !== 'All' || priceFilter !== 'all' || ratingFilter > 0 || deliveryFilter !== 'all') && (
-               <button 
-                  onClick={resetFilters} 
+               <button
+                  onClick={resetFilters}
                   className="px-5 h-11 border border-slate-200 text-slate-500 hover:text-rose-500 hover:border-rose-200 active:scale-95 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all bg-slate-50"
                >
                   Reset

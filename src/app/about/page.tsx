@@ -41,16 +41,16 @@ export default function AboutPage() {
       </section>
 
       {/* Our Story / Philosophy Section */}
-      <section className="w-full bg-white pt-12 pb-14 lg:pt-16 lg:pb-20">
+      <section className="w-full bg-white pt-8 pb-12 sm:pt-12 sm:pb-14 lg:pt-16 lg:pb-20 overflow-hidden">
 
-        <div className="standard-container">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 items-start">
+        <div className="standard-container px-4 sm:px-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-24 items-start">
             {/* Left Column: 2-Image Stack fulfilling full vertical height */}
-            <div className="flex flex-col gap-10 lg:gap-12 sticky top-24">
+            <div className="flex flex-col gap-8 lg:gap-12 lg:sticky lg:top-24">
               {/* Image 1: 4K Heritage Spices */}
               <div className="relative group">
-                <div className="absolute -top-6 -left-6 h-36 w-36 bg-amber-100/60 rounded-full blur-[80px] -z-10" />
-                <div className="relative rounded-[2.5rem] md:rounded-[3.5rem] overflow-hidden shadow-2xl border-4 md:border-[12px] border-white bg-gray-50 aspect-[4/3]">
+                <div className="absolute -top-4 -left-4 sm:-top-6 sm:-left-6 h-28 sm:h-36 w-28 sm:w-36 bg-amber-100/60 rounded-full blur-[60px] sm:blur-[80px] -z-10" />
+                <div className="relative rounded-2xl sm:rounded-[2.5rem] md:rounded-[3.5rem] overflow-hidden shadow-xl sm:shadow-2xl border-2 sm:border-4 md:border-[12px] border-white bg-gray-50 aspect-[16/10] sm:aspect-[4/3]">
                   <Image
                     src="/ai_images/about_us_heritage_spices.png"
                     alt="South Indian Traditional Spices"
@@ -59,21 +59,21 @@ export default function AboutPage() {
                     className="object-cover transition-transform duration-700 group-hover:scale-105"
                   />
                 </div>
-                <div className="absolute -bottom-4 right-6 bg-white/95 backdrop-blur-md p-4 md:p-6 rounded-2xl shadow-xl border border-gray-100 flex items-center gap-4 z-10">
-                  <div className="h-10 w-10 md:h-12 md:w-12 rounded-full bg-amber-100 flex items-center justify-center shrink-0">
-                    <Leaf className="h-5 w-5 md:h-6 md:w-6 text-amber-700" />
+                <div className="absolute bottom-2 right-2 sm:-bottom-4 sm:right-6 bg-white/95 backdrop-blur-md p-2.5 sm:p-4 md:p-6 rounded-xl sm:rounded-2xl shadow-lg sm:shadow-xl border border-gray-100 flex items-center gap-2.5 sm:gap-4 z-10">
+                  <div className="h-8 w-8 sm:h-10 sm:w-10 md:h-12 md:w-12 rounded-full bg-amber-100 flex items-center justify-center shrink-0">
+                    <Leaf className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 text-amber-700" />
                   </div>
                   <div>
-                    <p className="text-sm md:text-base font-black text-emerald-950">100% Pure & Unrefined</p>
-                    <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Heritage Processing</p>
+                    <p className="text-xs sm:text-sm md:text-base font-black text-emerald-950">100% Pure & Unrefined</p>
+                    <p className="text-[8px] sm:text-[9px] font-bold text-gray-400 uppercase tracking-widest">Heritage Processing</p>
                   </div>
                 </div>
               </div>
 
               {/* Image 2: 4K Organic Harvest Grains */}
-              <div className="relative group mt-4">
-                <div className="absolute -bottom-6 -right-6 h-36 w-36 bg-emerald-100/60 rounded-full blur-[80px] -z-10" />
-                <div className="relative rounded-[2.5rem] md:rounded-[3.5rem] overflow-hidden shadow-2xl border-4 md:border-[12px] border-white bg-gray-50 aspect-[4/3]">
+              <div className="relative group mt-4 sm:mt-6">
+                <div className="absolute -bottom-4 -right-4 sm:-bottom-6 sm:-right-6 h-28 sm:h-36 w-28 sm:w-36 bg-emerald-100/60 rounded-full blur-[60px] sm:blur-[80px] -z-10" />
+                <div className="relative rounded-2xl sm:rounded-[2.5rem] md:rounded-[3.5rem] overflow-hidden shadow-xl sm:shadow-2xl border-2 sm:border-4 md:border-[12px] border-white bg-gray-50 aspect-[16/10] sm:aspect-[4/3]">
                   <Image
                     src="/ai_images/about_us_organic_harvest.png"
                     alt="Organic South Indian Grains & Rice Harvest"
@@ -82,21 +82,21 @@ export default function AboutPage() {
                     className="object-cover transition-transform duration-700 group-hover:scale-105"
                   />
                 </div>
-                <div className="absolute -bottom-4 left-6 bg-white/95 backdrop-blur-md p-4 md:p-6 rounded-2xl shadow-xl border border-gray-100 flex items-center gap-4 z-10">
-                  <div className="h-10 w-10 md:h-12 md:w-12 rounded-full bg-emerald-100 flex items-center justify-center shrink-0">
-                    <ShieldCheck className="h-5 w-5 md:h-6 md:w-6 text-emerald-600" />
+                <div className="absolute bottom-2 left-2 sm:-bottom-4 sm:left-6 bg-white/95 backdrop-blur-md p-2.5 sm:p-4 md:p-6 rounded-xl sm:rounded-2xl shadow-lg sm:shadow-xl border border-gray-100 flex items-center gap-2.5 sm:gap-4 z-10">
+                  <div className="h-8 w-8 sm:h-10 sm:w-10 md:h-12 md:w-12 rounded-full bg-emerald-100 flex items-center justify-center shrink-0">
+                    <ShieldCheck className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 text-emerald-600" />
                   </div>
                   <div>
-                    <p className="text-sm md:text-base font-black text-emerald-950">Direct Farm Sourced</p>
-                    <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">100% Certified Origin</p>
+                    <p className="text-xs sm:text-sm md:text-base font-black text-emerald-950">Direct Farm Sourced</p>
+                    <p className="text-[8px] sm:text-[9px] font-bold text-gray-400 uppercase tracking-widest">100% Certified Origin</p>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="flex flex-col">
-              <span className="text-[11px] font-black uppercase tracking-[0.4em] text-amber-500 mb-6">About Us</span>
-              <h2 className="text-4xl md:text-6xl font-black text-emerald-950 leading-tight tracking-tighter mb-10 md:mb-16">
+            <div className="flex flex-col mt-6 lg:mt-0">
+              <span className="text-[11px] font-black uppercase tracking-[0.4em] text-amber-500 mb-3 sm:mb-6">About Us</span>
+              <h2 className="text-3xl sm:text-4xl md:text-6xl font-black text-emerald-950 leading-tight tracking-tighter mb-6 sm:mb-10 md:mb-16">
                 We are here to serve you
               </h2>
               <div className="space-y-6 md:space-y-8 text-base md:text-lg text-gray-600 font-medium leading-relaxed">

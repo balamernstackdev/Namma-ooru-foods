@@ -95,7 +95,7 @@ const Navbar = () => {
     items: [
       { label: 'Home', href: '/', icon: Home },
       { label: 'Our Vision', href: '/about', icon: Star },
-      { label: 'Categories', href: '/products', icon: LayoutGrid },
+      { label: 'Categories', href: '/categories', icon: LayoutGrid },
       { label: 'Best Sellers', href: '/best-selling', icon: TrendingUp },
       { label: 'Re Sellers', href: '/sellers', icon: Star }
     ]

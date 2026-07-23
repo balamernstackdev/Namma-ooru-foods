@@ -55,7 +55,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, index }) => {
 
   const mainImage = product.image || (product.images && product.images[0]?.url) || '';
   const displayPrice = Number(product.price);
-  const displayOriginalPrice = product.originalPrice ? Number(product.originalPrice) : 0; 
+  const displayOriginalPrice = product.originalPrice ? Number(product.originalPrice) : 0;
 
   const variants = product.variants || [];
   const [selectedVariant] = React.useState(variants[0] || { name: 'Standard', price: displayPrice });
@@ -65,8 +65,11 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, index }) => {
 
   const categoryName = typeof product.category === 'object' ? product.category?.name : (product.category || '');
   const subVendor = product.subVendor || product.brand;
-  const brandName = subVendor?.name || '';
-  const brandLogo = subVendor?.logo;
+  const fullBrand = subVendor?.name || '';
+  const brandName = fullBrand.split('•')[0].split('-')[0].trim();
+  const skuBadge = index !== undefined
+    ? `SKU-${String(index + 1).padStart(2, '0')}`
+    : (product.productIdStr || product.skuCode || `SKU-${product.id}`);
 
   const discountPercent = displayOriginalPrice > displayPrice ? Math.round(((displayOriginalPrice - displayPrice) / displayOriginalPrice) * 100) : 0;
 
@@ -123,120 +126,122 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, index }) => {
   };
 
   return (
-    <div className="group relative flex flex-col bg-white rounded-2xl border border-slate-200 transition-all duration-300 hover:border-slate-300 overflow-hidden w-full h-full">
+    <div className="group relative flex flex-col bg-white rounded-2xl border border-slate-200/90 transition-all duration-300 hover:border-emerald-500/40 hover:shadow-md overflow-hidden w-full h-full">
 
-      {/* 1. IMAGE SECTION (Compact & Equal Height, Object-Contain) */}
-      <div className="relative w-full h-[80px] xs:h-[105px] sm:h-[120px] md:h-[170px] xl:h-[180px] shrink-0 p-1.5 xs:p-2">
-        <Link href={`/products/${product.slug || product.id}`} prefetch={false} className="relative block h-full w-full overflow-hidden rounded-xl bg-white">
+      {/* 1. PRODUCT IMAGE CONTAINER (50-55% Card Height on Mobile, object-contain, centered) */}
+      <div className="relative w-full aspect-[4/3.2] xs:aspect-[4/3.4] sm:aspect-square md:aspect-[4/3.5] lg:aspect-square shrink-0 bg-slate-50/60 p-2 sm:p-3 flex items-center justify-center overflow-hidden">
+        <Link href={`/products/${product.slug || product.id}`} prefetch={false} className="relative block h-full w-full overflow-hidden rounded-xl">
           <OptimizedImage
             src={mainImage}
             alt={product.name}
             fill
-            sizes="(max-width: 768px) 50vw, 33vw"
-            className="w-full h-full object-contain p-1 transition-transform duration-500 group-hover:scale-105"
+            sizes="(max-width: 639px) 50vw, (max-width: 1023px) 33vw, 20vw"
+            className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-105"
           />
         </Link>
 
-        {/* WISHLIST BUTTON (Capped Top-Right) */}
+        {/* WISHLIST BUTTON (Floating Circular Icon Top-Right) */}
         <button
           onClick={handleWishlist}
           type="button"
-          className={`absolute top-1.5 right-1.5 w-[22px] h-[22px] xs:w-[26px] xs:h-[26px] md:w-[32px] md:h-[32px] rounded-full bg-white/90 backdrop-blur-sm border border-slate-100 flex items-center justify-center shadow-sm transition-all z-10 hover:scale-110 active:scale-90 ${isFav ? 'text-rose-500' : 'text-slate-650 hover:text-rose-500'}`}
+          aria-label="Add to wishlist"
+          className={`absolute top-2 right-2 w-8 h-8 rounded-full bg-white/90 backdrop-blur-md border border-slate-100 flex items-center justify-center shadow-sm transition-all z-10 hover:scale-110 active:scale-95 cursor-pointer ${isFav ? 'text-rose-500' : 'text-slate-400 hover:text-rose-500'}`}
         >
-          <Heart size={10} strokeWidth={2.5} className={isFav ? 'fill-rose-500' : ''} />
+          <Heart size={14} strokeWidth={2.5} className={isFav ? 'fill-rose-500' : ''} />
         </button>
       </div>
 
-      {/* 2. PRODUCT INFO */}
-      <div className="flex flex-col flex-1 p-1.5 xs:p-2 md:p-3 pt-0 pb-2 xs:pb-3 md:pb-3.5 min-h-0">
+      {/* 2. PRODUCT INFO & TYPOGRAPHY SECTION */}
+      <div className="flex flex-col flex-1 p-2.5 xs:p-3 md:p-3.5 min-h-0 justify-between">
 
         <div className="flex flex-col">
-          <div>
-            {/* Vendor Name & Category on Left, SKU badge Right Aligned */}
-            <div className="flex items-center justify-between gap-1 mb-0.5 xs:mb-1 min-w-0">
-              <div className="flex items-center gap-0.5 xs:gap-1 min-w-0 overflow-hidden text-[9px] xs:text-[10px] md:text-[11px]">
-                {brandName && (
-                  <span className="font-black tracking-wider uppercase text-emerald-700 truncate max-w-[45px] xs:max-w-[70px] md:max-w-none shrink-0">
-                    {brandName}
-                  </span>
-                )}
-                {brandName && categoryName && <span className="text-slate-300 shrink-0">•</span>}
-                {categoryName && (
-                  <span className="font-bold tracking-wider uppercase text-slate-400 truncate max-w-[45px] xs:max-w-[70px] md:max-w-none">
+          {/* Brand, Hidden Mobile Category, SKU Badge */}
+          <div className="flex items-center justify-between gap-1 mb-1 min-w-0">
+            <div className="flex items-center gap-1 min-w-0 overflow-hidden">
+              {brandName && (
+                <span className="text-[12px] font-bold tracking-wider uppercase text-emerald-800 truncate shrink-0">
+                  {brandName}
+                </span>
+              )}
+              {categoryName && (
+                <>
+                  <span className="hidden sm:inline text-slate-300 shrink-0">•</span>
+                  <span className="hidden sm:inline text-xs font-semibold text-slate-400 uppercase truncate">
                     {categoryName}
                   </span>
-                )}
-              </div>
-              <span className="text-[7px] xs:text-[8px] md:text-[9px] bg-slate-100 text-slate-600 px-1 py-0.2 xs:py-0.5 rounded font-mono shrink-0 border border-slate-200 font-bold leading-none">
-                {index !== undefined
-                  ? `Pro-${String(index + 1).padStart(2, '0')}`
-                  : (product.productIdStr || product.skuCode || `PROD-${product.id.toString().padStart(3, '0')}`)}
-              </span>
+                </>
+              )}
             </div>
-
-            {/* Product Name (Fixed Height to prevent Layout Shifts) */}
-            <Link href={`/products/${product.slug || product.id}`} prefetch={false} className="block group/link h-[30px] xs:h-[36px] md:h-[44px] lg:h-[48px] overflow-hidden mb-0.5 xs:mb-1">
-              <p className="text-[11px] xs:text-[14px] md:text-[16px] lg:text-[18px] font-bold text-[#1e293b] leading-tight xs:leading-snug line-clamp-2 tracking-tight group-hover/link:text-[#052e16] transition-colors">
-                {product.name}
-              </p>
-            </Link>
+            <span className="text-[10px] font-mono font-bold bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded border border-slate-200 shrink-0 leading-none">
+              {skuBadge}
+            </span>
           </div>
 
-          {/* RATING & REVIEWS (Single Row with stars) */}
-          <div className="flex items-center gap-1 mt-0.5 mb-1">
-            <div className="flex items-center gap-0.2 xs:gap-0.5 shrink-0">
-              {[...Array(5)].map((_, i) => {
-                const isFilled = i < Math.round(averageRating);
-                return (
-                  <Star
-                    key={i}
-                    className={`h-2 xs:h-2.5 w-2 xs:w-2.5 ${isFilled ? 'fill-amber-400 text-amber-400' : 'text-slate-200 fill-slate-100'}`}
-                  />
-                );
-              })}
-            </div>
-            <span className="text-[9px] xs:text-[10px] font-black text-slate-700 ml-0.5 shrink-0">
-              {averageRating ? averageRating.toFixed(1) : '0.0'}
-            </span>
-            <span className="text-[8px] xs:text-[9px] font-medium text-slate-400 shrink-0">
-              ({reviewCount})
-            </span>
+          {/* Product Name (Mobile 16px, Bold, Line Clamp 2) */}
+          <Link href={`/products/${product.slug || product.id}`} prefetch={false} className="block group/link min-h-[42px] mb-1">
+            <h3 className="text-[16px] md:text-[17px] font-bold text-slate-900 leading-snug line-clamp-2 tracking-tight group-hover/link:text-emerald-900 transition-colors">
+              {product.name}
+            </h3>
+          </Link>
+
+          {/* Rating Section (Hide Empty Stars if No Rating) */}
+          <div className="flex items-center gap-1 my-1">
+            {averageRating > 0 ? (
+              <>
+                <div className="flex items-center gap-0.5 shrink-0">
+                  {[...Array(5)].map((_, i) => {
+                    const isFilled = i < Math.round(averageRating);
+                    return (
+                      <Star
+                        key={i}
+                        className={`h-3 w-3 ${isFilled ? 'fill-amber-400 text-amber-400' : 'text-slate-200 fill-slate-100'}`}
+                      />
+                    );
+                  })}
+                </div>
+                <span className="text-[11px] font-bold text-slate-800 ml-0.5 shrink-0">
+                  {averageRating.toFixed(1)}
+                </span>
+                {reviewCount > 0 && (
+                  <span className="text-[10px] font-medium text-slate-400 shrink-0">
+                    ({reviewCount})
+                  </span>
+                )}
+              </>
+            ) : (
+              <span className="text-[11px] font-medium text-slate-400">
+                No Reviews
+              </span>
+            )}
+          </div>
+
+          {/* Badges Section (Max 2 Badges + Overflow) */}
+          <div className="my-1 overflow-hidden w-full">
+            <ProductBadges product={product} variant="inline" />
           </div>
         </div>
 
-        <div className="space-y-1 mt-auto pt-1.5">
-          {/* PRICE SECTION (Single row, never wraps, never overflows) */}
-          <div className="flex items-center flex-nowrap whitespace-nowrap gap-x-1 overflow-hidden leading-none pt-0.5">
-            <span className="text-[14px] xs:text-[18px] font-black text-[#0f172a] tracking-tight shrink-0">
+        {/* 3. PRICE HIERARCHY & CTA BUTTON */}
+        <div className="mt-2 pt-1 border-t border-slate-100">
+          {/* Price Hierarchy (Selling Price 22px, MRP 12px strikethrough, Discount 13px green) */}
+          <div className="flex items-baseline flex-nowrap gap-x-2 overflow-hidden leading-none my-1.5">
+            <span className="text-[22px] md:text-[24px] font-black text-slate-950 tracking-tight shrink-0">
               ₹{displayPrice}
             </span>
             {displayOriginalPrice > displayPrice && (
-              <span className="text-[9px] xs:text-[12px] text-slate-400 line-through font-bold opacity-85 shrink-0">
+              <span className="text-[12px] text-slate-400 line-through font-medium opacity-80 shrink-0">
                 ₹{displayOriginalPrice}
               </span>
             )}
             {discountPercent > 0 && (
-              <span className="text-[9px] xs:text-[12px] text-emerald-600 font-black uppercase tracking-wide shrink-0">
-                {discountPercent}%
+              <span className="text-[13px] text-emerald-600 font-bold tracking-wide shrink-0">
+                {discountPercent}% OFF
               </span>
             )}
           </div>
 
-          {/* BADGES SECTION (Fixed Height to prevent Layout Shifts) */}
-          <div className="flex flex-col gap-0.5 border-t border-slate-100 pt-1 h-[16px] xs:h-[20px] md:h-[22px] overflow-hidden justify-center mb-0.5 xs:mb-1">
-            {quantity > 0 || justAdded ? (
-              <div className="text-[9px] xs:text-[10px] text-emerald-600 font-bold flex items-center gap-1 animate-in fade-in duration-200 select-none shrink-0 leading-none">
-                <span>✓ Added</span>
-              </div>
-            ) : (
-              <div className="flex items-center overflow-hidden w-full shrink-0 h-full flex-nowrap">
-                <ProductBadges product={product} variant="inline" />
-              </div>
-            )}
-          </div>
-
-          {/* DIRECT CTA QUICK ADD BUTTON (Fixed Height, Bottom Aligned, Full Width) */}
-          <div className="h-[28px] xs:h-[32px] md:h-[36px] mt-0.5 xs:mt-1 relative w-full" ref={containerBtnRef}>
+          {/* Add To Cart CTA Button (Min Height 44px, Mobile Font 14px) */}
+          <div className="mt-2 w-full relative min-h-[44px]" ref={containerBtnRef}>
             <AnimatePresence>
               {showSuccessAnimation && (
                 <ProductDetailSuccessAnimation
@@ -250,9 +255,9 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, index }) => {
               {quantity > 0 || justAdded ? (
                 <motion.button
                   key="view-cart-btn"
-                  initial={{ opacity: 0, scale: 0.95 }}
+                  initial={{ opacity: 0, scale: 0.96 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
+                  exit={{ opacity: 0, scale: 0.96 }}
                   transition={{ duration: 0.15 }}
                   type="button"
                   onClick={(e) => {
@@ -260,28 +265,29 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, index }) => {
                     e.stopPropagation();
                     router.push('/cart');
                   }}
-                  className="absolute inset-0 w-full h-full bg-[#059669] text-slate-50 rounded-full text-[9px] xs:text-[10px] md:text-[12px] font-bold uppercase tracking-wider transition-all active:scale-[0.97] flex items-center justify-center gap-1 hover:bg-[#047857] border border-[#059669] shadow-sm shadow-emerald-900/5 cursor-pointer whitespace-nowrap"
+                  className="w-full min-h-[44px] bg-emerald-800 hover:bg-emerald-900 text-white rounded-xl text-[14px] font-bold uppercase tracking-wider transition-all active:scale-[0.98] flex items-center justify-center gap-1.5 shadow-sm border border-emerald-800 cursor-pointer whitespace-nowrap"
                 >
-                  <span>CART →</span>
+                  <span>GO TO CART →</span>
                 </motion.button>
               ) : (
                 <motion.button
                   key="add-btn"
-                  initial={{ opacity: 0, scale: 0.95 }}
+                  initial={{ opacity: 0, scale: 0.96 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
+                  exit={{ opacity: 0, scale: 1 }}
                   transition={{ duration: 0.15 }}
                   type="button"
                   onClick={handleAddToCart}
-                  className="absolute inset-0 w-full h-full bg-[#059669] text-slate-50 rounded-full text-[9px] xs:text-[10px] md:text-[12px] font-bold uppercase tracking-wider transition-all active:scale-[0.97] flex items-center justify-center gap-1 hover:bg-[#047857] border border-[#059669] shadow-sm shadow-emerald-900/5 group/btn whitespace-nowrap cursor-pointer"
+                  className="w-full min-h-[44px] bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-[14px] font-bold uppercase tracking-wider transition-all active:scale-[0.98] flex items-center justify-center gap-1.5 shadow-sm border border-emerald-700 group/btn whitespace-nowrap cursor-pointer"
                 >
-                  <Plus size={10} className="transition-transform group-hover/btn:rotate-90 shrink-0" strokeWidth={3} />
+                  <Plus size={14} className="transition-transform group-hover/btn:rotate-90 shrink-0" strokeWidth={3} />
                   <span>ADD TO CART</span>
                 </motion.button>
               )}
             </AnimatePresence>
           </div>
         </div>
+
       </div>
     </div>
   );

@@ -4,7 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
-import { ArrowRight, Sparkles, TrendingUp, ShoppingBag } from 'lucide-react';
+import { ArrowRight, Sparkles, TrendingUp, Layers, Package } from 'lucide-react';
 
 interface Category {
   id: number;
@@ -12,12 +12,16 @@ interface Category {
   slug: string;
   image: string | null;
   subtitle: string | null;
+  description?: string | null;
   icon: string | null;
   isFeatured: boolean;
   promotionalTag: string | null;
   updatedAt?: string;
+  children?: any[];
   _count?: {
-    products: number;
+    products?: number;
+    children?: number;
+    subcategories?: number;
   };
 }
 
@@ -28,17 +32,8 @@ interface Props {
 const MarketplaceCategoryGrid: React.FC<Props> = ({ categories }) => {
   return (
     <div className="w-full">
-      {/* Mobile Horizontal Slider */}
-      <div className="flex md:hidden overflow-x-auto pb-6 gap-4 no-scrollbar -mx-4 px-4">
-        {categories.map((category, idx) => (
-          <div key={category.id} className="min-w-[280px]">
-            <CategoryCard category={category} index={idx} />
-          </div>
-        ))}
-      </div>
-
-      {/* Desktop/Tablet Responsive Grid */}
-      <div className="hidden md:grid grid-cols-3 lg:grid-cols-5 gap-5 lg:gap-6">
+      {/* Responsive Category Grid: 2 cols Mobile, 3 cols Tablet, 4-5 cols Desktop */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 md:gap-6">
         {categories.map((category, idx) => (
           <CategoryCard key={category.id} category={category} index={idx} />
         ))}
@@ -48,42 +43,42 @@ const MarketplaceCategoryGrid: React.FC<Props> = ({ categories }) => {
 };
 
 const CategoryCard = ({ category, index }: { category: Category; index: number }) => {
+  const subcategoryCount = category.children?.length ?? category._count?.children ?? category._count?.subcategories ?? 0;
+  const productCount = category._count?.products ?? 0;
+  const description = category.subtitle || category.description || 'Handpicked organic collection direct from farm.';
+
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 15 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
-      transition={{ duration: 0.5, delay: index * 0.05 }}
+      transition={{ duration: 0.4, delay: index * 0.04 }}
+      className="h-full"
     >
       <Link
         href={`/categories/${category.slug || category.id}`}
-        className="group relative flex flex-col h-[320px] rounded-2xl overflow-hidden bg-slate-50 border border-slate-100/50 hover:border-emerald-500/20 transition-all duration-500 shadow-sm hover:shadow-2xl hover:shadow-emerald-950/5"
+        className="group relative flex flex-col h-full rounded-2xl overflow-hidden bg-white border border-slate-200/80 hover:border-emerald-500/40 transition-all duration-300 shadow-sm hover:shadow-xl hover:shadow-emerald-950/5"
       >
-        {/* Promotional Tag / Featured Badge */}
+        {/* Promotional / Featured Badge */}
         {(category.isFeatured || category.promotionalTag) && (
-          <div className="absolute top-3 left-3 z-20 flex flex-col gap-2">
+          <div className="absolute top-2 left-2 z-20 flex flex-col gap-1">
             {category.isFeatured && (
-              <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-400 text-emerald-950 text-[10px] font-black uppercase tracking-widest shadow-lg shadow-amber-400/20 backdrop-blur-sm">
-                <Sparkles className="h-3 w-3" />
+              <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-400 text-emerald-950 text-[9px] font-black uppercase tracking-wider shadow-sm">
+                <Sparkles size={10} />
                 Featured
-              </div>
+              </span>
             )}
             {category.promotionalTag && (
-              <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-600 text-white text-[10px] font-black uppercase tracking-widest shadow-lg shadow-emerald-600/20 backdrop-blur-sm">
-                <TrendingUp className="h-3 w-3" />
+              <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-700 text-white text-[9px] font-black uppercase tracking-wider shadow-sm">
+                <TrendingUp size={10} />
                 {category.promotionalTag}
-              </div>
+              </span>
             )}
           </div>
         )}
 
-        {/* Product Count Badge */}
-        <div className="absolute top-3 right-3 z-20 px-3 py-1 rounded-full bg-white/90 backdrop-blur-md text-emerald-950 text-[9px] font-black uppercase tracking-widest shadow-sm">
-          {category._count?.products || 0} Products
-        </div>
-
-        {/* Image Section */}
-        <div className="relative h-[200px] w-full overflow-hidden">
+        {/* Top Image Section (Clean aspect-ratio) */}
+        <div className="relative aspect-[4/3] w-full overflow-hidden bg-slate-50 border-b border-slate-100 flex items-center justify-center p-2">
           {(() => {
             const cacheBuster = category.updatedAt ? new Date(category.updatedAt).getTime() : Date.now();
             const rawImageUrl = (category.image && category.image.trim() !== '') 
@@ -96,43 +91,46 @@ const CategoryCard = ({ category, index }: { category: Category; index: number }
                 src={finalImageUrl}
                 alt={category.name}
                 fill
-                className="object-cover transition-transform duration-700 group-hover:scale-110"
+                className="object-contain p-2 transition-transform duration-500 group-hover:scale-105"
                 unoptimized={finalImageUrl.startsWith('http')}
               />
             );
           })()}
-          {/* Gradient Overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-emerald-950/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+
+          {/* Counts Badges Overlay at Top Right */}
+          <div className="absolute top-2 right-2 z-20 flex flex-col items-end gap-1">
+            <span className="px-2 py-0.5 rounded-md bg-white/95 backdrop-blur-md text-emerald-950 text-[9px] font-mono font-bold shadow-xs border border-slate-100 flex items-center gap-1">
+              <Package size={10} className="text-emerald-700" />
+              {productCount} Items
+            </span>
+            {subcategoryCount > 0 && (
+              <span className="px-2 py-0.5 rounded-md bg-emerald-950 text-white text-[9px] font-mono font-bold shadow-xs flex items-center gap-1">
+                <Layers size={10} className="text-amber-400" />
+                {subcategoryCount} Subs
+              </span>
+            )}
+          </div>
         </div>
 
         {/* Content Section */}
-        <div className="flex-1 p-5 flex flex-col bg-white">
-          <div className="flex items-start justify-between gap-2 mb-1">
-            <h3 className="text-emerald-950 text-sm lg:text-base font-black tracking-tight group-hover:text-emerald-700 transition-colors uppercase leading-none truncate">
+        <div className="flex flex-col flex-1 p-3 xs:p-4 justify-between bg-white">
+          <div>
+            <h3 className="text-slate-900 text-xs sm:text-sm font-bold tracking-tight group-hover:text-emerald-800 transition-colors uppercase leading-tight line-clamp-2 mb-1.5 min-h-[2.25rem] flex items-center">
               {category.name}
             </h3>
-            {category.icon && (
-               <span className="text-emerald-950/20 group-hover:text-amber-500 transition-colors">
-                  {/* Icon rendering logic can be expanded based on what icon strings are stored */}
-                  <ShoppingBag className="h-4 w-4" />
-               </span>
-            )}
-          </div>
-          
-          <p className="text-slate-400 text-[10px] lg:text-[11px] font-medium leading-tight line-clamp-2 mb-4">
-            {category.subtitle || 'Discover premium handpicked collections directly from our artisans.'}
-          </p>
 
-          {/* Action Footer */}
-          <div className="mt-auto flex items-center justify-between">
-            <span className="text-[9px] lg:text-[10px] font-black uppercase tracking-widest text-emerald-950/40 group-hover:text-emerald-700 transition-all flex items-center gap-2">
-              Explore Collection <ArrowRight className="h-3 w-3 group-hover:translate-x-1 transition-transform" />
+            <p className="text-slate-500 text-[11px] font-medium leading-tight line-clamp-2 mb-3">
+              {description}
+            </p>
+          </div>
+
+          {/* Action Link Footer */}
+          <div className="pt-2 border-t border-slate-100 flex items-center justify-between mt-auto">
+            <span className="text-[10px] xs:text-[11px] font-bold text-emerald-800 uppercase tracking-wider group-hover:text-emerald-900 transition-colors flex items-center gap-1">
+              Explore Category <ArrowRight size={12} className="group-hover:translate-x-1 transition-transform" />
             </span>
           </div>
         </div>
-
-        {/* Hover Elevation Indicator */}
-        <div className="absolute bottom-0 left-0 w-full h-1 bg-emerald-500 scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left" />
       </Link>
     </motion.div>
   );
