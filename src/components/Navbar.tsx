@@ -71,7 +71,7 @@ const Navbar = () => {
 
   const accountMenuItems = isVendor
     ? [
-      { label: user?.role?.toLowerCase() === 'hub' ? 'Hub Panel' : 'Vendor Panel', href: user?.role?.toLowerCase() === 'hub' ? '/hub/dashboard' : '/vendor', icon: User, desc: user?.role?.toLowerCase() === 'hub' ? 'Hub dashboard' : 'Vendor dashboard' },
+      { label: user?.role?.toLowerCase() === 'hub' ? 'Hub Panel' : 'Seller Panel', href: user?.role?.toLowerCase() === 'hub' ? '/hub/dashboard' : '/seller', icon: User, desc: user?.role?.toLowerCase() === 'hub' ? 'Hub dashboard' : 'Seller dashboard' },
     ]
     : [
       { label: 'My Profile', href: '/account/profile', icon: User, desc: 'Personal details & settings' },
@@ -119,13 +119,13 @@ const Navbar = () => {
       menuGroups.push({
         title: 'SELLER HUB',
         items: [
-          { label: 'Dashboard', href: '/vendor', icon: LayoutGrid },
-          { label: 'Products', href: '/vendor/products', icon: Package },
-          { label: 'Orders', href: '/vendor/orders', icon: Package },
-          { label: 'Coupons', href: '/vendor/marketing/coupons', icon: Tag },
-          { label: 'Announcements', href: '/vendor/marketing/announcements', icon: Bell },
-          { label: 'Payouts', href: '/vendor/payouts', icon: CreditCard },
-          { label: 'Analytics', href: '/vendor', icon: TrendingUp },
+          { label: 'Dashboard', href: '/seller', icon: LayoutGrid },
+          { label: 'Products', href: '/seller/products', icon: Package },
+          { label: 'Orders', href: '/seller/orders', icon: Package },
+          { label: 'Coupons', href: '/seller/marketing/coupons', icon: Tag },
+          { label: 'Announcements', href: '/seller/marketing/announcements', icon: Bell },
+          { label: 'Payouts', href: '/seller/payouts', icon: CreditCard },
+          { label: 'Analytics', href: '/seller', icon: TrendingUp },
           { label: 'Logout', href: '#logout', icon: LogOut, isLogout: true }
         ]
       });
@@ -217,7 +217,7 @@ const Navbar = () => {
                   href={user.role?.toLowerCase() === 'hub'
                     ? '/hub/dashboard'
                     : user.role?.toLowerCase() === 'vendor'
-                      ? '/vendor'
+                      ? '/seller'
                       : user.role?.toLowerCase() === 'admin'
                         ? '/admin'
                         : '/account/profile'}

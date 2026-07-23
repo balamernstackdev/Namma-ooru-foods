@@ -12,6 +12,22 @@ const nextConfig: NextConfig = {
   },
   experimental: {
   },
+  async rewrites() {
+    return [
+      {
+        source: '/vendor',
+        destination: '/seller',
+      },
+      {
+        source: '/vendor/',
+        destination: '/seller',
+      },
+      {
+        source: '/vendor/:path*',
+        destination: '/seller/:path*',
+      },
+    ];
+  },
 };
 
 export default nextConfig;

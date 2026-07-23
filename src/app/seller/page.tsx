@@ -78,7 +78,7 @@ export default function VendorDashboard() {
       >
          {/* Welcome Banner */}
          <motion.div variants={itemVariants} className="flex flex-col gap-1">
-            <h1 className="text-3xl sm:text-4xl font-black text-[#059669] tracking-tighter">Vendor Overview</h1>
+            <h1 className="text-3xl sm:text-4xl font-black text-[#059669] tracking-tighter">Seller Overview</h1>
             <p className="text-slate-450 font-bold text-[11px] uppercase tracking-widest leading-relaxed">
                Hello, <span className="text-[#059669] font-black">{user?.name}</span>. Your store activity is looking healthy today.
             </p>

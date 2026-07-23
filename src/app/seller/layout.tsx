@@ -188,7 +188,7 @@ export default function VendorLayout({ children }: { children: React.ReactNode }
               <img src={settings.logo || "/logo.webp"} alt={settings.name || "Platform Logo"} className="h-full w-auto object-contain" />
             </div>
             <div className="flex flex-col items-center text-center">
-              <span className="text-[14px] font-black uppercase tracking-widest text-[#111827]">Vendor Partner</span>
+              <span className="text-[14px] font-black uppercase tracking-widest text-[#111827]">Seller Partner</span>
               <span className="text-[8px] font-bold uppercase tracking-[0.4em] text-[#0F7A4D] mt-2">Control Center</span>
             </div>
           </Link>
@@ -249,8 +249,8 @@ export default function VendorLayout({ children }: { children: React.ReactNode }
 
             const cleanPath = pathname.replace(/\/$/, '');
             const cleanHref = (item.href || '').replace(/\/$/, '');
-            const isActive = cleanHref === '/vendor'
-              ? cleanPath === '/vendor'
+            const isActive = (cleanHref === '/seller' || cleanHref === '/vendor')
+              ? (cleanPath === '/seller' || cleanPath === '/vendor')
               : cleanHref === ''
                 ? cleanPath === ''
                 : cleanPath.startsWith(cleanHref);
