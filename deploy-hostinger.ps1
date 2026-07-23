@@ -24,7 +24,7 @@ if (Test-Path $ZIP_PATH)   { Remove-Item -Force $ZIP_PATH }
 # ---- Step 2: Build Next.js ----
 Write-Host "[2/5] Building Next.js (output: standalone)..." -ForegroundColor Yellow
 Set-Location $ROOT
-$env:NEXT_PUBLIC_API_URL = "https://api.nammaoorufoods.com"
+$env:NEXT_PUBLIC_API_URL = "https://api.nammaorrufoods.com"
 npm run build
 if ($LASTEXITCODE -ne 0) {
     Write-Host "Build FAILED. Fix errors and try again." -ForegroundColor Red
