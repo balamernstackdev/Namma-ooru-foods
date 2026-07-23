@@ -145,6 +145,33 @@ const server = http.createServer(async (req, res) => {
     }));
   }
 
+  // ─── 5. Direct Static Asset Serving ──────────────────────────────────────────
+  if (req.url && req.url.startsWith('/_next/static/')) {
+    const relativeStaticPath = req.url.replace('/_next/static/', '').split('?')[0];
+    const filePath = path.join(__dirname, '.next/static', relativeStaticPath);
+    if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
+      const ext = path.extname(filePath).toLowerCase();
+      const mimeTypes = {
+        '.css': 'text/css; charset=utf-8',
+        '.js': 'application/javascript; charset=utf-8',
+        '.png': 'image/png',
+        '.jpg': 'image/jpeg',
+        '.jpeg': 'image/jpeg',
+        '.webp': 'image/webp',
+        '.svg': 'image/svg+xml',
+        '.woff2': 'font/woff2',
+        '.woff': 'font/woff',
+        '.ttf': 'font/ttf',
+        '.json': 'application/json'
+      };
+      res.writeHead(200, {
+        'Content-Type': mimeTypes[ext] || 'application/octet-stream',
+        'Cache-Control': 'public, max-age=31536000, immutable'
+      });
+      return fs.createReadStream(filePath).pipe(res);
+    }
+  }
+
   try {
     await handle(req, res);
   } catch (err) {
