@@ -81,27 +81,15 @@ export default function Home() {
         <ArtisanMarketplace />
 
         {/* 5.5 FASTEST DELIVERY PRODUCTS */}
-        {fastDeliveryProducts.length > 0 ? (
-          <ProductCarousel
-            products={fastDeliveryProducts}
-            title='<span class="text-[10px] md:text-xs uppercase font-black tracking-[0.2em] text-emerald-600 block mb-1">FAST DELIVERY</span>Fastest Delivery <span class="text-emerald-600 italic lowercase font-serif font-normal">Products</span>'
-            subtitle="Get products delivered to your doorstep in the shortest time from nearby vendors."
-            viewAllHref="/products?delivery=fast"
-            bgClass="bg-white"
-            autoScrollInterval={3200}
-            bannerType="fast_delivery"
-          />
-        ) : (
-          <section className="w-full py-8 bg-white">
-            <div className="standard-container">
-              <div className="flex flex-col items-center justify-center text-center py-12 px-4 border border-dashed border-emerald-200 rounded-3xl bg-emerald-50/50">
-                <span className="text-4xl mb-4">⚡</span>
-                <h3 className="text-lg md:text-xl font-black text-emerald-950 uppercase tracking-tight mb-2">No Fast Delivery Products Available</h3>
-                <p className="text-sm font-bold text-slate-500 max-w-md">Check back soon for lightning-fast deliveries near you.</p>
-              </div>
-            </div>
-          </section>
-        )}
+        <ProductCarousel
+          products={fastDeliveryProducts}
+          title='<span class="text-[10px] md:text-xs uppercase font-black tracking-[0.2em] text-emerald-600 block mb-1">FAST DELIVERY</span>Fastest Delivery <span class="text-emerald-600 italic lowercase font-serif font-normal">Products</span>'
+          subtitle="Get products delivered to your doorstep in the shortest time from nearby vendors."
+          viewAllHref="/products?delivery=fast"
+          bgClass="bg-white"
+          autoScrollInterval={3200}
+          bannerType="fast_delivery"
+        />
 
         {/* 5. BEST SELLERS — Most Popular Products */}
         <ProductCarousel
@@ -115,17 +103,15 @@ export default function Home() {
         />
 
         {/* Featured Products */}
-        {featuredProducts.length > 0 && (
-          <ProductCarousel
-            products={featuredProducts}
-            title='Featured <span class="text-emerald-600 italic lowercase font-serif font-normal">Products</span>'
-            subtitle="Handpicked Premium Choices"
-            viewAllHref="/products?featured=true"
-            bgClass="bg-white"
-            autoScrollInterval={3300}
-            bannerType="featured_products"
-          />
-        )}
+        <ProductCarousel
+          products={featuredProducts}
+          title='Featured <span class="text-emerald-600 italic lowercase font-serif font-normal">Products</span>'
+          subtitle="Handpicked Premium Choices"
+          viewAllHref="/products?featured=true"
+          bgClass="bg-white"
+          autoScrollInterval={3300}
+          bannerType="featured_products"
+        />
 
         {/* 6. Farmers' Collections — Interactive Products Section */}
         <FarmersCollection products={farmerProducts} />

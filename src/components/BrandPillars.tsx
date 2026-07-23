@@ -8,21 +8,21 @@ import { ArrowRight, GraduationCap, Users, Heart } from 'lucide-react';
 const PILLARS = [
   {
     id: 'women',
-    title: 'Women Entrepreneurship',
+    title: 'Rural Entrepreneurship',
     subtitle: 'Empowering Local Leaders',
-    description: 'Supporting a network of 500+ rural women entrepreneurs in their journey toward financial independence and heritage preservation.',
+    description: 'Supporting a network of 500+ rural artisans and self-help groups in their journey toward financial independence and heritage preservation.',
     image: '/ai_images/banner_farm_fresh.png',
-    link: 'https://penniyam.in',
+    link: '/sellers',
     icon: Users,
     accent: 'bg-rose-500'
   },
   {
     id: 'academy',
-    title: 'Organic Training Academy',
-    subtitle: 'Producting Knowledge',
-    description: 'Providing comprehensive training for farmers on organic certification, traditional techniques, and sustainable agriculture.',
+    title: 'Farmer Empowerment',
+    subtitle: 'Ancestral Knowledge',
+    description: 'Providing comprehensive support for local farmers on organic practices, traditional processing, and sustainable agriculture.',
     image: '/ai_images/banner_heritage_spices.png',
-    link: 'https://penniyamacademy.com',
+    link: '/about',
     icon: GraduationCap,
     accent: 'bg-emerald-500'
   },
@@ -32,7 +32,7 @@ const PILLARS = [
     subtitle: 'Pure Botanical Wisdom',
     description: 'Sourcing the finest herbal ingredients and traditional wellness products directly from pristine natural clusters.',
     image: '/ai_images/banner_natural_products.png',
-    link: 'https://penniyamnaturals.com',
+    link: '/products',
     icon: Heart,
     accent: 'bg-amber-500'
   }
@@ -93,8 +93,6 @@ export default function BrandPillars() {
 
                   <Link
                     href={pillar.link}
-                    target="_blank"
-                    rel="noopener noreferrer"
                     className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-emerald-950 hover:text-emerald-600 transition-colors group/btn"
                   >
                     Learn More <ArrowRight size={14} className="transition-transform group-hover/btn:translate-x-1" />

@@ -97,7 +97,7 @@ function VendorInformationView({ vendor, averageRating, totalProducts }: { vendo
 
             {(vendor.shortDescription || vendor.description) && (
               <p className="text-slate-600 text-sm font-medium leading-relaxed max-w-3xl">
-                {vendor.shortDescription}
+                {vendor.shortDescription || vendor.description}
               </p>
             )}
 
@@ -106,35 +106,43 @@ function VendorInformationView({ vendor, averageRating, totalProducts }: { vendo
 
         {/* Detailed Sections */}
         <div className="flex flex-col gap-8">
-          {/* About Vendor — only if extra info beyond description exists */}
-          {(vendor.companyOverview || vendor.mission || vendor.vision || vendor.yearsOfExperience) && (
-            <section className="bg-white rounded-[24px] shadow-sm p-8 border border-slate-100">
+          {/* About Vendor / Hub Overview */}
+          {(vendor.description || vendor.companyOverview || vendor.mission || vendor.vision || vendor.yearsOfExperience) && (
+            <section className="bg-white rounded-[24px] shadow-sm p-8 border border-slate-100 mb-8">
               <h2 className="text-lg font-[900] text-emerald-950 uppercase tracking-wide mb-6 flex items-center gap-2">
-                <FileText size={18} className="text-emerald-600" /> About Vendor
+                <FileText size={18} className="text-emerald-600" /> About {vendor.displayName || vendor.name}
               </h2>
               <div className="space-y-6">
+                {vendor.description && vendor.description.trim() !== '' && (
+                  <div>
+                    <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Overview & Story</h3>
+                    <div className="text-slate-600 text-sm md:text-base font-medium leading-relaxed whitespace-pre-line">
+                      {vendor.description}
+                    </div>
+                  </div>
+                )}
                 {vendor.companyOverview && (
                   <div>
                     <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Company Overview</h3>
-                    <p className="text-slate-600 text-sm">{vendor.companyOverview}</p>
+                    <p className="text-slate-600 text-sm font-medium">{vendor.companyOverview}</p>
                   </div>
                 )}
                 {vendor.mission && (
                   <div>
                     <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Mission</h3>
-                    <p className="text-slate-600 text-sm">{vendor.mission}</p>
+                    <p className="text-slate-600 text-sm font-medium">{vendor.mission}</p>
                   </div>
                 )}
                 {vendor.vision && (
                   <div>
                     <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Vision</h3>
-                    <p className="text-slate-600 text-sm">{vendor.vision}</p>
+                    <p className="text-slate-600 text-sm font-medium">{vendor.vision}</p>
                   </div>
                 )}
                 {vendor.yearsOfExperience && (
                   <div>
                     <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Years of Experience</h3>
-                    <p className="text-slate-600 text-sm">{vendor.yearsOfExperience} Years</p>
+                    <p className="text-slate-600 text-sm font-medium">{vendor.yearsOfExperience} Years</p>
                   </div>
                 )}
               </div>

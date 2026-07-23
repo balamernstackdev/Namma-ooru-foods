@@ -77,12 +77,12 @@ const navGroups = [
     label: 'Marketing',
     items: [
       { label: 'Coupons', href: '/admin/coupons', icon: Ticket },
-      // { label: 'Promotions', href: '/admin/promotions', icon: ClipboardList },
+      { label: 'Promotions', href: '/admin/promotions', icon: ClipboardList },
       { label: 'Banners', href: '/admin/banners', icon: ImageIcon },
       { label: 'Announcement Bars', href: '/admin/marketing/announcement-bar', icon: Megaphone },
       { label: 'Popup Campaigns', href: '/admin/marketing/popup-campaigns', icon: Layers },
       { label: 'Email Subscribers', href: '/admin/marketing/subscribers', icon: Mail },
-      // { label: 'Vendor Approvals', href: '/admin/marketing/vendor-approvals', icon: ShieldCheck },
+      { label: 'Vendor Approvals', href: '/admin/marketing/vendor-approvals', icon: ShieldCheck },
     ]
   },
   {
@@ -384,6 +384,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             {navGroups.map(group => {
               const isCollapsed = collapsedGroups.includes(group.label);
               const hideHeader = (group as any).hideHeader === true;
+
+              const visibleItems = group.items.filter(item => {
+                if ((item as any).adminOnly && userRole !== 'admin') return false;
+                return true;
+              });
+
+              if (visibleItems.length === 0) return null;
+
               return (
                 <div key={group.label} className={hideHeader ? "mb-1" : "mb-4"}>
                   {/* Group Header */}
@@ -401,10 +409,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
                   {/* Group Items */}
                   <div className="flex flex-col gap-1 mt-1">
-                    {(!isCollapsed || hideHeader) && group.items.map(item => {
-                      // Skip if item is adminOnly and user is not admin
-                      if ((item as any).adminOnly && userRole !== 'admin') return null;
-
+                    {(!isCollapsed || hideHeader) && visibleItems.map(item => {
                       const isActive = item.href === '/admin'
                         ? pathname === '/admin' || pathname === '/admin/'
                         : (pathname === item.href || pathname.startsWith(item.href + '/')) &&

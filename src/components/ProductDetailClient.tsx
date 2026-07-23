@@ -95,7 +95,7 @@ export default function ProductDetailClient({ product: initialProduct, allProduc
 
       const sameCategory = relatedProducts.every((p: any) => p.categoryId === product.categoryId);
       if (sameCategory) {
-         return { subtitle: "Related organic products", title: "Similar Organic Products" };
+         return { subtitle: "Related  products", title: "Similar  Products" };
       }
 
       return { subtitle: "Frequently Bought With", title: "Recommended Essentials" };
@@ -287,7 +287,7 @@ export default function ProductDetailClient({ product: initialProduct, allProduc
                            key={idx}
                            onMouseEnter={() => setCurrentImageIndex(idx)}
                            onClick={() => setCurrentImageIndex(idx)}
-                           className={`w-[64px] h-[64px] rounded-xl border-2 transition-all overflow-hidden bg-slate-50 flex items-center justify-center p-1 ${currentImageIndex === idx ? 'border-emerald-900 shadow-sm ring-1 ring-emerald-900/10' : 'border-transparent hover:border-slate-200'
+                           className={`w-[64px] h-[64px] rounded-xl border-2 transition-all overflow-hidden bg-white flex items-center justify-center p-1 ${currentImageIndex === idx ? 'border-emerald-900 shadow-sm ring-1 ring-emerald-900/10' : 'border-slate-100 hover:border-slate-300'
                               }`}
                         >
                            <img
@@ -338,7 +338,7 @@ export default function ProductDetailClient({ product: initialProduct, allProduc
                            <button
                               key={idx}
                               onClick={() => setCurrentImageIndex(idx)}
-                              className={`w-14 h-14 shrink-0 rounded-lg border-2 transition-all overflow-hidden p-1 bg-slate-50 ${currentImageIndex === idx ? 'border-emerald-900' : 'border-transparent'}`}
+                              className={`w-14 h-14 shrink-0 rounded-lg border-2 transition-all overflow-hidden p-1 bg-white ${currentImageIndex === idx ? 'border-emerald-900' : 'border-slate-100'}`}
                            >
                               <img src={img} className="w-full h-full object-contain mix-blend-multiply" alt="" />
                            </button>
@@ -351,7 +351,7 @@ export default function ProductDetailClient({ product: initialProduct, allProduc
                <div className="lg:col-span-6 flex flex-col gap-4 lg:pl-6">
 
                   {/* Combined Details & Compact Pricing Card */}
-                  <div className="border border-slate-100 rounded-3xl p-5 md:p-6 bg-slate-50/40 flex flex-col gap-4">
+                  <div className="border border-slate-100 rounded-3xl p-5 md:p-6 bg-white shadow-sm flex flex-col gap-4">
 
                      {/* Brand, Share Icon, and Title */}
                      <div className="flex items-start justify-between gap-4">
@@ -363,7 +363,7 @@ export default function ProductDetailClient({ product: initialProduct, allProduc
                            </div>
                            <h1 className="text-[15px] sm:text-[18px] md:text-[20px] lg:text-[22px] font-black text-slate-900 tracking-tight leading-tight mt-1 flex flex-wrap items-center gap-3">
                               {product.name}
-                              <span className="text-[11px] bg-slate-100 text-slate-500 px-2 py-0.5 rounded font-mono border border-slate-200 shrink-0 font-bold tracking-normal mt-1 md:mt-0">
+                              <span className="text-[11px] bg-white text-slate-500 px-2 py-0.5 rounded font-mono border border-slate-200 shrink-0 font-bold tracking-normal mt-1 md:mt-0 shadow-2xs">
                                  {product.productIdStr || `Prod-${product.id.toString().padStart(2, '0')}`}
                               </span>
                            </h1>
@@ -649,7 +649,7 @@ export default function ProductDetailClient({ product: initialProduct, allProduc
                      </div>
 
                      {/* SECTION: DYNAMIC PRODUCT-SPECIFIC COMBO BUILDER — only shown when combo products exist */}
-                     {((!comboData && !comboError) || (comboData?.comboProducts?.length > 0)) && (
+                     {comboData?.comboProducts && comboData.comboProducts.length > 0 && (
                         <ComboBuilder
                            mainProduct={product}
                            comboData={comboData}

@@ -226,6 +226,9 @@ export default function ComboBuilder({
    }, [comboData]);
 
    const comboProducts = comboData?.comboProducts || [];
+   if (!isLoading && comboProducts.length === 0) {
+      return null;
+   }
    const comboDiscount = comboData?.comboDiscount ?? 10;
    const comboLabel = comboData?.label || 'Frequently Bought Together';
 

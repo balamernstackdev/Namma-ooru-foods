@@ -17,13 +17,13 @@ export default function AboutPage() {
       <section className="relative w-full overflow-hidden bg-emerald-950 h-[300px] md:h-[400px]">
         <div className="absolute inset-0 z-0">
           <Image
-            src="/ai_images/organic_grains_1776231059575.png"
-            alt="Organic Farming"
+            src="/ai_images/banner_farm_fresh.png"
+            alt="Organic Farming Landscape"
             fill
-            className="object-cover opacity-30 grayscale mix-blend-overlay"
+            className="object-cover opacity-40 mix-blend-luminosity brightness-90 contrast-110"
           />
         </div>
-        <div className="absolute inset-0 bg-gradient-to-b from-emerald-950/80 via-transparent to-white/10 z-10" />
+        <div className="absolute inset-0 bg-gradient-to-b from-emerald-950/90 via-emerald-950/70 to-emerald-950 z-10" />
 
         <div className="relative z-20 w-full h-full flex items-center justify-center text-center">
           <div className="standard-container py-12 md:py-20 px-6">
@@ -44,25 +44,52 @@ export default function AboutPage() {
       <section className="w-full bg-white pt-12 pb-14 lg:pt-16 lg:pb-20">
 
         <div className="standard-container">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-24 lg:gap-32 items-center">
-            <div className="relative">
-              <div className="absolute -top-10 -left-10 h-40 w-40 bg-amber-100 rounded-full blur-[100px] opacity-30 -z-10" />
-              <div className="relative rounded-[3rem] md:rounded-[4rem] overflow-hidden shadow-2xl border-4 md:border-[16px] border-white bg-gray-50 aspect-square">
-                <Image
-                  src="/ai_images/indian_spices_1776231045209.png"
-                  alt="Traditional Sourcing"
-                  fill
-                  sizes="(max-width: 1024px) 100vw, 50vw"
-                  className="object-cover"
-                />
-              </div>
-              <div className="absolute bottom-6 right-6 bg-white p-4 md:p-8 rounded-3xl shadow-2xl border border-gray-100 flex items-center gap-4 hidden sm:flex z-10 transition-transform hover:scale-105">
-                <div className="h-12 w-12 rounded-full bg-emerald-100 flex items-center justify-center">
-                  <Leaf className="h-6 w-6 text-emerald-600" />
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 items-start">
+            {/* Left Column: 2-Image Stack fulfilling full vertical height */}
+            <div className="flex flex-col gap-10 lg:gap-12 sticky top-24">
+              {/* Image 1: 4K Heritage Spices */}
+              <div className="relative group">
+                <div className="absolute -top-6 -left-6 h-36 w-36 bg-amber-100/60 rounded-full blur-[80px] -z-10" />
+                <div className="relative rounded-[2.5rem] md:rounded-[3.5rem] overflow-hidden shadow-2xl border-4 md:border-[12px] border-white bg-gray-50 aspect-[4/3]">
+                  <Image
+                    src="/ai_images/about_us_heritage_spices.png"
+                    alt="South Indian Traditional Spices"
+                    fill
+                    sizes="(max-width: 1024px) 100vw, 50vw"
+                    className="object-cover transition-transform duration-700 group-hover:scale-105"
+                  />
                 </div>
-                <div>
-                  <p className="text-2xl font-black text-emerald-950">100%</p>
-                  <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Certified Origin</p>
+                <div className="absolute -bottom-4 right-6 bg-white/95 backdrop-blur-md p-4 md:p-6 rounded-2xl shadow-xl border border-gray-100 flex items-center gap-4 z-10">
+                  <div className="h-10 w-10 md:h-12 md:w-12 rounded-full bg-amber-100 flex items-center justify-center shrink-0">
+                    <Leaf className="h-5 w-5 md:h-6 md:w-6 text-amber-700" />
+                  </div>
+                  <div>
+                    <p className="text-sm md:text-base font-black text-emerald-950">100% Pure & Unrefined</p>
+                    <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Heritage Processing</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Image 2: 4K Organic Harvest Grains */}
+              <div className="relative group mt-4">
+                <div className="absolute -bottom-6 -right-6 h-36 w-36 bg-emerald-100/60 rounded-full blur-[80px] -z-10" />
+                <div className="relative rounded-[2.5rem] md:rounded-[3.5rem] overflow-hidden shadow-2xl border-4 md:border-[12px] border-white bg-gray-50 aspect-[4/3]">
+                  <Image
+                    src="/ai_images/about_us_organic_harvest.png"
+                    alt="Organic South Indian Grains & Rice Harvest"
+                    fill
+                    sizes="(max-width: 1024px) 100vw, 50vw"
+                    className="object-cover transition-transform duration-700 group-hover:scale-105"
+                  />
+                </div>
+                <div className="absolute -bottom-4 left-6 bg-white/95 backdrop-blur-md p-4 md:p-6 rounded-2xl shadow-xl border border-gray-100 flex items-center gap-4 z-10">
+                  <div className="h-10 w-10 md:h-12 md:w-12 rounded-full bg-emerald-100 flex items-center justify-center shrink-0">
+                    <ShieldCheck className="h-5 w-5 md:h-6 md:w-6 text-emerald-600" />
+                  </div>
+                  <div>
+                    <p className="text-sm md:text-base font-black text-emerald-950">Direct Farm Sourced</p>
+                    <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">100% Certified Origin</p>
+                  </div>
                 </div>
               </div>
             </div>
@@ -74,33 +101,33 @@ export default function AboutPage() {
               </h2>
               <div className="space-y-6 md:space-y-8 text-base md:text-lg text-gray-600 font-medium leading-relaxed">
                 <p>
-                  <strong className="text-emerald-950">Penniyam Entrepreneur Network</strong>, an initiative of Penniyam Pvt. Ltd., is a comprehensive platform dedicated to empowering women entrepreneurs through education, mentorship, business development, networking, and market access.
+                  <strong className="text-emerald-950">namma ooru Foods</strong> is a dedicated food ecosystem rooted in South Indian traditions, created to bring authentic, farm-fresh, and zero-pesticide essentials directly from village farming clusters to modern households.
                 </p>
                 <p>
-                  Our vision is to create a thriving ecosystem where women can learn, launch, grow, and scale successful businesses with confidence. Through our specialized programs and initiatives, we provide women with the knowledge, resources, and opportunities needed to succeed in today’s competitive business environment.
+                  Our vision is to restore ancestral food wisdom and nourish families with wholesome, chemical-free staples. By bridging the gap between local agrarian communities and urban homes, we ensure that every product delivers natural nutrition, genuine flavor, and complete transparency.
                 </p>
                 <p>
-                  At the heart of our ecosystem is <strong className="text-emerald-950">Penniyam Academy</strong>, which offers entrepreneurship education, business training, leadership development, and practical skill-building programs designed specifically for women. We believe that continuous learning is the foundation of sustainable business growth.
+                  At the heart of <strong className="text-emerald-950">namma ooru Foods</strong> is our commitment to traditional processing methods—such as cold wood-pressing for pure unrefined oils, stone-grinding for aromatic spices, and natural sun-drying for heritage grains. We believe that true wellness begins with food that is unadulterated and crafted with care.
                 </p>
                 <p>
-                  Beyond education, we provide mentorship, business networking opportunities, strategic guidance, and hands-on support to help women navigate every stage of their entrepreneurial journey. Our focus extends to marketing, branding, sales development, customer acquisition, and business expansion, ensuring that women entrepreneurs receive the support they need to build profitable and sustainable ventures.
+                  Beyond product quality, we empower small-scale farmers, women-led self-help groups, and rural cottage industries by providing direct market access, fair trade compensation, and sustainable growth opportunities. Our network supports regional farming communities while preserving culinary heritage.
                 </p>
                 <p>
-                  We also help women entrepreneurs access digital opportunities through e-commerce enablement, market connectivity, business collaborations, and growth-focused initiatives that increase visibility and sales potential. By connecting women with industry experts, successful entrepreneurs, and valuable business networks, we create pathways for long-term success.
+                  We ensure that every batch of our food undergoes strict hygiene checks, quality testing, and ethical packaging, guaranteeing safety and freshness without artificial preservatives or hidden additives.
                 </p>
                 <p>
-                  Through initiatives such as the <strong className="text-emerald-950">Penniyam Entrepreneur Tour</strong>, women gain direct exposure to successful enterprises, innovative business models, and collaborative opportunities that inspire growth and practical business implementation.
+                  Through initiatives such as our <strong className="text-emerald-950">Farmer Direct Sourcing</strong> initiative, we showcase authentic regional specialties—from Karuppu Kavuni and Mapillai Samba traditional rice varieties to hand-pounded millet mixes and authentic village pickles.
                 </p>
                 <p>
-                  At Penniyam Entrepreneur Network, our mission is not just to help women start businesses—it is to empower them to become confident business leaders, create economic impact, and build enterprises that transform communities and future generations.
+                  At namma ooru Foods, our mission is to make healthy, pure, and traditional South Indian food easily accessible to every Indian family while building a sustainable future for our farming communities.
                 </p>
                 <div className="bg-emerald-50 p-6 md:p-8 rounded-3xl border border-emerald-100 mt-8">
                   <p className="text-xl md:text-2xl font-black text-emerald-950 italic text-center mb-6 leading-tight">
-                    "Empowering Women to Learn, Lead, Build, and Scale Successful Businesses."
+                    "Pure Traditional Food, Directly From Our Village Farmers To Your Kitchen."
                   </p>
                   <div className="text-center space-y-1">
-                    <p className="font-black text-emerald-900 uppercase tracking-widest text-sm">Penniyam Entrepreneur Network</p>
-                    <p className="text-xs font-bold text-emerald-700/70 uppercase tracking-widest">An Initiative of Penniyam Pvt. Ltd.</p>
+                    <p className="font-black text-emerald-900 uppercase tracking-widest text-sm">namma ooru Foods</p>
+                    <p className="text-xs font-bold text-emerald-700/70 uppercase tracking-widest">Heritage • Purity • Sustainability</p>
                   </div>
                 </div>
               </div>

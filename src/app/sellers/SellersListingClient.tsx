@@ -25,9 +25,9 @@ export default function SellersListingClient() {
   const [searchQuery, setSearchQuery] = useState('');
   const { settings } = usePlatformSettings();
 
-  // Fetch sub-vendors (brands/sellers) — never expose head-vendor groups
+  // Fetch sub-vendors (brands/sellers) with 15 items per page
   const { data: responseData, isLoading } = useSWR(
-    `${API_URL}/api/sub-vendors?page=${page}&limit=20&search=${encodeURIComponent(searchQuery)}`,
+    `${API_URL}/api/sub-vendors?page=${page}&limit=15&search=${encodeURIComponent(searchQuery)}`,
     fetcher
   );
   
@@ -37,6 +37,11 @@ export default function SellersListingClient() {
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
     setPage(1);
+  };
+
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   if (isLoading) {
@@ -92,7 +97,7 @@ export default function SellersListingClient() {
                     className="group flex flex-col bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 overflow-hidden h-full"
                   >
                     {/* Logo area */}
-                    <div className="relative aspect-[16/10] bg-slate-50 flex items-center justify-center p-4 group-hover:bg-emerald-50/20 transition-colors overflow-hidden">
+                    <div className="relative aspect-[16/10] bg-white flex items-center justify-center p-4 group-hover:bg-emerald-50/20 transition-colors overflow-hidden border-b border-slate-50">
                       {seller.logo ? (
                         <OptimizedImage
                           src={seller.logo}
@@ -147,38 +152,44 @@ export default function SellersListingClient() {
 
             {/* Pagination Controls */}
             {totalPages > 1 && (
-              <div className="flex items-center justify-center gap-2 mt-12 md:mt-16">
-                <button
-                  onClick={() => setPage(p => Math.max(1, p - 1))}
-                  disabled={page === 1}
-                  className="h-10 w-10 flex items-center justify-center rounded-xl bg-slate-50 border border-slate-200 text-slate-600 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-100 hover:text-emerald-950 active:scale-95 transition-all shadow-sm"
-                >
-                  <ChevronLeft size={16} />
-                </button>
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-12 md:mt-16 pt-6 border-t border-slate-100">
+                <p className="text-xs font-bold text-slate-400">
+                  Showing <span className="text-emerald-950 font-black">{sellers.length}</span> sellers (15 per page)
+                </p>
 
-                <div className="flex items-center gap-1.5">
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((pNum) => (
-                    <button
-                      key={pNum}
-                      onClick={() => setPage(pNum)}
-                      className={`h-10 px-4 rounded-xl text-xs font-black uppercase transition-all shadow-sm active:scale-95 ${
-                        page === pNum
-                          ? 'bg-emerald-600 text-white border border-emerald-600'
-                          : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'
-                      }`}
-                    >
-                      {pNum}
-                    </button>
-                  ))}
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => handlePageChange(Math.max(1, page - 1))}
+                    disabled={page === 1}
+                    className="h-10 w-10 flex items-center justify-center rounded-xl bg-slate-50 border border-slate-200 text-slate-600 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-100 hover:text-emerald-950 active:scale-95 transition-all shadow-sm"
+                  >
+                    <ChevronLeft size={16} />
+                  </button>
+
+                  <div className="flex items-center gap-1.5">
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((pNum) => (
+                      <button
+                        key={pNum}
+                        onClick={() => handlePageChange(pNum)}
+                        className={`h-10 px-4 rounded-xl text-xs font-black uppercase transition-all shadow-sm active:scale-95 ${
+                          page === pNum
+                            ? 'bg-emerald-600 text-white border border-emerald-600 shadow-emerald-600/20'
+                            : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'
+                        }`}
+                      >
+                        {pNum}
+                      </button>
+                    ))}
+                  </div>
+
+                  <button
+                    onClick={() => handlePageChange(Math.min(totalPages, page + 1))}
+                    disabled={page === totalPages}
+                    className="h-10 w-10 flex items-center justify-center rounded-xl bg-slate-50 border border-slate-200 text-slate-600 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-100 hover:text-emerald-950 active:scale-95 transition-all shadow-sm"
+                  >
+                    <ChevronRight size={16} />
+                  </button>
                 </div>
-
-                <button
-                  onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-                  disabled={page === totalPages}
-                  className="h-10 w-10 flex items-center justify-center rounded-xl bg-slate-50 border border-slate-200 text-slate-600 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-100 hover:text-emerald-950 active:scale-95 transition-all shadow-sm"
-                >
-                  <ChevronRight size={16} />
-                </button>
               </div>
             )}
           </div>

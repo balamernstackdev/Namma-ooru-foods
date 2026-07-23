@@ -25,6 +25,7 @@ function formatDate(dateStr?: string | null): string {
 const TYPE_TAB_LABELS: Record<string, string> = {
   hero: 'Hero Slider',
   best_sellers: 'Best Sellers',
+  featured_products: 'Featured Products',
   organic_collection: 'Organic Collection',
   farmer_collection: 'Farmers Collection',
   category: 'Category Banners',
@@ -53,6 +54,9 @@ function normalizeType(type?: string | null): string {
     'hero banner': 'hero',
     'best sellers banner': 'best_sellers',
     'best sellers': 'best_sellers',
+    'featured products banner': 'featured_products',
+    'featured products': 'featured_products',
+    'featured_products': 'featured_products',
     'organic collection banner': 'organic_collection',
     'organic collection': 'organic_collection',
     'farmer collection banner': 'farmer_collection',
@@ -72,7 +76,7 @@ export default function AdminBannersPage() {
   // Filters & Tabs
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
-  const [activeTab, setActiveTab] = useState<'hero' | 'best_sellers' | 'organic_collection' | 'farmer_collection' | 'category'>('hero');
+  const [activeTab, setActiveTab] = useState<'hero' | 'best_sellers' | 'featured_products' | 'organic_collection' | 'farmer_collection' | 'category'>('hero');
 
   // Local ordered list state for drag-and-drop
   const [typeBanners, setTypeBanners] = useState<Banner[]>([]);
@@ -244,17 +248,16 @@ export default function AdminBannersPage() {
 
       {/* Type Selector Tabs */}
       <div className="flex flex-wrap gap-2 bg-slate-100/50 p-2 rounded-2xl border border-slate-200/50">
-        {(['hero', 'best_sellers', 'organic_collection', 'farmer_collection', 'category'] as const).map(tab => {
+        {(['hero', 'best_sellers', 'featured_products', 'organic_collection', 'farmer_collection', 'category'] as const).map(tab => {
           const count = banners.filter(b => normalizeType(b.type) === tab).length;
           return (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2 ${
-                activeTab === tab
+              className={`px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2 ${activeTab === tab
                   ? 'bg-slate-900 text-white shadow-sm'
                   : 'text-slate-500 hover:bg-slate-200/50 hover:text-slate-800'
-              }`}
+                }`}
             >
               {TYPE_TAB_LABELS[tab]}
               {count > 0 && (
@@ -328,7 +331,7 @@ export default function AdminBannersPage() {
                 <tr>
                   <td colSpan={8} className="py-20 text-center">
                     <Loader2 className="h-10 w-10 animate-spin mx-auto text-slate-200" />
-                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 mt-4 block">Loading campaigns...</span>
+                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 mt-4 block">Loading Banners...</span>
                   </td>
                 </tr>
               ) : typeBanners.length === 0 ? (
@@ -349,9 +352,8 @@ export default function AdminBannersPage() {
                     onDragStart={(e) => handleDragStart(e, idx)}
                     onDragOver={(e) => handleDragOver(e, idx)}
                     onDragEnd={handleDragEnd}
-                    className={`hover:bg-slate-50/50 transition-colors group cursor-grab active:cursor-grabbing ${
-                      draggedIndex === idx ? 'opacity-40 bg-slate-50 border-2 border-dashed border-amber-300' : ''
-                    }`}
+                    className={`hover:bg-slate-50/50 transition-colors group cursor-grab active:cursor-grabbing ${draggedIndex === idx ? 'opacity-40 bg-slate-50 border-2 border-dashed border-amber-300' : ''
+                      }`}
                   >
                     {/* Drag handle */}
                     <td className="px-4 py-4 text-slate-300 group-hover:text-slate-500 transition-colors">
@@ -393,11 +395,10 @@ export default function AdminBannersPage() {
                     <td className="px-4 py-4 text-center">
                       <button
                         onClick={() => toggleStatus(banner)}
-                        className={`inline-flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-md transition-all border ${
-                          banner.isActive
+                        className={`inline-flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-md transition-all border ${banner.isActive
                             ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
                             : 'bg-slate-50 text-slate-500 border-slate-200'
-                        }`}
+                          }`}
                       >
                         {banner.isActive ? <Play size={8} fill="currentColor" /> : <Pause size={8} fill="currentColor" />}
                         {banner.isActive ? 'Live' : 'Draft'}
@@ -473,11 +474,10 @@ export default function AdminBannersPage() {
               <div className="flex items-center justify-between pt-3 border-t border-slate-100">
                 <button
                   onClick={() => toggleStatus(banner)}
-                  className={`inline-flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-md border ${
-                    banner.isActive
+                  className={`inline-flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-md border ${banner.isActive
                       ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
                       : 'bg-slate-50 text-slate-500 border-slate-200'
-                  }`}
+                    }`}
                 >
                   {banner.isActive ? 'Live' : 'Draft'}
                 </button>

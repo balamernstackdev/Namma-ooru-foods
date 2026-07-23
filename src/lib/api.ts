@@ -4,8 +4,8 @@
 //     : 'https://api.nammaorrufoods.com'sss
 //   : 'https://api.nammaorrufoods.com';
 
-// export const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.nammaorrufoods.com';
-export const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+export const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.nammaorrufoods.com';
+// export const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
 export async function fetchWithTimeout(url: string, options: RequestInit = {}, timeout = 1500): Promise<Response> {
     const controller = new AbortController();

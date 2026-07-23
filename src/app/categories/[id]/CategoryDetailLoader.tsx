@@ -9,7 +9,7 @@ import PremiumLoader from '@/components/ui/PremiumLoader';
 
 const fetcher = (url: string) => fetch(url).then(res => res.json());
 
-export default function CategoryDetailLoader({ id }: { id: string }) {
+export default function CategoryDetailLoader({ id, initialSubSlug }: { id: string; initialSubSlug?: string }) {
   const { data: categoryData, error, isLoading } = useSWR(`${API_URL}/api/categories/${id}`, fetcher);
 
   if (isLoading || (!categoryData && !error)) {
@@ -23,6 +23,7 @@ export default function CategoryDetailLoader({ id }: { id: string }) {
       categoryId={id} 
       category={categoryData} 
       categoryProducts={categoryProducts} 
+      initialSubSlug={initialSubSlug}
     />
   );
 }

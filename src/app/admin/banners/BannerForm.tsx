@@ -52,6 +52,13 @@ const BANNER_TYPE_CONFIG: Record<string, {
       autoSlide: true,
       description: 'Displayed alongside the Best Sellers product carousel'
    },
+   featured_products: {
+      label: 'Featured Products Banner',
+      section: 'Featured Products Section',
+      width: 1920, height: 450,
+      autoSlide: true,
+      description: 'Displayed alongside the Featured Products section'
+   },
    organic_collection: {
       label: 'Organic Collection Banner',
       section: 'Organic Collection',
@@ -93,6 +100,7 @@ export default function BannerForm({ initialData, isEditing }: BannerFormProps) 
       const map: Record<string, string> = {
          'Hero': 'hero', 'Hero Banner': 'hero',
          'Best Sellers': 'best_sellers', 'Best Sellers Banner': 'best_sellers',
+         'Featured Products': 'featured_products', 'Featured Products Banner': 'featured_products',
          'Organic Collection': 'organic_collection', 'Organic Collection Banner': 'organic_collection',
          'Farmer Collection': 'farmer_collection', 'Farmer Collection Banner': 'farmer_collection',
          'Category': 'category', 'Category Banner': 'category',
@@ -176,13 +184,13 @@ export default function BannerForm({ initialData, isEditing }: BannerFormProps) 
             URL.revokeObjectURL(url);
             const expectedRatio = config.width / config.height;
             const actualRatio = img.width / img.height;
-            const tolerance = 0.05; // 5% tolerance
+            const tolerance = 0.35; // Flexible ratio tolerance
             const valid = Math.abs(actualRatio - expectedRatio) <= tolerance;
             resolve({
                valid,
                message: valid
-                  ? `✓ Aspect ratio compatible (${(img.width / img.height).toFixed(2)}:1). Image will be automatically optimized to ${config.width}×${config.height}.`
-                  : `Incorrect aspect ratio: ${(img.width / img.height).toFixed(2)}:1. Expected ~${(expectedRatio).toFixed(2)}:1 for ${config.label}.`,
+                  ? `✓ Image aspect ratio looks great (${actualRatio.toFixed(2)}:1). System will automatically optimize it.`
+                  : `Note: Aspect ratio is ${actualRatio.toFixed(2)}:1. Recommended ratio is ~${expectedRatio.toFixed(2)}:1 (${config.width}×${config.height}px) for optimal display.`,
                width: img.width,
                height: img.height
             });

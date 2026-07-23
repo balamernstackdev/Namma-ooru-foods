@@ -242,6 +242,7 @@ export default function EditHubWizard() {
     name: '',
     displayName: '',
     shortDescription: '',
+    fullDescription: '',
     logo: '',
     banner: '',
 
@@ -282,6 +283,7 @@ export default function EditHubWizard() {
         name: data.name || '',
         displayName: data.displayName || '',
         shortDescription: data.shortDescription || '',
+        fullDescription: data.description || data.fullDescription || '',
         logo: data.logo || '',
         banner: data.banner || '',
 
@@ -441,6 +443,7 @@ export default function EditHubWizard() {
         name: formData.name,
         displayName: formData.displayName,
         shortDescription: formData.shortDescription,
+        fullDescription: formData.fullDescription || formData.shortDescription,
         logo: formData.logo,
         banner: formData.banner,
         hubCode: formData.hubId,
@@ -555,8 +558,13 @@ export default function EditHubWizard() {
               <input type="text" name="displayName" value={formData.displayName} onChange={handleInputChange} className="w-full bg-slate-50 rounded-xl px-4 py-3 text-sm font-bold border border-slate-200 outline-none focus:border-emerald-500 transition-colors" />
             </div>
             <div className="md:col-span-2">
-              <label className="block text-[10px] font-black uppercase text-slate-500 mb-1">Short Description</label>
-              <input type="text" name="shortDescription" value={formData.shortDescription} onChange={handleInputChange} className="w-full bg-slate-50 rounded-xl px-4 py-3 text-sm font-bold border border-slate-200 outline-none focus:border-emerald-500 transition-colors" />
+              <label className="block text-[10px] font-black uppercase text-slate-500 mb-1">Short Description (Tagline)</label>
+              <input type="text" name="shortDescription" value={formData.shortDescription} onChange={handleInputChange} className="w-full bg-slate-50 rounded-xl px-4 py-3 text-sm font-bold border border-slate-200 outline-none focus:border-emerald-500 transition-colors" placeholder="Quick tagline / summary" />
+            </div>
+
+            <div className="md:col-span-2">
+              <label className="block text-[10px] font-black uppercase text-slate-500 mb-1">Full Description / Overview</label>
+              <textarea name="fullDescription" rows={6} value={formData.fullDescription} onChange={handleInputChange} className="w-full bg-slate-50 rounded-xl px-4 py-3 text-sm font-medium border border-slate-200 outline-none focus:border-emerald-500 transition-colors leading-relaxed" placeholder="Detailed hub story, mission, programs, and overview..." />
             </div>
             
             <div className="md:col-span-2">

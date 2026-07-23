@@ -126,7 +126,7 @@ export default function PopupCampaignsPage() {
               {isLoading ? (
                 <tr>
                   <td colSpan={7} className="py-12 text-center text-slate-400 uppercase tracking-widest text-[11px]">
-                    Loading campaigns...
+                    Loading Banners...
                   </td>
                 </tr>
               ) : !campaigns || campaigns.length === 0 ? (

@@ -176,19 +176,16 @@ export default function ProductCarousel({
   }, [scrollRight, autoScrollInterval, products.length]);
 
   if (products.length === 0) {
-    return (
-      <section className={`py-4 md:py-8 ${bgClass} flex justify-center`}>
-        <div className="standard-container w-full flex flex-col items-center justify-center py-16 px-4 bg-white/50 backdrop-blur-sm rounded-[32px] border border-dashed border-slate-200">
-          <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mb-4">
-            <span className="text-2xl">📦</span>
+    if (banners && banners.length > 0) {
+      return (
+        <section className={`py-6 md:py-8 ${bgClass} flex justify-center`}>
+          <div className="standard-container w-full">
+            <BannerCarousel banners={banners} />
           </div>
-          <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight mb-2">No Products Available</h3>
-          <p className="text-slate-500 font-medium text-sm text-center max-w-sm">
-            There are currently no products available in this section. Please check back later.
-          </p>
-        </div>
-      </section>
-    );
+        </section>
+      );
+    }
+    return null;
   }
 
   return (
