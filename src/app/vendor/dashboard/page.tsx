@@ -1,2 +1,5 @@
-import VendorDashboard from '../../seller/dashboard/page';
-export default VendorDashboard;
+import { redirect } from 'next/navigation';
+
+export default function VendorDashboardPage() {
+  redirect('/seller/dashboard');
+}
