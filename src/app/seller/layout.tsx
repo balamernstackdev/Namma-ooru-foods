@@ -72,9 +72,11 @@ export default function VendorLayout({ children }: { children: React.ReactNode }
   if (!user || (userRole !== 'vendor' && userRole !== 'seller' && userRole !== 'admin')) return null;
 
   const hasViewPerm = (moduleKey: string) => {
-    if (userRole === 'admin') return true;
-    if (!user.hubPermissions) return false;
-    return user.hubPermissions[moduleKey]?.view === true;
+    if (userRole === 'admin' || userRole === 'vendor' || userRole === 'seller') {
+      if (!user?.hubPermissions) return true;
+      return user.hubPermissions[moduleKey]?.view !== false;
+    }
+    return true;
   };
 
   const rawMenuItems = [
