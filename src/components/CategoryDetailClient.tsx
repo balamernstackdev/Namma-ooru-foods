@@ -155,7 +155,7 @@ export default function CategoryDetailClient({
 
   return (
     <div className="flex flex-col bg-white w-full min-h-screen font-sans">
-      
+
       {/* BREADCRUMBS */}
       <div className="w-full bg-slate-50 border-b border-slate-200/80 py-3">
         <div className="standard-container px-4">
@@ -194,7 +194,7 @@ export default function CategoryDetailClient({
             >
               <ArrowLeft size={14} /> Back to {categoryName}
             </Link>
-            
+
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
               <div>
                 <span className="text-amber-400 text-[10px] md:text-xs font-black uppercase tracking-[0.3em] block mb-1">
@@ -244,19 +244,19 @@ export default function CategoryDetailClient({
                         {bannerTagline}
                       </span>
                     </div>
-                    
+
                     <h1 className="text-white text-2xl md:text-5xl font-black mb-3 leading-tight tracking-tighter uppercase drop-shadow-lg">
                       {bannerTitle}
                     </h1>
-                    
+
                     <p className="text-white/80 text-[11px] md:text-sm font-medium mb-4 line-clamp-2 md:line-clamp-3 leading-relaxed drop-shadow">
                       {bannerSubtitle}
                     </p>
 
                     {bannerLink ? (
                       <div className="pt-2">
-                        <Link 
-                          href={bannerLink} 
+                        <Link
+                          href={bannerLink}
                           className="inline-flex h-9 md:h-11 px-6 md:px-8 rounded-full bg-amber-500 text-slate-900 font-black uppercase tracking-widest text-[9px] md:text-[10px] hover:bg-white hover:scale-105 transition-all items-center shadow-md active:scale-95"
                         >
                           {buttonText}
@@ -418,7 +418,7 @@ export default function CategoryDetailClient({
 
             <AnimatePresence mode="popLayout">
               {displayedProducts.length > 0 ? (
-                <motion.div 
+                <motion.div
                   layout
                   className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-6"
                 >
@@ -448,7 +448,7 @@ export default function CategoryDetailClient({
                     No products found
                   </h3>
                   <p className="text-xs text-slate-500 font-medium max-w-xs leading-relaxed mb-4">
-                    {activeSubcategory 
+                    {activeSubcategory
                       ? `No products currently listed under "${activeSubcategory.name}".`
                       : 'No products currently listed in this category.'
                     }
