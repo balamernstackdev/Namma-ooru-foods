@@ -88,8 +88,13 @@ export default function BestSellingPage() {
    });
 
    useEffect(() => {
-      window.scrollTo(0, 0);
-   }, []);
+      const timer = setTimeout(() => {
+         window.scrollTo({ top: 0, behavior: 'auto' });
+         document.documentElement.scrollTo({ top: 0, behavior: 'auto' });
+         document.body.scrollTo({ top: 0, behavior: 'auto' });
+      }, 100);
+      return () => clearTimeout(timer);
+   }, [currentPage]);
 
    const totalPages = Math.ceil(sortedProducts.length / itemsPerPage);
    const paginatedProducts = sortedProducts.slice(
@@ -123,8 +128,8 @@ export default function BestSellingPage() {
             <div className="max-w-[1600px] mx-auto flex flex-col lg:flex-row">
 
                {/* SIDEBAR: PREMIUM ACCORDION FILTERS */}
-               <aside className="hidden lg:block w-[280px] xl:w-[310px] shrink-0 bg-white border-r border-slate-200 h-[calc(100vh-40px)] sticky top-10 overflow-y-auto no-scrollbar">
-                  <div className="p-6 flex flex-col gap-6">
+               <aside className="hidden lg:block w-[280px] xl:w-[310px] shrink-0 bg-white border-r border-slate-200">
+                  <div className="sticky top-[80px] p-5 flex flex-col gap-4 max-h-[calc(100vh-100px)] overflow-y-auto custom-scrollbar">
 
                      {/* Filter Header */}
                      <div className="flex items-center justify-between border-b border-slate-100 pb-4">
@@ -139,7 +144,7 @@ export default function BestSellingPage() {
                      </div>
 
                      {/* Group 1: Categories */}
-                     <div className="border-b border-slate-100 pb-5">
+                     <div className="border-b border-slate-100 pb-4">
                         <button
                            onClick={() => toggleGroup('categories')}
                            className="flex items-center justify-between w-full text-left mb-3 font-black uppercase text-[11px] tracking-widest text-slate-800"
@@ -148,14 +153,14 @@ export default function BestSellingPage() {
                            <ChevronDown size={14} className={`text-slate-400 transition-transform ${collapsedGroups.categories ? '-rotate-90' : ''}`} />
                         </button>
                         {!collapsedGroups.categories && (
-                           <div className="flex flex-col gap-1 max-h-[320px] overflow-y-auto pr-2 no-scrollbar">
+                           <div className="flex flex-col gap-1 max-h-[160px] overflow-y-auto pr-1.5">
                               {categoryNames.map(cat => {
                                  const count = cat === 'All' ? allProducts.length : allProducts.filter(p => p.category?.name === cat || p.category === cat).length;
                                  return (
                                     <button
                                        key={cat}
                                        onClick={() => { setActiveCategory(cat); setCurrentPage(1); }}
-                                       className={`flex items-center justify-between py-2 px-3 rounded-lg text-[12px] font-semibold transition-all ${activeCategory === cat ? 'bg-emerald-50 text-emerald-800' : 'text-slate-600 hover:bg-slate-50'}`}
+                                       className={`flex items-center justify-between py-1.5 px-2.5 rounded-lg text-[12px] font-semibold transition-all ${activeCategory === cat ? 'bg-emerald-50 text-emerald-800' : 'text-slate-600 hover:bg-slate-50'}`}
                                     >
                                        <span className="truncate mr-2">{cat}</span>
                                        <span className="text-[10px] opacity-60 shrink-0">({count})</span>
@@ -167,7 +172,7 @@ export default function BestSellingPage() {
                      </div>
 
                      {/* Group 2: Price Range */}
-                     <div className="border-b border-slate-100 pb-5">
+                     <div className="border-b border-slate-100 pt-4 pb-4">
                         <button
                            onClick={() => toggleGroup('price')}
                            className="flex items-center justify-between w-full text-left mb-3 font-black uppercase text-[11px] tracking-widest text-slate-800"
@@ -199,7 +204,7 @@ export default function BestSellingPage() {
                      </div>
 
                      {/* Group 3: Rating Filter */}
-                     <div className="pb-4">
+                     <div className="pt-4 pb-4">
                         <button
                            onClick={() => toggleGroup('rating')}
                            className="flex items-center justify-between w-full text-left mb-3 font-black uppercase text-[11px] tracking-widest text-slate-800"
@@ -306,7 +311,7 @@ export default function BestSellingPage() {
                      <div className="w-full">
                         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-4 lg:gap-6">
                            <AnimatePresence mode='popLayout'>
-                              {paginatedProducts.map((product: any) => (
+                              {paginatedProducts.map((product: any, idx: number) => (
                                  <motion.div
                                     key={product.id}
                                     layout
@@ -314,7 +319,7 @@ export default function BestSellingPage() {
                                     animate={{ opacity: 1, y: 0 }}
                                     exit={{ opacity: 0 }}
                                  >
-                                    <ProductCard product={product} />
+                                    <ProductCard product={product} index={(currentPage - 1) * itemsPerPage + idx} />
                                  </motion.div>
                               ))}
                            </AnimatePresence>

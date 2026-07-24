@@ -275,7 +275,7 @@ const Navbar = () => {
               onMouseEnter={() => setIsCategoryOpen(true)}
               onMouseLeave={() => setIsCategoryOpen(false)}
             >
-              <Link href="/products" prefetch={false} className="text-[11px] font-black uppercase tracking-widest text-emerald-950 hover:text-emerald-600 transition-colors flex items-center gap-2 h-full">
+              <Link href="/categories" prefetch={false} className="text-[11px] font-black uppercase tracking-widest text-emerald-950 hover:text-emerald-600 transition-colors flex items-center gap-2 h-full">
                 <LayoutGrid size={14} /> Categories
               </Link>
 

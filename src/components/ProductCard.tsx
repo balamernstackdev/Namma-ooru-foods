@@ -70,9 +70,8 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, index }) => {
   const subVendor = product.subVendor || product.brand;
   const fullBrand = subVendor?.name || '';
   const brandName = fullBrand.split('•')[0].split('-')[0].trim();
-  const skuBadge = index !== undefined
-    ? `SKU-${String(index + 1).padStart(2, '0')}`
-    : (product.productIdStr || product.skuCode || `SKU-${product.id}`);
+  const rawId = product.productIdStr || product.skuCode || `Pro-${String(product.id).padStart(2, '0')}`;
+  const skuBadge = rawId.replace(/^NM-/i, 'Pro-');
 
   const discountPercent = displayOriginalPrice > displayPrice ? Math.round(((displayOriginalPrice - displayPrice) / displayOriginalPrice) * 100) : 0;
 
@@ -155,40 +154,39 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, index }) => {
       </div>
 
       {/* 2. PRODUCT INFO & TYPOGRAPHY SECTION */}
-      <div className="flex flex-col flex-1 p-2.5 xs:p-3 md:p-3.5 min-h-0 justify-between">
+      <div className="flex flex-col flex-1 p-2 md:p-3.5 min-h-0 justify-between">
 
         <div className="flex flex-col">
           {/* Brand, Hidden Mobile Category, SKU Badge */}
-          <div className="flex items-center justify-between gap-1 mb-1 min-w-0">
-            <div className="flex items-center gap-1 min-w-0 overflow-hidden">
-              {brandName && (
-                <span className="text-[12px] font-bold tracking-wider uppercase text-emerald-800 truncate">
+          <div className="flex flex-col gap-0.5 md:gap-1 mb-1 md:mb-1.5 min-w-0">
+            <div className="flex items-center justify-between gap-2 min-w-0">
+              {brandName ? (
+                <span className="text-[9.5px] md:text-[11px] font-extrabold tracking-wider uppercase text-emerald-800 whitespace-normal leading-tight">
                   {brandName}
                 </span>
+              ) : (
+                <div />
               )}
-              {categoryName && (
-                <>
-                  <span className="hidden sm:inline text-slate-300 shrink-0">•</span>
-                  <span className="hidden sm:inline text-xs font-semibold text-slate-400 uppercase truncate">
-                    {categoryName}
-                  </span>
-                </>
-              )}
+              <span className="text-[9px] md:text-[10px] font-mono font-bold bg-slate-100 text-slate-600 px-1 py-0.5 rounded border border-slate-200 shrink-0 leading-none">
+                {skuBadge}
+              </span>
             </div>
-            <span className="text-[10px] font-mono font-bold bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded border border-slate-200 shrink-0 leading-none">
-              {skuBadge}
-            </span>
+            {categoryName && (
+              <span className="text-[9px] md:text-[10px] font-semibold text-slate-400 uppercase whitespace-normal leading-normal mt-0.5">
+                {categoryName}
+              </span>
+            )}
           </div>
 
-          {/* Product Name (Mobile 16px, Bold, Line Clamp 2) */}
-          <Link href={`/products/${product.slug || product.id}`} prefetch={false} className="block group/link h-[44px] mb-1">
-            <h3 className="text-[16px] md:text-[17px] font-bold text-slate-900 leading-snug line-clamp-2 tracking-tight group-hover/link:text-emerald-900 transition-colors">
+          {/* Product Name (Mobile 13px, Bold, Line Clamp 2) */}
+          <Link href={`/products/${product.slug || product.id}`} prefetch={false} className="block group/link h-[36px] md:h-[49px] mb-0.5 md:mb-1">
+            <h3 className="text-[13px] md:text-[17px] font-bold text-slate-900 leading-snug line-clamp-2 tracking-tight group-hover/link:text-emerald-900 transition-colors">
               {product.name}
             </h3>
           </Link>
 
           {/* Rating Section (Hide Empty Stars if No Rating) */}
-          <div className="flex items-center gap-1 my-1">
+          <div className="flex items-center gap-1 my-0.5 md:my-1">
             {averageRating > 0 ? (
               <>
                 <div className="flex items-center gap-0.5 shrink-0">
@@ -219,32 +217,32 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, index }) => {
           </div>
 
           {/* Badges Section (Max 2 Badges + Overflow) */}
-          <div className="my-1 overflow-hidden w-full">
+          <div className="my-0.5 md:my-1 overflow-hidden w-full">
             <ProductBadges product={product} variant="inline" />
           </div>
         </div>
 
         {/* 3. PRICE HIERARCHY & CTA BUTTON */}
-        <div className="mt-2 pt-1 border-t border-slate-100">
-          {/* Price Hierarchy (Selling Price 22px, MRP 12px strikethrough, Discount 13px green) */}
-          <div className="flex items-baseline flex-nowrap gap-x-2 overflow-hidden leading-none my-1.5">
-            <span className="text-[22px] md:text-[24px] font-black text-slate-950 tracking-tight shrink-0">
+        <div className="mt-1 md:mt-2 pt-0.5 md:pt-1 border-t border-slate-100">
+          {/* Price Hierarchy (Selling Price 17px on mobile, MRP 11px, Discount 11px green) */}
+          <div className="flex items-baseline flex-nowrap gap-x-1.5 md:gap-x-2 overflow-hidden leading-none my-1 md:my-1.5">
+            <span className="text-[17px] md:text-[24px] font-black text-slate-950 tracking-tight shrink-0">
               ₹{displayPrice}
             </span>
             {displayOriginalPrice > displayPrice && (
-              <span className="text-[12px] text-slate-400 line-through font-medium opacity-80 shrink-0">
+              <span className="text-[11px] md:text-[12px] text-slate-400 line-through font-medium opacity-80 shrink-0">
                 ₹{displayOriginalPrice}
               </span>
             )}
             {discountPercent > 0 && (
-              <span className="text-[13px] text-emerald-600 font-bold tracking-wide shrink-0">
+              <span className="text-[11px] md:text-[13px] text-emerald-600 font-bold tracking-wide shrink-0">
                 {discountPercent}% OFF
               </span>
             )}
           </div>
 
-          {/* Add To Cart CTA Button (Min Height 44px, Mobile Font 14px) */}
-          <div className="mt-2 w-full relative min-h-[44px]" ref={containerBtnRef}>
+          {/* Add To Cart CTA Button (Min Height 36px, Mobile Font 12px) */}
+          <div className="mt-1.5 md:mt-2 w-full relative min-h-[36px] md:min-h-[44px]" ref={containerBtnRef}>
             <AnimatePresence>
               {showSuccessAnimation && (
                 <ProductDetailSuccessAnimation
@@ -268,7 +266,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, index }) => {
                     e.stopPropagation();
                     router.push('/cart');
                   }}
-                  className="w-full min-h-[44px] bg-emerald-800 hover:bg-emerald-900 text-white rounded-xl text-[14px] font-bold uppercase tracking-wider transition-all active:scale-[0.98] flex items-center justify-center gap-1.5 shadow-sm border border-emerald-800 cursor-pointer whitespace-nowrap"
+                  className="w-full h-[36px] md:h-[44px] bg-emerald-800 hover:bg-emerald-900 text-white rounded-lg md:rounded-xl text-[12px] md:text-[14px] font-bold uppercase tracking-wider transition-all active:scale-[0.98] flex items-center justify-center gap-1.5 shadow-sm border border-emerald-800 cursor-pointer whitespace-nowrap"
                 >
                   <span>GO TO CART →</span>
                 </motion.button>
@@ -281,9 +279,9 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, index }) => {
                   transition={{ duration: 0.15 }}
                   type="button"
                   onClick={handleAddToCart}
-                  className="w-full min-h-[44px] bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-[14px] font-bold uppercase tracking-wider transition-all active:scale-[0.98] flex items-center justify-center gap-1.5 shadow-sm border border-emerald-700 group/btn whitespace-nowrap cursor-pointer"
+                  className="w-full h-[36px] md:h-[44px] bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg md:rounded-xl text-[12px] md:text-[14px] font-bold uppercase tracking-wider transition-all active:scale-[0.98] flex items-center justify-center gap-1.5 shadow-sm border border-emerald-700 group/btn whitespace-nowrap cursor-pointer"
                 >
-                  <Plus size={14} className="transition-transform group-hover/btn:rotate-90 shrink-0" strokeWidth={3} />
+                  <Plus size={12} className="transition-transform group-hover/btn:rotate-90 shrink-0" strokeWidth={3} />
                   <span>ADD TO CART</span>
                 </motion.button>
               )}

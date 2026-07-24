@@ -180,6 +180,7 @@ export default function ProductDetailClient({ product: initialProduct, allProduc
    // Dynamic placeholders for Urgency
    const stockCount = selectedVariant?.stock ?? (product.variants?.[0]?.stock || (product.id % 8) + 4);
    const isOutOfStock = stockCount === 0;
+   const hasFaqs = Array.isArray(product.faqs) && product.faqs.length > 0;
 
    const handleAddToCartAction = () => {
       addToCart({
@@ -365,10 +366,10 @@ export default function ProductDetailClient({ product: initialProduct, allProduc
                                  {product.subVendor?.name || product.brand?.name || 'Namma Ooru Store'}
                               </Link>
                            </div>
-                           <h1 className="text-[15px] sm:text-[18px] md:text-[20px] lg:text-[22px] font-black text-slate-900 tracking-tight leading-tight mt-1 flex flex-wrap items-center gap-3">
+                           <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-black text-slate-900 tracking-tight leading-tight mt-1 flex flex-wrap items-center gap-3">
                               {product.name}
                               <span className="text-[11px] bg-white text-slate-500 px-2 py-0.5 rounded font-mono border border-slate-200 shrink-0 font-bold tracking-normal mt-1 md:mt-0 shadow-2xs">
-                                 {product.productIdStr || `Prod-${product.id.toString().padStart(2, '0')}`}
+                                 {(product.productIdStr || `Pro-${product.id.toString().padStart(2, '0')}`).replace(/^NM-/i, 'Pro-')}
                               </span>
                            </h1>
                         </div>
@@ -413,9 +414,9 @@ export default function ProductDetailClient({ product: initialProduct, allProduc
                      </div>
 
                      {/* COMPACT INTEGRATED PRICING ROW */}
-                     <div className="flex items-center justify-between gap-4 flex-wrap bg-white border border-slate-100/80 rounded-2xl px-4 py-3 shadow-sm mt-1">
-                        <div className="flex items-baseline gap-2.5">
-                           <span className="text-2xl md:text-3xl font-[900] text-slate-900 tracking-tight leading-none">
+                     <div className="flex items-center justify-between gap-3 flex-wrap bg-white border border-slate-100/80 rounded-2xl px-3 md:px-4 py-2.5 md:py-3 shadow-sm mt-1">
+                        <div className="flex items-baseline gap-2">
+                           <span className="text-xl md:text-3xl font-[900] text-slate-900 tracking-tight leading-none">
                               ₹{currentPrice}
                            </span>
                            {originalPrice > currentPrice && (
@@ -459,7 +460,7 @@ export default function ProductDetailClient({ product: initialProduct, allProduc
                               <button
                                  key={v.name}
                                  onClick={() => setSelectedVariant(v)}
-                                 className={`px-5 py-3 rounded-2xl text-[11px] font-black uppercase tracking-wider transition-all duration-300 min-w-[110px] relative overflow-hidden flex items-center justify-center border ${isActive
+                                 className={`px-4 md:px-5 py-2 md:py-3 rounded-xl md:rounded-2xl text-[10px] md:text-[11px] font-black uppercase tracking-wider transition-all duration-300 min-w-[90px] md:min-w-[110px] relative overflow-hidden flex items-center justify-center border ${isActive
                                     ? 'bg-gradient-to-br from-[#0f5132] to-[#14532d] border-[#0f5132] text-white shadow-md shadow-emerald-950/20 scale-[1.03] -translate-y-0.5'
                                     : 'bg-white border-slate-200 text-slate-500 hover:border-emerald-650 hover:text-emerald-950 hover:-translate-y-0.5 hover:shadow-sm'
                                     }`}
@@ -475,43 +476,43 @@ export default function ProductDetailClient({ product: initialProduct, allProduc
                   <div className="flex items-center gap-3 w-full pt-2">
 
                      {/* Modern Rounded Glass Quantity Controller */}
-                     <div className="flex items-center justify-between bg-white border border-slate-200 rounded-full p-1.5 w-[120px] shrink-0 h-[48px] shadow-sm hover:shadow-md transition-all">
+                     <div className="flex items-center justify-between bg-white border border-slate-200 rounded-full p-1 w-[110px] md:w-[120px] shrink-0 h-[42px] md:h-[48px] shadow-sm hover:shadow-md transition-all">
                         <button
                            onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                           className="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-[#0f5132] hover:bg-slate-100 rounded-full transition-all active:scale-95"
+                           className="w-7 h-7 md:w-8 md:h-8 flex items-center justify-center text-slate-400 hover:text-[#0f5132] hover:bg-slate-100 rounded-full transition-all active:scale-95"
                            disabled={isOutOfStock}
                         >
-                           <Minus size={14} strokeWidth={3} />
+                           <Minus size={13} strokeWidth={3} />
                         </button>
-                        <span className="font-black text-[14px] text-slate-800 select-none w-6 text-center">{quantity}</span>
+                        <span className="font-black text-[12px] md:text-[14px] text-slate-800 select-none w-5 md:w-6 text-center">{quantity}</span>
                         <button
                            onClick={() => setQuantity(Math.min(stockCount, quantity + 1))}
-                           className="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-[#0f5132] hover:bg-slate-100 rounded-full transition-all active:scale-95"
+                           className="w-7 h-7 md:w-8 md:h-8 flex items-center justify-center text-slate-400 hover:text-[#0f5132] hover:bg-slate-100 rounded-full transition-all active:scale-95"
                            disabled={isOutOfStock}
                         >
-                           <Plus size={14} strokeWidth={3} />
+                           <Plus size={13} strokeWidth={3} />
                         </button>
                      </div>
 
                      {isOutOfStock ? (
-                        <button className="flex-1 h-[48px] rounded-full bg-slate-800 text-white flex items-center justify-center gap-2 text-[11px] font-black uppercase tracking-widest shadow-md hover:bg-slate-900 transition-all">
-                           <BellRing size={16} strokeWidth={2.5} /> NOTIFY ME
+                        <button className="flex-1 h-[42px] md:h-[48px] rounded-full bg-slate-800 text-white flex items-center justify-center gap-2 text-[10px] md:text-[11px] font-black uppercase tracking-widest shadow-md hover:bg-slate-900 transition-all">
+                           <BellRing size={14} strokeWidth={2.5} /> NOTIFY ME
                         </button>
                      ) : (
                         <div className="flex flex-1 items-center gap-2">
                            <button
                               onClick={handleAddToCartAction}
-                              className="flex-1 h-[48px] rounded-full bg-gradient-to-br from-[#0f5132] to-[#14532d] text-white flex items-center justify-center gap-2 text-[11px] font-black uppercase tracking-wider transition-all hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] shadow-lg shadow-emerald-950/10 group/btn"
+                              className="flex-1 h-[42px] md:h-[48px] rounded-full bg-gradient-to-br from-[#0f5132] to-[#14532d] text-white flex items-center justify-center gap-2 text-[10px] md:text-[11px] font-black uppercase tracking-wider transition-all hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] shadow-lg shadow-emerald-950/10 group/btn"
                            >
-                              <ShoppingCart size={15} strokeWidth={2.5} className="group-hover/btn:scale-110 transition-transform" />
+                              <ShoppingCart size={14} strokeWidth={2.5} className="group-hover/btn:scale-110 transition-transform" />
                               <span>ADD TO CART</span>
                            </button>
 
                            <button
                               onClick={handleBuyNow}
-                              className="flex-1 h-[48px] rounded-full bg-gradient-to-br from-[#f59e0b] to-[#d97706] text-white flex items-center justify-center gap-1.5 text-[11px] font-black uppercase tracking-wider transition-all hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] shadow-lg shadow-amber-500/15"
+                              className="flex-1 h-[42px] md:h-[48px] rounded-full bg-gradient-to-br from-[#f59e0b] to-[#d97706] text-white flex items-center justify-center gap-1.5 text-[10px] md:text-[11px] font-black uppercase tracking-wider transition-all hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] shadow-lg shadow-amber-500/15"
                            >
-                              BUY IT NOW
+                              BUY NOW
                            </button>
                         </div>
                      )}
@@ -543,8 +544,8 @@ export default function ProductDetailClient({ product: initialProduct, allProduc
          <section className="py-12 bg-white">
             <div className="standard-container">
                <div className="flex flex-col lg:flex-row gap-12">
-                  {/* MAIN CONTENT AREA - 8 COLUMNS */}
-                  <div className="lg:w-2/3 flex flex-col gap-8">
+                  {/* MAIN CONTENT AREA - 8 COLUMNS OR FULL WIDTH */}
+                  <div className={`${hasFaqs ? 'lg:w-2/3' : 'w-full'} flex flex-col gap-8`}>
 
                      {/* DESCRIPTION */}
                      <div className="prose prose-emerald max-w-none">
@@ -672,13 +673,13 @@ export default function ProductDetailClient({ product: initialProduct, allProduc
                   </div>
 
                   {/* SIDEBAR / FAQ ACCORDION */}
-                  <div className="lg:w-1/3 space-y-6">
-                     <div className="bg-slate-50 p-6 md:p-8 rounded-3xl border border-slate-100 lg:sticky lg:top-24">
-                        <h4 className="font-black text-slate-900 text-[20px] tracking-tight mb-6">
-                           Frequently Asked Questions
-                        </h4>
+                  {hasFaqs && (
+                     <div className="lg:w-1/3 space-y-6">
+                        <div className="bg-slate-50 p-6 md:p-8 rounded-3xl border border-slate-100 lg:sticky lg:top-24">
+                           <h4 className="font-black text-slate-900 text-[20px] tracking-tight mb-6">
+                              Frequently Asked Questions
+                           </h4>
 
-                        {product.faqs && product.faqs.length > 0 ? (
                            <div className="space-y-3">
                               {product.faqs.map((faq: any, i: number) => (
                                  <details key={i} className="group bg-white border border-slate-200 rounded-2xl overflow-hidden [&_summary::-webkit-details-marker]:hidden shadow-sm">
@@ -699,15 +700,9 @@ export default function ProductDetailClient({ product: initialProduct, allProduc
                                  </details>
                               ))}
                            </div>
-                        ) : (
-                           <div className="flex flex-col items-center justify-center py-10 px-4 bg-white/50 rounded-2xl border border-dashed border-slate-200 text-center">
-                              <span className="text-2xl mb-2">📦</span>
-                              <h5 className="text-sm font-black text-slate-700 uppercase tracking-wider mb-1">No FAQs Available</h5>
-                              <p className="text-slate-400 font-medium text-xs">There are no questions answered for this product yet.</p>
-                           </div>
-                        )}
+                        </div>
                      </div>
-                  </div>
+                  )}
                </div>
             </div>
          </section>

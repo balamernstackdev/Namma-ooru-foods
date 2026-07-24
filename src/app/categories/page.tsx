@@ -13,6 +13,17 @@ const fetcher = (url: string) => fetch(url, { cache: 'no-store' }).then(res => r
 
 export default function CategoriesPage() {
   const [searchQuery, setSearchQuery] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 15;
+
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      window.scrollTo({ top: 0, behavior: 'auto' });
+      document.documentElement.scrollTo({ top: 0, behavior: 'auto' });
+      document.body.scrollTo({ top: 0, behavior: 'auto' });
+    }, 100);
+    return () => clearTimeout(timer);
+  }, [currentPage]);
 
   // Fetch all parent categories with counts
   const { data: responseData, error, isLoading } = useSWR(
@@ -35,6 +46,14 @@ export default function CategoriesPage() {
     );
   }, [rawCategories, searchQuery]);
 
+  const totalPages = Math.ceil(filteredCategories.length / itemsPerPage);
+
+  const paginatedCategories = useMemo(() => {
+    return filteredCategories.slice(
+      (currentPage - 1) * itemsPerPage,
+      currentPage * itemsPerPage
+    );
+  }, [filteredCategories, currentPage, itemsPerPage]);
   if (isLoading) {
     return <PremiumLoader fullScreen={true} />;
   }
@@ -85,7 +104,7 @@ export default function CategoriesPage() {
                   type="text"
                   placeholder="Search categories..."
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
                   className="w-full h-11 pl-11 pr-4 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-emerald-600 focus:bg-white transition-all shadow-xs"
                 />
               </div>
@@ -102,14 +121,45 @@ export default function CategoriesPage() {
             <h3 className="text-slate-900 font-bold uppercase text-sm tracking-wider">No Categories Found</h3>
             <p className="text-slate-500 text-xs mt-1">No category matched "{searchQuery}". Try a different keyword.</p>
             <button
-              onClick={() => setSearchQuery('')}
+              onClick={() => { setSearchQuery(''); setCurrentPage(1); }}
               className="mt-4 px-4 py-2 bg-emerald-800 text-white rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-emerald-900 transition-colors"
             >
               Clear Search
             </button>
           </div>
         ) : (
-          <MarketplaceCategoryGrid categories={filteredCategories} />
+          <div className="flex flex-col gap-8 md:gap-12">
+            <MarketplaceCategoryGrid categories={paginatedCategories} />
+
+            {/* PAGINATION GRID FOOTER */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-center gap-2 mt-4 border-t border-slate-200 pt-8">
+                <button
+                  disabled={currentPage === 1}
+                  onClick={() => { setCurrentPage(p => Math.max(1, p - 1)); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                  className="h-10 px-4 rounded-lg bg-white border border-slate-200 flex items-center gap-1 text-[11px] font-black text-slate-600 disabled:opacity-40 hover:bg-slate-50 cursor-pointer"
+                >
+                  Previous
+                </button>
+                {[...Array(totalPages)].map((_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => { setCurrentPage(i + 1); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                    className={`h-10 w-10 rounded-lg text-[11px] font-black cursor-pointer ${currentPage === i + 1 ? 'bg-[#065f46] text-white shadow-md' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'}`}
+                  >
+                    {i + 1}
+                  </button>
+                ))}
+                <button
+                  disabled={currentPage === totalPages}
+                  onClick={() => { setCurrentPage(p => Math.min(totalPages, p + 1)); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                  className="h-10 px-4 rounded-lg bg-white border border-slate-200 flex items-center gap-1 text-[11px] font-black text-slate-600 disabled:opacity-40 hover:bg-slate-50 cursor-pointer"
+                >
+                  Next
+                </button>
+              </div>
+            )}
+          </div>
         )}
       </main>
     </div>

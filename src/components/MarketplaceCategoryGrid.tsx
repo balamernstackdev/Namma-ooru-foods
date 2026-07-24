@@ -57,33 +57,15 @@ const CategoryCard = ({ category, index }: { category: Category; index: number }
     >
       <Link
         href={`/categories/${category.slug || category.id}`}
-        className="group relative flex flex-col h-full rounded-2xl overflow-hidden bg-white border border-slate-200/80 hover:border-emerald-500/40 transition-all duration-300 shadow-sm hover:shadow-xl hover:shadow-emerald-950/5"
+        className="group relative block aspect-[3/4] w-full rounded-2xl overflow-hidden bg-slate-950 border border-slate-800/10 shadow-sm hover:shadow-2xl hover:shadow-emerald-950/20 transition-all duration-500"
       >
-        {/* Promotional / Featured Badge */}
-        {(category.isFeatured || category.promotionalTag) && (
-          <div className="absolute top-2 left-2 z-20 flex flex-col gap-1">
-            {category.isFeatured && (
-              <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-400 text-emerald-950 text-[9px] font-black uppercase tracking-wider shadow-sm">
-                <Sparkles size={10} />
-                Featured
-              </span>
-            )}
-            {category.promotionalTag && (
-              <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-700 text-white text-[9px] font-black uppercase tracking-wider shadow-sm">
-                <TrendingUp size={10} />
-                {category.promotionalTag}
-              </span>
-            )}
-          </div>
-        )}
-
-        {/* Top Image Section (Clean aspect-ratio) */}
-        <div className="relative aspect-[4/3] w-full overflow-hidden bg-slate-50 border-b border-slate-100 flex items-center justify-center p-2">
+        {/* Background Image */}
+        <div className="absolute inset-0 bg-slate-900">
           {(() => {
             const cacheBuster = category.updatedAt ? new Date(category.updatedAt).getTime() : Date.now();
             const rawImageUrl = (category.image && category.image.trim() !== '') 
               ? category.image 
-              : `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" fill="%23f1f5f9"><rect width="400" height="400" /><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="24" fill="%2394a3b8">No Image</text></svg>`;
+              : `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" fill="%23020617"><rect width="400" height="400" /><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="24" fill="%23334155">No Image</text></svg>`;
             const finalImageUrl = rawImageUrl.startsWith('http') ? `${rawImageUrl}?t=${cacheBuster}` : rawImageUrl;
             
             return (
@@ -91,44 +73,47 @@ const CategoryCard = ({ category, index }: { category: Category; index: number }
                 src={finalImageUrl}
                 alt={category.name}
                 fill
-                className="object-contain p-2 transition-transform duration-500 group-hover:scale-105"
+                className="object-cover transition-transform duration-700 ease-out group-hover:scale-108"
                 unoptimized={finalImageUrl.startsWith('http')}
               />
             );
           })()}
+        </div>
 
-          {/* Counts Badges Overlay at Top Right */}
-          <div className="absolute top-2 right-2 z-20 flex flex-col items-end gap-1">
-            <span className="px-2 py-0.5 rounded-md bg-white/95 backdrop-blur-md text-emerald-950 text-[9px] font-mono font-bold shadow-xs border border-slate-100 flex items-center gap-1">
-              <Package size={10} className="text-emerald-700" />
-              {productCount} Items
-            </span>
-            {subcategoryCount > 0 && (
-              <span className="px-2 py-0.5 rounded-md bg-emerald-950 text-white text-[9px] font-mono font-bold shadow-xs flex items-center gap-1">
-                <Layers size={10} className="text-amber-400" />
-                {subcategoryCount} Subs
+        {/* Dynamic Dark Gradient Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/95 via-slate-950/40 to-transparent opacity-85 group-hover:opacity-95 transition-opacity duration-500 z-10" />
+
+        {/* Promotional / Featured Badge */}
+        {(category.isFeatured || category.promotionalTag) && (
+          <div className="absolute top-3 left-3 z-20 flex flex-col gap-1">
+            {category.isFeatured && (
+              <span className="flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-400 text-emerald-950 text-[9px] font-black uppercase tracking-wider shadow-sm">
+                <Sparkles size={10} />
+                Featured
+              </span>
+            )}
+            {category.promotionalTag && (
+              <span className="flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-700 text-white text-[9px] font-black uppercase tracking-wider shadow-sm">
+                <TrendingUp size={10} />
+                {category.promotionalTag}
               </span>
             )}
           </div>
-        </div>
+        )}
 
-        {/* Content Section */}
-        <div className="flex flex-col flex-1 p-3 xs:p-4 justify-between bg-white">
-          <div>
-            <h3 className="text-slate-900 text-xs sm:text-sm font-bold tracking-tight group-hover:text-emerald-800 transition-colors uppercase leading-tight line-clamp-2 mb-1.5 min-h-[2.25rem] flex items-center">
-              {category.name}
-            </h3>
-
-            <p className="text-slate-500 text-[11px] font-medium leading-tight line-clamp-2 mb-3">
-              {description}
-            </p>
-          </div>
-
-          {/* Action Link Footer */}
-          <div className="pt-2 border-t border-slate-100 flex items-center justify-between mt-auto">
-            <span className="text-[10px] xs:text-[11px] font-bold text-emerald-800 uppercase tracking-wider group-hover:text-emerald-900 transition-colors flex items-center gap-1">
-              Explore Category <ArrowRight size={12} className="group-hover:translate-x-1 transition-transform" />
-            </span>
+        {/* Immersive Text Overlay Section */}
+        <div className="absolute inset-0 p-4 sm:p-5 flex flex-col justify-end text-white z-20">
+          <span className="text-[9px] font-black uppercase tracking-[0.25em] text-emerald-400 mb-1 block opacity-90">
+            Collection
+          </span>
+          <h3 className="text-sm sm:text-base font-black tracking-tight uppercase leading-snug line-clamp-2 mb-1 group-hover:text-emerald-300 transition-colors">
+            {category.name}
+          </h3>
+          <p className="text-[10px] sm:text-[11px] text-slate-300 font-medium leading-relaxed line-clamp-2 mb-3 opacity-0 group-hover:opacity-100 group-hover:translate-y-0 translate-y-2 transition-all duration-300">
+            {description}
+          </p>
+          <div className="flex items-center gap-1 text-[10px] font-black uppercase tracking-wider text-emerald-400 group-hover:text-emerald-300 transition-colors">
+            Explore Category <ArrowRight size={10} className="group-hover:translate-x-1 transition-transform" />
           </div>
         </div>
       </Link>
