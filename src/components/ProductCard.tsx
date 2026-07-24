@@ -58,7 +58,8 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, index }) => {
   const displayOriginalPrice = product.originalPrice ? Number(product.originalPrice) : 0;
 
   const variants = product.variants || [];
-  const [selectedVariant] = React.useState(variants[0] || { name: 'Standard', price: displayPrice });
+  const defaultVariantName = (product.weight && product.unit) ? `${product.weight} ${product.unit}` : 'Standard Pack';
+  const [selectedVariant] = React.useState(variants[0] || { name: defaultVariantName, price: displayPrice });
 
   const cartItem = isMounted ? cart.find(i => i.productId === product.id && i.variant === selectedVariant.name) : undefined;
   const quantity = cartItem ? cartItem.quantity : 0;
@@ -159,7 +160,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, index }) => {
           <div className="flex items-center justify-between gap-1 mb-1 min-w-0">
             <div className="flex items-center gap-1 min-w-0 overflow-hidden">
               {brandName && (
-                <span className="text-[12px] font-bold tracking-wider uppercase text-emerald-800 truncate shrink-0">
+                <span className="text-[12px] font-bold tracking-wider uppercase text-emerald-800 truncate">
                   {brandName}
                 </span>
               )}
@@ -178,7 +179,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, index }) => {
           </div>
 
           {/* Product Name (Mobile 16px, Bold, Line Clamp 2) */}
-          <Link href={`/products/${product.slug || product.id}`} prefetch={false} className="block group/link min-h-[42px] mb-1">
+          <Link href={`/products/${product.slug || product.id}`} prefetch={false} className="block group/link h-[44px] mb-1">
             <h3 className="text-[16px] md:text-[17px] font-bold text-slate-900 leading-snug line-clamp-2 tracking-tight group-hover/link:text-emerald-900 transition-colors">
               {product.name}
             </h3>

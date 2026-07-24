@@ -358,7 +358,8 @@ export default function ProductForm({ initialData, mode }: ProductFormProps) {
             }));
             addToast('Success', 'Product image uploaded successfully.');
          } else {
-            addToast('Error', 'Image upload failed. Please try again.');
+            const errData = await res.json().catch(() => ({}));
+            addToast('Error', errData.error || errData.details || 'Image upload failed. Please try again.');
          }
       } finally {
          setIsUploading(false);

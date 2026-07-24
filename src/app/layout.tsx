@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { Inter, Jost, Manrope, Mulish } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -10,10 +11,26 @@ import { Providers } from "@/components/Providers";
 import ClientLayout from "@/components/ClientLayout";
 import { Toaster } from "sonner";
 
-const inter = { variable: "--font-inter" };
-const jost = { variable: "--font-jost" };
-const manrope = { variable: "--font-manrope" };
-const mulish = { variable: "--font-mulish" };
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+  display: "swap",
+});
+const jost = Jost({
+  subsets: ["latin"],
+  variable: "--font-jost",
+  display: "swap",
+});
+const manrope = Manrope({
+  subsets: ["latin"],
+  variable: "--font-manrope",
+  display: "swap",
+});
+const mulish = Mulish({
+  subsets: ["latin"],
+  variable: "--font-mulish",
+  display: "swap",
+});
 
 export const viewport: Viewport = {
   width: "device-width",

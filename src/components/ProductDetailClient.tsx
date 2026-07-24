@@ -90,7 +90,7 @@ export default function ProductDetailClient({ product: initialProduct, allProduc
 
       const sameVendor = relatedProducts.every((p: any) => p.subVendorId === product.subVendorId);
       if (sameVendor && product.subVendor) {
-         return { subtitle: `Handcrafted by ${product.subVendor.name}`, title: "More From This Vendor" };
+         return { subtitle: `Products  by ${product.subVendor.name}`, title: "More From This Vendor" };
       }
 
       const sameCategory = relatedProducts.every((p: any) => p.categoryId === product.categoryId);
@@ -103,10 +103,14 @@ export default function ProductDetailClient({ product: initialProduct, allProduc
 
    const { subtitle: relatedSubtitle, title: relatedTitle } = getSectionTitles();
 
+   const fallbackVariantName = (product.weight && product.unit)
+      ? `${product.weight} ${product.unit}`
+      : 'Standard Pack';
+
    const [selectedVariant, setSelectedVariant] = useState(
       product.variants && product.variants.length > 0
          ? product.variants[0]
-         : { name: 'Standard', price: product.price }
+         : { name: fallbackVariantName, price: product.price }
    );
    const [quantity, setQuantity] = useState(1);
    const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -449,7 +453,7 @@ export default function ProductDetailClient({ product: initialProduct, allProduc
                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Select Variant</label>
                      </div>
                      <div className="flex flex-wrap gap-2">
-                        {(product.variants?.length ? product.variants : [{ name: 'Standard Pack', price: product.price }]).map((v: any) => {
+                        {(product.variants?.length ? product.variants : [{ name: fallbackVariantName, price: product.price }]).map((v: any) => {
                            const isActive = selectedVariant.name === v.name;
                            return (
                               <button
