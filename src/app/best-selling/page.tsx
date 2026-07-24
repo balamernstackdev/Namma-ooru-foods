@@ -304,7 +304,7 @@ export default function BestSellingPage() {
                      </div>
                   ) : (
                      <div className="w-full">
-                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2.5 sm:gap-4 lg:gap-6">
+                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-4 lg:gap-6">
                            <AnimatePresence mode='popLayout'>
                               {paginatedProducts.map((product: any) => (
                                  <motion.div
