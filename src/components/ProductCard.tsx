@@ -15,6 +15,8 @@ import ProductBadges from '@/components/ProductBadges';
 
 interface ProductCardProps {
   product: {
+    unit: any;
+    weight: any;
     id: number;
     slug?: string;
     name: string;
