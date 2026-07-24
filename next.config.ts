@@ -13,20 +13,24 @@ const nextConfig: NextConfig = {
   experimental: {
   },
   async rewrites() {
-    return [
-      {
-        source: '/vendor',
-        destination: '/seller',
-      },
-      {
-        source: '/vendor/',
-        destination: '/seller',
-      },
-      {
-        source: '/vendor/:path*',
-        destination: '/seller/:path*',
-      },
-    ];
+    return {
+      beforeFiles: [
+        {
+          source: '/vendor',
+          destination: '/seller',
+        },
+        {
+          source: '/vendor/',
+          destination: '/seller',
+        },
+        {
+          source: '/vendor/:path*',
+          destination: '/seller/:path*',
+        },
+      ],
+      afterFiles: [],
+      fallback: [],
+    };
   },
 };
 

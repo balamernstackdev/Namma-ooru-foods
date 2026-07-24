@@ -248,7 +248,8 @@ export const useAuth = () => {
         verifyOnboardingOTP: async () => ({ action: 'register' }),
         completeOnboardingProfile: async () => {},
         logout: () => {},
-        isLoading: false
+        isLoading: false,
+        hasPermission: () => true
       };
     }
     throw new Error('useAuth must be used within an AuthProvider');

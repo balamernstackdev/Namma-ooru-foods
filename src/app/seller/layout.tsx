@@ -205,7 +205,7 @@ export default function VendorLayout({ children }: { children: React.ReactNode }
         <nav className="flex-1 p-6 space-y-1 overflow-y-auto">
           {menuItems.map((item) => {
             if (item.isSubmenu) {
-              const hasActiveSubitem = item.subItems?.some(sub => {
+              const hasActiveSubitem = item.subItems?.some((sub: any) => {
                 const cleanPath = pathname.replace(/\/$/, '');
                 const cleanHref = sub.href.replace(/\/$/, '');
                 return cleanPath.startsWith(cleanHref);
@@ -226,7 +226,7 @@ export default function VendorLayout({ children }: { children: React.ReactNode }
                   
                   {isOpen && (
                     <div className="pl-6 space-y-1">
-                      {item.subItems?.map(sub => {
+                      {item.subItems?.map((sub: any) => {
                         const cleanPath = pathname.replace(/\/$/, '');
                         const cleanHref = sub.href.replace(/\/$/, '');
                         const isSubActive = cleanPath.startsWith(cleanHref);
