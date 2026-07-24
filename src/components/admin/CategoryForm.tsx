@@ -71,6 +71,9 @@ export default function CategoryForm({ initialData, mode }: CategoryFormProps) {
     isActive: initialData?.isActive !== undefined ? initialData.isActive : true,
     showOnHome: initialData?.showOnHome !== undefined ? initialData.showOnHome : false,
     sortOrder: initialData?.sortOrder?.toString() || '0',
+    quickBrowseEnabled: initialData?.quickBrowseEnabled !== undefined ? initialData.quickBrowseEnabled : true,
+    sortPriority: initialData?.sortPriority?.toString() || '0',
+    icon: initialData?.icon || '',
     metaTitle: initialData?.metaTitle || '',
     metaDescription: initialData?.metaDescription || ''
   });
@@ -313,6 +316,30 @@ export default function CategoryForm({ initialData, mode }: CategoryFormProps) {
                     </div>
                   </InputWrapper>
 
+                  <InputWrapper label="Quick Browse Sort Priority" helpText="Lower numbers appear first in the Quick Browse Categories strip.">
+                    <div className="relative">
+                      <LayoutList size={16} className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400" />
+                      <input
+                        type="number"
+                        value={formData.sortPriority}
+                        onChange={e => setFormData({ ...formData, sortPriority: e.target.value })}
+                        className="w-full h-14 pl-14 pr-6 rounded-xl border border-slate-200 focus:border-blue-500 outline-none font-bold text-slate-900 text-sm"
+                      />
+                    </div>
+                  </InputWrapper>
+
+                  <InputWrapper label="Category Icon" helpText="Emoji (e.g. 🌾, 🥣) or URL path for category representation in Quick Browse strip.">
+                    <div className="relative">
+                      <input
+                        type="text"
+                        value={formData.icon}
+                        onChange={e => setFormData({ ...formData, icon: e.target.value })}
+                        placeholder="e.g. 🌾 or /icons/rice.svg"
+                        className="w-full h-14 px-6 rounded-xl border border-slate-200 focus:border-blue-500 outline-none font-bold text-slate-900 text-sm"
+                      />
+                    </div>
+                  </InputWrapper>
+
                   <div className="space-y-4">
                     <div className="flex items-center justify-between p-4 rounded-xl bg-slate-50 border border-slate-100 transition-all">
                       <div>
@@ -339,6 +366,20 @@ export default function CategoryForm({ initialData, mode }: CategoryFormProps) {
                         className={`h-6 w-11 rounded-full transition-all relative ${formData.showOnHome ? 'bg-emerald-500' : 'bg-slate-200'}`}
                       >
                         <div className={`absolute top-1 h-4 w-4 rounded-full bg-white transition-all ${formData.showOnHome ? 'left-6' : 'left-1'}`} />
+                      </button>
+                    </div>
+
+                    <div className="flex items-center justify-between p-4 rounded-xl bg-slate-50 border border-slate-100 transition-all">
+                      <div>
+                        <p className="text-[11px] font-black text-slate-900 uppercase">Quick Browse Bar</p>
+                        <p className="text-[10px] font-bold text-slate-400">Show in homepage Browse Bar</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setFormData({ ...formData, quickBrowseEnabled: !formData.quickBrowseEnabled })}
+                        className={`h-6 w-11 rounded-full transition-all relative ${formData.quickBrowseEnabled ? 'bg-emerald-500' : 'bg-slate-200'}`}
+                      >
+                        <div className={`absolute top-1 h-4 w-4 rounded-full bg-white transition-all ${formData.quickBrowseEnabled ? 'left-6' : 'left-1'}`} />
                       </button>
                     </div>
                   </div>

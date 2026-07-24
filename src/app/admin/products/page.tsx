@@ -25,6 +25,7 @@ interface Product {
    variants?: { id: number; name: string; price: number; stock?: number }[];
    status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'DRAFT';
    ingredientsInfo?: string;
+   productIdStr?: string;
 }
 
 const STATUS_CONFIG: Record<string, { label: string; dot: string; bg: string; text: string; border: string }> = {
@@ -171,7 +172,7 @@ export default function AdminProducts() {
 
             return [
                index + 1,
-               `NM-00${p.id}`,
+               p.productIdStr || `Pro-${String(p.id).padStart(2, '0')}`,
                `"${(p.name || '').replace(/"/g, '""')}"`,
                `"${(categoryName || '').replace(/"/g, '""')}"`,
                `"${(vendorName || '').replace(/"/g, '""')}"`,
@@ -367,7 +368,7 @@ export default function AdminProducts() {
                                                 </span>
                                              )}
                                              <span className="text-[9px] text-slate-300 font-bold uppercase tracking-wider">
-                                                ID: NM-00{product.id}
+                                                ID: {product.productIdStr || `Pro-${String(product.id).padStart(2, '0')}`}
                                              </span>
                                           </div>
                                        </div>
@@ -515,7 +516,7 @@ export default function AdminProducts() {
                               <div className="min-w-0 flex-1">
                                  <div className="flex items-center justify-between gap-2">
                                     <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">
-                                       ID: NM-00{product.id}
+                                       ID: {product.productIdStr || `Pro-${String(product.id).padStart(2, '0')}`}
                                     </span>
                                     <button onClick={() => toggleSelectRow(product.id)} className="text-slate-400 hover:text-slate-600 transition-colors">
                                        {selectedIds.includes(product.id) ? (

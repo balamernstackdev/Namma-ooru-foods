@@ -8,6 +8,7 @@ import { ArrowLeft, ArrowRight, Sparkles, LayoutGrid, Award, ShieldCheck, Chevro
 import ProductCard from '@/components/ProductCard';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useBanners } from '@/hooks/useBanners';
+import QuickBrowseCategories from '@/components/QuickBrowseCategories';
 
 interface SubcategoryItem {
   id: number;
@@ -184,6 +185,9 @@ export default function CategoryDetailClient({
         </div>
       </div>
 
+      {/* Quick Browse Categories Strip */}
+      <QuickBrowseCategories activeSlug={category?.slug || categoryId} />
+
       {/* DEDICATED SUBCATEGORY PAGE HEADER */}
       {isSubcategoryPage ? (
         <div className="w-full bg-slate-900 text-white py-8 md:py-12 relative overflow-hidden">
@@ -307,24 +311,6 @@ export default function CategoryDetailClient({
                       {categoryDesc}
                     </p>
                   )}
-                </div>
-
-                <div className="flex items-center gap-3 shrink-0">
-                  <div className="flex items-center gap-2 bg-slate-50 border border-slate-200/80 px-4 py-2.5 rounded-2xl shadow-2xs">
-                    <Package size={16} className="text-emerald-700" />
-                    <div className="flex flex-col">
-                      <span className="text-[9px] font-black uppercase tracking-wider text-slate-400">Total Products</span>
-                      <span className="text-sm font-black text-slate-900">{totalProductsCount}</span>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2 bg-slate-50 border border-slate-200/80 px-4 py-2.5 rounded-2xl shadow-2xs">
-                    <Layers size={16} className="text-amber-600" />
-                    <div className="flex flex-col">
-                      <span className="text-[9px] font-black uppercase tracking-wider text-slate-400">Subcategories</span>
-                      <span className="text-sm font-black text-slate-900">{totalSubcategoriesCount}</span>
-                    </div>
-                  </div>
                 </div>
               </div>
             </div>

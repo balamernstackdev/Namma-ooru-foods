@@ -238,7 +238,7 @@ export default function SearchDropdown({
 
   const showPlaceholder = !query || query.trim().length < 2;
 
-  if (!isVisible || showPlaceholder) return null;
+  if (!isVisible) return null;
 
   // Autocomplete Suggestions - define exact slice bounds to avoid empty sections
   const products = suggestions?.products || [];

@@ -28,6 +28,7 @@ interface Product {
    stock?: number;
    variants?: { id: number; name: string; price: number; stock?: number }[];
    status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'DRAFT';
+   productIdStr?: string;
    slug?: string;
    ingredientsInfo?: string;
 }
@@ -218,7 +219,7 @@ export default function HubProducts() {
 
                return [
                   index + 1,
-                  `NM-00${p.id}`,
+                  p.productIdStr || `Pro-${String(p.id).padStart(2, '0')}`,
                   `"${(p.name || '').replace(/"/g, '""')}"`,
                   `"${(categoryName || '').replace(/"/g, '""')}"`,
                   `"${(vendorName || '').replace(/"/g, '""')}"`,
@@ -572,7 +573,7 @@ export default function HubProducts() {
                                                 </button>
                                              )}
                                              <span className="text-[9px] text-slate-300 font-bold uppercase tracking-wider">
-                                                ID: NM-00{product.id}
+                                                ID: {product.productIdStr || `Pro-${String(product.id).padStart(2, '0')}`}
                                              </span>
                                           </div>
                                        </div>
@@ -681,9 +682,9 @@ export default function HubProducts() {
                               </div>
                               <div className="min-w-0 flex-1">
                                  <div className="flex items-center justify-between gap-2">
-                                    <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">
-                                       ID: NM-00{product.id}
-                                    </span>
+                                     <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">
+                                        ID: {product.productIdStr || `Pro-${String(product.id).padStart(2, '0')}`}
+                                     </span>
 
                                  </div>
                                  <p className="text-[13px] font-extrabold text-slate-900 leading-tight truncate mt-0.5">

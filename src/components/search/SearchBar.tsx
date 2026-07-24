@@ -111,22 +111,14 @@ export default function SearchBar({ isMobile = false }: { isMobile?: boolean }) 
 
   const handleSearch = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    if (query.trim().length >= 2) {
-      addToRecent(query.trim());
-      setOpen(false);
-      
-      const searchUrl = `/search?q=${encodeURIComponent(query.trim())}`;
-      router.push(searchUrl);
-    }
   };
 
   const onItemClick = (label: string, type: 'product' | 'query' | 'brand' | 'category' | 'vendor') => {
-    setOpen(false);
     if (type === 'query') {
       setQuery(label);
       addToRecent(label);
-      router.push(`/search?q=${encodeURIComponent(label)}`);
     } else {
+      setOpen(false);
       setQuery('');
     }
   };

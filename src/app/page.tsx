@@ -15,6 +15,8 @@ import MarketingPopupWrapper from '@/components/MarketingPopupWrapper';
 
 import { API_URL } from '@/lib/api';
 
+import QuickBrowseCategories from "@/components/QuickBrowseCategories";
+
 const CategoriesCircles = nextDynamic(() => import('@/components/CategoriesCircles'), {
   ssr: false, // Turn off SSR to ensure it hydrates and mounts on the client
   loading: () => (
@@ -70,6 +72,9 @@ export default function Home() {
   return (
     <div className="flex flex-col bg-white w-full overflow-x-hidden">
       <main>
+        {/* Quick Browse Categories Strip */}
+        <QuickBrowseCategories activeSlug="all" />
+
         {/* 1. Hero Banner Slider */}
         <Hero />
         <MarketingPopupWrapper />

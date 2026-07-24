@@ -32,6 +32,7 @@ export default function AdminSettings() {
    const [supportEmail, setSupportEmail] = React.useState('support@nammaoorufoods.com');
    const [supportWhatsapp, setSupportWhatsapp] = React.useState('+91 9000 896 898');
    const [autoGenerateCategoryContent, setAutoGenerateCategoryContent] = React.useState(true);
+   const [quickBrowseEnabled, setQuickBrowseEnabled] = React.useState(true);
 
    // Logistics States
    const [deliveryRadius, setDeliveryRadius] = React.useState(15);
@@ -92,7 +93,8 @@ export default function AdminSettings() {
           orderEmail, enableWhatsappAlerts, lowStockThreshold,
           platformLogo, platformFavicon, primaryColor, secondaryColor,
           settlementDay, minPayout,
-          gstEnabled, gstDefaultRate, gstTaxType, gstTaxLabel, gstRoundingEnabled
+          gstEnabled, gstDefaultRate, gstTaxType, gstTaxLabel, gstRoundingEnabled,
+          quickBrowseEnabled
        };
 
        const changed = Object.keys(current).some(key => {
@@ -113,7 +115,8 @@ export default function AdminSettings() {
        orderEmail, enableWhatsappAlerts, lowStockThreshold,
        platformLogo, platformFavicon, primaryColor, secondaryColor,
        slabs, settlementDay, minPayout,
-       gstEnabled, gstDefaultRate, gstTaxType, gstTaxLabel, gstRoundingEnabled
+       gstEnabled, gstDefaultRate, gstTaxType, gstTaxLabel, gstRoundingEnabled,
+       quickBrowseEnabled
     ]);
 
     React.useEffect(() => {
@@ -144,6 +147,7 @@ export default function AdminSettings() {
                const emailSetting = data.find((s: any) => s.key === 'support_email');
                const whatsappSetting = data.find((s: any) => s.key === 'support_whatsapp');
                const autoGenSetting = data.find((s: any) => s.key === 'auto_generate_category_content');
+               const quickBrowseSetting = data.find((s: any) => s.key === 'quick_browse_enabled');
 
                // Logistics
                const radiusSetting = data.find((s: any) => s.key === 'delivery_radius');
@@ -194,6 +198,7 @@ export default function AdminSettings() {
                 const valSupportEmail = emailSetting?.value || 'support@nammaoorufoods.com';
                 const valSupportWhatsapp = whatsappSetting?.value || '+91 9000 896 898';
                 const valAutoGen = autoGenSetting ? autoGenSetting.value === 'true' : true;
+                const valQuickBrowse = quickBrowseSetting ? quickBrowseSetting.value === 'true' : true;
 
                 const valRadius = radiusSetting ? Number(radiusSetting.value) : 15;
                 const valFee = feeSetting ? Number(feeSetting.value) : 40;
@@ -228,6 +233,7 @@ export default function AdminSettings() {
                 // Save to reference for unsaved changes detection
                 initialSettingsRef.current = {
                    storeName: valStoreName, storeCategory: valStoreCategory, supportEmail: valSupportEmail, supportWhatsapp: valSupportWhatsapp, autoGenerateCategoryContent: valAutoGen,
+                   quickBrowseEnabled: valQuickBrowse,
                    deliveryRadius: valRadius, deliveryFee: valFee, freeShippingThreshold: valThreshold, shippingMinOrderAmount: valMinOrderAmount,
                    enableCod: valCod, razorpayKey: valRazorpay, razorpaySecret: valRazorpaySecret, activePaymentGateway: valActiveGateway, gstNumber: valGstNum, hdfcMerchantId: valHdfcMerch, hdfcClientId: valHdfcClient, hdfcApiKey: valHdfcKey, hdfcApiUrl: valHdfcUrl,
                    orderEmail: valOrderEmail, enableWhatsappAlerts: valWhatsappAlerts, lowStockThreshold: valStockThresh,
@@ -244,6 +250,7 @@ export default function AdminSettings() {
                 setSupportEmail(valSupportEmail);
                 setSupportWhatsapp(valSupportWhatsapp);
                 setAutoGenerateCategoryContent(valAutoGen);
+                setQuickBrowseEnabled(valQuickBrowse);
                 setDeliveryRadius(valRadius);
                 setDeliveryFee(valFee);
                 setFreeShippingThreshold(valThreshold);
@@ -290,6 +297,7 @@ export default function AdminSettings() {
        setSupportEmail(init.supportEmail);
        setSupportWhatsapp(init.supportWhatsapp);
        setAutoGenerateCategoryContent(init.autoGenerateCategoryContent);
+       setQuickBrowseEnabled(init.quickBrowseEnabled !== undefined ? init.quickBrowseEnabled : true);
 
        setDeliveryRadius(init.deliveryRadius);
        setDeliveryFee(init.deliveryFee);
@@ -351,6 +359,7 @@ export default function AdminSettings() {
              { key: 'support_email', value: supportEmail, type: 'STRING', group: 'STORE' },
              { key: 'support_whatsapp', value: supportWhatsapp, type: 'STRING', group: 'STORE' },
              { key: 'auto_generate_category_content', value: autoGenerateCategoryContent.toString(), type: 'BOOLEAN', group: 'STORE' },
+             { key: 'quick_browse_enabled', value: quickBrowseEnabled.toString(), type: 'BOOLEAN', group: 'CATEGORY' },
 
              { key: 'delivery_radius', value: deliveryRadius.toString(), type: 'NUMBER', group: 'LOGISTICS' },
              { key: 'delivery_fee', value: deliveryFee.toString(), type: 'NUMBER', group: 'LOGISTICS' },
@@ -599,6 +608,19 @@ export default function AdminSettings() {
                               />
                            </div>
 
+                           <div className="flex items-center justify-between p-6 rounded-2xl bg-slate-50 border border-slate-100 transition-all mt-4 text-left">
+                              <div>
+                                 <p className="text-[12px] font-black text-[#022c22] uppercase">Quick Browse Categories Strip</p>
+                                 <p className="text-[10px] font-bold text-slate-400 mt-1">Enable/disable the horizontal categories Browse Bar on the homepage</p>
+                              </div>
+                              <button
+                                 type="button"
+                                 onClick={() => setQuickBrowseEnabled(!quickBrowseEnabled)}
+                                 className={`h-7 w-12 rounded-full transition-all relative shrink-0 ${quickBrowseEnabled ? 'bg-emerald-600' : 'bg-slate-200'}`}
+                              >
+                                 <div className={`absolute top-1 h-5 w-5 rounded-full bg-white transition-all ${quickBrowseEnabled ? 'left-6' : 'left-1'}`} />
+                              </button>
+                           </div>
 
                         </div>
                      )}
