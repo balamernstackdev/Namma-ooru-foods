@@ -110,7 +110,7 @@ export default function QuickBrowseCategories({ activeSlug = 'all' }: QuickBrows
       const imageScale = isRice ? '' : 'scale-[1.35]';
       return (
         <div className={`transition-transform duration-300 relative w-10 h-10 md:w-12 md:h-12 flex items-center justify-center ${isActive ? 'scale-110 drop-shadow-sm' : ''}`}>
-          <Image src={icon} alt={cat.name} fill className={`object-contain mix-blend-multiply contrast-125 brightness-105 ${imageScale}`} unoptimized />
+          <Image src={icon} alt={cat.name} fill className={`object-contain ${imageScale}`} unoptimized />
         </div>
       );
     }
@@ -122,7 +122,7 @@ export default function QuickBrowseCategories({ activeSlug = 'all' }: QuickBrows
   };
 
   return (
-    <section className="lg:hidden w-full bg-[#f8fafc] border-b border-slate-200/80 py-3 relative group/browse animate-in fade-in duration-500">
+    <section className="lg:hidden w-full bg-white border-b border-slate-200/80 py-3 relative group/browse animate-in fade-in duration-500">
       <div className="standard-container px-4 relative flex items-center">
 
         {/* Navigation Arrow - Left */}
