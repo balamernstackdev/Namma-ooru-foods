@@ -4,7 +4,37 @@ import React, { useRef, useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import useSWR from 'swr';
-import { ChevronLeft, ChevronRight, LayoutGrid } from 'lucide-react';
+import { 
+  ChevronLeft, 
+  ChevronRight, 
+  LayoutGrid,
+  Wheat, 
+  Utensils, 
+  Droplet, 
+  Carrot, 
+  Cookie, 
+  Nut, 
+  Flame,
+  Leaf, 
+  Coffee,
+  PackageOpen
+} from 'lucide-react';
+
+const getCategoryIcon = (name: string) => {
+  if (!name) return LayoutGrid;
+  const lower = name.toLowerCase();
+  if (lower.includes('rice') || lower.includes('millet')) return Wheat;
+  if (lower.includes('flour') || lower.includes('powder')) return Utensils;
+  if (lower.includes('oil')) return Droplet;
+  if (lower.includes('pickle') || lower.includes('thokku')) return Carrot;
+  if (lower.includes('snack') || lower.includes('sweet') || lower.includes('cookie') || lower.includes('cake') || lower.includes('bake') || lower.includes('chocolate') || lower.includes('mix')) return Cookie;
+  if (lower.includes('nut') || lower.includes('dry fruit') || lower.includes('date') || lower.includes('almond') || lower.includes('honey')) return Nut;
+  if (lower.includes('spice') || lower.includes('masala')) return Flame;
+  if (lower.includes('health') || lower.includes('drink') || lower.includes('soup')) return Coffee;
+  if (lower.includes('organic') || lower.includes('herbal') || lower.includes('amla') || lower.includes('moringa') || lower.includes('palm')) return Leaf;
+  if (lower.includes('eat') || lower.includes('ready')) return PackageOpen;
+  return LayoutGrid;
+};
 import { API_URL } from '@/lib/api';
 import { usePlatformSettings } from '@/context/PlatformSettingsContext';
 
@@ -63,7 +93,7 @@ export default function QuickBrowseCategories({ activeSlug = 'all' }: QuickBrows
           <div className="flex gap-4 md:gap-6 overflow-hidden">
             {[...Array(8)].map((_, i) => (
               <div key={i} className="flex flex-col items-center shrink-0 gap-2">
-                <div className="w-14 h-14 rounded-2xl bg-slate-100" />
+                <div className="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-slate-100" />
                 <div className="h-3 w-12 bg-slate-100 rounded" />
               </div>
             ))}
@@ -82,48 +112,12 @@ export default function QuickBrowseCategories({ activeSlug = 'all' }: QuickBrows
   };
 
   const renderIcon = (cat: any, isActive: boolean) => {
-    const iconValue = cat.icon || '';
-    
-    if (isEmoji(iconValue)) {
-      return (
-        <span className="text-2xl select-none leading-none transform transition-transform group-hover:scale-110">
-          {iconValue}
-        </span>
-      );
-    }
-
-    if (iconValue.startsWith('http') || iconValue.startsWith('/')) {
-      return (
-        <div className="relative w-7 h-7">
-          <img
-            src={iconValue}
-            alt=""
-            className="w-full h-full object-contain filter group-hover:brightness-110"
-            loading="lazy"
-          />
-        </div>
-      );
-    }
-
-    if (cat.image) {
-      return (
-        <div className="relative w-full h-full overflow-hidden rounded-[1.25rem]">
-          <Image
-            src={cat.image}
-            alt={cat.name}
-            fill
-            className="object-cover scale-100 group-hover:scale-110 transition-transform duration-500"
-            sizes="64px"
-            unoptimized
-          />
-        </div>
-      );
-    }
-
+    const IconComp = getCategoryIcon(cat.name);
     return (
-      <LayoutGrid
-        size={20}
-        className={`transition-colors ${isActive ? 'text-white' : 'text-emerald-700'}`}
+      <IconComp
+        size={24}
+        strokeWidth={1.5}
+        className={`transition-colors ${isActive ? 'text-amber-400' : 'text-emerald-800'}`}
       />
     );
   };
@@ -164,21 +158,17 @@ export default function QuickBrowseCategories({ activeSlug = 'all' }: QuickBrows
                   className="group flex flex-col items-center gap-1.5 text-center transition-all duration-300"
                 >
                   <div
-                    className={`w-14 h-14 md:w-16 md:h-16 rounded-[1.25rem] flex items-center justify-center transition-all duration-500 shadow-sm border ${
-                      isFullImage ? 'p-0 overflow-hidden' : 'p-2.5'
-                    } ${
+                    className={`w-12 h-12 md:w-14 md:h-14 rounded-[1rem] flex items-center justify-center transition-all duration-500 p-2 md:p-2.5 ${
                       isActive
-                        ? isFullImage
-                          ? 'border-emerald-600 ring-4 ring-emerald-600/30 scale-105'
-                          : 'bg-emerald-600 border-emerald-500 shadow-md shadow-emerald-600/10 scale-105 text-white'
-                        : 'bg-white border-slate-200 hover:border-emerald-200 hover:bg-emerald-50/30'
+                        ? 'bg-slate-900 shadow-md scale-105'
+                        : 'bg-transparent hover:bg-emerald-50/50'
                     }`}
                   >
                     {renderIcon(category, isActive)}
                   </div>
                   <span
-                    className={`text-[11px] md:text-[12px] font-bold uppercase tracking-[0.06em] leading-[1.2] px-1 max-w-[80px] line-clamp-2 transition-colors ${
-                      isActive ? 'text-emerald-950 font-black' : 'text-slate-500 group-hover:text-emerald-700'
+                    className={`max-w-[72px] md:max-w-[88px] whitespace-normal break-words text-[10px] md:text-[11px] font-bold capitalize leading-tight px-1 transition-colors ${
+                      isActive ? 'text-emerald-950' : 'text-slate-600 group-hover:text-emerald-800'
                     }`}
                   >
                     {category.name}

@@ -157,13 +157,13 @@ export default function ArtisanMarketplace() {
   if (error || (!isLoading && activeBrands.length === 0)) return null;
 
   return (
-    <section className="w-full pt-2 md:pt-4 pb-4 md:pb-6 bg-white relative overflow-hidden">
+    <section className="w-full pt-1 md:pt-2 pb-4 md:pb-6 bg-white relative overflow-hidden">
 
 
       <div className="standard-container relative z-10">
 
         {/* --- Header matching premium vendor style --- */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-6 md:mb-8 gap-6">
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-0 md:mb-4 gap-4">
           <div className="space-y-3">
             <div className="flex items-center gap-2 text-slate-400">
               <Sparkles size={12} className="text-amber-500 fill-amber-500" />
@@ -192,12 +192,12 @@ export default function ArtisanMarketplace() {
             onMouseMove={onMouseMove}
             onKeyDown={onKeyDown}
             tabIndex={0}
-            className="flex overflow-x-auto no-scrollbar pb-4 pt-2 snap-x snap-mandatory scroll-smooth items-start justify-start px-4 md:px-8 gap-6 md:gap-10 cursor-grab active:cursor-grabbing focus:outline-none"
+            className="flex overflow-x-auto no-scrollbar pb-4 pt-2 snap-x snap-mandatory scroll-smooth items-start justify-start px-4 md:px-8 gap-4 md:gap-10 cursor-grab active:cursor-grabbing focus:outline-none"
           >
             {isLoading ? (
               // Loading Skeleton
               [...Array(4)].map((_, i) => (
-                <div key={i} className="snap-start shrink-0 w-[140px] md:w-[180px] animate-pulse">
+                <div key={i} className="snap-start shrink-0 w-[100px] sm:w-[120px] md:w-[180px] animate-pulse">
                   <div className="w-full aspect-square rounded-[2rem] md:rounded-[2.8rem] bg-slate-100" />
                   <div className="h-3 bg-slate-100 rounded-full w-2/3 mx-auto mt-4" />
                 </div>
@@ -210,7 +210,7 @@ export default function ArtisanMarketplace() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true, margin: "-20px" }}
                   transition={{ duration: 0.6, delay: idx * 0.05 }}
-                  className="snap-start shrink-0 w-[140px] md:w-[180px]"
+                  className="snap-start shrink-0 w-[100px] sm:w-[120px] md:w-[180px]"
                 >
                   <Link
                     href={`/brands/detail?slug=${brand.slug || brand.id}`}
@@ -238,7 +238,7 @@ export default function ArtisanMarketplace() {
                     </div>
 
                     {/* Text Block placed BELOW the card */}
-                    <div className="mt-5 w-full flex flex-col items-center gap-2">
+                    <div className="mt-2 w-full flex flex-col items-center gap-2">
                       <p className="text-emerald-950 text-[10px] md:text-[12px] font-[900] uppercase tracking-[0.08em] group-hover:text-amber-600 transition-colors duration-300 leading-[1.3] text-center px-1">
                         {brand.name}
                       </p>

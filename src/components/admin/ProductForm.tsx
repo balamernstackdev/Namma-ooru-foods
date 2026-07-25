@@ -866,7 +866,7 @@ export default function ProductForm({ initialData, mode }: ProductFormProps) {
                         {formData.isFastDelivery && (
                            <div className="mt-4 max-w-xs">
                               <label className="text-[11px] font-black text-slate-500 uppercase tracking-wider mb-2 block">Delivery Time</label>
-                              <select 
+                              <select
                                  value={formData.deliveryTime || ''}
                                  onChange={e => setFormData({ ...formData, deliveryTime: e.target.value })}
                                  className="w-full h-11 bg-slate-50 border border-slate-200 rounded-xl px-4 text-sm font-bold text-slate-700 outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors"

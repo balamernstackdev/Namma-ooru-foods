@@ -4,7 +4,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter, usePathname } from 'next/navigation';
-import { ArrowLeft, ArrowRight, Sparkles, LayoutGrid, Award, ShieldCheck, ChevronRight, Layers, Package } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Sparkles, LayoutGrid, Award, ShieldCheck, ChevronRight, ChevronLeft, Layers, Package } from 'lucide-react';
 import ProductCard from '@/components/ProductCard';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useBanners } from '@/hooks/useBanners';
@@ -109,6 +109,8 @@ export default function CategoryDetailClient({
 
   // Selected subcategory slug state
   const [activeSubSlug, setActiveSubSlug] = useState<string>(initialSubSlug || 'all');
+  const [subCurrentPage, setSubCurrentPage] = useState(1);
+  const subItemsPerPage = 10;
 
   useEffect(() => {
     if (initialSubSlug) {
@@ -230,57 +232,29 @@ export default function CategoryDetailClient({
           {bannerImage ? (
             <div className="w-full py-4 md:py-6 flex justify-center animate-in fade-in duration-500">
               <div className="standard-container px-4">
-                <div className="relative w-full aspect-[2.2/1] md:aspect-[1400/340] rounded-3xl overflow-hidden group shadow-md bg-slate-100 border border-slate-200">
-                  <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/45 to-transparent z-10" />
-
-                  <Image
-                    src={bannerImage}
-                    alt={bannerTitle}
-                    fill
-                    priority
-                    className="w-full h-full object-cover transition-transform duration-[2000ms] group-hover:scale-103"
-                    unoptimized
-                  />
-
-                  <div className="absolute inset-0 flex flex-col justify-center px-6 md:px-16 z-20 max-w-xl md:max-w-2xl text-left">
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className="h-2 w-2 rounded-full bg-amber-400 animate-pulse" />
-                      <span className="text-amber-400 text-[10px] md:text-xs font-black uppercase tracking-[0.3em] drop-shadow-md">
-                        {bannerTagline}
-                      </span>
-                    </div>
-
-                    <h1 className="text-white text-2xl md:text-5xl font-black mb-3 leading-tight tracking-tighter uppercase drop-shadow-lg">
-                      {bannerTitle}
-                    </h1>
-
-                    <p className="text-white/80 text-[11px] md:text-sm font-medium mb-4 line-clamp-2 md:line-clamp-3 leading-relaxed drop-shadow">
-                      {bannerSubtitle}
-                    </p>
-
-                    {bannerLink ? (
-                      <div className="pt-2">
-                        <Link
-                          href={bannerLink}
-                          className="inline-flex h-9 md:h-11 px-6 md:px-8 rounded-full bg-amber-500 text-slate-900 font-black uppercase tracking-widest text-[9px] md:text-[10px] hover:bg-white hover:scale-105 transition-all items-center shadow-md active:scale-95"
-                        >
-                          {buttonText}
-                        </Link>
-                      </div>
-                    ) : (
-                      <div className="flex flex-wrap items-center gap-3 text-white/90 text-[10px] font-black uppercase tracking-wider">
-                        <div className="flex items-center gap-1.5 bg-white/10 backdrop-blur-md px-3 py-1.5 rounded-xl border border-white/10">
-                          <Award size={12} className="text-amber-400" />
-                          <span>100% Native</span>
-                        </div>
-                        <div className="flex items-center gap-1.5 bg-white/10 backdrop-blur-md px-3 py-1.5 rounded-xl border border-white/10">
-                          <ShieldCheck size={12} className="text-emerald-400" />
-                          <span>Chemical-Free</span>
-                        </div>
-                      </div>
-                    )}
+                {bannerLink ? (
+                  <Link href={bannerLink} className="block relative w-full aspect-[2/1] md:aspect-[1400/340] rounded-2xl md:rounded-3xl overflow-hidden group shadow-md bg-slate-100 border border-slate-200">
+                    <Image
+                      src={bannerImage}
+                      alt={bannerTitle}
+                      fill
+                      priority
+                      className="w-full h-full object-cover transition-transform duration-[2000ms] group-hover:scale-105"
+                      unoptimized
+                    />
+                  </Link>
+                ) : (
+                  <div className="relative w-full aspect-[2/1] md:aspect-[1400/340] rounded-2xl md:rounded-3xl overflow-hidden shadow-md bg-slate-100 border border-slate-200">
+                    <Image
+                      src={bannerImage}
+                      alt={bannerTitle}
+                      fill
+                      priority
+                      className="w-full h-full object-cover"
+                      unoptimized
+                    />
                   </div>
-                </div>
+                )}
               </div>
             </div>
           ) : (
@@ -299,9 +273,9 @@ export default function CategoryDetailClient({
           )}
 
           {/* METRICS & DETAILS */}
-          <div className="w-full py-4 bg-white">
+          <div className="w-full pt-4 pb-0 md:py-4 bg-white">
             <div className="standard-container px-4">
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-2 md:pb-4 border-b border-slate-100">
                 <div>
                   <h2 className="text-xl md:text-3xl font-black text-slate-900 uppercase tracking-tight">
                     {categoryName}
@@ -318,26 +292,21 @@ export default function CategoryDetailClient({
 
           {/* SUBCATEGORY CARDS SECTION */}
           {hasSubcategories && (
-            <div className="w-full py-8 bg-slate-50/60 border-y border-slate-100">
+            <div className="w-full pt-4 pb-8 md:py-8 bg-slate-50/60 border-y border-slate-100">
               <div className="standard-container px-4">
                 <div className="flex items-center justify-between mb-4">
                   <div>
                     <span className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-700 block">Subcategories</span>
                     <h3 className="text-lg md:text-xl font-black text-slate-900 uppercase tracking-tight">Select a Subcategory</h3>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => handleSelectSubcategory('all')}
-                    className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all border ${activeSubSlug === 'all' ? 'bg-emerald-950 text-white border-emerald-950 shadow-sm' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'}`}
-                  >
-                    All Products ({totalProductsCount})
-                  </button>
+
                 </div>
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
-                  {subcategoriesList.map((sub, idx) => {
+                  {subcategoriesList.slice((subCurrentPage - 1) * subItemsPerPage, subCurrentPage * subItemsPerPage).map((sub, idx) => {
+                    const globalIdx = (subCurrentPage - 1) * subItemsPerPage + idx;
                     const subImg = sub.image || category.image || '/ai_images/organic_grains_1776231059575.png';
-                    const subCode = sub.code || `SUB-${String(idx + 1).padStart(2, '0')}`;
+                    const subCode = sub.code || `SUB-${String(globalIdx + 1).padStart(2, '0')}`;
                     const isSelected = activeSubSlug === sub.slug;
                     return (
                       <button
@@ -352,21 +321,17 @@ export default function CategoryDetailClient({
                             src={subImg}
                             alt={sub.name}
                             fill
-                            className="object-contain p-2 transition-transform duration-500 group-hover:scale-105"
+                            className="object-cover transition-transform duration-500 group-hover:scale-105"
                             unoptimized
                           />
-
-                          <div className="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-white/90 backdrop-blur-xs border border-slate-200 text-slate-600 text-[9px] font-mono font-bold shadow-2xs">
-                            {sub.productCount} SKU{sub.productCount === 1 ? '' : 's'}
-                          </div>
                         </div>
 
                         {/* Details */}
                         <div className="flex flex-col flex-1 p-3.5 flex-grow justify-between bg-white">
                           <div>
                             <div className="flex items-center justify-between gap-1 mb-1">
-                              <div className="flex items-center gap-1 min-w-0 text-[10px]">
-                                <span className="font-black tracking-wider uppercase text-emerald-700 truncate">
+                              <div className="flex items-center gap-1 text-[10px]">
+                                <span className="font-black tracking-wider uppercase text-emerald-700 leading-tight">
                                   {categoryName}
                                 </span>
                               </div>
@@ -379,26 +344,52 @@ export default function CategoryDetailClient({
                               {sub.name}
                             </p>
 
-                            {sub.description ? (
+                            {sub.description && (
                               <p className="text-[10px] text-slate-400 font-medium line-clamp-2 leading-tight mb-2">
                                 {sub.description}
-                              </p>
-                            ) : (
-                              <p className="text-[10px] text-slate-400 font-medium line-clamp-1 leading-tight mb-2">
-                                {sub.productCount} Product{sub.productCount === 1 ? '' : 's'} Available
                               </p>
                             )}
                           </div>
 
-                          <div className={`mt-2 w-full h-8.5 rounded-xl font-black text-[10px] uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all shadow-xs ${isSelected ? 'bg-emerald-950 text-white' : 'bg-slate-100 text-slate-700 group-hover:bg-emerald-950 group-hover:text-white'}`}>
-                            <span>{isSelected ? 'Selected' : 'View Collection'}</span>
-                            <ArrowRight size={12} />
-                          </div>
+
                         </div>
                       </button>
                     );
                   })}
                 </div>
+
+                {/* --- Subcategories Pagination Controls --- */}
+                {Math.ceil(subcategoriesList.length / subItemsPerPage) > 1 && (
+                  <div className="mt-8 flex justify-center items-center gap-2">
+                    <button
+                      onClick={() => {
+                        setSubCurrentPage(prev => Math.max(prev - 1, 1));
+                        window.scrollTo({ top: 300, behavior: 'smooth' });
+                      }}
+                      disabled={subCurrentPage === 1}
+                      className="h-8 w-8 md:h-10 md:w-10 rounded-full border border-slate-200 flex items-center justify-center text-emerald-900 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-emerald-50 transition-colors"
+                    >
+                      <ChevronLeft size={16} />
+                    </button>
+
+                    <div className="flex items-center gap-2 px-3">
+                      <span className="text-xs md:text-sm font-bold text-slate-600">
+                        Page {subCurrentPage} of {Math.ceil(subcategoriesList.length / subItemsPerPage)}
+                      </span>
+                    </div>
+
+                    <button
+                      onClick={() => {
+                        setSubCurrentPage(prev => Math.min(prev + 1, Math.ceil(subcategoriesList.length / subItemsPerPage)));
+                        window.scrollTo({ top: 300, behavior: 'smooth' });
+                      }}
+                      disabled={subCurrentPage === Math.ceil(subcategoriesList.length / subItemsPerPage)}
+                      className="h-8 w-8 md:h-10 md:w-10 rounded-full border border-slate-200 flex items-center justify-center text-emerald-900 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-emerald-50 transition-colors"
+                    >
+                      <ChevronRight size={16} />
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           )}

@@ -223,7 +223,7 @@ export default function ProductDetailClient({ product: initialProduct, allProduc
             <button
                onClick={() => {
                   toast.dismiss(t);
-                  document.querySelector('[data-cart-drawer-trigger]')?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+                  router.push('/cart');
                }}
                className="bg-green-600 hover:bg-green-700 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition-colors shadow-sm shrink-0"
             >
@@ -369,7 +369,7 @@ export default function ProductDetailClient({ product: initialProduct, allProduc
                            <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-black text-slate-900 tracking-tight leading-tight mt-1 flex flex-wrap items-center gap-3">
                               {product.name}
                               <span className="text-[11px] bg-white text-slate-500 px-2 py-0.5 rounded font-mono border border-slate-200 shrink-0 font-bold tracking-normal mt-1 md:mt-0 shadow-2xs">
-                                 {(product.productIdStr || `Pro-${product.id.toString().padStart(2, '0')}`).replace(/^NM-/i, 'Pro-')}
+                                 {selectedVariant.sku || (product.productIdStr || `Pro-${product.id.toString().padStart(2, '0')}`).replace(/^NM-/i, 'Pro-')}
                               </span>
                            </h1>
                         </div>

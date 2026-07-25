@@ -70,11 +70,7 @@ export default function CategoriesPage() {
             <ChevronRight size={12} className="opacity-60" />
             <span className="text-slate-900 font-bold uppercase tracking-wider">Categories</span>
           </div>
-          <div className="flex items-center gap-2 text-slate-900 font-bold">
-            <span className="bg-emerald-50 text-emerald-800 px-2.5 py-1 rounded-full text-[10px] font-mono border border-emerald-100 flex items-center gap-1">
-              <Layers size={12} /> {rawCategories.length} Active Categories
-            </span>
-          </div>
+
         </div>
       </div>
 

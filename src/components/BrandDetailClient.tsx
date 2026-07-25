@@ -108,7 +108,7 @@ export default function BrandDetailClient({ brand }: { brand: any }) {
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="relative h-28 w-28 md:h-32 md:w-32 shrink-0"
+              className="relative h-16 w-16 sm:h-20 sm:w-20 md:h-32 md:w-32 shrink-0"
             >
               <div className="absolute inset-0 bg-white rounded-3xl shadow-xl rotate-3" />
               <div className="relative h-full w-full bg-white rounded-3xl border border-slate-100 shadow-premium overflow-hidden z-10 p-2 flex items-center justify-center">
@@ -126,8 +126,8 @@ export default function BrandDetailClient({ brand }: { brand: any }) {
               </div>
             </motion.div>
 
-            <div className="flex-1 space-y-3 text-center md:text-left md:pt-4">
-              <h1 className="text-3xl md:text-5xl font-[900] text-[#0f172a] tracking-tighter leading-tight uppercase">
+            <div className="flex-1 space-y-2 md:space-y-3 text-center md:text-left md:pt-4">
+              <h1 className="text-lg sm:text-xl md:text-3xl lg:text-5xl font-[900] text-[#0f172a] tracking-tight leading-tight uppercase break-words px-2 md:px-0">
                 {brand.name}
               </h1>
               <p className="text-sm md:text-base text-slate-500 font-medium leading-relaxed max-w-2xl italic font-serif">
@@ -146,53 +146,7 @@ export default function BrandDetailClient({ brand }: { brand: any }) {
         </div>
       </section>
 
-      {/* Brand Banner — renders banners with type='Brand' from admin */}
-      <BrandBanner />
 
-      {/* 2. STICKY FILTERS BAR */}
-      <div className="sticky top-20 md:top-24 z-40 bg-white/90 backdrop-blur-2xl border-b border-slate-100 shadow-sm">
-        <div className="standard-container">
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 py-4 md:py-6">
-
-            <div className="flex items-center gap-3 overflow-x-auto no-scrollbar py-1 flex-1 max-w-full">
-              <button
-                onClick={() => setSelectedCategoryId(null)}
-                className={`h-11 px-6 rounded-2xl text-[11px] font-black uppercase tracking-widest whitespace-nowrap transition-all border ${selectedCategoryId === null
-                  ? 'bg-[#0f172a] border-[#0f172a] text-white'
-                  : 'bg-slate-50 border-slate-100 text-slate-500'
-                  }`}
-              >
-                All Collections
-              </button>
-              {categories.map((cat: any) => (
-                <button
-                  key={cat.id}
-                  onClick={() => setSelectedCategoryId(cat.id)}
-                  className={`h-11 px-6 rounded-2xl text-[11px] font-black uppercase tracking-widest whitespace-nowrap transition-all border ${selectedCategoryId === cat.id
-                    ? 'bg-[#0f172a] border-[#0f172a] text-white'
-                    : 'bg-slate-50 border-slate-100 text-slate-500'
-                    }`}
-                >
-                  {cat.name}
-                </button>
-              ))}
-            </div>
-
-            <div className="flex items-center gap-3 w-full lg:w-auto shrink-0">
-              <div className="relative flex-1 lg:w-80">
-                <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
-                <input
-                  type="text"
-                  placeholder="Search in this brand..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full h-11 pl-11 pr-4 bg-slate-100 rounded-2xl border-none text-sm font-semibold"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
 
       {/* 3. PRODUCT GRID SECTION */}
       <section className="standard-container py-8 md:py-12 min-h-[60vh]">

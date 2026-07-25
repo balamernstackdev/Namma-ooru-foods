@@ -31,7 +31,7 @@ export default function CheckoutPage() {
    const [email, setEmail] = useState('');
    const [addresses, setAddresses] = useState<Address[]>([]);
    const [selectedAddressId, setSelectedAddressId] = useState<number | null>(null);
-   const [paymentMethod, setPaymentMethod] = useState('Online');
+   const [paymentMethod, setPaymentMethod] = useState('Razorpay');
    const [deliverySlot, setDeliverySlot] = useState('Express');
 
    // Address Creation States
@@ -116,19 +116,14 @@ export default function CheckoutPage() {
       total = parseFloat(total.toFixed(2));
    }
 
-    const activeGateway = getSettingVal('active_payment_gateway', 'HDFC');
-    const paymentMethods = activeGateway === 'Razorpay' ? ['Razorpay'] : ['Online'];
+    const activeGateway = 'Razorpay'; // getSettingVal('active_payment_gateway', 'Razorpay');
+    const paymentMethods = ['Razorpay'];
 
     useEffect(() => {
-       if (settingsData) {
-          const activeGatewayVal = getSettingVal('active_payment_gateway', 'HDFC');
-          if (activeGatewayVal === 'Razorpay' && paymentMethod === 'Online') {
-             setPaymentMethod('Razorpay');
-          } else if (activeGatewayVal === 'HDFC' && paymentMethod === 'Razorpay') {
-             setPaymentMethod('Online');
-          }
+       if (paymentMethod === 'Online') {
+          setPaymentMethod('Razorpay');
        }
-    }, [settingsData, paymentMethod]);
+    }, [paymentMethod]);
 
     useEffect(() => {
        setMounted(true);
@@ -594,7 +589,7 @@ export default function CheckoutPage() {
    return (
       <>
          <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" />
-         <div className="min-h-screen bg-[#f8f8f5] pt-6 md:pt-10 pb-40">
+         <div className="min-h-screen bg-[#f8f8f5] pt-6 md:pt-10 pb-56">
             <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
 
                {/* Minimal Header */}
@@ -673,50 +668,58 @@ export default function CheckoutPage() {
                                        ))}
                                     </div>
 
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-5">
                                        <input
                                           placeholder="Full Name" type="text"
-                                          className="h-[56px] px-5 rounded-[18px] bg-white border border-[#e5e7eb] focus:border-[#16a34a] focus:ring-4 focus:ring-[#16a34a]/10 outline-none transition-all text-[15px] font-semibold text-[#111827]"
+                                          className="h-[48px] md:h-[56px] px-4 md:px-5 rounded-xl md:rounded-[18px] bg-white border border-[#e5e7eb] focus:border-[#16a34a] focus:ring-4 focus:ring-[#16a34a]/10 outline-none transition-all text-[13px] md:text-[15px] font-semibold text-[#111827]"
                                           value={newAddress.name} onChange={e => setNewAddress({ ...newAddress, name: e.target.value })}
                                        />
                                        <input
-                                          placeholder="Phone Number" type="text"
-                                          className="h-[56px] px-5 rounded-[18px] bg-white border border-[#e5e7eb] focus:border-[#16a34a] focus:ring-4 focus:ring-[#16a34a]/10 outline-none transition-all text-[15px] font-semibold text-[#111827]"
-                                          value={newAddress.phone} onChange={e => setNewAddress({ ...newAddress, phone: e.target.value })}
+                                          placeholder="Phone Number" type="tel"
+                                          maxLength={10}
+                                          className="h-[48px] md:h-[56px] px-4 md:px-5 rounded-xl md:rounded-[18px] bg-white border border-[#e5e7eb] focus:border-[#16a34a] focus:ring-4 focus:ring-[#16a34a]/10 outline-none transition-all text-[13px] md:text-[15px] font-semibold text-[#111827]"
+                                          value={newAddress.phone} onChange={e => {
+                                             const val = e.target.value.replace(/\D/g, '');
+                                             setNewAddress({ ...newAddress, phone: val });
+                                          }}
                                        />
                                     </div>
                                     <input
                                        placeholder="Street Address / Building" type="text"
-                                       className="w-full h-[56px] px-5 rounded-[18px] bg-white border border-[#e5e7eb] focus:border-[#16a34a] focus:ring-4 focus:ring-[#16a34a]/10 outline-none transition-all text-[15px] font-semibold text-[#111827]"
+                                       className="w-full h-[48px] md:h-[56px] px-4 md:px-5 rounded-xl md:rounded-[18px] bg-white border border-[#e5e7eb] focus:border-[#16a34a] focus:ring-4 focus:ring-[#16a34a]/10 outline-none transition-all text-[13px] md:text-[15px] font-semibold text-[#111827]"
                                        value={newAddress.line1} onChange={e => setNewAddress({ ...newAddress, line1: e.target.value })}
                                     />
-                                    <div className="grid grid-cols-2 gap-5">
+                                    <div className="grid grid-cols-2 gap-4 md:gap-5">
                                        <input
                                           placeholder="City" type="text"
-                                          className="h-[56px] px-5 rounded-[18px] bg-white border border-[#e5e7eb] focus:border-[#16a34a] focus:ring-4 focus:ring-[#16a34a]/10 outline-none transition-all text-[15px] font-semibold text-[#111827]"
+                                          className="h-[48px] md:h-[56px] px-4 md:px-5 rounded-xl md:rounded-[18px] bg-white border border-[#e5e7eb] focus:border-[#16a34a] focus:ring-4 focus:ring-[#16a34a]/10 outline-none transition-all text-[13px] md:text-[15px] font-semibold text-[#111827]"
                                           value={newAddress.city} onChange={e => setNewAddress({ ...newAddress, city: e.target.value })}
                                        />
                                        <input
                                           placeholder="Pincode" type="text"
-                                          className="h-[56px] px-5 rounded-[18px] bg-white border border-[#e5e7eb] focus:border-[#16a34a] focus:ring-4 focus:ring-[#16a34a]/10 outline-none transition-all text-[15px] font-semibold text-[#111827]"
-                                          value={newAddress.pincode} onChange={e => setNewAddress({ ...newAddress, pincode: e.target.value })}
+                                          maxLength={6}
+                                          className="h-[48px] md:h-[56px] px-4 md:px-5 rounded-xl md:rounded-[18px] bg-white border border-[#e5e7eb] focus:border-[#16a34a] focus:ring-4 focus:ring-[#16a34a]/10 outline-none transition-all text-[13px] md:text-[15px] font-semibold text-[#111827]"
+                                          value={newAddress.pincode} onChange={e => {
+                                             const val = e.target.value.replace(/\D/g, '');
+                                             setNewAddress({ ...newAddress, pincode: val });
+                                          }}
                                        />
                                     </div>
 
-                                    <div className="flex gap-4 pt-2">
+                                    <div className="flex gap-3 md:gap-4 pt-2">
                                        <button
-                                          onClick={saveAddress} disabled={isProcessing || !newAddress.name || !newAddress.line1 || !newAddress.phone}
-                                          className="h-[56px] px-8 rounded-[18px] bg-gradient-to-r from-[#059669] to-[#16a34a] text-white font-bold text-sm shadow-[0_4px_14px_rgba(22,163,74,0.3)] hover:shadow-[0_6px_20px_rgba(22,163,74,0.4)] hover:-translate-y-0.5 transition-all disabled:opacity-50"
+                                          onClick={saveAddress} disabled={isProcessing || !newAddress.name || !newAddress.line1 || newAddress.phone.length !== 10 || newAddress.pincode.length !== 6 || !newAddress.city}
+                                          className="h-[48px] md:h-[56px] px-6 md:px-8 rounded-xl md:rounded-[18px] bg-gradient-to-r from-[#059669] to-[#16a34a] text-white font-bold text-[13px] md:text-sm shadow-[0_4px_14px_rgba(22,163,74,0.3)] hover:shadow-[0_6px_20px_rgba(22,163,74,0.4)] hover:-translate-y-0.5 transition-all disabled:opacity-50"
                                        >Save Address</button>
                                        {addresses.length > 0 && (
-                                          <button onClick={() => setIsAddingAddress(false)} className="h-[56px] px-6 rounded-[18px] font-bold text-sm text-[#6b7280] hover:bg-[#f3f4f6] transition-all">Cancel</button>
+                                          <button onClick={() => setIsAddingAddress(false)} className="h-[48px] md:h-[56px] px-5 md:px-6 rounded-xl md:rounded-[18px] font-bold text-[13px] md:text-sm text-[#6b7280] hover:bg-[#f3f4f6] transition-all">Cancel</button>
                                        )}
                                     </div>
                                  </div>
                               ) : (
                                  <button
                                     onClick={() => setIsAddingAddress(true)}
-                                    className="h-[56px] w-full rounded-[18px] border-2 border-dashed border-[#d1d5db] flex items-center justify-center gap-2 text-[#6b7280] font-bold text-sm hover:border-[#16a34a] hover:text-[#16a34a] hover:bg-[#f0fdf4] transition-all"
+                                    className="h-[48px] md:h-[56px] w-full rounded-xl md:rounded-[18px] border-2 border-dashed border-[#d1d5db] flex items-center justify-center gap-2 text-[#6b7280] font-bold text-[13px] md:text-sm hover:border-[#16a34a] hover:text-[#16a34a] hover:bg-[#f0fdf4] transition-all"
                                  >
                                     <Plus size={18} /> Add New Address
                                  </button>
@@ -727,9 +730,9 @@ export default function CheckoutPage() {
                                  <button
                                     onClick={() => setStep(3)}
                                     disabled={!selectedAddressId || (!user && !email)}
-                                    className="w-full h-[60px] rounded-[18px] bg-gradient-to-r from-[#059669] to-[#16a34a] text-white font-bold text-lg flex items-center justify-center gap-3 shadow-[0_8px_30px_rgba(22,163,74,0.3)] hover:shadow-[0_10px_40px_rgba(22,163,74,0.4)] hover:-translate-y-1 transition-all disabled:opacity-50 disabled:hover:translate-y-0"
+                                    className="w-full h-[52px] md:h-[60px] rounded-xl md:rounded-[18px] bg-gradient-to-r from-[#059669] to-[#16a34a] text-white font-bold text-[15px] md:text-lg flex items-center justify-center gap-2 md:gap-3 shadow-[0_8px_30px_rgba(22,163,74,0.3)] hover:shadow-[0_10px_40px_rgba(22,163,74,0.4)] hover:-translate-y-1 transition-all disabled:opacity-50 disabled:hover:translate-y-0"
                                  >
-                                    Continue to Payment <ChevronRight size={20} />
+                                    Continue to Payment <ChevronRight size={18} className="md:h-5 md:w-5" />
                                  </button>
                               </div>
                            </motion.div>
@@ -856,7 +859,7 @@ export default function CheckoutPage() {
                                        <span>🚚</span> Free Delivery Applied!
                                     </div>
                                  ) : (
-                                    <div className="text-[11px] font-bold text-amber-600 bg-amber-50 px-2.5 py-1.5 rounded-lg inline-flex items-center gap-1 mt-1 w-fit border border-amber-100/50">
+                                    <div className="text-[11px] font-bold text-amber-600 bg-amber-50 px-2.5 py-1.5 rounded-lg inline-block mt-1 w-fit border border-amber-100/50 leading-relaxed">
                                        Add <span className="font-black">₹{(freeDeliveryAbove - subtotal).toFixed(2)}</span> more to unlock <span className="uppercase tracking-wider font-black">FREE delivery</span>
                                     </div>
                                  )}
@@ -873,7 +876,7 @@ export default function CheckoutPage() {
                                     {gstEnabled ? `Inclusive of ${gstTaxLabel}` : 'Inclusive of all taxes'}
                                  </span>
                               </div>
-                              <span className="text-[32px] font-black text-[#111827] tracking-tighter leading-none">₹{total}</span>
+                              <span className="text-[24px] md:text-[32px] font-black text-[#111827] tracking-tighter leading-none">₹{total}</span>
                            </div>
 
                            {/* SECURITY BLOCK */}
@@ -920,8 +923,8 @@ export default function CheckoutPage() {
             </div>
 
             {/* MOBILE STICKY CTA */}
-            <div className="lg:hidden fixed bottom-0 left-0 w-full bg-white border-t border-[#e5e7eb] z-50 px-4 py-4 shadow-[0_-10px_40px_rgba(0,0,0,0.08)]">
-               <div className="flex items-center justify-between mb-3">
+            <div className="lg:hidden fixed bottom-16 sm:bottom-20 left-0 w-full bg-white border-t border-[#e5e7eb] z-[45] px-4 py-4 shadow-[0_-10px_40px_rgba(0,0,0,0.08)]">
+               <div className="flex items-center justify-between mb-3 pr-14">
                   <div>
                      <p className="text-[12px] font-bold text-[#6b7280]">Total Due</p>
                      <p className="text-[20px] font-black text-[#111827] leading-none mt-1">₹{total}</p>

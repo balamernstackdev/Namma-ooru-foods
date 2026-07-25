@@ -174,7 +174,7 @@ export default function SearchBar({ isMobile = false }: { isMobile?: boolean }) 
 
   return (
     <div ref={containerRef} className={`relative group ${isMobile ? 'w-full md:w-[70%] md:mx-auto' : 'w-full'}`}>
-      <div className="relative flex items-center bg-slate-50 border-2 border-slate-100 rounded-[14px] transition-all duration-300 focus-within:bg-white focus-within:border-emerald-600 focus-within:ring-4 focus-within:ring-emerald-50/70 shadow-[0_2px_12px_rgba(0,0,0,0.04)] focus-within:shadow-[0_4px_20px_rgba(0,0,0,0.08)] overflow-hidden h-14">
+      <div className={`relative flex items-center bg-slate-50 border-2 border-slate-100 rounded-[14px] transition-all duration-300 focus-within:bg-white focus-within:border-emerald-600 focus-within:ring-4 focus-within:ring-emerald-50/70 shadow-[0_2px_12px_rgba(0,0,0,0.04)] focus-within:shadow-[0_4px_20px_rgba(0,0,0,0.08)] overflow-hidden ${isMobile ? 'h-11' : 'h-14'}`}>
         
         {/* Search Icon */}
         <div className={`pl-4 shrink-0 transition-colors duration-300 ${open ? 'text-emerald-600' : 'text-slate-400'}`}>

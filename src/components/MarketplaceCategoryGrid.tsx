@@ -60,7 +60,7 @@ const CategoryCard = ({ category, index }: { category: Category; index: number }
         className="group relative flex flex-col w-full h-full"
       >
         {/* Background Image Container */}
-        <div className="relative w-full aspect-[3/4] sm:aspect-[4/5] rounded-2xl overflow-hidden bg-white border border-slate-200/60 shadow-sm transition-all duration-500 group-hover:shadow-md group-hover:border-emerald-200">
+        <div className="relative w-full aspect-square sm:aspect-[4/5] rounded-2xl overflow-hidden bg-white border border-slate-200/60 shadow-sm transition-all duration-500 group-hover:shadow-md group-hover:border-emerald-200">
           {(() => {
             const cacheBuster = category.updatedAt ? new Date(category.updatedAt).getTime() : Date.now();
             const rawImageUrl = (category.image && category.image.trim() !== '') 
@@ -73,7 +73,7 @@ const CategoryCard = ({ category, index }: { category: Category; index: number }
                 src={finalImageUrl}
                 alt={category.name}
                 fill
-                className="object-contain p-1 transition-transform duration-700 ease-out group-hover:scale-105"
+                className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
                 unoptimized={finalImageUrl.startsWith('http')}
               />
             );

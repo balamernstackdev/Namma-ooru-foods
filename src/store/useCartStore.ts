@@ -33,6 +33,7 @@ interface CartState {
   clearCart: () => void;
   setIsOpen: (open: boolean) => void;
   getTotal: () => number;
+  updateVariant: (oldItemId: number, newVariantName: string, newPrice: number) => void;
 }
 
 export const useCartStore = create<CartState>()(
@@ -77,6 +78,29 @@ export const useCartStore = create<CartState>()(
       clearCart: () => set({ cart: [], appliedCoupon: null }),
       getTotal: () => {
         return get().cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+      },
+      updateVariant: (oldItemId, newVariantName, newPrice) => {
+        const { cart } = get();
+        const oldItem = cart.find(i => i.id === oldItemId);
+        if (!oldItem) return;
+
+        // Check if the NEW variant already exists in cart for this product
+        const existingSameVariantIndex = cart.findIndex(
+           i => i.productId === oldItem.productId && i.variant === newVariantName && i.id !== oldItemId
+        );
+
+        if (existingSameVariantIndex !== -1) {
+           // Merge quantities if the target variant is already in the cart
+           const updatedCart = [...cart];
+           updatedCart[existingSameVariantIndex].quantity += oldItem.quantity;
+           // Remove the old item
+           set({ cart: updatedCart.filter(i => i.id !== oldItemId) });
+        } else {
+           // Update the old item directly
+           set({
+             cart: cart.map(i => i.id === oldItemId ? { ...i, variant: newVariantName, price: newPrice } : i)
+           });
+        }
       },
     }),
     {

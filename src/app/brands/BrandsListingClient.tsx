@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
-import { Search, Package, ShieldCheck, ChevronRight, Award, TrendingUp } from 'lucide-react';
+import { Search, Package, ShieldCheck, ChevronRight, ChevronLeft, Award, TrendingUp } from 'lucide-react';
 import { motion } from 'framer-motion';
 import useSWR from 'swr';
 import { API_URL } from '@/lib/api';
@@ -26,17 +26,26 @@ const fetcher = (url: string) => fetch(url).then(res => res.json());
 
 export default function BrandsListingClient() {
   const [searchQuery, setSearchQuery] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 12;
   const { settings } = usePlatformSettings();
 
   const { data: responseData, isLoading } = useSWR(`${API_URL}/api/sub-vendors?limit=100`, fetcher);
   const brands = responseData?.subVendors || [];
 
   const filteredBrands = useMemo(() => {
+    setCurrentPage(1); // Reset page on search
     return brands.filter((brand: any) =>
       brand.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (brand.headVendor?.name && brand.headVendor.name.toLowerCase().includes(searchQuery.toLowerCase()))
     );
   }, [brands, searchQuery]);
+
+  const totalPages = Math.ceil(filteredBrands.length / itemsPerPage);
+  const paginatedBrands = filteredBrands.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
   if (isLoading) {
     return (
@@ -51,7 +60,7 @@ export default function BrandsListingClient() {
 
       {/* --- Standard Enterprise Header --- */}
       <div className="standard-container py-12 md:py-20">
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-8">
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-6 md:mb-12 gap-6 md:gap-8">
           <div className="space-y-3">
             <div className="flex items-center gap-2 text-slate-400">
               <TrendingUp size={14} className="text-amber-500" />
@@ -79,9 +88,9 @@ export default function BrandsListingClient() {
         </div>
 
         {/* --- High Density Brand Grid --- */}
-        {filteredBrands.length > 0 ? (
+        {paginatedBrands.length > 0 ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 lg:gap-8">
-            {filteredBrands.map((brand: any, idx: number) => (
+            {paginatedBrands.map((brand: any, idx: number) => (
               <motion.div
                 key={brand.id}
                 initial={{ opacity: 0, y: 20 }}
@@ -91,10 +100,10 @@ export default function BrandsListingClient() {
               >
                 <Link
                   href={`/brands/${encodeURIComponent(brand.slug || brand.id)}`}
-                  className="group block bg-white rounded-[1.8rem] md:rounded-[2.5rem] p-4 md:p-6 transition-all hover:shadow-xl hover:-translate-y-2 border border-transparent hover:border-emerald-50 shadow-sm min-w-[180px] md:min-w-[240px] lg:min-w-[300px] min-h-[250px] md:min-h-[300px]"
+                  className="group block bg-white rounded-[1.8rem] md:rounded-[2.5rem] p-4 md:p-6 transition-all hover:shadow-xl hover:-translate-y-2 border border-transparent hover:border-emerald-50 shadow-sm w-full h-full flex flex-col justify-between"
                 >
                   {/* Brand Logo Squircle */}
-                  <div className="relative aspect-square rounded-[1.3rem] md:rounded-[2rem] overflow-hidden bg-slate-50 flex items-center justify-center p-4 md:p-8 transition-colors group-hover:bg-emerald-50/30">
+                  <div className="relative aspect-square rounded-[1.3rem] md:rounded-[2rem] overflow-hidden bg-transparent flex items-center justify-center p-2 md:p-4 transition-colors">
                     {brand.logo ? (
                       <OptimizedImage
                         src={brand.logo}
@@ -120,20 +129,11 @@ export default function BrandsListingClient() {
                           {brand.headVendor?.name || 'Native Collective'}
                         </span>
                       </div>
-                      <h3 className="text-xs md:text-xl font-black text-emerald-950 tracking-tight line-clamp-2 min-h-[40px] md:min-h-[48px] leading-snug md:leading-normal">
+                      <h3 className="text-[13px] md:text-xl font-black text-emerald-950 tracking-tight leading-snug md:leading-normal min-h-[36px]">
                         {formatBrandName(brand.name)}
                       </h3>
                     </div>
 
-                    <div className="flex items-center justify-between pt-3 md:pt-4 border-t border-slate-50">
-                      <div className="flex items-center gap-2">
-                        <Package size={14} className="text-slate-300 shrink-0" />
-                        <span className="text-[9px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest">{brand._count?.products || 0} Products</span>
-                      </div>
-                      <div className="h-6 w-6 md:h-8 md:w-8 rounded-full flex items-center justify-center text-slate-200 group-hover:text-emerald-950 transition-colors shrink-0">
-                        <ChevronRight size={16} />
-                      </div>
-                    </div>
                   </div>
                 </Link>
               </motion.div>
@@ -143,6 +143,39 @@ export default function BrandsListingClient() {
           <div className="py-20 text-center text-slate-400 font-bold bg-white rounded-[2.5rem] border border-slate-100 shadow-sm p-8 flex flex-col items-center justify-center gap-3">
             <Package size={36} className="text-slate-300" />
             <span className="text-sm font-black uppercase tracking-[0.2em] text-slate-400">No approved brands available</span>
+          </div>
+        )}
+
+        {/* --- Pagination Controls --- */}
+        {totalPages > 1 && (
+          <div className="mt-12 flex justify-center items-center gap-2">
+            <button
+              onClick={() => {
+                setCurrentPage(prev => Math.max(prev - 1, 1));
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              disabled={currentPage === 1}
+              className="h-10 w-10 md:h-12 md:w-12 rounded-full border border-slate-200 flex items-center justify-center text-emerald-900 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-emerald-50 transition-colors"
+            >
+              <ChevronLeft size={20} />
+            </button>
+            
+            <div className="flex items-center gap-2 px-4">
+              <span className="text-sm md:text-base font-bold text-slate-600">
+                Page {currentPage} of {totalPages}
+              </span>
+            </div>
+
+            <button
+              onClick={() => {
+                setCurrentPage(prev => Math.min(prev + 1, totalPages));
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              disabled={currentPage === totalPages}
+              className="h-10 w-10 md:h-12 md:w-12 rounded-full border border-slate-200 flex items-center justify-center text-emerald-900 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-emerald-50 transition-colors"
+            >
+              <ChevronRight size={20} />
+            </button>
           </div>
         )}
       </div>

@@ -75,18 +75,7 @@ export default function BrandBanner({ products = [] }: BrandBannerProps) {
                 )}
               </div>
 
-              {/* View All Button */}
-              <div className="flex justify-center pt-2">
-                <Link 
-                  href={viewAllLink}
-                  className="inline-flex h-11 px-8 rounded-full border-2 border-slate-200 hover:border-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 text-slate-600 text-[10px] font-black uppercase tracking-widest transition-all items-center gap-2 shadow-sm"
-                >
-                  View All Brands
-                  <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                  </svg>
-                </Link>
-              </div>
+
 
             </div>
           );

@@ -168,13 +168,13 @@ export default function CategoriesCircles() {
   if (displayCategories.length === 0) return null;
 
   return (
-    <section className="w-full pt-2 md:pt-4 pb-4 md:pb-6 bg-white relative overflow-hidden">
+    <section className="w-full pt-2 md:pt-4 pb-1 md:pb-2 bg-white relative overflow-hidden">
 
 
       <div className="standard-container relative z-10">
 
         {/* --- SECTION HEADER --- */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-6 md:mb-8 gap-6">
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-0 md:mb-4 gap-4">
           <div className="space-y-3">
             <div className="flex items-center gap-2 text-slate-400">
               <Sparkle size={12} className="text-amber-500 fill-amber-500" />
@@ -207,7 +207,7 @@ export default function CategoriesCircles() {
             onMouseMove={onMouseMove}
             onKeyDown={onKeyDown}
             tabIndex={0}
-            className="flex overflow-x-auto no-scrollbar pb-4 pt-2 snap-x snap-mandatory scroll-smooth items-start px-4 md:px-8 gap-6 md:gap-10 cursor-grab active:cursor-grabbing focus:outline-none"
+            className="flex overflow-x-auto no-scrollbar pb-4 pt-2 snap-x snap-mandatory scroll-smooth items-start px-4 md:px-8 gap-4 md:gap-10 cursor-grab active:cursor-grabbing focus:outline-none"
           >
             {displayCategories.map((category: any, idx: number) => {
               const count = category._count?.products || 0;
@@ -225,7 +225,7 @@ export default function CategoriesCircles() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true, margin: "-20px" }}
                   transition={{ duration: 0.6, delay: idx * 0.05 }}
-                  className="snap-start shrink-0 w-[140px] md:w-[180px]"
+                  className="snap-start shrink-0 w-[100px] sm:w-[120px] md:w-[180px]"
                 >
                   <Link
                     href={`/categories/${category.slug || category.id}`}
@@ -241,7 +241,7 @@ export default function CategoriesCircles() {
                           alt={category.name}
                           fill
                           className="object-cover scale-100 group-hover:scale-110 transition-transform duration-[1000ms] ease-[0.25,1,0.5,1]"
-                          sizes="(max-width: 768px) 140px, 180px"
+                          sizes="(max-width: 640px) 100px, (max-width: 768px) 120px, 180px"
                           unoptimized={imageUrl.startsWith('http')}
                         />
                         {/* Dark overlay on hover for luxury depth */}
@@ -255,7 +255,7 @@ export default function CategoriesCircles() {
                     </div>
 
                     {/* Text Block (Placed BELOW the card, avoiding all truncation) */}
-                    <div className="mt-5 w-full flex flex-col items-center">
+                    <div className="mt-2 w-full flex flex-col items-center">
                       <p className="text-emerald-950 text-[10px] md:text-[12px] font-[900] uppercase tracking-[0.08em] group-hover:text-amber-600 transition-colors duration-300 leading-[1.3] text-center px-1">
                         {category.name}
                       </p>
@@ -277,7 +277,7 @@ export default function CategoriesCircles() {
         </div>
 
         {/* Mobile Pagination Progress Bar */}
-        <div className="md:hidden w-[100px] h-1.5 bg-slate-200 rounded-full mx-auto mt-[-10px] mb-4 overflow-hidden relative">
+        <div className="md:hidden w-[100px] h-1.5 bg-slate-200 rounded-full mx-auto mt-[-10px] mb-1 overflow-hidden relative">
           <div 
             className="absolute top-0 left-0 h-full bg-[#0f9d58] rounded-full transition-all duration-300" 
             style={{ width: `${Math.max(15, ((activeIndex + 1) / displayCategories.length) * 100)}%` }} 

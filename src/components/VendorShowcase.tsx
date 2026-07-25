@@ -159,7 +159,7 @@ export default function VendorShowcase() {
             onMouseMove={onMouseMove}
             onKeyDown={onKeyDown}
             tabIndex={0}
-            className="flex overflow-x-auto no-scrollbar pb-4 pt-2 snap-x snap-mandatory scroll-smooth items-start px-4 md:px-8 gap-6 md:gap-10 cursor-grab active:cursor-grabbing focus:outline-none"
+            className="flex overflow-x-auto no-scrollbar pb-4 pt-2 snap-x snap-mandatory scroll-smooth items-start px-4 md:px-8 gap-4 md:gap-10 cursor-grab active:cursor-grabbing focus:outline-none"
           >
             {vendorsList.map((vendor: any, idx: number) => (
               <motion.div
@@ -168,7 +168,7 @@ export default function VendorShowcase() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-20px" }}
                 transition={{ duration: 0.6, delay: idx * 0.05 }}
-                className="snap-start shrink-0 w-[140px] md:w-[180px]"
+                className="snap-start shrink-0 w-[100px] sm:w-[120px] md:w-[180px]"
               >
                 <Link
                   href={`/hubs/detail?slug=${vendor.slug || vendor.id}`}

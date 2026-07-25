@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ShoppingBag, Trash2, ArrowRight, ShieldCheck, Truck, RefreshCw, ChevronLeft, Heart, Sparkles, Tag, Check, X, Loader2 } from 'lucide-react';
+import { ShoppingBag, Trash2, ArrowRight, ShieldCheck, Truck, RefreshCw, ChevronLeft, ChevronDown, Heart, Sparkles, Tag, Check, X, Loader2 } from 'lucide-react';
 import useSWR from 'swr';
 import { useCartStore } from '@/store/useCartStore';
 import ProductCard from '@/components/ProductCard';
@@ -12,6 +12,56 @@ import { API_URL } from '@/lib/api';
 import OptimizedImage from '@/components/ui/OptimizedImage';
 import { toast } from 'sonner';
 import { useAuth } from '@/context/AuthContext';
+
+const CartItemVariantDropdown = ({ item, updateVariant }: { item: any, updateVariant: (oldItemId: number, newVariantName: string, newPrice: number) => void }) => {
+   const { data: product } = useSWR(`${API_URL}/api/products/${item.productId}`, (url: string) => fetch(url).then(res => res.json()));
+
+   const formatVariant = (name: string) => {
+      if (!name) return '';
+      // If the name is strictly numbers, append 'g'
+      if (/^\d+$/.test(name.trim())) return `${name.trim()}g`;
+      return name;
+   };
+
+   return (
+      <div className="flex flex-col gap-1.5 mt-0.5 min-w-0">
+         {product?.description && (
+            <p className="text-[11px] md:text-[12px] text-slate-500 line-clamp-2 leading-relaxed">
+               {product.description}
+            </p>
+         )}
+
+         {!product || !product.variants || product.variants.length === 0 ? (
+            <p className="text-[12px] font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded w-fit border border-emerald-100 mt-0.5">
+               {formatVariant(item.variant)}
+            </p>
+         ) : (
+            <div className="flex flex-wrap gap-2 mt-1">
+               {product.variants.map((v: any, idx: number) => {
+                  const isSelected = item.variant === v.name;
+                  return (
+                     <button
+                        key={idx}
+                        onClick={() => {
+                           if (!isSelected) {
+                              updateVariant(item.id, v.name, Number(v.price));
+                           }
+                        }}
+                        className={`text-[11px] font-black py-1 px-2.5 rounded-md border transition-colors flex items-center gap-1 ${
+                           isSelected
+                              ? 'bg-emerald-100 border-emerald-300 text-emerald-900 shadow-sm'
+                              : 'bg-white border-emerald-100 text-emerald-700 hover:bg-emerald-50'
+                        }`}
+                     >
+                        {formatVariant(v.name)} - ₹{v.price}
+                     </button>
+                  );
+               })}
+            </div>
+         )}
+      </div>
+   );
+};
 
 const BundleItemCard = ({ item, removeFromCart, updateQuantity }: { item: any, removeFromCart: any, updateQuantity: any }) => {
    const [isExpanded, setIsExpanded] = useState(false);
@@ -33,9 +83,9 @@ const BundleItemCard = ({ item, removeFromCart, updateQuantity }: { item: any, r
             </div>
 
             {/* INFO CONTAINER */}
-            <div className="flex-1 flex flex-col justify-between">
-               <div className="flex justify-between items-start gap-2">
-                  <div className="flex flex-col gap-0.5">
+            <div className="flex-1 flex flex-col justify-between min-w-0">
+               <div className="flex justify-between items-start gap-2 min-w-0">
+                  <div className="flex flex-col gap-0.5 min-w-0">
                      <h3 className="text-[15px] md:text-[17px] font-black text-emerald-900 leading-tight pr-4">
                         {item.name}
                      </h3>
@@ -61,10 +111,10 @@ const BundleItemCard = ({ item, removeFromCart, updateQuantity }: { item: any, r
 
                {/* CONTROLS */}
                <div className="flex flex-wrap items-center justify-between mt-4 border-t border-emerald-100/50 pt-3 gap-y-3">
-                  <div className="flex items-center gap-2.5">
+                  <div className="flex items-center gap-1.5 md:gap-2.5">
                      <button
                         onClick={() => removeFromCart(item.id)}
-                        className="h-10 px-4 rounded-xl border border-slate-200 hover:border-red-200 text-slate-600 hover:text-red-600 hover:bg-red-50/50 transition-all text-[11px] font-black uppercase tracking-wider flex items-center gap-1.5 active:scale-95 bg-white"
+                        className="h-9 md:h-10 px-2.5 md:px-4 rounded-xl border border-slate-200 hover:border-red-200 text-slate-600 hover:text-red-600 hover:bg-red-50/50 transition-all text-[10px] md:text-[11px] font-black uppercase tracking-wider flex items-center gap-1.5 active:scale-95 bg-white"
                      >
                         <Trash2 size={13} /> Remove Bundle
                      </button>
@@ -110,7 +160,7 @@ const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 const CartPage = () => {
    const router = useRouter();
-   const { cart, removeFromCart, updateQuantity, getTotal } = useCartStore();
+   const { cart, removeFromCart, updateQuantity, updateVariant, getTotal } = useCartStore();
    const { user } = useAuth();
    const total = getTotal();
 
@@ -305,7 +355,7 @@ const CartPage = () => {
                                     </p>
                                  </div>
                               </div>
-                              <span className="text-[13px] md:text-[14px] font-black text-emerald-600 bg-white px-3 md:px-4 py-1.5 rounded-full shadow-sm border border-emerald-50">
+                              <span className="text-[13px] md:text-[14px] font-black text-emerald-600 bg-white px-3 md:px-4 py-1.5 rounded-full shadow-sm border border-emerald-50 shrink-0">
                                  {progress.toFixed(0)}%
                               </span>
                            </div>
@@ -342,15 +392,13 @@ const CartPage = () => {
                                  </div>
 
                                  {/* INFO CONTAINER */}
-                                 <div className="flex-1 flex flex-col justify-between">
-                                    <div className="flex justify-between items-start gap-2">
-                                       <div className="flex flex-col gap-0.5">
+                                 <div className="flex-1 flex flex-col justify-between min-w-0">
+                                    <div className="flex justify-between items-start gap-2 min-w-0">
+                                       <div className="flex flex-col gap-0.5 min-w-0">
                                           <h3 className="text-[15px] md:text-[17px] font-bold text-slate-800 leading-tight pr-4">
                                              {item.name}
                                           </h3>
-                                          <p className="text-[12px] font-medium text-slate-500 mt-0.5">
-                                             {item.variant}
-                                          </p>
+                                          <CartItemVariantDropdown item={item} updateVariant={updateVariant} />
                                           {/* <div className="flex items-center gap-1.5 mt-2 text-[9px] md:text-[10px] font-black uppercase tracking-wider text-slate-500 bg-slate-50 w-fit px-2.5 py-0.5 rounded border border-slate-200/60">
                                 <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
                                 Delivery calculated at checkout
@@ -370,15 +418,15 @@ const CartPage = () => {
 
                                     {/* CONTROLS */}
                                     <div className="flex flex-wrap items-center justify-between mt-4 border-t border-slate-100 pt-3 gap-y-3">
-                                       <div className="flex items-center gap-2.5">
+                                       <div className="flex items-center gap-1.5 md:gap-2.5">
                                           <button
                                              onClick={() => removeFromCart(item.id)}
-                                             className="h-10 px-4 rounded-xl border border-slate-200 hover:border-red-200 text-slate-600 hover:text-red-600 hover:bg-red-50/50 transition-all text-[11px] font-black uppercase tracking-wider flex items-center gap-1.5 active:scale-95"
+                                             className="h-9 md:h-10 px-2.5 md:px-4 rounded-xl border border-slate-200 hover:border-red-200 text-slate-600 hover:text-red-600 hover:bg-red-50/50 transition-all text-[10px] md:text-[11px] font-black uppercase tracking-wider flex items-center gap-1.5 active:scale-95"
                                           >
                                              <Trash2 size={13} /> Remove
                                           </button>
                                           <button
-                                             className="h-10 px-4 rounded-xl border border-slate-200 hover:border-emerald-200 text-slate-600 hover:text-emerald-600 hover:bg-emerald-50/50 transition-all text-[11px] font-black uppercase tracking-wider flex items-center gap-1.5 active:scale-95"
+                                             className="h-9 md:h-10 px-2.5 md:px-4 rounded-xl border border-slate-200 hover:border-emerald-200 text-slate-600 hover:text-emerald-600 hover:bg-emerald-50/50 transition-all text-[10px] md:text-[11px] font-black uppercase tracking-wider flex items-center gap-1.5 active:scale-95"
                                           >
                                              <Heart size={13} /> Save
                                           </button>
@@ -424,20 +472,20 @@ const CartPage = () => {
                               </div>
                            ) : (
                               <div className="flex flex-col gap-1.5">
-                                 <div className="flex items-center gap-3 p-1 pl-4 rounded-xl border border-slate-200 bg-white focus-within:border-emerald-500 focus-within:ring-1 focus-within:ring-emerald-500/20 transition-all">
-                                    <Tag size={16} className="text-slate-400" />
+                                 <div className="flex items-center gap-2 md:gap-3 p-1 pl-3 md:pl-4 rounded-xl border border-slate-200 bg-white focus-within:border-emerald-500 focus-within:ring-1 focus-within:ring-emerald-500/20 transition-all">
+                                    <Tag size={16} className="text-slate-400 shrink-0" />
                                     <input
                                        type="text"
-                                       placeholder="Enter coupon code"
+                                       placeholder="Coupon code"
                                        value={couponCode}
                                        onChange={e => { setCouponCode(e.target.value.toUpperCase()); setCouponError(''); }}
                                        onKeyDown={e => e.key === 'Enter' && handleApplyCoupon()}
-                                       className="flex-1 bg-transparent border-none outline-none text-[13px] font-bold text-slate-800 placeholder:text-slate-400 placeholder:font-medium uppercase"
+                                       className="flex-1 min-w-0 w-full bg-transparent border-none outline-none text-[12px] md:text-[13px] font-bold text-slate-800 placeholder:text-slate-400 placeholder:font-medium uppercase"
                                     />
                                     <button
                                        onClick={handleApplyCoupon}
                                        disabled={couponLoading || !couponCode.trim()}
-                                       className="h-[34px] px-4 bg-slate-900 text-white font-bold text-[12px] uppercase tracking-wider rounded-lg hover:bg-emerald-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
+                                       className="h-[34px] px-3 md:px-4 bg-slate-900 text-white font-bold text-[11px] md:text-[12px] uppercase tracking-wider rounded-lg hover:bg-emerald-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5 shrink-0"
                                     >
                                        {couponLoading ? <Loader2 size={13} className="animate-spin" /> : null}
                                        Apply
@@ -548,7 +596,7 @@ const CartPage = () => {
             </div>
          )}
          {/* Extra spacing on bottom for fixed bar overlap prevention */}
-         <div className="h-36 lg:hidden" />
+         <div className="h-56 lg:hidden" />
 
       </div>
    );

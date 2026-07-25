@@ -75,10 +75,10 @@ export default function AdminProducts() {
    const filteredAndSorted = products
       .filter(p => {
          const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-         p.category?.name?.toLowerCase().includes(searchTerm.toLowerCase());
-         
+            p.category?.name?.toLowerCase().includes(searchTerm.toLowerCase());
+
          const matchesStatus = statusFilter === 'all' || p.status === statusFilter;
-         
+
          return matchesSearch && matchesStatus;
       })
       .sort((a, b) => {
@@ -338,27 +338,27 @@ export default function AdminProducts() {
                                  </td>
                                  <td className="px-6 py-4 border-b border-slate-50">
                                     <div className="flex items-center gap-3">
-                                        <div className="h-10 w-10 rounded-xl bg-slate-50 border border-slate-100 overflow-hidden shrink-0 shadow-sm flex items-center justify-center">
-                                           {product.image ? (
-                                              <img
-                                                 src={product.image}
-                                                 className="h-full w-full object-cover"
-                                                 alt={product.name}
-                                              />
-                                           ) : (
-                                              <div className="h-full w-full bg-slate-100 flex flex-col items-center justify-center text-center p-1">
-                                                 <span className="text-[7px] leading-tight font-black uppercase text-slate-400">No Image</span>
-                                              </div>
-                                           )}
-                                        </div>
+                                       <div className="h-10 w-10 rounded-xl bg-slate-50 border border-slate-100 overflow-hidden shrink-0 shadow-sm flex items-center justify-center">
+                                          {product.image ? (
+                                             <img
+                                                src={product.image}
+                                                className="h-full w-full object-cover"
+                                                alt={product.name}
+                                             />
+                                          ) : (
+                                             <div className="h-full w-full bg-slate-100 flex flex-col items-center justify-center text-center p-1">
+                                                <span className="text-[7px] leading-tight font-black uppercase text-slate-400">No Image</span>
+                                             </div>
+                                          )}
+                                       </div>
                                        <div className="min-w-0">
                                           <p className="text-[13px] font-extrabold text-slate-900 leading-tight truncate">
                                              {product.name}
                                           </p>
                                           <div className="flex items-center gap-1.5 mt-1 flex-wrap">
                                              <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-wider border ${product.status === 'APPROVED' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' :
-                                                   product.status === 'PENDING' ? 'bg-amber-50 text-amber-700 border-amber-100' :
-                                                      'bg-slate-50 text-slate-500 border-slate-200'
+                                                product.status === 'PENDING' ? 'bg-amber-50 text-amber-700 border-amber-100' :
+                                                   'bg-slate-50 text-slate-500 border-slate-200'
                                                 }`}>
                                                 {product.status}
                                              </span>
@@ -561,8 +561,8 @@ export default function AdminProducts() {
                               </div>
                               <div className="col-span-2 pt-2 border-t border-slate-100 flex items-center gap-1.5 flex-wrap">
                                  <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider border ${product.status === 'APPROVED' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' :
-                                       product.status === 'PENDING' ? 'bg-amber-50 text-amber-700 border-amber-100' :
-                                          'bg-slate-50 text-slate-500 border-slate-200'
+                                    product.status === 'PENDING' ? 'bg-amber-50 text-amber-700 border-amber-100' :
+                                       'bg-slate-50 text-slate-500 border-slate-200'
                                     }`}>
                                     Status: {product.status}
                                  </span>
@@ -581,7 +581,7 @@ export default function AdminProducts() {
                               >
                                  <Edit2 size={14} /> Edit
                               </Link>
-                              
+
                               <div className="relative">
                                  <button
                                     onClick={() => setActiveMenuId(activeMenuId === product.id ? null : product.id)}
