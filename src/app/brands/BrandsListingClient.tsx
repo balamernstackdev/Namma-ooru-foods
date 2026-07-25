@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import { Search, Package, ShieldCheck, ChevronRight, ChevronLeft, Award, TrendingUp } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -34,12 +34,15 @@ export default function BrandsListingClient() {
   const brands = responseData?.subVendors || [];
 
   const filteredBrands = useMemo(() => {
-    setCurrentPage(1); // Reset page on search
     return brands.filter((brand: any) =>
       brand.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (brand.headVendor?.name && brand.headVendor.name.toLowerCase().includes(searchQuery.toLowerCase()))
     );
   }, [brands, searchQuery]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery]);
 
   const totalPages = Math.ceil(filteredBrands.length / itemsPerPage);
   const paginatedBrands = filteredBrands.slice(
