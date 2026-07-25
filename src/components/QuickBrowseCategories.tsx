@@ -4,36 +4,28 @@ import React, { useRef, useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import useSWR from 'swr';
-import { 
-  ChevronLeft, 
-  ChevronRight, 
-  LayoutGrid,
-  Wheat, 
-  Utensils, 
-  Droplet, 
-  Carrot, 
-  Cookie, 
-  Nut, 
-  Flame,
-  Leaf, 
-  Coffee,
-  PackageOpen
+import {
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 
 const getCategoryIcon = (name: string) => {
-  if (!name) return LayoutGrid;
+  if (!name) return '/rice_color.png';
   const lower = name.toLowerCase();
-  if (lower.includes('rice') || lower.includes('millet')) return Wheat;
-  if (lower.includes('flour') || lower.includes('powder')) return Utensils;
-  if (lower.includes('oil')) return Droplet;
-  if (lower.includes('pickle') || lower.includes('thokku')) return Carrot;
-  if (lower.includes('snack') || lower.includes('sweet') || lower.includes('cookie') || lower.includes('cake') || lower.includes('bake') || lower.includes('chocolate') || lower.includes('mix')) return Cookie;
-  if (lower.includes('nut') || lower.includes('dry fruit') || lower.includes('date') || lower.includes('almond') || lower.includes('honey')) return Nut;
-  if (lower.includes('spice') || lower.includes('masala')) return Flame;
-  if (lower.includes('health') || lower.includes('drink') || lower.includes('soup')) return Coffee;
-  if (lower.includes('organic') || lower.includes('herbal') || lower.includes('amla') || lower.includes('moringa') || lower.includes('palm')) return Leaf;
-  if (lower.includes('eat') || lower.includes('ready')) return PackageOpen;
-  return LayoutGrid;
+  if (lower.includes('rice') || lower.includes('millet')) return '/rice_color.png';
+  if (lower.includes('flour') || lower.includes('powder')) return '/flour.png';
+  if (lower.includes('oil')) return '/oil.png';
+  if (lower.includes('pickle') || lower.includes('thokku')) return '/pickle.png';
+  if (lower.includes('cookie') || lower.includes('cake') || lower.includes('bake')) return '/cake.png';
+  if (lower.includes('snack') || lower.includes('sweet') || lower.includes('chocolate') || lower.includes('mix')) return '/snack.png';
+  if (lower.includes('nut') || lower.includes('dry fruit') || lower.includes('date') || lower.includes('almond')) return '/nut.png';
+  if (lower.includes('honey')) return '/honey.png';
+  if (lower.includes('spice') || lower.includes('masala')) return '/spice.png';
+  if (lower.includes('health') || lower.includes('drink') || lower.includes('soup')) return '/health.png';
+  if (lower.includes('fruit') || lower.includes('veg')) return '/pickle.png';
+  if (lower.includes('organic') || lower.includes('herbal') || lower.includes('amla') || lower.includes('moringa') || lower.includes('palm')) return '/health.png';
+  if (lower.includes('eat') || lower.includes('ready')) return '/snack.png';
+  return '/rice_color.png';
 };
 import { API_URL } from '@/lib/api';
 import { usePlatformSettings } from '@/context/PlatformSettingsContext';
@@ -47,7 +39,7 @@ interface QuickBrowseCategoriesProps {
 export default function QuickBrowseCategories({ activeSlug = 'all' }: QuickBrowseCategoriesProps) {
   const { settings } = usePlatformSettings();
   const { data: categories, error } = useSWR(`${API_URL}/api/categories/quick-browse`, fetcher);
-  
+
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
@@ -112,20 +104,27 @@ export default function QuickBrowseCategories({ activeSlug = 'all' }: QuickBrows
   };
 
   const renderIcon = (cat: any, isActive: boolean) => {
-    const IconComp = getCategoryIcon(cat.name);
+    const icon = getCategoryIcon(cat.name);
+    if (icon.endsWith('.png') || icon.startsWith('/')) {
+      const isRice = icon === '/rice_color.png';
+      const imageScale = isRice ? '' : 'scale-[1.35]';
+      return (
+        <div className={`transition-transform duration-300 relative w-10 h-10 md:w-12 md:h-12 flex items-center justify-center ${isActive ? 'scale-110 drop-shadow-sm' : ''}`}>
+          <Image src={icon} alt={cat.name} fill className={`object-contain mix-blend-multiply contrast-125 brightness-105 ${imageScale}`} unoptimized />
+        </div>
+      );
+    }
     return (
-      <IconComp
-        size={24}
-        strokeWidth={1.5}
-        className={`transition-colors ${isActive ? 'text-amber-400' : 'text-emerald-800'}`}
-      />
+      <span className={`text-2xl drop-shadow-sm leading-none transition-transform duration-300 ${isActive ? 'scale-110' : ''}`} role="img" aria-label={cat.name}>
+        {icon}
+      </span>
     );
   };
 
   return (
     <section className="lg:hidden w-full bg-[#f8fafc] border-b border-slate-200/80 py-3 relative group/browse animate-in fade-in duration-500">
       <div className="standard-container px-4 relative flex items-center">
-        
+
         {/* Navigation Arrow - Left */}
         {canScrollLeft && (
           <button
@@ -158,18 +157,13 @@ export default function QuickBrowseCategories({ activeSlug = 'all' }: QuickBrows
                   className="group flex flex-col items-center gap-1.5 text-center transition-all duration-300"
                 >
                   <div
-                    className={`w-12 h-12 md:w-14 md:h-14 rounded-[1rem] flex items-center justify-center transition-all duration-500 p-2 md:p-2.5 ${
-                      isActive
-                        ? 'bg-slate-900 shadow-md scale-105'
-                        : 'bg-transparent hover:bg-emerald-50/50'
-                    }`}
+                    className={`w-12 h-12 md:w-14 md:h-14 flex items-center justify-center transition-all duration-500 ${isActive ? 'scale-110' : 'hover:scale-105'}`}
                   >
                     {renderIcon(category, isActive)}
                   </div>
                   <span
-                    className={`max-w-[72px] md:max-w-[88px] whitespace-normal break-words text-[10px] md:text-[11px] font-bold capitalize leading-tight px-1 transition-colors ${
-                      isActive ? 'text-emerald-950' : 'text-slate-600 group-hover:text-emerald-800'
-                    }`}
+                    className={`max-w-[72px] md:max-w-[88px] whitespace-normal break-words text-[10px] md:text-[11px] font-bold capitalize leading-tight px-1 transition-colors ${isActive ? 'text-emerald-950' : 'text-slate-600 group-hover:text-emerald-800'
+                      }`}
                   >
                     {category.name}
                   </span>

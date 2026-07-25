@@ -214,7 +214,7 @@ if (isSocket) {
   });
 }
 
-// ─── 5. Prepdssare Next.js in Background ─────────────────────────────────────────
+// ─── 5. Prepdssdsdsdsdsdsdsare Next.js in Background ─────────────────────────────────────────
 if (app) {
   app.prepare()
     .then(() => {
