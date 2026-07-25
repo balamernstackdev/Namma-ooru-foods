@@ -91,6 +91,7 @@ console.log('===================================================');
 // ─── 4. Bootstrap Next.js App & HTTP Server ───────────────────────────────────
 let handle;
 let isNextReady = false;
+let app;
 
 try {
   const NextServer = require('next/dist/server/next-server').default;
@@ -110,7 +111,7 @@ try {
   console.log('[Success] NextServer initialized successfully via NextServer engine');
 } catch (err) {
   console.warn('[Startup Warning] Direct NextServer initialization failed, trying fallback next():', err.message);
-  const app = next({
+  app = next({
     dev: false,
     dir: __dirname,
     hostname: typeof port === 'number' ? hostname : undefined,
@@ -214,14 +215,16 @@ if (isSocket) {
 }
 
 // ─── 5. Prepare Next.js in Background ─────────────────────────────────────────
-app.prepare()
-  .then(() => {
-    isNextReady = true;
-    console.log('[Success] Next.js application prepared successfully');
-  })
-  .catch((err) => {
-    console.error('[FATAL] Failed to prepare Next.js application:', err);
-  });
+if (app) {
+  app.prepare()
+    .then(() => {
+      isNextReady = true;
+      console.log('[Success] Next.js application prepared successfully');
+    })
+    .catch((err) => {
+      console.error('[FATAL] Failed to prepare Next.js application:', err);
+    });
+}
 
 // ─── 6. Graceful Termination Handlers ─────────────────────────────────────────
 const gracefulShutdown = (signal) => {
