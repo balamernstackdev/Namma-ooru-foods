@@ -5,9 +5,9 @@
 //             : 'https://api.nammaorrufoods.com'
 //         : 'https://api.nammaorrufoods.com'
 // );
-export const API_URL = 'http://localhost:5000'
+// export const API_URL = 'http://localhost:5000'
 
-// export const API_URL = 'https://api.nammaorrufoods.com'
+export const API_URL = 'https://api.nammaorrufoods.com'
 export async function fetchWithTimeout(url: string, options: RequestInit = {}, timeout = 1500): Promise<Response> {
     const controller = new AbortController();
     const id = setTimeout(() => controller.abort(), timeout);
