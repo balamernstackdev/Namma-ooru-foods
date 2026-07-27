@@ -283,7 +283,6 @@ export default function AdminProducts() {
                         </th>
                         <th className="px-6 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100">Product Info</th>
                         <th className="px-6 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100">Category</th>
-                        <th className="px-6 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100">Ingredients</th>
                         <th className="px-6 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100">Stock Status</th>
                         <th className="px-6 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100">Price</th>
                         <th className="px-6 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100 text-right">Actions</th>
@@ -294,7 +293,7 @@ export default function AdminProducts() {
                      {isLoading ? (
                         Array.from({ length: 6 }).map((_, i) => (
                            <tr key={i} className="animate-pulse">
-                              <td className="px-6 py-4 border-b border-slate-50" colSpan={7}>
+                              <td className="px-6 py-4 border-b border-slate-50" colSpan={6}>
                                  <div className="flex items-center gap-4 py-2">
                                     <div className="h-10 w-10 bg-slate-100 rounded-xl" />
                                     <div className="space-y-1.5 flex-1">
@@ -380,15 +379,8 @@ export default function AdminProducts() {
                                        {product.category?.name || 'Heritage Foods'}
                                     </span>
                                  </td>
-
-                                 <td className="px-6 py-4 border-b border-slate-50">
-                                    <span className="text-xs text-slate-500 font-semibold max-w-[150px] truncate block" title={product.ingredientsInfo ? product.ingredientsInfo.replace(/<[^>]*>/g, '') : '—'}>
-                                       {product.ingredientsInfo ? product.ingredientsInfo.replace(/<[^>]*>/g, '') : '—'}
-                                    </span>
-                                 </td>
-
-                                 <td className="px-6 py-4 border-b border-slate-50">
-                                    <div className="space-y-1">
+                                  <td className="px-6 py-4 border-b border-slate-50">
+                                     <div className="space-y-1">
                                        <div className="flex items-center justify-between gap-2 max-w-[120px]">
                                           <span className="text-xs font-bold text-slate-700">{stock} units</span>
                                           <span className={`text-[8px] font-black uppercase tracking-wider ${isLow ? 'text-red-500' : 'text-emerald-500'}`}>

@@ -28,14 +28,14 @@ interface User {
     totalSpending: number;
     addressesCount: number;
     wishlistCount: number;
-  }
+  };
   sellerStats?: {
     totalProducts: number;
     totalOrders: number;
     pendingProducts: number;
     revenue: number;
     averageRating: string;
-  }
+  };
 }
 
 export default function AdminUsersPage() {
@@ -145,7 +145,7 @@ export default function AdminUsersPage() {
         addToast('Error', 'Unable to retrieve user indices.');
       })
       .finally(() => setLoading(false));
-  }
+  };
 
   const deleteUser = async (id: number) => {
     if (!confirm('Are you sure you want to permanently delete this user? This action is irreversible.')) return;
@@ -159,7 +159,7 @@ export default function AdminUsersPage() {
     } catch (err) {
       addToast('Error', 'Security protocol prevented deletion');
     }
-  }
+  };
 
   const clearFilters = () => {
     setSearchTerm('');
@@ -171,12 +171,12 @@ export default function AdminUsersPage() {
     setFilterSellerId('');
     setFilterAdminRole('');
     setCurrentPage(1);
-  }
+  };
 
   const isUserBlocked = (user: User) => {
     if (!user.lockoutUntil) return false;
     return new Date(user.lockoutUntil) > new Date();
-  }
+  };
 
   return (
     <div className="space-y-8 animate-in fade-in duration-700">
@@ -598,7 +598,7 @@ export default function AdminUsersPage() {
                         <>
                           <td className="px-8 py-5">
                             <span className="text-[11px] font-black text-slate-400 bg-slate-50 border border-slate-200/60 px-2 py-1 rounded-md uppercase tracking-wider">
-                              CUS-{String(user.customerId || 0).padStart(2, '0')}
+                              PC-{String(user.id).padStart(3, '0')}
                             </span>
                           </td>
                           <td className="px-8 py-5">
@@ -694,7 +694,7 @@ export default function AdminUsersPage() {
                         <>
                           <td className="px-8 py-5">
                             <span className="text-[11px] font-black text-slate-400 bg-slate-50 border border-slate-200/60 px-2 py-1 rounded-md uppercase tracking-wider">
-                              Adm-{String(user.adminId || 0).padStart(2, '0')}
+                              PA-{String(user.id).padStart(3, '0')}
                             </span>
                           </td>
                           <td className="px-8 py-5">

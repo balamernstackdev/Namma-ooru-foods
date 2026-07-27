@@ -82,8 +82,8 @@ export default function SubVendorDetailClient() {
     );
   }
 
-  const selId = `SEL-${vendor.id.toString().padStart(3, '0')}`;
-  const hubId = vendor.headVendor?.vendorHubId || `VEN-${(vendor.headVendorId || 0).toString().padStart(3, '0')}`;
+  const selId = `SEL-${vendor.id.toString().padStart(2, '0')}`;
+  const hubId = vendor.headVendor?.vendorHubId || `VEN-${(vendor.headVendorId || 0).toString().padStart(2, '0')}`;
   const status = vendor.deletedAt ? 'Disabled' : (vendor.userId ? 'Active' : 'Pending');
   const stats = vendor.stats || {};
 

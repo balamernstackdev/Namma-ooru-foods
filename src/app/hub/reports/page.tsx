@@ -327,7 +327,7 @@ export default function VendorHubReports() {
                   <tr key={sv.id} className="group hover:bg-slate-50/50">
                     <td className="py-4 pr-4">
                       <span className="font-mono text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100">
-                        SEL-{sv.id.toString().padStart(3, '0')}
+                        SEL-{sv.id.toString().padStart(2, '0')}
                       </span>
                     </td>
                     <td className="py-4 pr-4">

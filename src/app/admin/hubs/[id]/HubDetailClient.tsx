@@ -203,7 +203,7 @@ export default function HubDetailClient({ id }: HubDetailClientProps) {
               </div>
               <div className="flex items-center gap-3 mt-1.5 flex-wrap">
                 <span className="text-[10px] font-mono text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">
-                  {hub.vendorHubId || `VEN-${hub.id.toString().padStart(3, '0')}`}
+                  {hub.vendorHubId || `VEN-${hub.id.toString().padStart(2, '0')}`}
                 </span>
                 <span className="text-[9px] text-slate-400 font-bold uppercase tracking-widest flex items-center gap-1">
                   Manager: {hub.managerName || 'Unassigned'}
@@ -324,7 +324,7 @@ export default function HubDetailClient({ id }: HubDetailClientProps) {
                         {vendors.map(sv => (
                           <tr key={sv.id} className="hover:bg-slate-50/60 transition-colors">
                             <td className="py-5 px-6 font-mono text-xs font-black text-slate-900">
-                              SEL-{sv.id.toString().padStart(3, '0')}
+                              SEL-{sv.id.toString().padStart(2, '0')}
                             </td>
                             <td className="py-5 px-6">
                               <span className="text-sm font-black text-slate-900 block">{sv.name}</span>
@@ -373,7 +373,7 @@ export default function HubDetailClient({ id }: HubDetailClientProps) {
                       <div key={sv.id} className="py-4 space-y-3">
                         <div className="flex justify-between items-start">
                           <div>
-                            <span className="text-xs font-mono font-black text-slate-400 block">SEL-{sv.id.toString().padStart(3, '0')}</span>
+                            <span className="text-xs font-mono font-black text-slate-400 block">SEL-{sv.id.toString().padStart(2, '0')}</span>
                             <span className="text-sm font-black text-slate-900 block">{sv.name}</span>
                           </div>
                           <span className={`inline-flex px-2 py-0.5 rounded text-[8px] font-black tracking-widest border ${
@@ -559,7 +559,7 @@ export default function HubDetailClient({ id }: HubDetailClientProps) {
                         {products.map(p => (
                           <tr key={p.id} className="hover:bg-slate-50/60 transition-colors">
                             <td className="py-5 px-6 font-mono text-xs font-black text-slate-900">
-                              PROD-{p.id.toString().padStart(3, '0')}
+                              PROD-{p.id.toString().padStart(2, '0')}
                             </td>
                             <td className="py-5 px-6 font-mono text-xs text-slate-500">
                               {p.sku || p.skuCode || `SKU-${p.id}`}
@@ -624,7 +624,7 @@ export default function HubDetailClient({ id }: HubDetailClientProps) {
                         {payouts.map((pay, idx) => (
                           <tr key={pay.id} className="hover:bg-slate-50/60 transition-colors">
                             <td className="py-5 px-6 font-mono text-xs font-black text-slate-900">
-                              PAY-{pay.id.toString().padStart(3, '0')}
+                              PAY-{pay.id.toString().padStart(2, '0')}
                             </td>
                             <td className="py-5 px-6 text-xs font-bold text-slate-700">
                               {pay.subVendor?.name || 'Assigned Seller'}

@@ -216,7 +216,7 @@ export default function LocationMapModal({ onClose }: LocationMapModalProps) {
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, y: '100%', scale: 0.95 }}
         transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-        className="relative w-full md:w-[95vw] h-[90vh] md:h-[85vh] max-w-full md:max-w-[1100px] bg-white rounded-t-3xl md:rounded-3xl shadow-2xl overflow-hidden pointer-events-auto flex flex-col"
+        className="relative w-full md:w-[95vw] h-[100dvh] md:h-[85vh] max-w-full md:max-w-[1100px] bg-white md:rounded-3xl shadow-2xl overflow-hidden pointer-events-auto flex flex-col"
       >
         {/* Header */}
         <div className="flex items-center justify-between p-5 border-b border-slate-100 bg-white z-10 shrink-0">
@@ -267,7 +267,7 @@ export default function LocationMapModal({ onClose }: LocationMapModalProps) {
         <div className="flex-1 flex flex-col lg:flex-row overflow-hidden relative">
           
           {/* Map Section */}
-          <div className="w-full lg:w-3/5 h-[250px] md:h-[350px] lg:h-full relative shrink-0 lg:shrink">
+          <div className="w-full lg:w-3/5 flex-1 min-h-[200px] lg:h-full relative z-0">
             <InteractiveMap 
               center={center} 
               onLocationSelect={handleMapLocationSelect} 
@@ -287,7 +287,7 @@ export default function LocationMapModal({ onClose }: LocationMapModalProps) {
           </div>
 
           {/* Right Panel */}
-          <div className="w-full lg:w-2/5 flex flex-col justify-between overflow-hidden p-6 h-full flex-1">
+          <div className="w-full lg:w-2/5 flex flex-col justify-between p-4 md:p-6 shrink-0 lg:flex-1 bg-white z-10 shadow-[0_-10px_20px_-10px_rgba(0,0,0,0.05)] lg:shadow-none">
             
             {/* Fixed Search Box at top of panel on Desktop */}
             <div className="hidden lg:block relative mb-4 z-20 shrink-0 bg-white">
@@ -322,7 +322,7 @@ export default function LocationMapModal({ onClose }: LocationMapModalProps) {
             </div>
 
             {/* Scrollable details container */}
-            <div className="flex-1 overflow-y-auto pr-1 space-y-4">
+            <div className="overflow-y-auto max-h-[35vh] lg:max-h-none lg:flex-1 pr-1 space-y-4 custom-scrollbar">
               {/* Address details */}
               {isLocating ? (
                 <div className="flex flex-col items-center justify-center py-12 text-center bg-slate-50/50 border border-slate-100 rounded-2xl">
@@ -346,7 +346,7 @@ export default function LocationMapModal({ onClose }: LocationMapModalProps) {
                     </div>
                   </div>
                   
-                  <div className="grid grid-cols-2 gap-x-4 gap-y-3 pt-3 border-t border-emerald-100/50 text-left">
+                  <div className="hidden lg:grid grid-cols-2 gap-x-4 gap-y-3 pt-3 border-t border-emerald-100/50 text-left">
                     <div className="col-span-2">
                       <p className="text-[9px] font-black uppercase text-slate-400 tracking-wider">Street</p>
                       <p className="text-xs font-bold text-slate-700 break-words">{addressDetails.street || '--'}</p>
@@ -391,7 +391,7 @@ export default function LocationMapModal({ onClose }: LocationMapModalProps) {
             </div>
 
             {/* Buttons: fixed at bottom of panel */}
-            <div className="pt-4 pb-2 z-10 shrink-0 border-t border-slate-100 mt-4 bg-white flex flex-col">
+            <div className="pt-3 pb-1 lg:pt-4 lg:pb-2 z-10 shrink-0 border-t border-slate-100 mt-3 lg:mt-4 bg-white flex flex-col">
               <button
                 onClick={handleConfirm}
                 disabled={!addressDetails || isSearching || isLocating}

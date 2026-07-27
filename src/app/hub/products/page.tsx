@@ -496,7 +496,6 @@ export default function HubProducts() {
                      <tr className="bg-slate-50/50">
                         <th className="px-6 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100">Product Info</th>
                         <th className="px-6 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100">Category</th>
-                        <th className="px-6 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100">Ingredients</th>
                         <th className="px-6 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100">Stock Status</th>
                         <th className="px-6 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100">Price</th>
                         <th className="px-6 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100 text-right">Actions</th>
@@ -507,7 +506,7 @@ export default function HubProducts() {
                      {isLoading ? (
                         Array.from({ length: 6 }).map((_, i) => (
                            <tr key={i} className="animate-pulse">
-                              <td className="px-6 py-4 border-b border-slate-50" colSpan={7}>
+                              <td className="px-6 py-4 border-b border-slate-50" colSpan={5}>
                                  <div className="flex items-center gap-4 py-2">
                                     <div className="h-10 w-10 bg-slate-100 rounded-xl" />
                                     <div className="space-y-1.5 flex-1">
@@ -520,7 +519,7 @@ export default function HubProducts() {
                         ))
                      ) : products.length === 0 ? (
                         <tr>
-                           <td colSpan={7} className="py-20 text-center">
+                           <td colSpan={5} className="py-20 text-center">
                               <div className="max-w-md mx-auto flex flex-col items-center gap-3">
                                  <div className="h-12 w-12 bg-slate-50 rounded-full flex items-center justify-center text-slate-400">
                                     <Package size={20} />
@@ -590,12 +589,6 @@ export default function HubProducts() {
                                  </td>
 
                                  <td className="px-6 py-4 border-b border-slate-50">
-                                    <span className="text-xs text-slate-500 font-semibold max-w-[150px] truncate block" title={product.ingredientsInfo ? product.ingredientsInfo.replace(/<[^>]*>/g, '') : '—'}>
-                                       {product.ingredientsInfo ? product.ingredientsInfo.replace(/<[^>]*>/g, '') : '—'}
-                                    </span>
-                                 </td>
-
-                                 <td className="px-6 py-4 border-b border-slate-50">
                                     <div className="space-y-1">
                                        <div className="flex items-center justify-between gap-2 max-w-[120px]">
                                           <span className="text-xs font-bold text-slate-700">{stock} units</span>
@@ -621,7 +614,7 @@ export default function HubProducts() {
                                  <td className={`px-6 py-4 text-right border-b border-slate-50 relative`}>
                                     <div className="flex items-center justify-end gap-1">
                                        <Link
-                                          href={`/product/${product.slug || product.id}`}
+                                          href={`/products/${product.slug || product.id}`}
                                           target="_blank"
                                           className="h-9 px-3 rounded-xl border border-slate-200 text-slate-500 hover:text-slate-900 bg-white hover:bg-slate-50 flex items-center gap-1.5 text-xs transition-all no-underline"
                                        >
@@ -744,7 +737,7 @@ export default function HubProducts() {
                            <div className="flex items-center gap-2 pt-1">
                               {hasViewPerm && (
                                  <Link
-                                    href={`/product/${product.slug || product.id}`}
+                                    href={`/products/${product.slug || product.id}`}
                                     target="_blank"
                                     className="h-11 flex-1 flex items-center justify-center gap-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-all text-xs font-bold no-underline"
                                  >

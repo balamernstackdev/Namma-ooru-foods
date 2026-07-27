@@ -146,8 +146,8 @@ export default function AdminSubcategoriesPage() {
                             <div className="flex items-center gap-4">
                               {/* Dynamic visual icon fallback */}
                               <div className="h-12 w-12 rounded-2xl flex items-center justify-center overflow-hidden bg-slate-100 border border-slate-100 group-hover:border-emerald-200 transition-all relative shrink-0 shadow-sm">
-                                {sub.imageUrl ? (
-                                  <img src={sub.imageUrl} alt={sub.name} className="h-full w-full object-cover" />
+                                {(sub.imageUrl || sub.category?.image) ? (
+                                  <img src={sub.imageUrl || sub.category?.image} alt={sub.name} className="h-full w-full object-cover" />
                                 ) : (
                                   <Tag size={18} className="text-slate-400 group-hover:text-emerald-600 transition-colors" />
                                 )}

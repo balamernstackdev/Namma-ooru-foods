@@ -49,14 +49,6 @@ function MapController({ center }: { center: [number, number] }) {
 }
 
 export default function InteractiveMap({ center, onLocationSelect, isLocating, onRequestLocation }: InteractiveMapProps) {
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  if (!mounted) return <div className="w-full h-full bg-slate-100 animate-pulse flex items-center justify-center text-slate-400">Loading Map...</div>;
-
   return (
     <div className="relative w-full h-full overflow-hidden group/map">
       <MapContainer

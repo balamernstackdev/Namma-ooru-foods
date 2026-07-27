@@ -192,7 +192,7 @@ const Navbar = () => {
         <div className="standard-container w-full">
           <div className={`transition-all duration-500 ${scrolled ? 'h-16 md:h-20' : 'h-20 md:h-24'} flex items-center justify-between`}>
             {/* LOGO & LOCATION */}
-            <div className="flex items-center w-[15%] shrink-0">
+            <div className="flex items-center gap-2 sm:gap-4 shrink-0 min-w-0 pr-2 lg:pr-6 flex-1 lg:flex-none">
               <Link href="/" prefetch={false} className="shrink-0 flex items-center transition-transform hover:scale-105">
                 <Image
                   src={settings.logo || "/logo.webp"}
@@ -200,18 +200,22 @@ const Navbar = () => {
                   width={160}
                   height={48}
                   priority
-                  className="w-24 md:w-36 h-auto object-contain"
+                  className="w-20 md:w-36 h-auto object-contain"
                 />
               </Link>
+              
+              <div className="shrink-0 min-w-0 block flex-1">
+                <TopLocationBar variant="compact" />
+              </div>
             </div>
 
             {/* DYNAMIC SEARCH (DESKTOP) */}
-            <div className="hidden lg:flex w-[60%] xl:w-[65%] shrink-0">
+            <div className="hidden lg:flex flex-1 shrink-0 px-2 xl:px-6">
               <SearchBar />
             </div>
 
             {/* UTILITIES */}
-            <div className="flex items-center justify-end w-[25%] xl:w-[20%] gap-2 md:gap-6 shrink-0">
+            <div className="flex items-center justify-end gap-2 md:gap-6 shrink-0">
               {(isMounted && user) ? (
                 <Link
                   href={user.role?.toLowerCase() === 'hub'
@@ -244,7 +248,7 @@ const Navbar = () => {
                 </Link>
               )}
 
-              <button onClick={() => setIsOpen(true)} className="h-9 w-9 rounded-full bg-slate-50 flex items-center justify-center relative hover:bg-primary/5 transition-all">
+              <button onClick={() => setIsOpen(true)} className="hidden md:flex h-9 w-9 rounded-full bg-slate-50 items-center justify-center relative hover:bg-primary/5 transition-all">
                 <ShoppingCart size={18} className="text-primary" />
                 <span className="absolute -top-1 -right-1 h-4 w-4 bg-accent text-[8px] font-black text-white rounded-full flex items-center justify-center border border-white">
                   {isMounted ? cart.length : 0}
@@ -349,8 +353,7 @@ const Navbar = () => {
           </div>
         </div>
 
-        {/* TOP LOCATION BAR */}
-        <TopLocationBar />
+        {/* Removed redundant mobile location bar */}
 
       </nav>
 

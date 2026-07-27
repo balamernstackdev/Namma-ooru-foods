@@ -140,7 +140,7 @@ export default function SubVendorsList() {
               <tbody className="divide-y divide-slate-50">
                 {filtered.map((vendor: any) => {
                   const status = getStatus(vendor);
-                  const selId = `SEL-${vendor.id.toString().padStart(3, '0')}`;
+                  const selId = `SEL-${vendor.id.toString().padStart(2, '0')}`;
                   return (
                     <tr key={vendor.id} className="hover:bg-slate-50/50 transition-colors">
                       <td className="px-5 py-4">
