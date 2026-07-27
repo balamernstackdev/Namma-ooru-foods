@@ -490,7 +490,7 @@ export default function HubProducts() {
          {/* Listing table */}
          <div className="bg-white rounded-[2.5rem] border border-slate-200 shadow-sm overflow-hidden mt-4">
             {/* Desktop View */}
-            <div className="hidden md:block overflow-x-auto min-h-[280px]">
+            <div className="hidden md:block overflow-x-auto w-full">
                <table className="w-full text-left border-collapse min-w-[1000px] admin-data-table">
                   <thead>
                      <tr className="bg-slate-50/50">
@@ -687,7 +687,7 @@ export default function HubProducts() {
                                      </span>
 
                                  </div>
-                                 <p className="text-[13px] font-extrabold text-slate-900 leading-tight truncate mt-0.5">
+                                 <p className="text-[13px] font-extrabold text-slate-900 leading-tight mt-0.5">
                                     {product.name}
                                  </p>
                               </div>

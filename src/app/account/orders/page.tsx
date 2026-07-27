@@ -118,14 +118,13 @@ export default function OrdersPage() {
   const [loading, setLoading] = useState(true);
   const [trackLoading, setTrackLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [devMode, setDevMode] = useState(false);
   const [activeInvoice, setActiveInvoice] = useState<any>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 5;
 
   useEffect(() => {
      setCurrentPage(1);
-  }, [searchQuery, devMode]);
+  }, [searchQuery]);
 
   useEffect(() => {
     if (!user?.id) {
@@ -152,11 +151,10 @@ export default function OrdersPage() {
   }, [selectedOrderId]);
 
   useEffect(() => {
-    const confirmed = orders.filter(o => devMode || o.status !== 'PENDING');
-    if (confirmed.length > 0 && !selectedOrderId) {
-      setSelectedOrderId(confirmed[0].id);
+    if (orders.length > 0 && !selectedOrderId) {
+      setSelectedOrderId(orders[0].id);
     }
-  }, [orders, devMode, selectedOrderId]);
+  }, [orders, selectedOrderId]);
 
   const getStatusConfig = (status: string) => {
     switch (status?.toUpperCase()) {
@@ -250,10 +248,6 @@ export default function OrdersPage() {
 
   const filteredOrders = orders
     .filter(order => {
-      if (devMode) return true;
-      return order.status !== 'PENDING';
-    })
-    .filter(order => {
       const idMatches = order.id.toString().includes(searchQuery);
       const itemsText = (order.orderItems || order.items || []).map((i: any) => i.product?.name || i.name || '').join(' ').toLowerCase();
       const queryMatches = itemsText.includes(searchQuery.toLowerCase());
@@ -297,12 +291,7 @@ export default function OrdersPage() {
             <p className="text-sm text-slate-500 font-medium mt-1">Real-time status updates and estimated delivery schedules.</p>
           </div>
           <div className="flex items-center gap-3">
-             <button 
-                onClick={() => setDevMode(!devMode)} 
-                className={`px-4 py-2 rounded-xl border text-[11px] font-bold uppercase tracking-widest transition-all ${devMode ? 'bg-orange-50 border-orange-200 text-orange-700' : 'bg-white border-slate-200 text-slate-500 hover:text-slate-700 shadow-sm'}`}
-             >
-                Dev Mode: {devMode ? 'All Orders' : 'Paid Only'}
-             </button>
+             {/* Additional actions can go here */}
           </div>
         </div>
 

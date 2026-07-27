@@ -72,7 +72,7 @@ export default function OrderDetailClient({ id }: OrderDetailClientProps) {
       setUpdating(true);
       const res = await fetch(`${API_URL}/api/admin/orders/${id}/status`, {
         method: 'PATCH',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${localStorage.getItem('namma_orru_token')}`
         },
@@ -163,12 +163,11 @@ export default function OrderDetailClient({ id }: OrderDetailClientProps) {
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
-          <span className={`inline-flex px-4 py-2 rounded-full text-xs font-black uppercase tracking-wider border ${
-            order.status === 'DELIVERED' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' :
+          <span className={`inline-flex px-4 py-2 rounded-full text-xs font-black uppercase tracking-wider border ${order.status === 'DELIVERED' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' :
             order.status === 'SHIPPED' ? 'bg-blue-50 text-blue-700 border-blue-100' :
-            order.status === 'CANCELLED' ? 'bg-red-50 text-red-700 border-red-100' :
-            'bg-amber-50 text-amber-700 border-amber-100'
-          }`}>
+              order.status === 'CANCELLED' ? 'bg-red-50 text-red-700 border-red-100' :
+                'bg-amber-50 text-amber-700 border-amber-100'
+            }`}>
             Status: {order.status}
           </span>
 
@@ -207,7 +206,7 @@ export default function OrderDetailClient({ id }: OrderDetailClientProps) {
               <ShoppingBag className="text-emerald-600" size={18} />
               Ordered Items
             </h3>
-            
+
             <div className="divide-y divide-slate-100">
               {order.items?.map((item: any) => {
                 const vendorName = item.product?.subVendor?.name || 'Namma Ooru Originals';
@@ -259,14 +258,13 @@ export default function OrderDetailClient({ id }: OrderDetailClientProps) {
                 </div>
                 <div>
                   <span className="text-[9px] text-slate-400 uppercase tracking-wider block font-bold">Payment Status</span>
-                  <span className={`inline-flex px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase mt-1 ${
-                    order.transactions[0].status === 'SUCCESS' ? 'bg-emerald-50 text-emerald-700' :
+                  <span className={`inline-flex px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase mt-1 ${order.transactions[0].status === 'SUCCESS' ? 'bg-emerald-50 text-emerald-700' :
                     order.transactions[0].status === 'FAILED' ? 'bg-rose-50 text-rose-700' :
-                    'bg-amber-50 text-amber-700'
-                  }`}>
+                      'bg-amber-50 text-amber-700'
+                    }`}>
                     {order.transactions[0].status === 'SUCCESS' ? 'Success' :
-                     order.transactions[0].status === 'FAILED' ? 'Failed' :
-                     'Pending'}
+                      order.transactions[0].status === 'FAILED' ? 'Failed' :
+                        'Pending'}
                   </span>
                 </div>
                 <div>
@@ -291,7 +289,7 @@ export default function OrderDetailClient({ id }: OrderDetailClientProps) {
           {/* Customer profile */}
           <div className="bg-white rounded-[2rem] border border-slate-200 p-8 shadow-sm space-y-6">
             <h3 className="text-lg font-black text-slate-900 uppercase tracking-tight">Customer Profile</h3>
-            
+
             <div className="space-y-4">
               <div className="flex items-center gap-3">
                 <div className="h-10 w-10 bg-slate-50 border border-slate-200 text-slate-600 rounded-xl flex items-center justify-center font-black text-xs">
@@ -325,7 +323,7 @@ export default function OrderDetailClient({ id }: OrderDetailClientProps) {
                 <MapPin className="text-emerald-600" size={18} />
                 Shipping Address
               </h3>
-              
+
               <div className="text-xs font-semibold text-slate-600 leading-relaxed space-y-1">
                 <p className="font-extrabold text-slate-800">{order.shippingAddress.name}</p>
                 {order.shippingAddress.phone && <p>Phone: {order.shippingAddress.phone}</p>}
@@ -339,27 +337,23 @@ export default function OrderDetailClient({ id }: OrderDetailClientProps) {
           {/* Pricing Summary */}
           <div className="bg-white rounded-[2rem] border border-slate-200 p-8 shadow-sm space-y-6">
             <h3 className="text-lg font-black text-slate-900 uppercase tracking-tight">Financial Summary</h3>
-            
+
             <div className="space-y-3 font-semibold text-xs text-slate-500">
               <div className="flex items-center justify-between">
                 <span>Items Subtotal</span>
-                <span className="text-slate-800 font-black">₹{Number(order.totalAmount - order.shippingFees + (order.discountAmount || 0) - (order.gstAmount || 0)).toLocaleString()}</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span>GST Charges</span>
-                <span className="text-slate-800 font-black">₹{Number(order.gstAmount || 0).toLocaleString()}</span>
+                <span className="text-slate-800 font-black">₹{Number(Number(order.totalAmount) - Number(order.shippingFees || 0) + Number(order.discountAmount || 0) - Number(order.gstAmount || 0)).toLocaleString()}</span>
               </div>
               <div className="flex items-center justify-between">
                 <span>Delivery fees</span>
                 <span className="text-slate-800 font-black">₹{Number(order.shippingFees || 0).toLocaleString()}</span>
               </div>
-              {order.discountAmount > 0 && (
+              {Number(order.discountAmount) > 0 && (
                 <div className="flex items-center justify-between text-rose-600">
                   <span>Discounts Applied</span>
                   <span className="font-black">-₹{Number(order.discountAmount).toLocaleString()}</span>
                 </div>
               )}
-              
+
               <div className="flex items-center justify-between pt-3 border-t border-slate-100 text-sm font-black text-slate-900">
                 <span className="uppercase tracking-tight text-[11px] text-slate-400">Total Revenue</span>
                 <span className="text-lg text-emerald-600 tracking-tighter">₹{Number(order.totalAmount).toLocaleString()}</span>

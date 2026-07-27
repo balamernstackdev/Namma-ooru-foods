@@ -7,6 +7,7 @@ import {
 import { useCartStore } from '@/store/useCartStore';
 import { useAuth } from '@/context/AuthContext';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import Script from 'next/script';
 import { API_URL } from '@/lib/api';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -18,6 +19,7 @@ const fetcher = (url: string) => fetch(url).then((res) => res.json());
 interface Address { id: number; name: string; phone: string; line1: string; line2?: string; city: string; state: string; pincode: string; isDefault: boolean; type?: string; }
 
 export default function CheckoutPage() {
+   const router = useRouter();
    const { cart, getTotal, clearCart, appliedCoupon, setAppliedCoupon } = useCartStore();
    const { user } = useAuth();
 
@@ -95,14 +97,14 @@ export default function CheckoutPage() {
    }
 
    const subtotal = getTotal();
-   
+
    // Fetch dynamic shipping values
    const freeDeliveryAbove = parseFloat(getSettingVal('free_shipping_threshold', '499'));
    const flatDeliveryFee = parseFloat(getSettingVal('delivery_fee', '49'));
    const minOrderForDelivery = parseFloat(getSettingVal('shipping_min_order_amount', '0'));
-   
+
    const delivery = (discountType === 'FREE_SHIPPING' || subtotal >= freeDeliveryAbove) ? 0 : flatDeliveryFee;
-   
+
    let total = 0;
    if (gstTaxType === 'exclusive') {
       total = subtotal - discount + delivery + gst;
@@ -116,22 +118,28 @@ export default function CheckoutPage() {
       total = parseFloat(total.toFixed(2));
    }
 
-    const activeGateway = 'Razorpay'; // getSettingVal('active_payment_gateway', 'Razorpay');
-    const paymentMethods = ['Razorpay'];
+   const activeGateway = 'Razorpay'; // getSettingVal('active_payment_gateway', 'Razorpay');
+   const paymentMethods = ['Razorpay'];
 
-    useEffect(() => {
-       if (paymentMethod === 'Online') {
-          setPaymentMethod('Razorpay');
-       }
-    }, [paymentMethod]);
+   useEffect(() => {
+      if (paymentMethod === 'Online') {
+         setPaymentMethod('Razorpay');
+      }
+   }, [paymentMethod]);
 
-    useEffect(() => {
-       setMounted(true);
-       if (user?.id) {
-          setEmail(user.email);
-          loadAddresses();
-       }
-    }, [user]);
+   useEffect(() => {
+      setMounted(true);
+      if (user?.id) {
+         setEmail(user.email);
+         loadAddresses();
+      }
+   }, [user]);
+
+   useEffect(() => {
+      if (mounted && cart.length === 0 && step < 4) {
+         router.replace('/cart');
+      }
+   }, [mounted, cart.length, step, router]);
 
    const loadAddresses = async () => {
       if (!user?.id) return;
@@ -321,7 +329,7 @@ export default function CheckoutPage() {
          <div className="bg-gradient-to-br from-[#f0fdf4] to-[#f8f8f5] min-h-[calc(100vh-100px)] py-8 px-4 sm:px-6 lg:px-8 flex items-center justify-center">
             <div className="max-w-[1400px] w-full mx-auto">
                <div className="grid grid-cols-1 lg:grid-cols-2 bg-white rounded-[32px] overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.05)] border border-slate-100 min-h-[600px]">
-                  
+
                   {/* LEFT SIDE: Auth Form */}
                   <div className="p-8 md:p-16 lg:p-20 flex flex-col justify-center relative">
                      <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-[#059669] to-[#16a34a]" />
@@ -459,22 +467,24 @@ export default function CheckoutPage() {
                   </div>
                </div>
 
-               {/* DELIVERY ETA BLOCK */}
-               <div className="bg-[#f0fdf4] rounded-[24px] p-6 border border-[#bbf7d0]/50 mb-6 flex items-start gap-4 shadow-sm">
-                  <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center shrink-0 shadow-sm text-[#16a34a]">
-                     <Truck size={20} />
+               {/* DELIVERY ETA BLOCK (Hidden per request) */}
+               {false && (
+                  <div className="bg-[#f0fdf4] rounded-[24px] p-6 border border-[#bbf7d0]/50 mb-6 flex items-start gap-4 shadow-sm">
+                     <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center shrink-0 shadow-sm text-[#16a34a]">
+                        <Truck size={20} />
+                     </div>
+                     <div>
+                        <h3 className="text-[14px] font-bold text-[#111827] mb-1">Expected Delivery</h3>
+                        <p className="text-[20px] font-black text-[#16a34a] tracking-tight">Today • 6:30 PM - 8:00 PM</p>
+                        {finalOrderData?.address && (
+                           <div className="mt-3 text-[13px] text-[#4b5563] font-medium flex items-start gap-2">
+                              <MapPin size={16} className="mt-0.5 text-[#9ca3af]" />
+                              <span>Delivering to <strong className="text-[#111827]">{finalOrderData.address.line1}, {finalOrderData.address.city}</strong></span>
+                           </div>
+                        )}
+                     </div>
                   </div>
-                  <div>
-                     <h3 className="text-[14px] font-bold text-[#111827] mb-1">Expected Delivery</h3>
-                     <p className="text-[20px] font-black text-[#16a34a] tracking-tight">Today • 6:30 PM - 8:00 PM</p>
-                     {finalOrderData?.address && (
-                        <div className="mt-3 text-[13px] text-[#4b5563] font-medium flex items-start gap-2">
-                           <MapPin size={16} className="mt-0.5 text-[#9ca3af]" />
-                           <span>Delivering to <strong className="text-[#111827]">{finalOrderData.address.line1}, {finalOrderData.address.city}</strong></span>
-                        </div>
-                     )}
-                  </div>
-               </div>
+               )}
 
                {/* ORDER SUMMARY */}
                <div className="bg-white rounded-[24px] border border-[#e5e7eb] shadow-sm mb-8 overflow-hidden">
@@ -746,7 +756,7 @@ export default function CheckoutPage() {
                                  <button onClick={() => setStep(2)} className="text-sm font-bold text-[#16a34a] hover:underline">Edit Delivery</button>
                               </div>
 
-                               <div className="space-y-4">
+                              <div className="space-y-4">
                                  {paymentMethods.map((method) => (
                                     <div
                                        key={method}
@@ -853,7 +863,7 @@ export default function CheckoutPage() {
                                        )}
                                     </div>
                                  </div>
-                                 
+
                                  {delivery === 0 ? (
                                     <div className="text-[11px] font-bold text-[#16a34a] bg-[#16a34a]/10 px-2.5 py-1.5 rounded-lg inline-flex items-center gap-1.5 mt-1 w-fit">
                                        <span>🚚</span> Free Delivery Applied!
@@ -941,11 +951,11 @@ export default function CheckoutPage() {
                            <div className="flex justify-between text-[#6b7280]"><span>Subtotal</span><span className="font-bold text-[#111827]">₹{subtotal}</span></div>
                            <div className="flex justify-between text-[#6b7280]"><span>Delivery</span><span className="font-bold text-[#111827]">{delivery === 0 ? 'FREE' : `₹${delivery}`}</span></div>
                            {gstEnabled && gst > 0 && (
-                               <div className="flex justify-between text-[#6b7280]">
-                                  <span>{gstTaxLabel} ({gstTaxType === 'inclusive' ? 'Incl' : 'Excl'})</span>
-                                  <span className="font-bold text-[#111827]">₹{gst}</span>
-                               </div>
-                            )}
+                              <div className="flex justify-between text-[#6b7280]">
+                                 <span>{gstTaxLabel} ({gstTaxType === 'inclusive' ? 'Incl' : 'Excl'})</span>
+                                 <span className="font-bold text-[#111827]">₹{gst}</span>
+                              </div>
+                           )}
                         </div>
                      </motion.div>
                   )}

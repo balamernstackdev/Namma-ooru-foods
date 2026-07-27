@@ -312,7 +312,7 @@ export default function VendorProducts() {
                                  )}
                               </div>
                               <div className="flex-1 min-w-0">
-                                 <h4 className="text-[14px] font-black text-[#111827] leading-tight truncate">{product.name}</h4>
+                                 <h4 className="text-[14px] font-black text-[#111827] leading-tight">{product.name}</h4>
                                  <p className="text-[9px] font-bold text-[#6B7280] mt-1 uppercase tracking-widest">ID-VND-20{product.id}</p>
                               </div>
                            </div>

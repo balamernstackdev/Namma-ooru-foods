@@ -91,8 +91,9 @@ export default function HubCustomersPage() {
               <p className="text-slate-400 text-xs font-medium mt-1">Customers will appear here once orders are placed.</p>
             </div>
           ) : (
-            <table className="w-full text-left border-collapse">
-              <thead>
+            <div className="overflow-x-auto w-full">
+              <table className="w-full text-left border-collapse min-w-[1000px]">
+                <thead>
                 <tr className="bg-slate-50/80 border-b border-slate-100">
                   {['#', 'Customer', 'Contact', 'Orders', 'Total Spend', 'Member Since'].map(h => (
                     <th key={h} className="px-5 py-4 text-[9px] font-black uppercase tracking-widest text-slate-400 whitespace-nowrap">
@@ -151,6 +152,7 @@ export default function HubCustomersPage() {
                 ))}
               </tbody>
             </table>
+            </div>
           )}
         </div>
 

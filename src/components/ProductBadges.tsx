@@ -12,6 +12,34 @@ import {
   Award
 } from 'lucide-react';
 
+const FastTruckIcon = ({ size = 10, className = "" }) => (
+  <svg 
+    xmlns="http://www.w3.org/2000/svg" 
+    width={size} 
+    height={size} 
+    viewBox="0 0 24 24" 
+    fill="none" 
+    stroke="currentColor" 
+    strokeWidth="2" 
+    strokeLinecap="round" 
+    strokeLinejoin="round" 
+    className={className}
+  >
+    <path d="M2 8h4" />
+    <path d="M1 12h5" />
+    <path d="M2 16h3" />
+    <path d="M10 10.5l2-1.5l2 1.5v3l-2 1.5l-2-1.5z" />
+    <path d="M12 9v3" />
+    <path d="M10 10.5l2 1.5" />
+    <path d="M14 10.5l-2 1.5" />
+    <path d="M7.5 16H6a2 2 0 0 1 -2 -2V8a2 2 0 0 1 2 -2h9a2 2 0 0 1 2 2v2" />
+    <path d="M17 10h2l3 3v3h-1.5" />
+    <circle cx="9.5" cy="16" r="2" />
+    <circle cx="18.5" cy="16" r="2" />
+    <path d="M11.5 16h5" />
+  </svg>
+);
+
 interface ProductBadgesProps {
   product: {
     isBestSeller?: boolean;
@@ -93,18 +121,18 @@ export default function ProductBadges({ product, variant = 'inline' }: ProductBa
     });
   }
 
-  // 5. Fast Delivery
+  // 5. Fast Delivery (Same Day)
   if (product.isFastDelivery) {
     allPossibleBadges.push({
       id: 'fast',
-      label: 'Fast Delivery',
+      label: 'Same Day Delivery',
       floatingBg: 'bg-rose-700',
       floatingText: 'text-white',
-      floatingIcon: <Zap size={10} className="text-rose-200 fill-rose-200" />,
+      floatingIcon: <FastTruckIcon size={10} className="text-rose-200" />,
       inlineBg: 'bg-rose-50',
       inlineText: 'text-rose-800',
       inlineBorder: 'border-rose-100',
-      inlineIcon: <Zap size={10} className="text-rose-700" />
+      inlineIcon: <FastTruckIcon size={10} className="text-rose-700" />
     });
   }
 

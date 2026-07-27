@@ -518,7 +518,7 @@ export default function AdminProducts() {
                                     <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">
                                        ID: {product.productIdStr || `Pro-${String(product.id).padStart(2, '0')}`}
                                     </span>
-                                    <button onClick={() => toggleSelectRow(product.id)} className="text-slate-400 hover:text-slate-600 transition-colors">
+                                    <button onClick={() => toggleSelectRow(product.id)} className="hidden text-slate-400 hover:text-slate-600 transition-colors">
                                        {selectedIds.includes(product.id) ? (
                                           <CheckSquare size={16} className="text-emerald-600" />
                                        ) : (
@@ -526,7 +526,7 @@ export default function AdminProducts() {
                                        )}
                                     </button>
                                  </div>
-                                 <p className="text-[13px] font-extrabold text-slate-900 leading-tight truncate mt-0.5">
+                                 <p className="text-[13px] font-extrabold text-slate-900 leading-tight mt-0.5">
                                     {product.name}
                                  </p>
                               </div>

@@ -133,8 +133,9 @@ export default function HubOrdersPage() {
               <p className="text-slate-400 text-xs font-medium mt-1">Try adjusting your search or filter.</p>
             </div>
           ) : (
-            <table className="w-full text-left border-collapse">
-              <thead>
+            <div className="overflow-x-auto w-full">
+              <table className="w-full text-left border-collapse min-w-[1000px]">
+                <thead>
                 <tr className="bg-slate-50/80 border-b border-slate-100">
                   {['Order ID', 'Date & Time', 'Customer', 'Items', 'Hub Subtotal', 'Order Total', 'Status'].map(h => (
                     <th key={h} className="px-5 py-4 text-[9px] font-black uppercase tracking-widest text-slate-400 whitespace-nowrap">
@@ -183,6 +184,7 @@ export default function HubOrdersPage() {
                 })}
               </tbody>
             </table>
+            </div>
           )}
         </div>
 

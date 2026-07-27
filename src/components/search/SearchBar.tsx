@@ -227,7 +227,7 @@ export default function SearchBar({ isMobile = false }: { isMobile?: boolean }) 
 
       {/* Results Dropdown */}
       <AnimatePresence>
-        {open && (
+        {open && query.trim().length >= 2 && (
           <SearchDropdown
             isVisible={open}
             loading={loading}

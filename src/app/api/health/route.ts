@@ -9,7 +9,7 @@ export async function GET() {
   try {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 3000);
-    
+
     const res = await fetch(`${API_URL}/api/health`, {
       method: 'GET',
       signal: controller.signal,
@@ -17,7 +17,7 @@ export async function GET() {
       cache: 'no-store'
     });
     clearTimeout(timeoutId);
-    
+
     backendLatencyMs = Date.now() - startTime;
     if (res.ok) {
       backendStatus = 'healthy';

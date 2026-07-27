@@ -56,6 +56,7 @@ const renderHtml = (html: string | null | undefined) => {
    return html
       .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
       .replace(/&nbsp;/g, ' ')
+      .replace(/\u00A0/g, ' ')
       .replace(/(<p><br\s*\/?><\/p>\s*)+$/gi, '')
       .replace(/(<p>\s*<\/p>\s*)+$/gi, '')
       .trim();
@@ -204,7 +205,7 @@ export default function ProductDetailClient({ product: initialProduct, allProduc
 
       // Modern Floating Toast
       toast.custom((t) => (
-         <div className="flex items-center gap-4 bg-white rounded-2xl shadow-[0_20px_50px_-12px_rgba(0,0,0,0.15)] border border-slate-100 px-4 py-3 w-[360px] animate-in slide-in-from-bottom-5">
+         <div className="flex items-center gap-3 sm:gap-4 bg-white rounded-2xl shadow-[0_20px_50px_-12px_rgba(0,0,0,0.15)] border border-slate-100 px-3 sm:px-4 py-3 w-[calc(100vw-32px)] sm:w-[360px] max-w-[360px] animate-in slide-in-from-bottom-5">
             {/* Product Image */}
             <div className="relative w-14 h-14 rounded-xl overflow-hidden bg-slate-50 border border-slate-100 shrink-0">
                <img src={galleryImages[0] || product.image || fallbackImage} alt={product.name} className="w-full h-full object-cover" />
@@ -264,7 +265,7 @@ export default function ProductDetailClient({ product: initialProduct, allProduc
    };
 
    return (
-      <div className="w-full min-h-screen bg-slate-50 selection:bg-amber-100 pb-20">
+      <div className="w-full min-h-screen bg-slate-50 selection:bg-amber-100 pb-36">
          <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
          {/* COMPACT BREADCRUMB */}
@@ -473,7 +474,7 @@ export default function ProductDetailClient({ product: initialProduct, allProduc
                   </div>
 
                   {/* 5. TACTILE QUANTITY SELECTOR & CTA BUTTONS */}
-                  <div className="flex items-center gap-3 w-full pt-2">
+                  <div className="flex flex-wrap items-center gap-3 w-full pt-2">
 
                      {/* Modern Rounded Glass Quantity Controller */}
                      <div className="flex items-center justify-between bg-white border border-slate-200 rounded-full p-1 w-[110px] md:w-[120px] shrink-0 h-[42px] md:h-[48px] shadow-sm hover:shadow-md transition-all">
@@ -495,22 +496,22 @@ export default function ProductDetailClient({ product: initialProduct, allProduc
                      </div>
 
                      {isOutOfStock ? (
-                        <button className="flex-1 h-[42px] md:h-[48px] rounded-full bg-slate-800 text-white flex items-center justify-center gap-2 text-[10px] md:text-[11px] font-black uppercase tracking-widest shadow-md hover:bg-slate-900 transition-all">
+                        <button className="flex-1 min-w-[200px] h-[42px] md:h-[48px] rounded-full bg-slate-800 text-white flex items-center justify-center gap-2 text-[10px] md:text-[11px] font-black uppercase tracking-widest shadow-md hover:bg-slate-900 transition-all">
                            <BellRing size={14} strokeWidth={2.5} /> NOTIFY ME
                         </button>
                      ) : (
-                        <div className="flex flex-1 items-center gap-2">
+                        <div className="flex flex-1 min-w-[200px] items-center gap-2">
                            <button
                               onClick={handleAddToCartAction}
-                              className="flex-1 h-[42px] md:h-[48px] rounded-full bg-gradient-to-br from-[#0f5132] to-[#14532d] text-white flex items-center justify-center gap-2 text-[10px] md:text-[11px] font-black uppercase tracking-wider transition-all hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] shadow-lg shadow-emerald-950/10 group/btn"
+                              className="flex-1 h-[42px] md:h-[48px] rounded-full bg-gradient-to-br from-[#0f5132] to-[#14532d] text-white flex items-center justify-center gap-1.5 md:gap-2 text-[10px] md:text-[11px] font-black uppercase tracking-wider transition-all hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] shadow-lg shadow-emerald-950/10 group/btn px-2 whitespace-nowrap"
                            >
-                              <ShoppingCart size={14} strokeWidth={2.5} className="group-hover/btn:scale-110 transition-transform" />
+                              <ShoppingCart size={14} strokeWidth={2.5} className="group-hover/btn:scale-110 transition-transform shrink-0" />
                               <span>ADD TO CART</span>
                            </button>
 
                            <button
                               onClick={handleBuyNow}
-                              className="flex-1 h-[42px] md:h-[48px] rounded-full bg-gradient-to-br from-[#f59e0b] to-[#d97706] text-white flex items-center justify-center gap-1.5 text-[10px] md:text-[11px] font-black uppercase tracking-wider transition-all hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] shadow-lg shadow-amber-500/15"
+                              className="flex-1 h-[42px] md:h-[48px] rounded-full bg-gradient-to-br from-[#f59e0b] to-[#d97706] text-white flex items-center justify-center gap-1.5 text-[10px] md:text-[11px] font-black uppercase tracking-wider transition-all hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] shadow-lg shadow-amber-500/15 px-2 whitespace-nowrap"
                            >
                               BUY NOW
                            </button>
@@ -545,7 +546,7 @@ export default function ProductDetailClient({ product: initialProduct, allProduc
             <div className="standard-container">
                <div className="flex flex-col lg:flex-row gap-12">
                   {/* MAIN CONTENT AREA - 8 COLUMNS OR FULL WIDTH */}
-                  <div className={`${hasFaqs ? 'lg:w-2/3' : 'w-full'} flex flex-col gap-8`}>
+                  <div className={`${hasFaqs ? 'lg:w-2/3' : 'w-full'} flex flex-col gap-8 min-w-0`}>
 
                      {/* DESCRIPTION */}
                      <div className="prose prose-emerald max-w-none">
@@ -718,7 +719,7 @@ export default function ProductDetailClient({ product: initialProduct, allProduc
          />
 
          {/* MOBILE FLOATING STICKY BUY BAR - ALWAYS PERSISTENT */}
-         <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-2xl border-t border-slate-200 px-4 pt-3 pb-8 shadow-[0_-10px_30px_rgba(0,0,0,0.08)] flex items-center gap-3 transition-transform duration-300">
+         <div className="md:hidden fixed bottom-[60px] left-0 right-0 z-50 bg-white/95 backdrop-blur-2xl border-t border-slate-200 px-4 py-3 shadow-[0_-10px_30px_rgba(0,0,0,0.08)] flex items-center gap-3 transition-transform duration-300">
             <div className="flex flex-col shrink-0 min-w-[80px]">
                <div className="flex items-center gap-1">
                   <span className="text-[22px] font-[900] text-slate-900 tracking-tighter">₹{currentPrice}</span>

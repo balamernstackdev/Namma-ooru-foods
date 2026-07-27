@@ -96,7 +96,7 @@ export default function HubLayout({ children }: { children: React.ReactNode }) {
   const hubId = user?.hubId || 'HUB-001';
 
   return (
-    <div id="admin-root" className="min-h-screen bg-[#F8FAF7] flex font-sans selection:bg-emerald-100 selection:text-emerald-900">
+    <div id="admin-root" className="min-h-screen bg-[#F8FAF7] flex font-sans selection:bg-emerald-100 selection:text-emerald-900 overflow-x-hidden">
       <style dangerouslySetInnerHTML={{
         __html: `
         /* Font Application */

@@ -10,36 +10,10 @@ const FloatingCartBar = () => {
   const { cart, getTotal, setIsOpen } = useCartStore();
   const pathname = usePathname();
   const [mounted, setMounted] = useState(false);
-  const [isVisible, setIsVisible] = useState(false);
-
-  const prevCartCountRef = React.useRef<number | null>(null);
 
   useEffect(() => {
     setMounted(true);
   }, []);
-
-  // Auto-hide logic: Show for 3 seconds ONLY when an item is added / quantity increases
-  useEffect(() => {
-    const totalItems = cart.reduce((acc, item) => acc + item.quantity, 0);
-    
-    // Initialize ref on first load or when count is null
-    if (prevCartCountRef.current === null) {
-      prevCartCountRef.current = totalItems;
-      return;
-    }
-
-    // Only trigger visibility if the total items count increased
-    if (totalItems > prevCartCountRef.current) {
-      setIsVisible(true);
-      const timer = setTimeout(() => {
-        setIsVisible(false);
-      }, 3000);
-      prevCartCountRef.current = totalItems;
-      return () => clearTimeout(timer);
-    }
-
-    prevCartCountRef.current = totalItems;
-  }, [cart]);
 
   if (!mounted) return null;
 
@@ -57,7 +31,7 @@ const FloatingCartBar = () => {
 
   return (
     <AnimatePresence>
-      {isVisible && totalItems > 0 && (
+      {totalItems > 0 && (
         <motion.div
           initial={{ y: 150, opacity: 0, scale: 0.9 }}
           animate={{ y: 0, opacity: 1, scale: 1 }}

@@ -106,11 +106,9 @@ export default function QuickBrowseCategories({ activeSlug = 'all' }: QuickBrows
   const renderIcon = (cat: any, isActive: boolean) => {
     const icon = getCategoryIcon(cat.name);
     if (icon.endsWith('.png') || icon.startsWith('/')) {
-      const isRice = icon === '/rice_color.png';
-      const imageScale = isRice ? '' : 'scale-[1.35]';
       return (
-        <div className={`transition-transform duration-300 relative w-10 h-10 md:w-12 md:h-12 flex items-center justify-center ${isActive ? 'scale-110 drop-shadow-sm' : ''}`}>
-          <Image src={icon} alt={cat.name} fill className={`object-contain ${imageScale}`} unoptimized />
+        <div className={`transition-transform duration-300 relative w-10 h-10 md:w-12 md:h-12 flex items-center justify-center ${isActive ? 'scale-110 animate-pulse' : ''}`}>
+          <Image src={icon} alt={cat.name} fill className="object-contain scale-110 mix-blend-darken" unoptimized />
         </div>
       );
     }

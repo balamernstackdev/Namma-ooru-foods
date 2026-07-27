@@ -89,7 +89,6 @@ export default function Home() {
         <ProductCarousel
           products={fastDeliveryProducts}
           title='<span class="text-[10px] md:text-xs uppercase font-black tracking-[0.2em] text-emerald-600 block mb-1">FAST DELIVERY</span>Fastest Delivery <span class="text-emerald-600 italic lowercase font-serif font-normal">Products</span>'
-          subtitle="Get products delivered to your doorstep in the shortest time from nearby vendors."
           viewAllHref="/products?delivery=fast"
           bgClass="bg-white"
           autoScrollInterval={3200}

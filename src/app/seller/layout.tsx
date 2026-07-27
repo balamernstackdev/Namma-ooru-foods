@@ -111,7 +111,7 @@ export default function VendorLayout({ children }: { children: React.ReactNode }
   }).filter(Boolean) as any[];
 
   return (
-    <div id="vendor-root" className="min-h-screen flex bg-[#F8FAF7] transition-colors duration-500">
+    <div id="vendor-root" className="min-h-screen flex bg-[#F8FAF7] transition-colors duration-500 overflow-x-hidden">
       <style dangerouslySetInnerHTML={{
         __html: `
         #vendor-root,

@@ -205,7 +205,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   };
 
   return (
-    <div id="admin-root" className="min-h-screen bg-[#F8FAF7] flex font-sans selection:bg-emerald-100 selection:text-emerald-900">
+    <div id="admin-root" className="min-h-screen bg-[#F8FAF7] flex font-sans selection:bg-emerald-100 selection:text-emerald-900 overflow-x-hidden">
       <style dangerouslySetInnerHTML={{
         __html: `
         /* Font Application */

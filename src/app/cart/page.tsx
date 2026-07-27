@@ -25,11 +25,7 @@ const CartItemVariantDropdown = ({ item, updateVariant }: { item: any, updateVar
 
    return (
       <div className="flex flex-col gap-1.5 mt-0.5 min-w-0">
-         {product?.description && (
-            <p className="text-[11px] md:text-[12px] text-slate-500 line-clamp-2 leading-relaxed">
-               {product.description}
-            </p>
-         )}
+
 
          {!product || !product.variants || product.variants.length === 0 ? (
             <p className="text-[12px] font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded w-fit border border-emerald-100 mt-0.5">
@@ -47,11 +43,10 @@ const CartItemVariantDropdown = ({ item, updateVariant }: { item: any, updateVar
                               updateVariant(item.id, v.name, Number(v.price));
                            }
                         }}
-                        className={`text-[11px] font-black py-1 px-2.5 rounded-md border transition-colors flex items-center gap-1 ${
-                           isSelected
+                        className={`whitespace-nowrap text-[11px] font-black py-1 px-2.5 rounded-md border transition-colors flex items-center gap-1 ${isSelected
                               ? 'bg-emerald-100 border-emerald-300 text-emerald-900 shadow-sm'
                               : 'bg-white border-emerald-100 text-emerald-700 hover:bg-emerald-50'
-                        }`}
+                           }`}
                      >
                         {formatVariant(v.name)} - ₹{v.price}
                      </button>
@@ -393,27 +388,23 @@ const CartPage = () => {
 
                                  {/* INFO CONTAINER */}
                                  <div className="flex-1 flex flex-col justify-between min-w-0">
-                                    <div className="flex justify-between items-start gap-2 min-w-0">
-                                       <div className="flex flex-col gap-0.5 min-w-0">
-                                          <h3 className="text-[15px] md:text-[17px] font-bold text-slate-800 leading-tight pr-4">
+                                    <div className="flex flex-col gap-1 min-w-0">
+                                       <div className="flex justify-between items-start gap-2 min-w-0">
+                                          <h3 className="text-[15px] md:text-[17px] font-bold text-slate-800 leading-tight">
                                              {item.name}
                                           </h3>
-                                          <CartItemVariantDropdown item={item} updateVariant={updateVariant} />
-                                          {/* <div className="flex items-center gap-1.5 mt-2 text-[9px] md:text-[10px] font-black uppercase tracking-wider text-slate-500 bg-slate-50 w-fit px-2.5 py-0.5 rounded border border-slate-200/60">
-                                <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
-                                Delivery calculated at checkout
-                             </div> */}
-                                       </div>
-                                       <div className="text-right shrink-0">
-                                          <span className="text-[16px] md:text-[18px] font-black text-slate-800 block">
-                                             ₹{item.price * item.quantity}
-                                          </span>
-                                          {item.quantity > 1 && (
-                                             <span className="text-[11px] font-medium text-slate-400 mt-1 block">
-                                                (₹{item.price} each)
+                                          <div className="text-right shrink-0">
+                                             <span className="text-[16px] md:text-[18px] font-black text-slate-800 block">
+                                                ₹{item.price * item.quantity}
                                              </span>
-                                          )}
+                                             {item.quantity > 1 && (
+                                                <span className="text-[11px] font-medium text-slate-400 mt-0.5 block">
+                                                   (₹{item.price} each)
+                                                </span>
+                                             )}
+                                          </div>
                                        </div>
+                                       <CartItemVariantDropdown item={item} updateVariant={updateVariant} />
                                     </div>
 
                                     {/* CONTROLS */}
@@ -582,7 +573,7 @@ const CartPage = () => {
 
          {/* MOBILE STICKY BOTTOM CTA */}
          {cart.length > 0 && (
-            <div className="lg:hidden fixed bottom-20 left-0 w-full bg-white/95 backdrop-blur-lg border-t border-[#eef2f7] z-50 p-4 flex items-center justify-between shadow-[0_-10px_30px_rgba(0,0,0,0.05)]">
+            <div className="lg:hidden fixed bottom-[60px] left-0 w-full bg-white/95 backdrop-blur-lg border-t border-[#eef2f7] z-50 p-4 flex items-center justify-between shadow-[0_-10px_30px_rgba(0,0,0,0.05)]">
                <div className="flex flex-col">
                   <span className="text-[10px] font-bold text-[#6b7280] uppercase tracking-widest">Total Due</span>
                   <span className="text-2xl font-black text-[#111827]">₹{finalTotal}</span>
