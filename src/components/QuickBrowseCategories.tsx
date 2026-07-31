@@ -27,7 +27,7 @@ const getCategoryIcon = (name: string) => {
   if (lower.includes('eat') || lower.includes('ready')) return '/snack.png';
   return '/rice_color.png';
 };
-import { API_URL } from '@/lib/api';
+import { API_URL, resolveImageUrl } from '@/lib/api';
 import { usePlatformSettings } from '@/context/PlatformSettingsContext';
 
 const fetcher = (url: string) => fetch(url, { cache: 'no-store' }).then(res => res.json());
@@ -104,8 +104,9 @@ export default function QuickBrowseCategories({ activeSlug = 'all' }: QuickBrows
   };
 
   const renderIcon = (cat: any, isActive: boolean) => {
-    const icon = getCategoryIcon(cat.name);
-    if (icon.endsWith('.png') || icon.startsWith('/')) {
+    const rawIcon = (cat.image && cat.image.trim() !== '') ? cat.image : getCategoryIcon(cat.name);
+    const icon = resolveImageUrl(rawIcon);
+    if (icon.endsWith('.png') || icon.endsWith('.webp') || icon.endsWith('.jpg') || icon.endsWith('.jpeg') || icon.startsWith('/') || icon.startsWith('http')) {
       return (
         <div className={`transition-transform duration-300 relative w-10 h-10 md:w-12 md:h-12 flex items-center justify-center ${isActive ? 'scale-110 animate-pulse' : ''}`}>
           <Image src={icon} alt={cat.name} fill className="object-contain scale-110 mix-blend-darken" unoptimized />
