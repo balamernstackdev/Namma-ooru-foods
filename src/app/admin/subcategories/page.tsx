@@ -82,7 +82,7 @@ export default function AdminSubcategoriesPage() {
   );
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-1000 pb-20">
+    <div className="space-y-8 animate-in fade-in duration-700 pb-20">
 
       {/* ─── HEADER SECTION ───────────────────────────────────────────── */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
@@ -135,7 +135,7 @@ export default function AdminSubcategoriesPage() {
                       <tr className="bg-slate-50/50 border-b border-slate-100">
                         <th className="px-10 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Subcategory Name</th>
                         <th className="px-10 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]"> Parent Category</th>
-                        <th className="px-10 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] text-center">Assigned SKU Count</th>
+                        <th className="px-10 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] text-center">Assigned Count</th>
                         <th className="px-10 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] text-right">Actions</th>
                       </tr>
                     </thead>

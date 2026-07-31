@@ -114,141 +114,71 @@ export default function VendorHubDashboard() {
       </div>
 
       {/* 📊 Top Cards */}
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-        
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
+
         {/* Total Sellers */}
-        <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 flex flex-col justify-between hover:shadow-md transition-all group relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-50/30 rounded-bl-[4rem] group-hover:scale-110 transition-transform pointer-events-none" />
-          <div className="flex items-start justify-between">
-            <div className="rounded-2xl bg-emerald-50 text-emerald-600 p-3.5 border border-emerald-100/50">
+        <Link href="/hub/sub-vendors" className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 flex flex-col gap-4 hover:shadow-md hover:-translate-y-1 transition-all group min-h-[140px]">
+          <div className="flex items-center justify-between">
+            <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center group-hover:scale-110 transition-transform">
               <Users className="h-6 w-6" />
             </div>
-            <Link href="/hub/sub-vendors" className="text-slate-400 hover:text-emerald-600 transition-colors">
-              <ArrowUpRight className="h-5 w-5" />
-            </Link>
-          </div>
-          <div className="mt-6">
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Total Sellers</p>
-            <h3 className="mt-1.5 text-3xl font-black text-slate-900">{topCards?.totalSellers ?? 0}</h3>
-          </div>
-        </div>
-
-        {/* Active Products */}
-        <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 flex flex-col justify-between hover:shadow-md transition-all group relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-blue-50/30 rounded-bl-[4rem] group-hover:scale-110 transition-transform pointer-events-none" />
-          <div className="flex items-start justify-between">
-            <div className="rounded-2xl bg-blue-50 text-blue-600 p-3.5 border border-blue-100/50">
-              <Package className="h-6 w-6" />
-            </div>
-            <Link href="/hub/products" className="text-slate-400 hover:text-blue-600 transition-colors">
-              <ArrowUpRight className="h-5 w-5" />
-            </Link>
-          </div>
-          <div className="mt-6">
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Active Products</p>
-            <h3 className="mt-1.5 text-3xl font-black text-slate-900">{topCards?.activeProducts ?? 0}</h3>
-          </div>
-        </div>
-
-        {/* Total Orders */}
-        <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 flex flex-col justify-between hover:shadow-md transition-all group relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-purple-50/30 rounded-bl-[4rem] group-hover:scale-110 transition-transform pointer-events-none" />
-          <div className="flex items-start justify-between">
-            <div className="rounded-2xl bg-purple-50 text-purple-600 p-3.5 border border-purple-100/50">
-              <ShoppingBag className="h-6 w-6" />
-            </div>
-            <Link href="/hub/orders" className="text-slate-400 hover:text-purple-600 transition-colors">
-              <ArrowUpRight className="h-5 w-5" />
-            </Link>
-          </div>
-          <div className="mt-6">
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Total Orders</p>
-            <h3 className="mt-1.5 text-3xl font-black text-slate-900">{topCards?.totalOrders ?? 0}</h3>
-          </div>
-        </div>
-
-        {/* This Week Sales */}
-        <div className="bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-3xl border border-slate-800 shadow-xl p-6 flex flex-col justify-between hover:shadow-2xl transition-all group relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-white/5 rounded-bl-[4rem] group-hover:scale-110 transition-transform pointer-events-none" />
-          <div className="flex items-start justify-between">
-            <div className="rounded-2xl bg-white/10 text-emerald-400 p-3.5 border border-white/5">
-              <TrendingUp className="h-6 w-6" />
-            </div>
-            <span className="text-[9px] font-black uppercase bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-md border border-emerald-500/30">
-              Active
-            </span>
-          </div>
-          <div className="mt-6">
-            <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest">This Week Sales</p>
-            <h3 className="mt-1.5 text-3xl font-black text-emerald-400 tracking-tight">
-              {formatAmount(topCards?.thisWeekSales ?? 0)}
-            </h3>
-          </div>
-        </div>
-
-      </div>
-
-      {/* 📋 Pending Activities */}
-      <div className="bg-white rounded-[2.5rem] border border-slate-200 p-8 shadow-sm">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="h-10 w-10 bg-amber-50 rounded-2xl border border-amber-100 flex items-center justify-center text-amber-600">
-            <ClipboardList size={20} />
+            <ArrowUpRight className="h-4 w-4 text-slate-300 group-hover:text-emerald-500 transition-colors" />
           </div>
           <div>
-            <h2 className="text-lg font-black text-slate-900 uppercase">Pending Activities</h2>
-            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Action required items demanding attention</p>
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Total Sellers</p>
+            <h3 className="text-3xl font-black text-slate-900 leading-none">{topCards?.totalSellers ?? 0}</h3>
+          </div>
+        </Link>
+
+        {/* Active Products */}
+        <Link href="/hub/products" className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 flex flex-col gap-4 hover:shadow-md hover:-translate-y-1 transition-all group min-h-[140px]">
+          <div className="flex items-center justify-between">
+            <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+              <Package className="h-6 w-6" />
+            </div>
+            <ArrowUpRight className="h-4 w-4 text-slate-300 group-hover:text-blue-500 transition-colors" />
+          </div>
+          <div>
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Active Products</p>
+            <h3 className="text-3xl font-black text-slate-900 leading-none">{topCards?.activeProducts ?? 0}</h3>
+          </div>
+        </Link>
+
+        {/* Total Orders */}
+        <Link href="/hub/orders" className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 flex flex-col gap-4 hover:shadow-md hover:-translate-y-1 transition-all group min-h-[140px]">
+          <div className="flex items-center justify-between">
+            <div className="w-12 h-12 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+              <ShoppingBag className="h-6 w-6" />
+            </div>
+            <ArrowUpRight className="h-4 w-4 text-slate-300 group-hover:text-purple-500 transition-colors" />
+          </div>
+          <div>
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Total Orders</p>
+            <h3 className="text-3xl font-black text-slate-900 leading-none">{topCards?.totalOrders ?? 0}</h3>
+          </div>
+        </Link>
+
+        {/* This Week Sales */}
+        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 flex flex-col gap-4 hover:shadow-md hover:-translate-y-1 transition-all group min-h-[140px]">
+          <div className="flex items-center justify-between">
+            <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+              <TrendingUp className="h-6 w-6" />
+            </div>
+            <span className="text-[8px] font-black uppercase bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-md border border-emerald-200/50">Active</span>
+          </div>
+          <div>
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">This Week Sales</p>
+            <h3 className="text-3xl font-black text-emerald-600 leading-none tracking-tight">{formatAmount(topCards?.thisWeekSales ?? 0)}</h3>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          
-          {/* Pending Seller Registrations */}
-          <Link href="/hub/sub-vendors" className="group p-5 bg-slate-50 hover:bg-emerald-50 border border-slate-100 hover:border-emerald-200 rounded-3xl transition-all flex items-center justify-between">
-            <div className="space-y-1">
-              <p className="text-[10px] font-black text-slate-400 group-hover:text-emerald-700 uppercase tracking-wider transition-colors">Pending Sellers</p>
-              <h4 className="text-2xl font-black text-slate-800 group-hover:text-emerald-950 transition-colors">
-                {pendingActivities?.pendingSellerRegistrations ?? 0}
-              </h4>
-            </div>
-            <div className="h-12 w-12 rounded-2xl bg-white border border-slate-200 text-slate-400 group-hover:text-emerald-600 group-hover:border-emerald-300 shadow-sm flex items-center justify-center transition-all group-hover:scale-105">
-              <ChevronRight size={18} />
-            </div>
-          </Link>
-
-          {/* Pending Product Submissions */}
-          <Link href="/hub/products" className="group p-5 bg-slate-50 hover:bg-amber-50 border border-slate-100 hover:border-amber-200 rounded-3xl transition-all flex items-center justify-between">
-            <div className="space-y-1">
-              <p className="text-[10px] font-black text-slate-400 group-hover:text-amber-700 uppercase tracking-wider transition-colors">Pending Products</p>
-              <h4 className="text-2xl font-black text-slate-800 group-hover:text-amber-950 transition-colors">
-                {pendingActivities?.pendingProductSubmissions ?? 0}
-              </h4>
-            </div>
-            <div className="h-12 w-12 rounded-2xl bg-white border border-slate-200 text-slate-400 group-hover:text-amber-600 group-hover:border-amber-300 shadow-sm flex items-center justify-center transition-all group-hover:scale-105">
-              <ChevronRight size={18} />
-            </div>
-          </Link>
-
-          {/* Products Returned for Correction */}
-          <Link href="/hub/products" className="group p-5 bg-slate-50 hover:bg-rose-50 border border-slate-100 hover:border-rose-200 rounded-3xl transition-all flex items-center justify-between">
-            <div className="space-y-1">
-              <p className="text-[10px] font-black text-slate-400 group-hover:text-rose-700 uppercase tracking-wider transition-colors">Needs Correction</p>
-              <h4 className="text-2xl font-black text-slate-800 group-hover:text-rose-950 transition-colors">
-                {pendingActivities?.productsReturnedForCorrection ?? 0}
-              </h4>
-            </div>
-            <div className="h-12 w-12 rounded-2xl bg-white border border-slate-200 text-slate-400 group-hover:text-rose-600 group-hover:border-rose-300 shadow-sm flex items-center justify-center transition-all group-hover:scale-105">
-              <ChevronRight size={18} />
-            </div>
-          </Link>
-
-        </div>
       </div>
 
-      {/* Two Column Layout (Recent Orders & Notifications) */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      {/* Single Column Layout (Recent Orders) */}
+      <div className="w-full">
         
-        {/* 🛒 Recent Orders (Left 2 Columns) */}
-        <div className="bg-white rounded-[2.5rem] border border-slate-200 p-8 shadow-sm lg:col-span-2 space-y-6">
+        {/* 🛒 Recent Orders (Full Width) */}
+        <div className="bg-white rounded-[2.5rem] border border-slate-200 p-8 shadow-sm space-y-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="h-10 w-10 bg-emerald-50 rounded-2xl border border-emerald-100 flex items-center justify-center text-emerald-600">
@@ -275,6 +205,7 @@ export default function VendorHubDashboard() {
                   <tr className="border-b border-slate-100 text-[9px] font-black uppercase tracking-widest text-slate-400">
                     <th className="pb-4">Order ID</th>
                     <th className="pb-4">Customer</th>
+                    <th className="pb-4">Received At</th>
                     <th className="pb-4">Status</th>
                     <th className="pb-4">Items</th>
                     <th className="pb-4 text-right">Amount</th>
@@ -285,6 +216,7 @@ export default function VendorHubDashboard() {
                     <tr key={order.id} className="group hover:bg-slate-50/50 transition-colors">
                       <td className="py-4 font-black text-slate-900">{order.orderIdStr || `#${order.id}`}</td>
                       <td className="py-4 font-semibold text-slate-600">{order.customerName}</td>
+                      <td className="py-4 text-slate-500 font-medium whitespace-nowrap">{formatDate(order.createdAt)}</td>
                       <td className="py-4">
                         <span className={`px-2.5 py-1 text-[9px] font-black uppercase tracking-wider rounded-lg border ${STATUS_COLORS[order.status] || 'bg-slate-100 text-slate-600'}`}>
                           {order.status}
@@ -298,121 +230,6 @@ export default function VendorHubDashboard() {
               </table>
             </div>
           )}
-        </div>
-
-        {/* 🔔 Notifications (Right 1 Column) */}
-        <div className="bg-white rounded-[2.5rem] border border-slate-200 p-8 shadow-sm flex flex-col space-y-6">
-          <div className="flex items-center gap-3">
-            <div className="h-10 w-10 bg-indigo-50 rounded-2xl border border-indigo-100 flex items-center justify-center text-indigo-600">
-              <Bell size={20} />
-            </div>
-            <div>
-              <h2 className="text-lg font-black text-slate-900 uppercase">Operational Center</h2>
-              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Operational updates & announcements</p>
-            </div>
-          </div>
-
-          {/* Quick Tabs */}
-          <div className="grid grid-cols-3 gap-1 bg-slate-50 p-1 rounded-2xl border border-slate-100">
-            {notificationTabs.map(tab => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id as any)}
-                className={`py-2 rounded-xl text-[9px] font-black uppercase tracking-wider transition-all flex flex-col items-center justify-center gap-1 ${
-                  activeTab === tab.id 
-                    ? 'bg-white text-slate-900 shadow-sm border border-slate-200/50' 
-                    : 'text-slate-400 hover:text-slate-600'
-                }`}
-              >
-                <span>{tab.id === 'announcements' ? '📢 Admin' : tab.id === 'products' ? '📦 Product' : '🔔 System'}</span>
-                <span className={`px-1.5 py-0.5 rounded-full text-[8px] ${activeTab === tab.id ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-200/70 text-slate-500'}`}>
-                  {tab.count}
-                </span>
-              </button>
-            ))}
-          </div>
-
-          {/* Tab Content List */}
-          <div className="flex-1 overflow-y-auto max-h-[360px] pr-1 space-y-4 no-scrollbar">
-            
-            {activeTab === 'announcements' && (
-              <>
-                {(!notifications?.adminAnnouncements || notifications.adminAnnouncements.length === 0) ? (
-                  <div className="py-12 text-center text-slate-300 font-bold text-xs uppercase tracking-wider">
-                    No Announcements
-                  </div>
-                ) : (
-                  notifications.adminAnnouncements.map((ann: any) => (
-                    <div key={ann.id} className="p-4 bg-amber-50/50 border border-amber-100 rounded-2xl space-y-2 hover:shadow-sm transition-all">
-                      <div className="flex items-start justify-between gap-2">
-                        <h4 className="text-xs font-black text-amber-950 uppercase leading-snug">{ann.title}</h4>
-                        <span className="text-[8px] font-black bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded uppercase">
-                          {ann.offerType || 'Offer'}
-                        </span>
-                      </div>
-                      <p className="text-xs text-slate-600 font-medium leading-relaxed whitespace-pre-wrap">{ann.message}</p>
-                      {ann.couponCode && (
-                        <div className="inline-block bg-white border border-amber-200 rounded-lg px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-amber-700">
-                          Code: {ann.couponCode}
-                        </div>
-                      )}
-                    </div>
-                  ))
-                )}
-              </>
-            )}
-
-            {activeTab === 'products' && (
-              <>
-                {(!notifications?.productUpdates || notifications.productUpdates.length === 0) ? (
-                  <div className="py-12 text-center text-slate-300 font-bold text-xs uppercase tracking-wider">
-                    No Product Updates
-                  </div>
-                ) : (
-                  notifications.productUpdates.map((notif: any) => (
-                    <div key={notif.id} className="p-4 bg-slate-50 border border-slate-100 rounded-2xl space-y-1.5 hover:bg-slate-100/50 transition-colors">
-                      <div className="flex items-center justify-between">
-                        <span className="text-[9px] font-black uppercase text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded">
-                          {notif.notificationType?.replace(/_/g, ' ') || 'Update'}
-                        </span>
-                        <span className="text-[8px] text-slate-400 font-bold">{formatDate(notif.createdAt)}</span>
-                      </div>
-                      <h4 className="text-xs font-black text-slate-900 leading-tight">{notif.title}</h4>
-                      <p className="text-xs text-slate-500 font-medium leading-normal">{notif.message}</p>
-                    </div>
-                  ))
-                )}
-              </>
-            )}
-
-            {activeTab === 'system' && (
-              <>
-                {(!notifications?.systemNotifications || notifications.systemNotifications.length === 0) ? (
-                  <div className="py-12 text-center text-slate-300 font-bold text-xs uppercase tracking-wider">
-                    No System Alerts
-                  </div>
-                ) : (
-                  notifications.systemNotifications.map((notif: any) => (
-                    <div key={notif.id} className="p-4 bg-slate-50 border border-slate-100 rounded-2xl space-y-1.5 hover:bg-slate-100/50 transition-colors">
-                      <div className="flex items-center justify-between">
-                        <span className={`text-[8px] font-black uppercase px-2 py-0.5 rounded ${
-                          notif.priority === 'HIGH' || notif.priority === 'CRITICAL' 
-                            ? 'bg-rose-50 text-rose-600' 
-                            : 'bg-slate-200/80 text-slate-600'
-                        }`}>
-                          {notif.priority}
-                        </span>
-                        <span className="text-[8px] text-slate-400 font-bold">{formatDate(notif.createdAt)}</span>
-                      </div>
-                      <h4 className="text-xs font-black text-slate-900 leading-tight">{notif.title}</h4>
-                      <p className="text-xs text-slate-500 font-medium leading-normal">{notif.message}</p>
-                    </div>
-                  ))
-                )}
-              </>
-            )}
-
-          </div>
         </div>
 
       </div>

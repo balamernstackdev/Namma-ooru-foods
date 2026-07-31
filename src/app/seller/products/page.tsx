@@ -164,7 +164,7 @@ export default function VendorProducts() {
                </motion.button>
             </div>
          </div>
- 
+
          {/* Search & Filter Bar */}
          <div className="flex flex-col sm:flex-row gap-4 w-full">
             <div className="flex-1 relative w-full">
@@ -191,6 +191,7 @@ export default function VendorProducts() {
                   <thead>
                      <tr className="bg-[#F8FAF7] border-b border-[#E5E7EB]">
                         <th className="px-10 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-[#6B7280]">Product Detail</th>
+                        <th className="px-6 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-[#6B7280]">Product ID</th>
                         <th className="px-10 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-[#6B7280]">Category</th>
                         <th className="px-10 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-[#6B7280]">Status</th>
                         <th className="px-10 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-[#6B7280]">Price</th>
@@ -229,9 +230,13 @@ export default function VendorProducts() {
                                        </div>
                                        <div>
                                           <h4 className="text-[15px] font-black text-[#111827] leading-tight">{product.name}</h4>
-                                          <p className="text-[10px] font-bold text-[#6B7280] mt-2 uppercase tracking-widest">ID-VND-20{product.id}</p>
                                        </div>
                                     </div>
+                                 </td>
+                                 <td className="px-6 py-8">
+                                    <span className="font-mono text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-1 rounded-lg border border-emerald-100 whitespace-nowrap">
+                                       {product.productIdStr || `PROD-${product.id.toString().padStart(4, '0')}`}
+                                    </span>
                                  </td>
                                  <td className="px-10 py-8">
                                     <span className="px-4 py-2 rounded-full bg-[#DCFCE7] text-[#15803D] text-[10px] font-black uppercase tracking-widest">
@@ -240,12 +245,11 @@ export default function VendorProducts() {
                                  </td>
                                  <td className="px-10 py-8">
                                     <div className="flex items-center gap-2">
-                                       <span className={`text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full border ${
-                                          product.status === 'APPROVED' ? 'bg-[#DCFCE7] border-[#DCFCE7] text-[#15803D]' :
+                                       <span className={`text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full border ${product.status === 'APPROVED' ? 'bg-[#DCFCE7] border-[#DCFCE7] text-[#15803D]' :
                                           product.status === 'PENDING' ? 'bg-[#FEF3C7] border-[#FEF3C7] text-[#B45309]' :
-                                          product.status === 'REJECTED' ? 'bg-[#FEE2E2] border-[#FEE2E2] text-[#DC2626]' :
-                                          'bg-[#F3F4F6] border-[#F3F4F6] text-[#4B5563]'
-                                       }`}>
+                                             product.status === 'REJECTED' ? 'bg-[#FEE2E2] border-[#FEE2E2] text-[#DC2626]' :
+                                                'bg-[#F3F4F6] border-[#F3F4F6] text-[#4B5563]'
+                                          }`}>
                                           {product.status || 'DRAFT'}
                                        </span>
                                     </div>
@@ -313,7 +317,6 @@ export default function VendorProducts() {
                               </div>
                               <div className="flex-1 min-w-0">
                                  <h4 className="text-[14px] font-black text-[#111827] leading-tight">{product.name}</h4>
-                                 <p className="text-[9px] font-bold text-[#6B7280] mt-1 uppercase tracking-widest">ID-VND-20{product.id}</p>
                               </div>
                            </div>
                            <div className="grid grid-cols-3 gap-2 border-t border-b border-[#E5E7EB] py-3 text-left">
@@ -330,12 +333,11 @@ export default function VendorProducts() {
                               <div>
                                  <span className="text-[8px] font-black uppercase tracking-widest text-[#6B7280] block mb-1">Status</span>
                                  <div className="flex items-center gap-1 mt-1">
-                                    <span className={`text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full ${
-                                       product.status === 'APPROVED' ? 'bg-[#DCFCE7] text-[#15803D]' :
+                                    <span className={`text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full ${product.status === 'APPROVED' ? 'bg-[#DCFCE7] text-[#15803D]' :
                                        product.status === 'PENDING' ? 'bg-[#FEF3C7] text-[#B45309]' :
-                                       product.status === 'REJECTED' ? 'bg-[#FEE2E2] text-[#DC2626]' :
-                                       'bg-[#F3F4F6] text-[#4B5563]'
-                                    }`}>
+                                          product.status === 'REJECTED' ? 'bg-[#FEE2E2] text-[#DC2626]' :
+                                             'bg-[#F3F4F6] text-[#4B5563]'
+                                       }`}>
                                        {product.status || 'DRAFT'}
                                     </span>
                                  </div>
@@ -362,7 +364,7 @@ export default function VendorProducts() {
                   </AnimatePresence>
                )}
             </div>
-            
+
             {/* Pagination Controls */}
             {totalPages > 1 && (
                <div className="flex items-center justify-between border-t border-[#E5E7EB] px-10 py-8 animate-in fade-in duration-500">

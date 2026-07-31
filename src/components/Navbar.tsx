@@ -53,18 +53,61 @@ const Navbar = () => {
   }, [user?.id]);
 
   const { data: apiCategories } = useSWR(`${API_URL}/api/categories?limit=100&all=true`, fetcher);
+  const { data: apiSubcategories } = useSWR(`${API_URL}/api/subcategories?limit=500`, fetcher);
 
   const categoriesList = Array.isArray(apiCategories)
     ? apiCategories
     : (apiCategories && Array.isArray((apiCategories as any).categories) ? (apiCategories as any).categories : []);
 
+  const subcategoriesList: any[] = Array.isArray(apiSubcategories)
+    ? apiSubcategories
+    : (apiSubcategories && Array.isArray((apiSubcategories as any).subcategories) ? (apiSubcategories as any).subcategories : []);
+
+  const toSlug = (str: string) =>
+    (str || '').toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+
   const dynamicCategoriesMenu = categoriesList
     .filter((cat: any) => cat.parentId === null)
     .slice(0, 8)
-    .map((cat: any) => ({
-      name: cat.name,
-      sub: cat.children ? cat.children.map((c: any) => c.name) : []
-    }));
+    .map((cat: any) => {
+      const parentSlug = cat.slug || toSlug(cat.name);
+      const subItems: { name: string; href: string }[] = [];
+      const seen = new Set<string>();
+
+      if (cat.children) {
+        cat.children.forEach((c: any) => {
+          const normName = c.name.trim();
+          if (!seen.has(normName)) {
+            seen.add(normName);
+            const subSlug = c.slug || toSlug(c.name);
+            subItems.push({
+              name: c.name,
+              href: `/categories/${parentSlug}/${subSlug}`
+            });
+          }
+        });
+      }
+
+      subcategoriesList
+        .filter((s: any) => s.categoryId === cat.id)
+        .forEach((s: any) => {
+          const normName = s.name.trim();
+          if (!seen.has(normName)) {
+            seen.add(normName);
+            const subSlug = s.slug || toSlug(s.name);
+            subItems.push({
+              name: s.name,
+              href: `/categories/${parentSlug}/${subSlug}`
+            });
+          }
+        });
+
+      return {
+        name: cat.name,
+        slug: parentSlug,
+        sub: subItems
+      };
+    });
 
   const isVendor = user?.role?.toLowerCase() === 'vendor' || user?.role?.toLowerCase() === 'hub';
   const isAdmin = user?.role?.toLowerCase() === 'admin';
@@ -295,8 +338,10 @@ const Navbar = () => {
                     {/* LEFT SIDEBAR: MAIN CATEGORIES */}
                     <div className="w-[280px] bg-slate-50/50 border-r border-slate-100 py-6 overflow-y-auto custom-scrollbar">
                       {dynamicCategoriesMenu.map((cat: any, idx: number) => (
-                        <div
+                        <Link
                           key={cat.name}
+                          href={`/categories/${cat.slug}`}
+                          onClick={() => setIsCategoryOpen(false)}
                           onMouseEnter={() => setActiveMegaCategory(idx)}
                           className={`group relative flex items-center justify-between px-8 py-4 cursor-pointer transition-all ${activeMegaCategory === idx ? 'bg-white' : 'hover:bg-slate-100/30'}`}
                         >
@@ -310,7 +355,7 @@ const Navbar = () => {
 
                           <span className={`text-[11px] font-black uppercase tracking-widest transition-colors ${activeMegaCategory === idx ? 'text-emerald-950' : 'text-slate-400 group-hover:text-slate-600'}`}>{cat.name}</span>
                           <ChevronRight size={14} className={`${activeMegaCategory === idx ? 'text-amber-500 translate-x-0' : 'text-slate-200 -translate-x-2 opacity-0'} transition-all duration-300`} />
-                        </div>
+                        </Link>
                       ))}
                     </div>
 
@@ -320,15 +365,15 @@ const Navbar = () => {
                         <div className="flex flex-col h-full">
                           <div className="grid grid-cols-1 gap-y-1">
                             {dynamicCategoriesMenu[activeMegaCategory].sub.length > 0 ? (
-                              dynamicCategoriesMenu[activeMegaCategory].sub.map((sub: string) => (
+                              dynamicCategoriesMenu[activeMegaCategory].sub.map((subItem: any) => (
                                 <Link
-                                  key={sub}
-                                  href={`/products?category=${sub}`}
+                                  key={subItem.name}
+                                  href={subItem.href}
                                   onClick={() => setIsCategoryOpen(false)}
                                   className="group flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 transition-all"
                                 >
                                   <div className="h-1.5 w-1.5 rounded-full bg-emerald-950/20 group-hover:bg-amber-500 transition-colors" />
-                                  <span className="text-sm font-bold text-slate-700 group-hover:text-emerald-950 transition-colors">{sub}</span>
+                                  <span className="text-sm font-bold text-slate-700 group-hover:text-emerald-950 transition-colors">{subItem.name}</span>
                                 </Link>
                               ))
                             ) : (

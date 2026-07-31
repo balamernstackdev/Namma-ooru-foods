@@ -9,7 +9,8 @@ import {
    Clock,
    ChevronRight,
    Plus,
-   ArrowUpRight
+   ArrowUpRight,
+   Landmark
 } from 'lucide-react';
 import { motion, Variants } from 'framer-motion';
 import { DashboardStatsSkeleton } from '@/components/ui/Skeletons';
@@ -85,8 +86,8 @@ export default function VendorDashboard() {
          </motion.div>
 
          {/* Stats Grid */}
-         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-8">
-            {[
+         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+        {[
                { label: 'Active Products', value: stats.products, icon: Package, color: 'emerald' as const, trend: 'Updated Live' },
                { label: 'Platform Revenue', value: `₹${stats.revenue.toLocaleString()}`, icon: TrendingUp, color: 'amber' as const, trend: 'Gross Earnings' },
                { label: 'Total Orders', value: stats.orders, icon: ShoppingBag, color: 'blue' as const, trend: `${stats.processing} in processing` }
@@ -94,23 +95,44 @@ export default function VendorDashboard() {
                <motion.div
                   key={idx}
                   variants={itemVariants}
-                  whileHover={{ y: -5, scale: 1.02 }}
-                  className="bg-white rounded-[2.5rem] border border-slate-100 p-8 shadow-sm hover:shadow-xl hover:shadow-emerald-900/5 transition-all group overflow-hidden relative"
+                  whileHover={{ y: -3, scale: 1.01 }}
+                  className="bg-white rounded-[1.5rem] border border-slate-100 p-5 shadow-sm hover:shadow-lg hover:shadow-emerald-900/5 transition-all group overflow-hidden relative"
                >
-                  <div className={`absolute top-0 right-0 w-32 h-32 bg-${stat.color}-50 rounded-full translate-x-16 -translate-y-16 group-hover:scale-150 transition-transform duration-700`} />
+                  <div className={`absolute top-0 right-0 w-24 h-24 bg-${stat.color}-50 rounded-full translate-x-12 -translate-y-12 group-hover:scale-150 transition-transform duration-700`} />
 
-                  <div className="relative z-10 space-y-4">
-                     <div className={`h-12 w-12 rounded-2xl bg-${stat.color}-100 flex items-center justify-center text-${stat.color}-600`}>
-                        <stat.icon size={24} />
+                  <div className="relative z-10 space-y-3">
+                     <div className={`h-9 w-9 rounded-xl bg-${stat.color}-100 flex items-center justify-center text-${stat.color}-600`}>
+                        <stat.icon size={18} />
                      </div>
                      <div>
                         <div className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">{stat.label}</div>
-                        <div className="text-3xl font-black text-emerald-950">{stat.value}</div>
-                        <div className={`text-[9px] font-black uppercase tracking-widest text-${stat.color}-600 mt-2`}>{stat.trend}</div>
+                        <div className="text-xl font-black text-emerald-950">{stat.value}</div>
+                        <div className={`text-[9px] font-black uppercase tracking-widest text-${stat.color}-600 mt-1.5`}>{stat.trend}</div>
                      </div>
                   </div>
                </motion.div>
             ))}
+
+            {/* Pending Payout Card */}
+            <motion.div
+               variants={itemVariants}
+               whileHover={{ y: -3, scale: 1.01 }}
+               className="bg-white rounded-[1.5rem] border border-slate-100 p-5 shadow-sm hover:shadow-lg hover:shadow-emerald-900/5 transition-all group overflow-hidden relative"
+            >
+               <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-50 rounded-full translate-x-12 -translate-y-12 group-hover:scale-150 transition-transform duration-700" />
+               <div className="relative z-10 space-y-3">
+                  <div className="h-9 w-9 rounded-xl bg-emerald-100 flex items-center justify-center text-emerald-600">
+                     <Landmark size={18} />
+                  </div>
+                  <div>
+                     <div className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Pending Payout</div>
+                     <div className="text-xl font-black text-emerald-950">₹{(payoutOverview?.pendingPayout || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</div>
+                     <Link href="/seller/payouts" className="text-[9px] font-black uppercase tracking-widest text-emerald-600 mt-1.5 flex items-center gap-1 hover:text-emerald-800 transition-colors">
+                        View Payouts <ArrowUpRight size={10} />
+                     </Link>
+                  </div>
+               </div>
+            </motion.div>
          </div>
 
          {/* Earnings Overview Widget */}

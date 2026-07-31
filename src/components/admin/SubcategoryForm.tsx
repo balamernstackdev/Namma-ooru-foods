@@ -176,6 +176,9 @@ export default function SubcategoryForm({ initialData, mode }: SubcategoryFormPr
     }
   };
 
+  const activeCategory = categories.find(c => String(c.id) === String(formData.categoryId));
+  const fallbackImage = activeCategory?.image || initialData?.category?.image;
+
   return (
     <div className="w-full pb-24 animate-in fade-in duration-1000 bg-[#f8fafc]">
       {/* Sticky Header */}
@@ -269,6 +272,16 @@ export default function SubcategoryForm({ initialData, mode }: SubcategoryFormPr
                           <img src={formData.imageUrl} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" alt="Subcategory" />
                           <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-all backdrop-blur-sm">
                             <Upload size={20} className="text-white" />
+                          </div>
+                        </div>
+                      ) : fallbackImage ? (
+                        <div className="relative w-full h-full group opacity-75 hover:opacity-100 transition-opacity">
+                          <img src={fallbackImage} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" alt="Inherited Subcategory" />
+                          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-all backdrop-blur-sm">
+                            <Upload size={20} className="text-white" />
+                          </div>
+                          <div className="absolute bottom-2.5 left-2.5 bg-slate-900/85 backdrop-blur-md px-2 py-0.5 rounded-lg text-[8px] font-black uppercase tracking-wider text-white border border-slate-700/50">
+                            Parent Icon
                           </div>
                         </div>
                       ) : (

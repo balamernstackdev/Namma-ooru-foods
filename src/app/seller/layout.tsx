@@ -82,7 +82,7 @@ export default function VendorLayout({ children }: { children: React.ReactNode }
   const rawMenuItems = [
     { id: 'dashboard', label: 'Store Overview', href: '/seller', icon: LayoutDashboard },
     { id: 'products', label: 'My Products', href: '/seller/products', icon: Package },
-    { id: 'orders', label: 'Customer Orders', href: '/seller/orders', icon: ShoppingBag },
+    { id: 'orders', label: 'Orders', href: '/seller/orders', icon: ShoppingBag },
     {
       id: 'marketing',
       label: 'Marketing',
@@ -220,7 +220,7 @@ export default function VendorLayout({ children }: { children: React.ReactNode }
                     className={`w-full flex items-center gap-4 px-5 py-4 rounded-[14px] transition-all group ${hasActiveSubitem ? 'text-[#0F7A4D] bg-[#F0FDF4]' : 'text-[#6B7280] hover:bg-[#F8FAF7] hover:text-[#111827]'}`}
                   >
                     <item.icon className={`h-5 w-5 ${hasActiveSubitem ? 'text-[#0F7A4D]' : 'text-[#9CA3AF] group-hover:text-[#0F7A4D]'}`} strokeWidth={2} />
-                    <span className="text-[12px] font-bold uppercase tracking-widest flex-1 text-left">{item.label}</span>
+                    <span className="text-[11px] font-bold uppercase tracking-wider flex-1 text-left">{item.label}</span>
                     {isOpen ? <ChevronDown size={14} className="text-[#9CA3AF]" /> : <ChevronRight size={14} className="text-[#9CA3AF]" />}
                   </button>
                   
@@ -264,7 +264,7 @@ export default function VendorLayout({ children }: { children: React.ReactNode }
                 className={`flex items-center gap-4 px-5 py-4 rounded-[14px] transition-all group ${isActive ? 'bg-[#0F7A4D] text-white shadow-lg shadow-[#0F7A4D]/20' : 'text-[#6B7280] hover:bg-[#F8FAF7] hover:text-[#111827]'}`}
               >
                 <item.icon className={`h-5 w-5 ${isActive ? 'text-white' : 'text-[#9CA3AF] group-hover:text-[#0F7A4D]'}`} strokeWidth={2} />
-                <span className="text-[12px] font-bold uppercase tracking-widest flex-1">{item.label}</span>
+                <span className="text-[11px] font-bold uppercase tracking-wider flex-1 whitespace-nowrap overflow-hidden text-ellipsis">{item.label}</span>
                 {item.label === 'Notifications' && unreadCount > 0 && (
                   <span className={`px-2 py-0.5 rounded-full text-[10px] font-black ${isActive ? 'bg-white text-[#0F7A4D]' : 'bg-red-500 text-white'}`}>
                     {unreadCount > 99 ? '99+' : unreadCount}

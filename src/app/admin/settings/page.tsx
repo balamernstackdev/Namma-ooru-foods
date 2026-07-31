@@ -84,327 +84,327 @@ export default function AdminSettings() {
    const [gstTaxLabel, setGstTaxLabel] = React.useState('GST');
    const [gstRoundingEnabled, setGstRoundingEnabled] = React.useState(true);
 
-    const hasUnsavedChanges = React.useMemo(() => {
-       if (loading || !initialSettingsRef.current) return false;
-       const current: Record<string, any> = {
-          storeName, storeCategory, supportEmail, supportWhatsapp, autoGenerateCategoryContent,
-          deliveryRadius, deliveryFee, freeShippingThreshold, shippingMinOrderAmount,
-          enableCod, razorpayKey, razorpaySecret, activePaymentGateway: visibleGateway, gstNumber, hdfcMerchantId, hdfcClientId, hdfcApiKey, hdfcApiUrl,
-          orderEmail, enableWhatsappAlerts, lowStockThreshold,
-          platformLogo, platformFavicon, primaryColor, secondaryColor,
-          settlementDay, minPayout,
-          gstEnabled, gstDefaultRate, gstTaxType, gstTaxLabel, gstRoundingEnabled,
-          quickBrowseEnabled
-       };
+   const hasUnsavedChanges = React.useMemo(() => {
+      if (loading || !initialSettingsRef.current) return false;
+      const current: Record<string, any> = {
+         storeName, storeCategory, supportEmail, supportWhatsapp, autoGenerateCategoryContent,
+         deliveryRadius, deliveryFee, freeShippingThreshold, shippingMinOrderAmount,
+         enableCod, razorpayKey, razorpaySecret, activePaymentGateway: visibleGateway, gstNumber, hdfcMerchantId, hdfcClientId, hdfcApiKey, hdfcApiUrl,
+         orderEmail, enableWhatsappAlerts, lowStockThreshold,
+         platformLogo, platformFavicon, primaryColor, secondaryColor,
+         settlementDay, minPayout,
+         gstEnabled, gstDefaultRate, gstTaxType, gstTaxLabel, gstRoundingEnabled,
+         quickBrowseEnabled
+      };
 
-       const changed = Object.keys(current).some(key => {
-          return current[key] !== initialSettingsRef.current[key];
-       });
+      const changed = Object.keys(current).some(key => {
+         return current[key] !== initialSettingsRef.current[key];
+      });
 
-       if (changed) return true;
+      if (changed) return true;
 
-       if (JSON.stringify(slabs) !== JSON.stringify(initialSettingsRef.current.slabs)) {
-          return true;
-       }
+      if (JSON.stringify(slabs) !== JSON.stringify(initialSettingsRef.current.slabs)) {
+         return true;
+      }
 
-       return false;
-    }, [
-       loading, storeName, storeCategory, supportEmail, supportWhatsapp, autoGenerateCategoryContent,
-       deliveryRadius, deliveryFee, freeShippingThreshold, shippingMinOrderAmount,
-       enableCod, razorpayKey, razorpaySecret, visibleGateway, gstNumber, hdfcMerchantId, hdfcClientId, hdfcApiKey, hdfcApiUrl,
-       orderEmail, enableWhatsappAlerts, lowStockThreshold,
-       platformLogo, platformFavicon, primaryColor, secondaryColor,
-       slabs, settlementDay, minPayout,
-       gstEnabled, gstDefaultRate, gstTaxType, gstTaxLabel, gstRoundingEnabled,
-       quickBrowseEnabled
-    ]);
+      return false;
+   }, [
+      loading, storeName, storeCategory, supportEmail, supportWhatsapp, autoGenerateCategoryContent,
+      deliveryRadius, deliveryFee, freeShippingThreshold, shippingMinOrderAmount,
+      enableCod, razorpayKey, razorpaySecret, visibleGateway, gstNumber, hdfcMerchantId, hdfcClientId, hdfcApiKey, hdfcApiUrl,
+      orderEmail, enableWhatsappAlerts, lowStockThreshold,
+      platformLogo, platformFavicon, primaryColor, secondaryColor,
+      slabs, settlementDay, minPayout,
+      gstEnabled, gstDefaultRate, gstTaxType, gstTaxLabel, gstRoundingEnabled,
+      quickBrowseEnabled
+   ]);
 
-    React.useEffect(() => {
-       const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-          if (hasUnsavedChanges) {
-             e.preventDefault();
-             e.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
-             return e.returnValue;
-          }
-       };
-       window.addEventListener('beforeunload', handleBeforeUnload);
-       return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-    }, [hasUnsavedChanges]);
+   React.useEffect(() => {
+      const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+         if (hasUnsavedChanges) {
+            e.preventDefault();
+            e.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+            return e.returnValue;
+         }
+      };
+      window.addEventListener('beforeunload', handleBeforeUnload);
+      return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+   }, [hasUnsavedChanges]);
 
 
-    const fetchSettings = React.useCallback(async () => {
-       try {
-          const response = await fetch(`${API_URL}/api/settings`);
-            if (response.ok) {
-               const data = await response.json();
-               const slabsSetting = data.find((s: any) => s.key === 'vendor_commission_slabs');
-               const daySetting = data.find((s: any) => s.key === 'settlement_day');
-               const payoutSetting = data.find((s: any) => s.key === 'min_payout_value');
+   const fetchSettings = React.useCallback(async () => {
+      try {
+         const response = await fetch(`${API_URL}/api/settings`);
+         if (response.ok) {
+            const data = await response.json();
+            const slabsSetting = data.find((s: any) => s.key === 'vendor_commission_slabs');
+            const daySetting = data.find((s: any) => s.key === 'settlement_day');
+            const payoutSetting = data.find((s: any) => s.key === 'min_payout_value');
 
-               // Store Profile
-               const nameSetting = data.find((s: any) => s.key === 'store_name');
-               const catSetting = data.find((s: any) => s.key === 'store_category');
-               const emailSetting = data.find((s: any) => s.key === 'support_email');
-               const whatsappSetting = data.find((s: any) => s.key === 'support_whatsapp');
-               const autoGenSetting = data.find((s: any) => s.key === 'auto_generate_category_content');
-               const quickBrowseSetting = data.find((s: any) => s.key === 'quick_browse_enabled');
+            // Store Profile
+            const nameSetting = data.find((s: any) => s.key === 'store_name');
+            const catSetting = data.find((s: any) => s.key === 'store_category');
+            const emailSetting = data.find((s: any) => s.key === 'support_email');
+            const whatsappSetting = data.find((s: any) => s.key === 'support_whatsapp');
+            const autoGenSetting = data.find((s: any) => s.key === 'auto_generate_category_content');
+            const quickBrowseSetting = data.find((s: any) => s.key === 'quick_browse_enabled');
 
-               // Logistics
-               const radiusSetting = data.find((s: any) => s.key === 'delivery_radius');
-               const feeSetting = data.find((s: any) => s.key === 'delivery_fee');
-               const thresholdSetting = data.find((s: any) => s.key === 'free_shipping_threshold');
-               const minOrderAmountSetting = data.find((s: any) => s.key === 'shipping_min_order_amount');
+            // Logistics
+            const radiusSetting = data.find((s: any) => s.key === 'delivery_radius');
+            const feeSetting = data.find((s: any) => s.key === 'delivery_fee');
+            const thresholdSetting = data.find((s: any) => s.key === 'free_shipping_threshold');
+            const minOrderAmountSetting = data.find((s: any) => s.key === 'shipping_min_order_amount');
 
-               // Payments
-               const codSetting = data.find((s: any) => s.key === 'enable_cod');
-               const razorpaySetting = data.find((s: any) => s.key === 'razorpay_key');
-               const razorpaySecretSetting = data.find((s: any) => s.key === 'razorpay_secret');
-               const activeGatewaySetting = data.find((s: any) => s.key === 'active_payment_gateway');
-               const gstSetting = data.find((s: any) => s.key === 'gst_number');
-               const hdfcMerchantSetting = data.find((s: any) => s.key === 'hdfc_merchant_id');
-               const hdfcClientSetting = data.find((s: any) => s.key === 'hdfc_client_id');
-               const hdfcApiSetting = data.find((s: any) => s.key === 'hdfc_api_key');
-               const hdfcUrlSetting = data.find((s: any) => s.key === 'hdfc_api_url');
+            // Payments
+            const codSetting = data.find((s: any) => s.key === 'enable_cod');
+            const razorpaySetting = data.find((s: any) => s.key === 'razorpay_key');
+            const razorpaySecretSetting = data.find((s: any) => s.key === 'razorpay_secret');
+            const activeGatewaySetting = data.find((s: any) => s.key === 'active_payment_gateway');
+            const gstSetting = data.find((s: any) => s.key === 'gst_number');
+            const hdfcMerchantSetting = data.find((s: any) => s.key === 'hdfc_merchant_id');
+            const hdfcClientSetting = data.find((s: any) => s.key === 'hdfc_client_id');
+            const hdfcApiSetting = data.find((s: any) => s.key === 'hdfc_api_key');
+            const hdfcUrlSetting = data.find((s: any) => s.key === 'hdfc_api_url');
 
-               // Notifications
-               const orderEmailSetting = data.find((s: any) => s.key === 'notification_order_email');
-               const whatsappAlertSetting = data.find((s: any) => s.key === 'enable_whatsapp_alerts');
-               const stockSetting = data.find((s: any) => s.key === 'low_stock_threshold');
+            // Notifications
+            const orderEmailSetting = data.find((s: any) => s.key === 'notification_order_email');
+            const whatsappAlertSetting = data.find((s: any) => s.key === 'enable_whatsapp_alerts');
+            const stockSetting = data.find((s: any) => s.key === 'low_stock_threshold');
 
-               // GST Settings
-               const gstEnabledSetting = data.find((s: any) => s.key === 'gst_enabled');
-               const gstDefaultRateSetting = data.find((s: any) => s.key === 'gst_default_rate');
-               const gstTaxTypeSetting = data.find((s: any) => s.key === 'gst_tax_type');
-               const gstTaxLabelSetting = data.find((s: any) => s.key === 'gst_tax_label');
-               const gstRoundingEnabledSetting = data.find((s: any) => s.key === 'gst_rounding_enabled');
+            // GST Settings
+            const gstEnabledSetting = data.find((s: any) => s.key === 'gst_enabled');
+            const gstDefaultRateSetting = data.find((s: any) => s.key === 'gst_default_rate');
+            const gstTaxTypeSetting = data.find((s: any) => s.key === 'gst_tax_type');
+            const gstTaxLabelSetting = data.find((s: any) => s.key === 'gst_tax_label');
+            const gstRoundingEnabledSetting = data.find((s: any) => s.key === 'gst_rounding_enabled');
 
-               // Platform Branding
-               const logoSetting = data.find((s: any) => s.key === 'platform_logo');
-               const faviconSetting = data.find((s: any) => s.key === 'platform_favicon');
-               const primaryColorSetting = data.find((s: any) => s.key === 'platform_primary_color');
-               const secondaryColorSetting = data.find((s: any) => s.key === 'platform_secondary_color');
+            // Platform Branding
+            const logoSetting = data.find((s: any) => s.key === 'platform_logo');
+            const faviconSetting = data.find((s: any) => s.key === 'platform_favicon');
+            const primaryColorSetting = data.find((s: any) => s.key === 'platform_primary_color');
+            const secondaryColorSetting = data.find((s: any) => s.key === 'platform_secondary_color');
 
-                const valSlabs = slabsSetting ? JSON.parse(slabsSetting.value) : [
-                   { min: 0, max: 12500, percentage: 30 },
-                   { min: 12500, max: 25000, percentage: 20 },
-                   { min: 25000, max: 125000, percentage: 10 },
-                   { min: 125000, max: null, percentage: 5 }
-                ];
-                const valSettlementDay = daySetting?.value || 'Monday';
-                const valMinPayout = payoutSetting ? Number(payoutSetting.value) : 2000;
+            const valSlabs = slabsSetting ? JSON.parse(slabsSetting.value) : [
+               { min: 0, max: 12500, percentage: 30 },
+               { min: 12500, max: 25000, percentage: 20 },
+               { min: 25000, max: 125000, percentage: 10 },
+               { min: 125000, max: null, percentage: 5 }
+            ];
+            const valSettlementDay = daySetting?.value || 'Monday';
+            const valMinPayout = payoutSetting ? Number(payoutSetting.value) : 2000;
 
-                const valStoreName = nameSetting?.value || 'namma ooru Foods Ltd';
-                const valStoreCategory = catSetting?.value || 'Organic Essentials';
-                const valSupportEmail = emailSetting?.value || 'support@nammaoorufoods.com';
-                const valSupportWhatsapp = whatsappSetting?.value || '+91 9000 896 898';
-                const valAutoGen = autoGenSetting ? autoGenSetting.value === 'true' : true;
-                const valQuickBrowse = quickBrowseSetting ? quickBrowseSetting.value === 'true' : true;
+            const valStoreName = nameSetting?.value || 'namma ooru Foods Ltd';
+            const valStoreCategory = catSetting?.value || 'Organic Essentials';
+            const valSupportEmail = emailSetting?.value || 'support@nammaoorufoods.com';
+            const valSupportWhatsapp = whatsappSetting?.value || '+91 9000 896 898';
+            const valAutoGen = autoGenSetting ? autoGenSetting.value === 'true' : true;
+            const valQuickBrowse = quickBrowseSetting ? quickBrowseSetting.value === 'true' : true;
 
-                const valRadius = radiusSetting ? Number(radiusSetting.value) : 15;
-                const valFee = feeSetting ? Number(feeSetting.value) : 40;
-                const valThreshold = thresholdSetting ? Number(thresholdSetting.value) : 1000;
-                const valMinOrderAmount = minOrderAmountSetting ? Number(minOrderAmountSetting.value) : 0;
+            const valRadius = radiusSetting ? Number(radiusSetting.value) : 15;
+            const valFee = feeSetting ? Number(feeSetting.value) : 40;
+            const valThreshold = thresholdSetting ? Number(thresholdSetting.value) : 1000;
+            const valMinOrderAmount = minOrderAmountSetting ? Number(minOrderAmountSetting.value) : 0;
 
-                const valCod = codSetting ? codSetting.value === 'true' : true;
-                const valRazorpay = razorpaySetting?.value || '';
-                const valRazorpaySecret = razorpaySecretSetting?.value || '';
-                const valActiveGateway = activeGatewaySetting?.value || 'HDFC';
-                const valGstNum = gstSetting?.value || '';
-                const valHdfcMerch = hdfcMerchantSetting?.value || 'SG5067';
-                const valHdfcClient = hdfcClientSetting?.value || 'hdfcmaster';
-                const valHdfcKey = hdfcApiSetting?.value || 'EBBF2342D13404C9ACD436E5A437C4';
-                const valHdfcUrl = hdfcUrlSetting?.value || 'https://smartgateway.hdfcuat.bank.in/session';
+            const valCod = codSetting ? codSetting.value === 'true' : true;
+            const valRazorpay = razorpaySetting?.value || '';
+            const valRazorpaySecret = razorpaySecretSetting?.value || '';
+            const valActiveGateway = activeGatewaySetting?.value || 'HDFC';
+            const valGstNum = gstSetting?.value || '';
+            const valHdfcMerch = hdfcMerchantSetting?.value || 'SG5067';
+            const valHdfcClient = hdfcClientSetting?.value || 'hdfcmaster';
+            const valHdfcKey = hdfcApiSetting?.value || 'EBBF2342D13404C9ACD436E5A437C4';
+            const valHdfcUrl = hdfcUrlSetting?.value || 'https://smartgateway.hdfcuat.bank.in/session';
 
-                const valOrderEmail = orderEmailSetting?.value || 'orders@nammaoorufoods.com';
-                const valWhatsappAlerts = whatsappAlertSetting ? whatsappAlertSetting.value === 'true' : true;
-                const valStockThresh = stockSetting ? Number(stockSetting.value) : 5;
+            const valOrderEmail = orderEmailSetting?.value || 'orders@nammaoorufoods.com';
+            const valWhatsappAlerts = whatsappAlertSetting ? whatsappAlertSetting.value === 'true' : true;
+            const valStockThresh = stockSetting ? Number(stockSetting.value) : 5;
 
-                const valLogo = logoSetting?.value || '/logo.webp';
-                const valFavicon = faviconSetting?.value || '/favicon.ico';
-                const valPrimaryColor = primaryColorSetting?.value || '#064e3b';
-                const valSecondaryColor = secondaryColorSetting?.value || '#f59e0b';
+            const valLogo = logoSetting?.value || '/logo.webp';
+            const valFavicon = faviconSetting?.value || '/favicon.ico';
+            const valPrimaryColor = primaryColorSetting?.value || '#064e3b';
+            const valSecondaryColor = secondaryColorSetting?.value || '#f59e0b';
 
-                const valGstEnabled = gstEnabledSetting ? gstEnabledSetting.value === 'true' : true;
-                const valGstRate = gstDefaultRateSetting ? Number(gstDefaultRateSetting.value) : 18;
-                const valGstType = gstTaxTypeSetting?.value || 'exclusive';
-                const valGstLabel = gstTaxLabelSetting?.value || 'GST';
-                const valGstRound = gstRoundingEnabledSetting ? gstRoundingEnabledSetting.value === 'true' : true;
+            const valGstEnabled = gstEnabledSetting ? gstEnabledSetting.value === 'true' : true;
+            const valGstRate = gstDefaultRateSetting ? Number(gstDefaultRateSetting.value) : 18;
+            const valGstType = gstTaxTypeSetting?.value || 'exclusive';
+            const valGstLabel = gstTaxLabelSetting?.value || 'GST';
+            const valGstRound = gstRoundingEnabledSetting ? gstRoundingEnabledSetting.value === 'true' : true;
 
-                // Save to reference for unsaved changes detection
-                initialSettingsRef.current = {
-                   storeName: valStoreName, storeCategory: valStoreCategory, supportEmail: valSupportEmail, supportWhatsapp: valSupportWhatsapp, autoGenerateCategoryContent: valAutoGen,
-                   quickBrowseEnabled: valQuickBrowse,
-                   deliveryRadius: valRadius, deliveryFee: valFee, freeShippingThreshold: valThreshold, shippingMinOrderAmount: valMinOrderAmount,
-                   enableCod: valCod, razorpayKey: valRazorpay, razorpaySecret: valRazorpaySecret, activePaymentGateway: valActiveGateway, gstNumber: valGstNum, hdfcMerchantId: valHdfcMerch, hdfcClientId: valHdfcClient, hdfcApiKey: valHdfcKey, hdfcApiUrl: valHdfcUrl,
-                   orderEmail: valOrderEmail, enableWhatsappAlerts: valWhatsappAlerts, lowStockThreshold: valStockThresh,
-                   platformLogo: valLogo, platformFavicon: valFavicon, primaryColor: valPrimaryColor, secondaryColor: valSecondaryColor,
-                   slabs: valSlabs, settlementDay: valSettlementDay, minPayout: valMinPayout,
-                   gstEnabled: valGstEnabled, gstDefaultRate: valGstRate, gstTaxType: valGstType, gstTaxLabel: valGstLabel, gstRoundingEnabled: valGstRound
-                };
+            // Save to reference for unsaved changes detection
+            initialSettingsRef.current = {
+               storeName: valStoreName, storeCategory: valStoreCategory, supportEmail: valSupportEmail, supportWhatsapp: valSupportWhatsapp, autoGenerateCategoryContent: valAutoGen,
+               quickBrowseEnabled: valQuickBrowse,
+               deliveryRadius: valRadius, deliveryFee: valFee, freeShippingThreshold: valThreshold, shippingMinOrderAmount: valMinOrderAmount,
+               enableCod: valCod, razorpayKey: valRazorpay, razorpaySecret: valRazorpaySecret, activePaymentGateway: valActiveGateway, gstNumber: valGstNum, hdfcMerchantId: valHdfcMerch, hdfcClientId: valHdfcClient, hdfcApiKey: valHdfcKey, hdfcApiUrl: valHdfcUrl,
+               orderEmail: valOrderEmail, enableWhatsappAlerts: valWhatsappAlerts, lowStockThreshold: valStockThresh,
+               platformLogo: valLogo, platformFavicon: valFavicon, primaryColor: valPrimaryColor, secondaryColor: valSecondaryColor,
+               slabs: valSlabs, settlementDay: valSettlementDay, minPayout: valMinPayout,
+               gstEnabled: valGstEnabled, gstDefaultRate: valGstRate, gstTaxType: valGstType, gstTaxLabel: valGstLabel, gstRoundingEnabled: valGstRound
+            };
 
-                setSlabs(valSlabs);
-                setSettlementDay(valSettlementDay);
-                setMinPayout(valMinPayout);
-                setStoreName(valStoreName);
-                setStoreCategory(valStoreCategory);
-                setSupportEmail(valSupportEmail);
-                setSupportWhatsapp(valSupportWhatsapp);
-                setAutoGenerateCategoryContent(valAutoGen);
-                setQuickBrowseEnabled(valQuickBrowse);
-                setDeliveryRadius(valRadius);
-                setDeliveryFee(valFee);
-                setFreeShippingThreshold(valThreshold);
-                setShippingMinOrderAmount(valMinOrderAmount);
-                setEnableCod(valCod);
-                setRazorpayKey(valRazorpay);
-                setRazorpaySecret(valRazorpaySecret);
-                setVisibleGateway(valActiveGateway);
-                setGstNumber(valGstNum);
-                setHdfcMerchantId(valHdfcMerch);
-                setHdfcClientId(valHdfcClient);
-                setHdfcApiKey(valHdfcKey);
-                setHdfcApiUrl(valHdfcUrl);
-                setOrderEmail(valOrderEmail);
-                setEnableWhatsappAlerts(valWhatsappAlerts);
-                setLowStockThreshold(valStockThresh);
-                setPlatformLogo(valLogo);
-                setPlatformFavicon(valFavicon);
-                setPrimaryColor(valPrimaryColor);
-                setSecondaryColor(valSecondaryColor);
-                setGstEnabled(valGstEnabled);
-                setGstDefaultRate(valGstRate);
-                setGstTaxType(valGstType);
-                setGstTaxLabel(valGstLabel);
-                setGstRoundingEnabled(valGstRound);
-            }
-         } catch (error) {
-            console.error('Error fetching settings:', error);
-       } finally {
-          setLoading(false);
-       }
-    }, []);
+            setSlabs(valSlabs);
+            setSettlementDay(valSettlementDay);
+            setMinPayout(valMinPayout);
+            setStoreName(valStoreName);
+            setStoreCategory(valStoreCategory);
+            setSupportEmail(valSupportEmail);
+            setSupportWhatsapp(valSupportWhatsapp);
+            setAutoGenerateCategoryContent(valAutoGen);
+            setQuickBrowseEnabled(valQuickBrowse);
+            setDeliveryRadius(valRadius);
+            setDeliveryFee(valFee);
+            setFreeShippingThreshold(valThreshold);
+            setShippingMinOrderAmount(valMinOrderAmount);
+            setEnableCod(valCod);
+            setRazorpayKey(valRazorpay);
+            setRazorpaySecret(valRazorpaySecret);
+            setVisibleGateway(valActiveGateway);
+            setGstNumber(valGstNum);
+            setHdfcMerchantId(valHdfcMerch);
+            setHdfcClientId(valHdfcClient);
+            setHdfcApiKey(valHdfcKey);
+            setHdfcApiUrl(valHdfcUrl);
+            setOrderEmail(valOrderEmail);
+            setEnableWhatsappAlerts(valWhatsappAlerts);
+            setLowStockThreshold(valStockThresh);
+            setPlatformLogo(valLogo);
+            setPlatformFavicon(valFavicon);
+            setPrimaryColor(valPrimaryColor);
+            setSecondaryColor(valSecondaryColor);
+            setGstEnabled(valGstEnabled);
+            setGstDefaultRate(valGstRate);
+            setGstTaxType(valGstType);
+            setGstTaxLabel(valGstLabel);
+            setGstRoundingEnabled(valGstRound);
+         }
+      } catch (error) {
+         console.error('Error fetching settings:', error);
+      } finally {
+         setLoading(false);
+      }
+   }, []);
 
-    React.useEffect(() => {
-       fetchSettings();
-    }, [fetchSettings]);
+   React.useEffect(() => {
+      fetchSettings();
+   }, [fetchSettings]);
 
-    const handleReset = () => {
-       const init = initialSettingsRef.current;
-       if (!init) return;
+   const handleReset = () => {
+      const init = initialSettingsRef.current;
+      if (!init) return;
 
-       setStoreName(init.storeName);
-       setStoreCategory(init.storeCategory);
-       setSupportEmail(init.supportEmail);
-       setSupportWhatsapp(init.supportWhatsapp);
-       setAutoGenerateCategoryContent(init.autoGenerateCategoryContent);
-       setQuickBrowseEnabled(init.quickBrowseEnabled !== undefined ? init.quickBrowseEnabled : true);
+      setStoreName(init.storeName);
+      setStoreCategory(init.storeCategory);
+      setSupportEmail(init.supportEmail);
+      setSupportWhatsapp(init.supportWhatsapp);
+      setAutoGenerateCategoryContent(init.autoGenerateCategoryContent);
+      setQuickBrowseEnabled(init.quickBrowseEnabled !== undefined ? init.quickBrowseEnabled : true);
 
-       setDeliveryRadius(init.deliveryRadius);
-       setDeliveryFee(init.deliveryFee);
-       setFreeShippingThreshold(init.freeShippingThreshold);
-       setShippingMinOrderAmount(init.shippingMinOrderAmount);
+      setDeliveryRadius(init.deliveryRadius);
+      setDeliveryFee(init.deliveryFee);
+      setFreeShippingThreshold(init.freeShippingThreshold);
+      setShippingMinOrderAmount(init.shippingMinOrderAmount);
 
-       setEnableCod(init.enableCod);
-       setRazorpayKey(init.razorpayKey);
-       setRazorpaySecret(init.razorpaySecret);
-       setVisibleGateway(init.activePaymentGateway);
-       setGstNumber(init.gstNumber);
-       setHdfcMerchantId(init.hdfcMerchantId);
-       setHdfcClientId(init.hdfcClientId);
-       setHdfcApiKey(init.hdfcApiKey);
-       setHdfcApiUrl(init.hdfcApiUrl);
+      setEnableCod(init.enableCod);
+      setRazorpayKey(init.razorpayKey);
+      setRazorpaySecret(init.razorpaySecret);
+      setVisibleGateway(init.activePaymentGateway);
+      setGstNumber(init.gstNumber);
+      setHdfcMerchantId(init.hdfcMerchantId);
+      setHdfcClientId(init.hdfcClientId);
+      setHdfcApiKey(init.hdfcApiKey);
+      setHdfcApiUrl(init.hdfcApiUrl);
 
-       setOrderEmail(init.orderEmail);
-       setEnableWhatsappAlerts(init.enableWhatsappAlerts);
-       setLowStockThreshold(init.lowStockThreshold);
+      setOrderEmail(init.orderEmail);
+      setEnableWhatsappAlerts(init.enableWhatsappAlerts);
+      setLowStockThreshold(init.lowStockThreshold);
 
-       setPlatformLogo(init.platformLogo);
-       setPlatformFavicon(init.platformFavicon);
-       setPrimaryColor(init.primaryColor);
-       setSecondaryColor(init.secondaryColor);
+      setPlatformLogo(init.platformLogo);
+      setPlatformFavicon(init.platformFavicon);
+      setPrimaryColor(init.primaryColor);
+      setSecondaryColor(init.secondaryColor);
 
-       setSlabs(init.slabs);
-       setSettlementDay(init.settlementDay);
-       setMinPayout(init.minPayout);
+      setSlabs(init.slabs);
+      setSettlementDay(init.settlementDay);
+      setMinPayout(init.minPayout);
 
-       setGstEnabled(init.gstEnabled);
-       setGstDefaultRate(init.gstDefaultRate);
-       setGstTaxType(init.gstTaxType);
-       setGstTaxLabel(init.gstTaxLabel);
-       setGstRoundingEnabled(init.gstRoundingEnabled);
-       toast.success('Changes reset successfully.');
-    };
+      setGstEnabled(init.gstEnabled);
+      setGstDefaultRate(init.gstDefaultRate);
+      setGstTaxType(init.gstTaxType);
+      setGstTaxLabel(init.gstTaxLabel);
+      setGstRoundingEnabled(init.gstRoundingEnabled);
+      toast.success('Changes reset successfully.');
+   };
 
-    const handleSave = async () => {
-       if (saving) return;
-       if (!hasUnsavedChanges) {
-          toast('No changes detected.', { icon: 'ℹ️' });
-          return;
-       }
-       setSaving(true);
-       try {
-          const settingsToUpdate = [
-             { key: 'vendor_commission_slabs', value: JSON.stringify(slabs), type: 'JSON', group: 'VENDOR' },
-             { key: 'settlement_day', value: settlementDay, type: 'STRING', group: 'VENDOR' },
-             { key: 'min_payout_value', value: minPayout.toString(), type: 'NUMBER', group: 'VENDOR' },
+   const handleSave = async () => {
+      if (saving) return;
+      if (!hasUnsavedChanges) {
+         toast('No changes detected.', { icon: 'ℹ️' });
+         return;
+      }
+      setSaving(true);
+      try {
+         const settingsToUpdate = [
+            { key: 'vendor_commission_slabs', value: JSON.stringify(slabs), type: 'JSON', group: 'VENDOR' },
+            { key: 'settlement_day', value: settlementDay, type: 'STRING', group: 'VENDOR' },
+            { key: 'min_payout_value', value: minPayout.toString(), type: 'NUMBER', group: 'VENDOR' },
 
-             { key: 'gst_enabled', value: gstEnabled.toString(), type: 'BOOLEAN', group: 'GST' },
-             { key: 'gst_default_rate', value: gstDefaultRate.toString(), type: 'NUMBER', group: 'GST' },
-             { key: 'gst_tax_type', value: gstTaxType, type: 'STRING', group: 'GST' },
-             { key: 'gst_tax_label', value: gstTaxLabel, type: 'STRING', group: 'GST' },
-             { key: 'gst_rounding_enabled', value: gstRoundingEnabled.toString(), type: 'BOOLEAN', group: 'GST' },
+            { key: 'gst_enabled', value: gstEnabled.toString(), type: 'BOOLEAN', group: 'GST' },
+            { key: 'gst_default_rate', value: gstDefaultRate.toString(), type: 'NUMBER', group: 'GST' },
+            { key: 'gst_tax_type', value: gstTaxType, type: 'STRING', group: 'GST' },
+            { key: 'gst_tax_label', value: gstTaxLabel, type: 'STRING', group: 'GST' },
+            { key: 'gst_rounding_enabled', value: gstRoundingEnabled.toString(), type: 'BOOLEAN', group: 'GST' },
 
-             { key: 'store_name', value: storeName, type: 'STRING', group: 'STORE' },
-             { key: 'store_category', value: storeCategory, type: 'STRING', group: 'STORE' },
-             { key: 'support_email', value: supportEmail, type: 'STRING', group: 'STORE' },
-             { key: 'support_whatsapp', value: supportWhatsapp, type: 'STRING', group: 'STORE' },
-             { key: 'auto_generate_category_content', value: autoGenerateCategoryContent.toString(), type: 'BOOLEAN', group: 'STORE' },
-             { key: 'quick_browse_enabled', value: quickBrowseEnabled.toString(), type: 'BOOLEAN', group: 'CATEGORY' },
+            { key: 'store_name', value: storeName, type: 'STRING', group: 'STORE' },
+            { key: 'store_category', value: storeCategory, type: 'STRING', group: 'STORE' },
+            { key: 'support_email', value: supportEmail, type: 'STRING', group: 'STORE' },
+            { key: 'support_whatsapp', value: supportWhatsapp, type: 'STRING', group: 'STORE' },
+            { key: 'auto_generate_category_content', value: autoGenerateCategoryContent.toString(), type: 'BOOLEAN', group: 'STORE' },
+            { key: 'quick_browse_enabled', value: quickBrowseEnabled.toString(), type: 'BOOLEAN', group: 'CATEGORY' },
 
-             { key: 'delivery_radius', value: deliveryRadius.toString(), type: 'NUMBER', group: 'LOGISTICS' },
-             { key: 'delivery_fee', value: deliveryFee.toString(), type: 'NUMBER', group: 'LOGISTICS' },
-             { key: 'free_shipping_threshold', value: freeShippingThreshold.toString(), type: 'NUMBER', group: 'LOGISTICS' },
-             { key: 'shipping_min_order_amount', value: shippingMinOrderAmount.toString(), type: 'NUMBER', group: 'LOGISTICS' },
+            { key: 'delivery_radius', value: deliveryRadius.toString(), type: 'NUMBER', group: 'LOGISTICS' },
+            { key: 'delivery_fee', value: deliveryFee.toString(), type: 'NUMBER', group: 'LOGISTICS' },
+            { key: 'free_shipping_threshold', value: freeShippingThreshold.toString(), type: 'NUMBER', group: 'LOGISTICS' },
+            { key: 'shipping_min_order_amount', value: shippingMinOrderAmount.toString(), type: 'NUMBER', group: 'LOGISTICS' },
 
-             { key: 'enable_cod', value: enableCod.toString(), type: 'BOOLEAN', group: 'PAYMENT' },
-             { key: 'razorpay_key', value: razorpayKey, type: 'STRING', group: 'PAYMENT' },
-             { key: 'razorpay_secret', value: razorpaySecret, type: 'STRING', group: 'PAYMENT' },
-             { key: 'active_payment_gateway', value: visibleGateway, type: 'STRING', group: 'PAYMENT' },
-             { key: 'gst_number', value: gstNumber, type: 'STRING', group: 'PAYMENT' },
-             { key: 'hdfc_merchant_id', value: hdfcMerchantId, type: 'STRING', group: 'PAYMENT' },
-             { key: 'hdfc_client_id', value: hdfcClientId, type: 'STRING', group: 'PAYMENT' },
-             { key: 'hdfc_api_key', value: hdfcApiKey, type: 'STRING', group: 'PAYMENT' },
-             { key: 'hdfc_api_url', value: hdfcApiUrl, type: 'STRING', group: 'PAYMENT' },
+            { key: 'enable_cod', value: enableCod.toString(), type: 'BOOLEAN', group: 'PAYMENT' },
+            { key: 'razorpay_key', value: razorpayKey, type: 'STRING', group: 'PAYMENT' },
+            { key: 'razorpay_secret', value: razorpaySecret, type: 'STRING', group: 'PAYMENT' },
+            { key: 'active_payment_gateway', value: visibleGateway, type: 'STRING', group: 'PAYMENT' },
+            { key: 'gst_number', value: gstNumber, type: 'STRING', group: 'PAYMENT' },
+            { key: 'hdfc_merchant_id', value: hdfcMerchantId, type: 'STRING', group: 'PAYMENT' },
+            { key: 'hdfc_client_id', value: hdfcClientId, type: 'STRING', group: 'PAYMENT' },
+            { key: 'hdfc_api_key', value: hdfcApiKey, type: 'STRING', group: 'PAYMENT' },
+            { key: 'hdfc_api_url', value: hdfcApiUrl, type: 'STRING', group: 'PAYMENT' },
 
-             { key: 'notification_order_email', value: orderEmail, type: 'STRING', group: 'NOTIF' },
-             { key: 'enable_whatsapp_alerts', value: enableWhatsappAlerts.toString(), type: 'BOOLEAN', group: 'NOTIF' },
-             { key: 'low_stock_threshold', value: lowStockThreshold.toString(), type: 'NUMBER', group: 'NOTIF' },
+            { key: 'notification_order_email', value: orderEmail, type: 'STRING', group: 'NOTIF' },
+            { key: 'enable_whatsapp_alerts', value: enableWhatsappAlerts.toString(), type: 'BOOLEAN', group: 'NOTIF' },
+            { key: 'low_stock_threshold', value: lowStockThreshold.toString(), type: 'NUMBER', group: 'NOTIF' },
 
-             { key: 'platform_name', value: storeName, type: 'STRING', group: 'PLATFORM' },
-             { key: 'platform_logo', value: platformLogo, type: 'STRING', group: 'PLATFORM' },
-             { key: 'platform_favicon', value: platformFavicon, type: 'STRING', group: 'PLATFORM' },
-             { key: 'platform_primary_color', value: primaryColor, type: 'STRING', group: 'PLATFORM' },
-             { key: 'platform_secondary_color', value: secondaryColor, type: 'STRING', group: 'PLATFORM' }
-          ];
+            { key: 'platform_name', value: storeName, type: 'STRING', group: 'PLATFORM' },
+            { key: 'platform_logo', value: platformLogo, type: 'STRING', group: 'PLATFORM' },
+            { key: 'platform_favicon', value: platformFavicon, type: 'STRING', group: 'PLATFORM' },
+            { key: 'platform_primary_color', value: primaryColor, type: 'STRING', group: 'PLATFORM' },
+            { key: 'platform_secondary_color', value: secondaryColor, type: 'STRING', group: 'PLATFORM' }
+         ];
 
-          const response = await fetch(`${API_URL}/api/settings/bulk`, {
-             method: 'POST',
-             headers: { 'Content-Type': 'application/json' },
-             body: JSON.stringify({ settings: settingsToUpdate })
-          });
+         const response = await fetch(`${API_URL}/api/settings/bulk`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ settings: settingsToUpdate })
+         });
 
-          if (response.ok) {
-             await fetchSettings();
-             toast.success('Settings saved successfully.');
-          } else {
-             toast.error('Failed to save settings. Please try again.');
-          }
-       } catch (error) {
-          console.error('Error saving settings:', error);
-          toast.error('Failed to save settings. Please try again.');
-       } finally {
-          setSaving(false);
-       }
+         if (response.ok) {
+            await fetchSettings();
+            toast.success('Settings saved successfully.');
+         } else {
+            toast.error('Failed to save settings. Please try again.');
+         }
+      } catch (error) {
+         console.error('Error saving settings:', error);
+         toast.error('Failed to save settings. Please try again.');
+      } finally {
+         setSaving(false);
+      }
    };
 
    const handleImageUpload = async (file: File, type: 'logo' | 'favicon') => {
@@ -473,7 +473,7 @@ export default function AdminSettings() {
    ];
 
    return (
-      <div className="w-full space-y-10">
+      <div className="w-full space-y-10 animate-in fade-in duration-700">
 
          {/* Header */}
          <div className="space-y-1">
@@ -485,22 +485,25 @@ export default function AdminSettings() {
 
             {/* Navigation Sidebar-like Tabs */}
             <div className="lg:col-span-1 space-y-2">
-               {sections.map((s, i) => (
-                  <button
-                     key={i}
-                     onClick={() => setActiveTab(i)}
-                     className={`w-full flex items-center gap-4 p-5 rounded-2xl transition-all group ${activeTab === i ? 'bg-[#022c22] text-white shadow-xl' : 'bg-white border border-slate-100 text-slate-400 hover:bg-slate-50'}`}
-                  >
-                     <div className={`h-10 w-10 rounded-xl flex items-center justify-center ${activeTab === i ? 'bg-amber-400 text-[#022c22]' : 'bg-slate-50 text-slate-400 group-hover:text-amber-500 transition-all'}`}>
-                        <s.icon size={20} />
-                     </div>
-                     <div className="flex flex-col text-left">
-                        <span className="text-[12px] font-black uppercase tracking-widest">{s.title}</span>
-                        <span className={`text-[10px] font-medium leading-none mt-1 ${activeTab === i ? 'text-emerald-400' : 'text-slate-300'}`}>Edit Configuration</span>
-                     </div>
-                     <ChevronRight size={16} className="ml-auto opacity-20" />
-                  </button>
-               ))}
+               {sections.map((s, i) => {
+                  if (s.title === 'Vendor Payouts') return null;
+                  return (
+                     <button
+                        key={i}
+                        onClick={() => setActiveTab(i)}
+                        className={`w-full flex items-center gap-4 p-5 rounded-2xl transition-all group ${activeTab === i ? 'bg-[#022c22] text-white shadow-xl' : 'bg-white border border-slate-100 text-slate-400 hover:bg-slate-50'}`}
+                     >
+                        <div className={`h-10 w-10 rounded-xl flex items-center justify-center ${activeTab === i ? 'bg-amber-400 text-[#022c22]' : 'bg-slate-50 text-slate-400 group-hover:text-amber-500 transition-all'}`}>
+                           <s.icon size={20} />
+                        </div>
+                        <div className="flex flex-col text-left">
+                           <span className="text-[12px] font-black uppercase tracking-widest">{s.title}</span>
+                           <span className={`text-[10px] font-medium leading-none mt-1 ${activeTab === i ? 'text-emerald-400' : 'text-slate-300'}`}>Edit Configuration</span>
+                        </div>
+                        <ChevronRight size={16} className="ml-auto opacity-20" />
+                     </button>
+                  );
+               })}
             </div>
 
             {/* Form Content Area */}
@@ -680,46 +683,46 @@ export default function AdminSettings() {
                            {/* HDFC SmartGateway Integration */}
                            {visibleGateway === 'HDFC' && (
                               <div className="p-6 border border-slate-100 rounded-3xl bg-[#022c22]/[0.02] space-y-5">
-                              <h4 className="text-xs font-black uppercase tracking-wider text-[#022c22] border-l-2 border-amber-400 pl-3">HDFC SmartGateway Configuration</h4>
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                 <h4 className="text-xs font-black uppercase tracking-wider text-[#022c22] border-l-2 border-amber-400 pl-3">HDFC SmartGateway Configuration</h4>
+                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                    <div className="flex flex-col gap-2">
+                                       <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">HDFC Merchant ID</label>
+                                       <input
+                                          type="text"
+                                          value={hdfcMerchantId}
+                                          onChange={(e) => setHdfcMerchantId(e.target.value)}
+                                          className="h-12 px-4 rounded-xl bg-white border border-slate-200 outline-none font-bold text-[#022c22] focus:border-emerald-500 transition-all text-sm"
+                                       />
+                                    </div>
+                                    <div className="flex flex-col gap-2">
+                                       <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">HDFC Client ID</label>
+                                       <input
+                                          type="text"
+                                          value={hdfcClientId}
+                                          onChange={(e) => setHdfcClientId(e.target.value)}
+                                          className="h-12 px-4 rounded-xl bg-white border border-slate-200 outline-none font-bold text-[#022c22] focus:border-emerald-500 transition-all text-sm"
+                                       />
+                                    </div>
+                                 </div>
                                  <div className="flex flex-col gap-2">
-                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">HDFC Merchant ID</label>
+                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">HDFC API Key</label>
                                     <input
-                                       type="text"
-                                       value={hdfcMerchantId}
-                                       onChange={(e) => setHdfcMerchantId(e.target.value)}
+                                       type="password"
+                                       value={hdfcApiKey}
+                                       onChange={(e) => setHdfcApiKey(e.target.value)}
+                                       placeholder="EBBF2342..."
                                        className="h-12 px-4 rounded-xl bg-white border border-slate-200 outline-none font-bold text-[#022c22] focus:border-emerald-500 transition-all text-sm"
                                     />
                                  </div>
                                  <div className="flex flex-col gap-2">
-                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">HDFC Client ID</label>
+                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">HDFC API Session URL</label>
                                     <input
                                        type="text"
-                                       value={hdfcClientId}
-                                       onChange={(e) => setHdfcClientId(e.target.value)}
+                                       value={hdfcApiUrl}
+                                       onChange={(e) => setHdfcApiUrl(e.target.value)}
                                        className="h-12 px-4 rounded-xl bg-white border border-slate-200 outline-none font-bold text-[#022c22] focus:border-emerald-500 transition-all text-sm"
                                     />
                                  </div>
-                              </div>
-                              <div className="flex flex-col gap-2">
-                                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">HDFC API Key</label>
-                                 <input
-                                    type="password"
-                                    value={hdfcApiKey}
-                                    onChange={(e) => setHdfcApiKey(e.target.value)}
-                                    placeholder="EBBF2342..."
-                                    className="h-12 px-4 rounded-xl bg-white border border-slate-200 outline-none font-bold text-[#022c22] focus:border-emerald-500 transition-all text-sm"
-                                 />
-                              </div>
-                              <div className="flex flex-col gap-2">
-                                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">HDFC API Session URL</label>
-                                 <input
-                                    type="text"
-                                    value={hdfcApiUrl}
-                                    onChange={(e) => setHdfcApiUrl(e.target.value)}
-                                    className="h-12 px-4 rounded-xl bg-white border border-slate-200 outline-none font-bold text-[#022c22] focus:border-emerald-500 transition-all text-sm"
-                                 />
-                              </div>
                               </div>
                            )}
 

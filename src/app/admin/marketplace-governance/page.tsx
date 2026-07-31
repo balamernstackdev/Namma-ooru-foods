@@ -80,7 +80,7 @@ function VendorPayoutsTab({ selectedVendor, brands }: { selectedVendor: Vendor, 
           setPayouts([]);
           return;
         }
-        
+
         const res = await fetch(`${API_URL}/api/vendor/payouts/vendor/${vendorBrand.id}`);
         if (res.ok) {
           const data = await res.json();
@@ -711,11 +711,10 @@ export default function MarketplaceGovernancePage() {
                 <button
                   key={tab}
                   onClick={() => setVendorDetailsTab(tab)}
-                  className={`h-10 px-5 rounded-xl text-xs font-black uppercase tracking-widest flex items-center gap-2 border-0 transition-all duration-300 ${
-                    vendorDetailsTab === tab
+                  className={`h-10 px-5 rounded-xl text-xs font-black uppercase tracking-widest flex items-center gap-2 border-0 transition-all duration-300 ${vendorDetailsTab === tab
                       ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-500/25 active:scale-95 scale-[1.02]'
                       : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100'
-                  }`}
+                    }`}
                 >
                   {tab}
                 </button>
@@ -1027,9 +1026,9 @@ export default function MarketplaceGovernancePage() {
                                       {brand.status === 'PENDING' ? (
                                         <EvaluateButton onClick={() => handleOpenApprovalModal(brand, 'brand')} />
                                       ) : (
-                                        <SuspendButton 
-                                          isSuspended={brand.status === 'SUSPENDED'} 
-                                          onClick={() => handleToggleSuspension('brand', brand.id, brand.status)} 
+                                        <SuspendButton
+                                          isSuspended={brand.status === 'SUSPENDED'}
+                                          onClick={() => handleToggleSuspension('brand', brand.id, brand.status)}
                                         />
                                       )}
                                       <UnlinkButton
@@ -1096,9 +1095,8 @@ export default function MarketplaceGovernancePage() {
                                 ) : (
                                   <button
                                     onClick={() => handleToggleSuspension('brand', brand.id, brand.status)}
-                                    className={`h-9 px-3 rounded-lg border text-[10px] font-black uppercase tracking-wider flex items-center justify-center gap-1 ${
-                                      brand.status === 'SUSPENDED' ? 'bg-emerald-50 border-emerald-100 text-emerald-600' : 'bg-red-50 border-red-100 text-red-600'
-                                    }`}
+                                    className={`h-9 px-3 rounded-lg border text-[10px] font-black uppercase tracking-wider flex items-center justify-center gap-1 ${brand.status === 'SUSPENDED' ? 'bg-emerald-50 border-emerald-100 text-emerald-600' : 'bg-red-50 border-red-100 text-red-600'
+                                      }`}
                                   >
                                     {brand.status === 'SUSPENDED' ? 'Activate' : 'Suspend'}
                                   </button>
@@ -1247,9 +1245,8 @@ export default function MarketplaceGovernancePage() {
                             ) : (
                               <button
                                 onClick={() => handleToggleSuspension('product', product.id, product.status)}
-                                className={`h-9 px-3 rounded-lg border text-[10px] font-black uppercase tracking-wider flex items-center justify-center gap-1 ${
-                                  product.status === 'BLOCKED' ? 'bg-emerald-50 border-emerald-100 text-emerald-600' : 'bg-red-50 border-red-100 text-red-600'
-                                }`}
+                                className={`h-9 px-3 rounded-lg border text-[10px] font-black uppercase tracking-wider flex items-center justify-center gap-1 ${product.status === 'BLOCKED' ? 'bg-emerald-50 border-emerald-100 text-emerald-600' : 'bg-red-50 border-red-100 text-red-600'
+                                  }`}
                               >
                                 {product.status === 'BLOCKED' ? 'Unblock' : 'Block'}
                               </button>
@@ -1268,17 +1265,17 @@ export default function MarketplaceGovernancePage() {
               })()}
 
               {vendorDetailsTab === 'payouts' && (
-                <VendorPayoutsTab 
-                  selectedVendor={selectedVendor} 
-                  brands={brands} 
+                <VendorPayoutsTab
+                  selectedVendor={selectedVendor}
+                  brands={brands}
                 />
               )}
 
               {vendorDetailsTab === 'settings' && (
-                <VendorSettingsTab 
-                  selectedVendor={selectedVendor} 
-                  brands={brands} 
-                  fetchDatabaseData={fetchDatabaseData} 
+                <VendorSettingsTab
+                  selectedVendor={selectedVendor}
+                  brands={brands}
+                  fetchDatabaseData={fetchDatabaseData}
                 />
               )}
             </div>
@@ -1331,7 +1328,7 @@ export default function MarketplaceGovernancePage() {
               {isLoading ? (
                 <div className="py-24 flex flex-col items-center justify-center gap-4">
                   <RefreshCw className="h-10 w-10 text-emerald-600 animate-spin" />
-                  <span className="text-xs font-black uppercase tracking-[0.2em] text-slate-400">Syncing with Platform Node Registry...</span>
+                  <span className="text-xs font-black uppercase tracking-[0.2em] text-slate-400">Loading Hub...</span>
                 </div>
               ) : (
                 <>
@@ -1412,7 +1409,7 @@ export default function MarketplaceGovernancePage() {
                                 <p className="text-slate-800 font-bold mt-0.5">{vendor.ownerName}</p>
                                 <p className="text-[10px] text-slate-400 font-medium mt-0.5">{vendor.ownerEmail}</p>
                               </div>
-                              
+
                               <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100">
                                 <div>
                                   <span className="text-[9px] text-slate-400 font-black uppercase tracking-wider block">Brands</span>
@@ -1436,11 +1433,10 @@ export default function MarketplaceGovernancePage() {
                               </button>
                               <button
                                 onClick={() => handleToggleSuspension('vendor', vendor.id, vendor.status)}
-                                className={`h-11 px-4 flex items-center justify-center rounded-xl border transition-all ${
-                                  vendor.status === 'SUSPENDED' 
-                                    ? 'bg-emerald-50 border-emerald-100 text-emerald-600 hover:bg-emerald-500 hover:text-white' 
+                                className={`h-11 px-4 flex items-center justify-center rounded-xl border transition-all ${vendor.status === 'SUSPENDED'
+                                    ? 'bg-emerald-50 border-emerald-100 text-emerald-600 hover:bg-emerald-500 hover:text-white'
                                     : 'bg-red-50 border-red-100 text-red-600 hover:bg-red-500 hover:text-white'
-                                }`}
+                                  }`}
                               >
                                 <Power size={14} />
                               </button>
@@ -1534,7 +1530,7 @@ export default function MarketplaceGovernancePage() {
                                 <span className="text-[9px] text-slate-400 font-black uppercase tracking-wider block">Brand Owner</span>
                                 <span className="text-slate-850 font-bold mt-0.5 block">{product.brandName}</span>
                               </div>
-                              
+
                               <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100">
                                 <div>
                                   <span className="text-[9px] text-slate-400 font-black uppercase tracking-wider block">Stock Level</span>
@@ -1560,11 +1556,10 @@ export default function MarketplaceGovernancePage() {
                               ) : (
                                 <button
                                   onClick={() => handleToggleSuspension('product', product.id, product.status)}
-                                  className={`h-11 flex-1 flex items-center justify-center gap-1.5 rounded-xl border text-xs font-bold transition-all ${
-                                    product.status === 'BLOCKED'
+                                  className={`h-11 flex-1 flex items-center justify-center gap-1.5 rounded-xl border text-xs font-bold transition-all ${product.status === 'BLOCKED'
                                       ? 'bg-emerald-50 border-emerald-100 text-emerald-600 hover:bg-emerald-500 hover:text-white'
                                       : 'bg-red-50 border-red-100 text-red-600 hover:bg-red-500 hover:text-white'
-                                  }`}
+                                    }`}
                                 >
                                   <Power size={14} /> {product.status === 'BLOCKED' ? 'Unblock Product' : 'Block Product'}
                                 </button>

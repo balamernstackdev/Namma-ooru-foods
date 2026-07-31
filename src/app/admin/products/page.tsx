@@ -23,6 +23,10 @@ interface Product {
    image: string;
    stock?: number;
    variants?: { id: number; name: string; price: number; stock?: number }[];
+   variantCount?: number;
+   inventoryMode?: string;
+   weight?: number | null;
+   unit?: string | null;
    status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'DRAFT';
    ingredientsInfo?: string;
    productIdStr?: string;
@@ -125,7 +129,7 @@ export default function AdminProducts() {
       }
    };
 
-   const handleBulkAction = async (action: 'approve' | 'reject' | 'delete') => {
+   const handleBulkAction = async (action: 'approve' | 'reject' | 'pending' | 'delete') => {
       if (selectedIds.length === 0) return;
       if (!confirm(`Are you sure you want to perform bulk action for ${selectedIds.length} items?`)) return;
 
@@ -136,7 +140,7 @@ export default function AdminProducts() {
                const res = await fetch(`${API_URL}/api/products/${id}`, { method: 'DELETE' });
                if (res.ok) successCount++;
             } else {
-               const newStatus = action === 'approve' ? 'APPROVED' : 'REJECTED';
+               const newStatus = action === 'approve' ? 'APPROVED' : action === 'pending' ? 'PENDING' : 'REJECTED';
                const res = await fetch(`${API_URL}/api/products/${id}/status`, {
                   method: 'PATCH',
                   headers: { 'Content-Type': 'application/json' },
@@ -225,7 +229,7 @@ export default function AdminProducts() {
    ];
 
    return (
-      <div className="space-y-8 animate-in fade-in duration-500 pb-12">
+      <div className="space-y-8 animate-in fade-in duration-700 pb-12">
          {/* Header */}
          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
@@ -281,10 +285,11 @@ export default function AdminProducts() {
                               )}
                            </button>
                         </th>
+                        <th className="px-6 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100">Product ID</th>
                         <th className="px-6 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100">Product Info</th>
                         <th className="px-6 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100">Category</th>
-                        <th className="px-6 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100">Stock Status</th>
-                        <th className="px-6 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100">Price</th>
+                        <th className="px-6 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100">Stock</th>
+                        <th className="px-6 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100">MRP & Price</th>
                         <th className="px-6 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100 text-right">Actions</th>
                      </tr>
                   </thead>
@@ -293,7 +298,7 @@ export default function AdminProducts() {
                      {isLoading ? (
                         Array.from({ length: 6 }).map((_, i) => (
                            <tr key={i} className="animate-pulse">
-                              <td className="px-6 py-4 border-b border-slate-50" colSpan={6}>
+                              <td className="px-6 py-4 border-b border-slate-50" colSpan={7}>
                                  <div className="flex items-center gap-4 py-2">
                                     <div className="h-10 w-10 bg-slate-100 rounded-xl" />
                                     <div className="space-y-1.5 flex-1">
@@ -336,6 +341,11 @@ export default function AdminProducts() {
                                     </button>
                                  </td>
                                  <td className="px-6 py-4 border-b border-slate-50">
+                                    <span className="font-mono text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded border border-emerald-100 whitespace-nowrap">
+                                       {product.productIdStr || `Pro-${String(product.id).padStart(2, '0')}`}
+                                    </span>
+                                 </td>
+                                 <td className="px-6 py-4 border-b border-slate-50">
                                     <div className="flex items-center gap-3">
                                        <div className="h-10 w-10 rounded-xl bg-slate-50 border border-slate-100 overflow-hidden shrink-0 shadow-sm flex items-center justify-center">
                                           {product.image ? (
@@ -355,51 +365,63 @@ export default function AdminProducts() {
                                              {product.name}
                                           </p>
                                           <div className="flex items-center gap-1.5 mt-1 flex-wrap">
-                                             <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-wider border ${product.status === 'APPROVED' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' :
+                                             <span className={`inline-flex items-center gap-1 h-6 px-2.5 rounded-full text-[9px] font-bold uppercase tracking-wider border ${product.status === 'APPROVED' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' :
                                                 product.status === 'PENDING' ? 'bg-amber-50 text-amber-700 border-amber-100' :
                                                    'bg-slate-50 text-slate-500 border-slate-200'
                                                 }`}>
                                                 {product.status}
                                              </span>
                                              {product.subVendor && (
-                                                <span className="px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest bg-indigo-50 text-indigo-600 border border-indigo-100">
+                                                <span className="inline-flex items-center h-6 px-2.5 rounded-full text-[9px] font-bold uppercase tracking-wider bg-indigo-50 text-indigo-600 border border-indigo-100">
                                                    {product.subVendor.name}
                                                 </span>
                                              )}
-                                             <span className="text-[9px] text-slate-300 font-bold uppercase tracking-wider">
-                                                ID: {product.productIdStr || `Pro-${String(product.id).padStart(2, '0')}`}
-                                             </span>
                                           </div>
+                                           {/* Multiple variants */}
+                                           {product.variants && product.variants.length > 0 && (
+                                             <div className="flex items-center gap-1 mt-1.5 flex-wrap">
+                                               <span className="text-[9px] font-black uppercase tracking-wider text-violet-600 bg-violet-50 border border-violet-100 px-2 py-0.5 rounded-full">
+                                                 {product.variants.length} variant{product.variants.length > 1 ? 's' : ''}
+                                               </span>
+                                               {product.variants.slice(0, 3).map((v) => (
+                                                 <span key={v.id} className="text-[9px] font-bold text-slate-500 bg-slate-50 border border-slate-200 px-1.5 py-0.5 rounded truncate max-w-[80px]" title={v.name}>
+                                                   {v.name}
+                                                 </span>
+                                               ))}
+                                               {product.variants.length > 3 && (
+                                                 <span className="text-[9px] font-bold text-slate-400">+{product.variants.length - 3} more</span>
+                                               )}
+                                             </div>
+                                           )}
+                                           {/* Single mode — show weight/unit */}
+                                           {(!product.variants || product.variants.length === 0) && product.weight && (
+                                             <div className="flex items-center gap-1 mt-1.5">
+                                               <span className="text-[9px] font-black uppercase tracking-wider text-slate-500 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded-full">
+                                                 {product.weight}{product.unit ? ` ${product.unit}` : ''}
+                                               </span>
+                                             </div>
+                                           )}
                                        </div>
                                     </div>
                                  </td>
 
                                  <td className="px-6 py-4 border-b border-slate-50">
-                                    <span className="inline-block text-[10px] font-black uppercase tracking-wider text-slate-600 px-3 py-1.5 bg-slate-50 rounded-xl whitespace-nowrap max-w-[160px] truncate">
+                                    <span className="inline-flex items-center h-6 px-3 rounded-full text-[9px] font-bold uppercase tracking-wider text-slate-600 bg-slate-50 border border-slate-200/50 whitespace-nowrap">
                                        {product.category?.name || 'Heritage Foods'}
                                     </span>
                                  </td>
-                                  <td className="px-6 py-4 border-b border-slate-50">
-                                     <div className="space-y-1">
-                                       <div className="flex items-center justify-between gap-2 max-w-[120px]">
-                                          <span className="text-xs font-bold text-slate-700">{stock} units</span>
-                                          <span className={`text-[8px] font-black uppercase tracking-wider ${isLow ? 'text-red-500' : 'text-emerald-500'}`}>
-                                             {isLow ? 'Low' : 'OK'}
-                                          </span>
+                                 <td className="px-6 py-4 border-b border-slate-50">
+                                    <span className="text-xs font-bold text-slate-750">{stock} units</span>
+                                 </td>
+                                 <td className="px-6 py-4 border-b border-slate-50">
+                                    <div className="flex flex-col gap-1">
+                                       <div className="text-[11px] font-medium text-slate-400">
+                                          MRP: <span className="font-semibold text-slate-700">₹{Number(product.originalPrice || product.price).toLocaleString('en-IN')}</span>
                                        </div>
-                                       <div className="h-1.5 w-28 bg-slate-50 rounded-full overflow-hidden">
-                                          <div
-                                             className={`h-full rounded-full transition-all ${isLow ? 'bg-red-400' : 'bg-emerald-500'}`}
-                                             style={{ width: `${stockPct}%` }}
-                                          />
+                                       <div className="text-xs font-bold text-slate-550">
+                                          Selling Price: <span className="font-black text-emerald-700">₹{Number(product.price).toLocaleString('en-IN')}</span>
                                        </div>
                                     </div>
-                                 </td>
-
-                                 <td className="px-6 py-4 border-b border-slate-50">
-                                    <span className="text-sm font-black text-slate-900">
-                                       ₹{Number(product.price).toLocaleString('en-IN')}
-                                    </span>
                                  </td>
 
                                  <td className={`px-6 py-4 text-right border-b border-slate-50 relative ${activeMenuId === product.id ? '!z-[60]' : ''}`}>
@@ -410,42 +432,6 @@ export default function AdminProducts() {
                                        >
                                           <Edit2 size={13} /> Edit
                                        </Link>
-
-                                       {/* Three dots Action dropdown */}
-                                       <div className="relative">
-                                          <button
-                                             onClick={() => setActiveMenuId(activeMenuId === product.id ? null : product.id)}
-                                             className="h-9 w-9 flex items-center justify-center rounded-xl hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors"
-                                          >
-                                             <MoreHorizontal size={16} />
-                                          </button>
-
-                                          {activeMenuId === product.id && (
-                                             <>
-                                                <div className="fixed inset-0 z-40" onClick={() => setActiveMenuId(null)} />
-                                                <div className="absolute right-0 mt-2 w-44 bg-white border border-slate-100 rounded-2xl shadow-xl p-2 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
-                                                   <button
-                                                      onClick={() => { handleStatusChange(product.id, 'APPROVED'); setActiveMenuId(null); }}
-                                                      className="w-full text-left px-4 py-2.5 rounded-xl text-xs font-bold text-slate-600 hover:bg-emerald-50 hover:text-emerald-800 transition-colors flex items-center gap-2"
-                                                   >
-                                                      <Check size={14} /> Publish Product
-                                                   </button>
-                                                   <button
-                                                      onClick={() => { handleStatusChange(product.id, 'PENDING'); setActiveMenuId(null); }}
-                                                      className="w-full text-left px-4 py-2.5 rounded-xl text-xs font-bold text-slate-600 hover:bg-amber-50 hover:text-amber-800 transition-colors flex items-center gap-2"
-                                                   >
-                                                      <ShieldAlert size={14} /> Mark Pending
-                                                   </button>
-                                                   <button
-                                                      onClick={() => { handleDelete(product.id); setActiveMenuId(null); }}
-                                                      className="w-full text-left px-4 py-2.5 rounded-xl text-xs font-bold text-slate-600 hover:bg-red-50 hover:text-red-800 transition-colors flex items-center gap-2"
-                                                   >
-                                                      <Trash2 size={14} /> Delete Product
-                                                   </button>
-                                                </div>
-                                             </>
-                                          )}
-                                       </div>
                                     </div>
                                  </td>
                               </tr>
@@ -559,10 +545,29 @@ export default function AdminProducts() {
                                     Status: {product.status}
                                  </span>
                                  {product.subVendor && (
-                                    <span className="px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest bg-indigo-50 text-indigo-600 border border-indigo-100">
-                                       {product.subVendor.name}
+                                     <span className="px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest bg-indigo-50 text-indigo-600 border border-indigo-100">
+                                        {product.subVendor.name}
+                                     </span>
+                                  )}
+                                  {/* Multiple variants */}
+                                  {product.variants && product.variants.length > 0 && (
+                                    <>
+                                      <span className="px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest bg-violet-50 text-violet-600 border border-violet-100">
+                                        {product.variants.length} variant{product.variants.length > 1 ? 's' : ''}
+                                      </span>
+                                      {product.variants.slice(0, 2).map((v) => (
+                                        <span key={v.id} className="px-2 py-0.5 rounded text-[8px] font-bold text-slate-500 bg-slate-50 border border-slate-200 truncate max-w-[90px]" title={v.name}>
+                                          {v.name}
+                                        </span>
+                                      ))}
+                                    </>
+                                  )}
+                                  {/* Single mode — show weight/unit */}
+                                  {(!product.variants || product.variants.length === 0) && product.weight && (
+                                    <span className="px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest bg-slate-100 text-slate-600 border border-slate-200">
+                                      {product.weight}{product.unit ? ` ${product.unit}` : ''}
                                     </span>
-                                 )}
+                                  )}
                               </div>
                            </div>
 

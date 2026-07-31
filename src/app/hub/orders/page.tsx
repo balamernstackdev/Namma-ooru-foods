@@ -43,6 +43,20 @@ export default function HubOrdersPage() {
 
   const orders = data?.orders || [];
   const total = data?.total || 0;
+
+  const getOrderVendors = (order: any) => {
+    const vendorMap = new Map();
+    let hasOfficial = false;
+    order.items?.forEach((item: any) => {
+      const brand = item.product?.subVendor || item.product?.brand;
+      if (brand) {
+        vendorMap.set(brand.id, brand);
+      } else {
+        hasOfficial = true;
+      }
+    });
+    return { resellers: Array.from(vendorMap.values()), hasOfficial };
+  };
   const totalPages = data?.totalPages || 1;
 
   return (
@@ -137,7 +151,7 @@ export default function HubOrdersPage() {
               <table className="w-full text-left border-collapse min-w-[1000px]">
                 <thead>
                 <tr className="bg-slate-50/80 border-b border-slate-100">
-                  {['Order ID', 'Date & Time', 'Customer', 'Items', 'Hub Subtotal', 'Order Total', 'Status'].map(h => (
+                  {['Order ID', 'Date & Time', 'Customer', 'Vendor', 'Items', 'Hub Subtotal', 'Order Total', 'Status'].map(h => (
                     <th key={h} className="px-5 py-4 text-[9px] font-black uppercase tracking-widest text-slate-400 whitespace-nowrap">
                       {h}
                     </th>
@@ -164,6 +178,24 @@ export default function HubOrdersPage() {
                       </td>
                       <td className="px-5 py-4">
                         <span className="text-sm font-bold text-slate-900">{order.customerName || '—'}</span>
+                      </td>
+                      <td className="px-5 py-4">
+                        {(() => {
+                          const { resellers, hasOfficial } = getOrderVendors(order);
+                          const vendorNames: string[] = [];
+                          if (hasOfficial) vendorNames.push("Namma Ooru Originals");
+                          resellers.forEach((vendor: any) => vendorNames.push(vendor.name));
+                          return (
+                            <div className="flex flex-col gap-1 max-w-[180px]">
+                              {vendorNames.map((name, i) => (
+                                <span key={i} className="text-[11px] font-bold text-slate-600 block leading-tight truncate" title={name}>
+                                  {name}
+                                </span>
+                              ))}
+                              {vendorNames.length === 0 && <span className="text-xs text-slate-400">—</span>}
+                            </div>
+                          );
+                        })()}
                       </td>
                       <td className="px-5 py-4 text-center">
                         <span className="text-sm font-bold text-slate-700">{order.itemsCount ?? '—'}</span>

@@ -109,48 +109,45 @@ export default function SubVendorDetailClient() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-start gap-4">
-        <button onClick={() => router.back()} className="p-2 rounded-xl hover:bg-slate-100 text-slate-500 hover:text-slate-900 transition-colors mt-1">
+      <div className="flex items-center gap-4">
+        <button onClick={() => router.back()} className="p-2 rounded-xl hover:bg-slate-100 text-slate-500 hover:text-slate-900 transition-colors shrink-0">
           <ArrowLeft size={20} />
         </button>
+        {vendor.logo && (
+          <div className="w-14 h-14 rounded-2xl bg-white border border-slate-100 shadow-sm flex items-center justify-center overflow-hidden shrink-0">
+            <img src={vendor.logo} alt={vendor.name} className="w-full h-full object-contain" />
+          </div>
+        )}
         <div className="flex-1 min-w-0">
-          <div className="flex flex-wrap items-center gap-3">
-            {vendor.logo && (
-              <div className="w-12 h-12 rounded-xl bg-white border border-slate-100 shadow-sm flex items-center justify-center overflow-hidden">
-                <img src={vendor.logo} alt={vendor.name} className="w-full h-full object-contain" />
-              </div>
-            )}
-            <div>
-              <div className="flex flex-wrap items-center gap-2">
-                <h1 className="text-2xl font-black text-slate-900 uppercase italic tracking-tight">{vendor.name}</h1>
-                <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full border ${
-                  status === 'Active' ? 'bg-green-100 text-green-800 border-green-200' :
-                  status === 'Pending' ? 'bg-amber-100 text-amber-800 border-amber-200' :
+          <div className="flex items-center gap-2.5 flex-wrap">
+            <h1 className="text-2xl font-black text-slate-900 uppercase italic tracking-tight">{vendor.name}</h1>
+            <span className={`inline-flex items-center self-center text-[10px] font-bold px-2.5 py-1 rounded-full border ${status === 'Active' ? 'bg-green-100 text-green-800 border-green-200' :
+                status === 'Pending' ? 'bg-amber-100 text-amber-800 border-amber-200' :
                   'bg-red-100 text-red-800 border-red-200'
-                }`}>{status}</span>
-              </div>
-              <div className="flex flex-wrap items-center gap-3 mt-1">
-                <span className="text-[10px] font-mono font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100">
-                  {selId}
-                </span>
-                <span className="text-[10px] text-slate-400 font-semibold">Hub: {hubId}</span>
-              </div>
-            </div>
+              }`}>{status}</span>
+          </div>
+          <div className="flex flex-wrap items-center gap-3 mt-1.5">
+            <span className="text-[10px] font-mono font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100">
+              {selId}
+            </span>
+            <span className="text-[10px] text-slate-400 font-semibold">Hub: {hubId}</span>
           </div>
         </div>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {statCards.map((s, idx) => {
           const Icon = s.icon;
           return (
-            <div key={idx} className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 text-center hover:shadow-md transition-shadow">
-              <div className={`w-10 h-10 rounded-xl ${s.bg} flex items-center justify-center mx-auto mb-2`}>
+            <div key={idx} className="bg-white rounded-3xl border border-slate-100 shadow-sm p-4.5 hover:shadow-md transition-all duration-300 flex items-center gap-4 group hover:-translate-y-0.5">
+              <div className={`w-12 h-12 rounded-2xl ${s.bg} flex items-center justify-center shrink-0 transition-transform group-hover:scale-110 duration-300`}>
                 <Icon size={20} className={s.color} />
               </div>
-              <div className="text-xl font-black text-slate-900">{s.value}</div>
-              <div className="text-[9px] font-bold uppercase tracking-widest text-slate-400 mt-0.5">{s.label}</div>
+              <div className="min-w-0">
+                <div className="text-[9px] font-black uppercase tracking-widest text-slate-400 leading-none">{s.label}</div>
+                <div className="text-lg font-black text-slate-900 mt-2">{s.value}</div>
+              </div>
             </div>
           );
         })}
@@ -165,11 +162,10 @@ export default function SubVendorDetailClient() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 px-6 py-4 text-xs font-black uppercase tracking-widest whitespace-nowrap border-b-2 transition-all ${
-                  activeTab === tab.id
+                className={`flex items-center gap-2 px-6 py-4 text-xs font-black uppercase tracking-widest whitespace-nowrap border-b-2 transition-all ${activeTab === tab.id
                     ? 'border-emerald-600 text-emerald-700 bg-emerald-50/50'
                     : 'border-transparent text-slate-400 hover:text-slate-700 hover:bg-slate-100'
-                }`}
+                  }`}
               >
                 <Icon size={14} />
                 {tab.label}
@@ -189,9 +185,6 @@ export default function SubVendorDetailClient() {
                   { label: 'Owner Name', value: vendor.owner?.name || 'Unassigned' },
                   { label: 'Email', value: vendor.owner?.email || '-' },
                   { label: 'Phone', value: vendor.owner?.phone || '-' },
-                  { label: 'Website', value: vendor.website || '-' },
-                  { label: 'Slug', value: vendor.slug || '-' },
-                  { label: 'Commission Rate', value: `${vendor.commissionRate || 10}%` },
                   { label: 'Joined Date', value: new Date(vendor.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' }) },
                 ].map(item => (
                   <div key={item.label} className="flex justify-between items-start">
@@ -246,7 +239,7 @@ export default function SubVendorDetailClient() {
                           <tr key={p.id} className="hover:bg-slate-50/50">
                             <td className="py-3 px-2">
                               <span className="font-mono text-[10px] font-bold text-purple-700 bg-purple-50 px-2 py-0.5 rounded border border-purple-100">
-                                {p.productIdStr || `PROD-${p.id.toString().padStart(3,'0')}`}
+                                {p.productIdStr || `PROD-${p.id.toString().padStart(3, '0')}`}
                               </span>
                             </td>
                             <td className="py-3 px-2">
@@ -281,8 +274,8 @@ export default function SubVendorDetailClient() {
                     <div className="flex justify-between items-center pt-3 border-t border-slate-100 text-xs font-semibold text-slate-500">
                       <span>Page {productPage} of {productsData.totalPages}</span>
                       <div className="flex gap-2">
-                        <button onClick={() => setProductPage(p => Math.max(p-1,1))} disabled={productPage===1} className="px-3 py-1.5 border border-slate-200 rounded-lg disabled:opacity-40">Prev</button>
-                        <button onClick={() => setProductPage(p => Math.min(p+1, productsData.totalPages))} disabled={productPage===productsData.totalPages} className="px-3 py-1.5 border border-slate-200 rounded-lg disabled:opacity-40">Next</button>
+                        <button onClick={() => setProductPage(p => Math.max(p - 1, 1))} disabled={productPage === 1} className="px-3 py-1.5 border border-slate-200 rounded-lg disabled:opacity-40">Prev</button>
+                        <button onClick={() => setProductPage(p => Math.min(p + 1, productsData.totalPages))} disabled={productPage === productsData.totalPages} className="px-3 py-1.5 border border-slate-200 rounded-lg disabled:opacity-40">Next</button>
                       </div>
                     </div>
                   )}
@@ -314,7 +307,7 @@ export default function SubVendorDetailClient() {
                           <tr key={o.id} className="hover:bg-slate-50/50">
                             <td className="py-3 px-2">
                               <span className="font-mono text-[10px] font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100">
-                                {o.orderIdStr || `ORD-${o.id.toString().padStart(3,'0')}`}
+                                {o.orderIdStr || `ORD-${o.id.toString().padStart(3, '0')}`}
                               </span>
                             </td>
                             <td className="py-3 px-2 text-sm font-semibold text-slate-800">{o.customerName}</td>
@@ -337,8 +330,8 @@ export default function SubVendorDetailClient() {
                     <div className="flex justify-between items-center pt-3 border-t border-slate-100 text-xs font-semibold text-slate-500">
                       <span>Page {orderPage} of {ordersData.totalPages}</span>
                       <div className="flex gap-2">
-                        <button onClick={() => setOrderPage(p => Math.max(p-1,1))} disabled={orderPage===1} className="px-3 py-1.5 border border-slate-200 rounded-lg disabled:opacity-40">Prev</button>
-                        <button onClick={() => setOrderPage(p => Math.min(p+1, ordersData.totalPages))} disabled={orderPage===ordersData.totalPages} className="px-3 py-1.5 border border-slate-200 rounded-lg disabled:opacity-40">Next</button>
+                        <button onClick={() => setOrderPage(p => Math.max(p - 1, 1))} disabled={orderPage === 1} className="px-3 py-1.5 border border-slate-200 rounded-lg disabled:opacity-40">Prev</button>
+                        <button onClick={() => setOrderPage(p => Math.min(p + 1, ordersData.totalPages))} disabled={orderPage === ordersData.totalPages} className="px-3 py-1.5 border border-slate-200 rounded-lg disabled:opacity-40">Next</button>
                       </div>
                     </div>
                   )}
@@ -385,8 +378,8 @@ export default function SubVendorDetailClient() {
                     <div className="flex justify-between items-center pt-3 border-t border-slate-100 text-xs font-semibold text-slate-500">
                       <span>Page {customerPage} of {customersData.totalPages}</span>
                       <div className="flex gap-2">
-                        <button onClick={() => setCustomerPage(p => Math.max(p-1,1))} disabled={customerPage===1} className="px-3 py-1.5 border border-slate-200 rounded-lg disabled:opacity-40">Prev</button>
-                        <button onClick={() => setCustomerPage(p => Math.min(p+1, customersData.totalPages))} disabled={customerPage===customersData.totalPages} className="px-3 py-1.5 border border-slate-200 rounded-lg disabled:opacity-40">Next</button>
+                        <button onClick={() => setCustomerPage(p => Math.max(p - 1, 1))} disabled={customerPage === 1} className="px-3 py-1.5 border border-slate-200 rounded-lg disabled:opacity-40">Prev</button>
+                        <button onClick={() => setCustomerPage(p => Math.min(p + 1, customersData.totalPages))} disabled={customerPage === customersData.totalPages} className="px-3 py-1.5 border border-slate-200 rounded-lg disabled:opacity-40">Next</button>
                       </div>
                     </div>
                   )}
@@ -418,7 +411,7 @@ export default function SubVendorDetailClient() {
                           <tr key={p.id} className="hover:bg-slate-50/50">
                             <td className="py-3 px-2">
                               <span className="font-mono text-[10px] font-bold text-teal-700 bg-teal-50 px-2 py-0.5 rounded border border-teal-100">
-                                {p.payoutIdStr || `PAY-${p.id.toString().padStart(3,'0')}`}
+                                {p.payoutIdStr || `PAY-${p.id.toString().padStart(3, '0')}`}
                               </span>
                             </td>
                             <td className="py-3 px-2 text-xs text-slate-500">
@@ -440,8 +433,8 @@ export default function SubVendorDetailClient() {
                     <div className="flex justify-between items-center pt-3 border-t border-slate-100 text-xs font-semibold text-slate-500">
                       <span>Page {payoutPage} of {payoutsData.totalPages}</span>
                       <div className="flex gap-2">
-                        <button onClick={() => setPayoutPage(p => Math.max(p-1,1))} disabled={payoutPage===1} className="px-3 py-1.5 border border-slate-200 rounded-lg disabled:opacity-40">Prev</button>
-                        <button onClick={() => setPayoutPage(p => Math.min(p+1, payoutsData.totalPages))} disabled={payoutPage===payoutsData.totalPages} className="px-3 py-1.5 border border-slate-200 rounded-lg disabled:opacity-40">Next</button>
+                        <button onClick={() => setPayoutPage(p => Math.max(p - 1, 1))} disabled={payoutPage === 1} className="px-3 py-1.5 border border-slate-200 rounded-lg disabled:opacity-40">Prev</button>
+                        <button onClick={() => setPayoutPage(p => Math.min(p + 1, payoutsData.totalPages))} disabled={payoutPage === payoutsData.totalPages} className="px-3 py-1.5 border border-slate-200 rounded-lg disabled:opacity-40">Next</button>
                       </div>
                     </div>
                   )}

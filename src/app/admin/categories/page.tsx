@@ -139,7 +139,7 @@ export default function AdminCategoriesPage() {
   );
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-1000 pb-20">
+    <div className="space-y-8 animate-in fade-in duration-700 pb-20">
       {/* HEADER */}
       <div>
         <h1 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tighter italic">Category <span className="text-emerald-600">Management</span></h1>

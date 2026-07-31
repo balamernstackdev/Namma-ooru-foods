@@ -138,15 +138,18 @@ const SearchCategoryCard = ({
   isHighlighted,
   query,
   onClick,
-}: {
-  category: any;
-  isHighlighted: boolean;
-  query: string;
-  onClick: () => void;
 }) => {
+  const toSlug = (str: string) =>
+    (str || '').toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+
+  const catSlug = category.slug || toSlug(category.name);
+  const targetHref = category.parent
+    ? `/categories/${category.parent.slug || toSlug(category.parent.name)}/${catSlug}`
+    : `/categories/${catSlug}`;
+
   return (
     <Link
-      href={`/products?category=${category.slug || category.id}`}
+      href={targetHref}
       onClick={onClick}
       data-highlighted={isHighlighted}
       className={`flex items-center gap-3 px-3 py-2 transition-all duration-200 rounded-xl ${

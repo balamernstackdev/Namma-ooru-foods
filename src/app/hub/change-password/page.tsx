@@ -54,76 +54,93 @@ export default function ChangePasswordPage() {
   };
 
   return (
-    <div className="max-w-md mx-auto bg-white rounded-3xl p-8 border border-slate-100 shadow-sm space-y-6 animate-in fade-in duration-500">
-      <div className="text-center space-y-2">
-        <div className="w-14 h-14 bg-green-50 text-green-700 rounded-2xl mx-auto flex items-center justify-center">
-          <KeyRound size={28} />
+    <div className="space-y-6 animate-in fade-in duration-500 pb-12">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tighter italic">
+            Account <span className="text-emerald-600">Settings</span>
+          </h1>
+          <p className="text-slate-400 font-bold uppercase tracking-[0.2em] text-[10px] mt-2">Update your secure login credentials and password</p>
         </div>
-        <h2 className="text-xl font-black text-slate-900 uppercase tracking-tight">Change Password</h2>
-        <p className="text-xs text-slate-400 font-bold uppercase tracking-wider">Update secure credentials for your account</p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label className="block text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2">Current Password</label>
-          <div className="relative">
-            <input
-              type={showPass ? 'text' : 'password'}
-              value={currentPassword}
-              onChange={(e) => setCurrentPassword(e.target.value)}
-              className="w-full h-12 bg-slate-50 rounded-xl pl-4 pr-12 text-sm font-bold border border-slate-200 focus:border-emerald-500 outline-none"
-              required
-              placeholder="••••••••"
-            />
-            <button
-              type="button"
-              onClick={() => setShowPass(!showPass)}
-              className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 focus:outline-none"
-            >
-              {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
-            </button>
+      {/* Settings Container */}
+      <div className="bg-white rounded-[2.5rem] border border-slate-200 shadow-sm overflow-hidden p-8 max-w-4xl">
+        <div className="flex items-center gap-4 border-b border-slate-100 pb-6 mb-8">
+          <div className="w-12 h-12 bg-green-50 text-green-700 rounded-2xl flex items-center justify-center">
+            <KeyRound size={24} />
+          </div>
+          <div>
+            <h3 className="text-lg font-black text-slate-900 uppercase tracking-tight">Change Password</h3>
+            <p className="text-xs text-slate-400 font-semibold">Ensure your account is using a long, random password to stay secure.</p>
           </div>
         </div>
 
-        <div>
-          <label className="block text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2">New Password</label>
-          <input
-            type={showPass ? 'text' : 'password'}
-            value={newPassword}
-            onChange={(e) => setNewPassword(e.target.value)}
-            className="w-full h-12 bg-slate-50 rounded-xl px-4 text-sm font-bold border border-slate-200 focus:border-emerald-500 outline-none"
-            required
-            placeholder="••••••••"
-          />
-        </div>
+        <form onSubmit={handleSubmit} className="space-y-6 max-w-xl">
+          <div className="space-y-2">
+            <label className="block text-[10px] font-black uppercase tracking-widest text-slate-500">Current Password</label>
+            <div className="relative">
+              <input
+                type={showPass ? 'text' : 'password'}
+                value={currentPassword}
+                onChange={(e) => setCurrentPassword(e.target.value)}
+                className="w-full h-12 bg-slate-50 rounded-xl pl-4 pr-12 text-sm font-bold border border-slate-200 focus:border-emerald-500 outline-none"
+                required
+                placeholder="Enter current password"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPass(!showPass)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 focus:outline-none"
+              >
+                {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
+              </button>
+            </div>
+          </div>
 
-        <div>
-          <label className="block text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2">Confirm New Password</label>
-          <input
-            type={showPass ? 'text' : 'password'}
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            className="w-full h-12 bg-slate-50 rounded-xl px-4 text-sm font-bold border border-slate-200 focus:border-emerald-500 outline-none"
-            required
-            placeholder="••••••••"
-          />
-        </div>
+          <div className="space-y-2">
+            <label className="block text-[10px] font-black uppercase tracking-widest text-slate-500">New Password</label>
+            <input
+              type={showPass ? 'text' : 'password'}
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              className="w-full h-12 bg-slate-50 rounded-xl px-4 text-sm font-bold border border-slate-200 focus:border-emerald-500 outline-none"
+              required
+              placeholder="Enter new password (min. 6 characters)"
+            />
+          </div>
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full h-12 bg-green-600 hover:bg-green-700 text-white rounded-xl text-xs font-black uppercase tracking-widest flex items-center justify-center gap-2 transition-all shadow-lg shadow-green-600/10 active:scale-95 disabled:opacity-50"
-        >
-          {loading ? (
-            <>
-              <Loader2 size={16} className="animate-spin" />
-              Updating...
-            </>
-          ) : (
-            'Change Password'
-          )}
-        </button>
-      </form>
+          <div className="space-y-2">
+            <label className="block text-[10px] font-black uppercase tracking-widest text-slate-500">Confirm New Password</label>
+            <input
+              type={showPass ? 'text' : 'password'}
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              className="w-full h-12 bg-slate-50 rounded-xl px-4 text-sm font-bold border border-slate-200 focus:border-emerald-500 outline-none"
+              required
+              placeholder="Confirm new password"
+            />
+          </div>
+
+          <div className="pt-4 border-t border-slate-100 flex justify-end">
+            <button
+              type="submit"
+              disabled={loading}
+              className="px-6 h-12 bg-green-600 hover:bg-green-700 text-white rounded-xl text-xs font-black uppercase tracking-widest flex items-center justify-center gap-2 transition-all shadow-lg shadow-green-600/10 active:scale-95 disabled:opacity-50"
+            >
+              {loading ? (
+                <>
+                  <Loader2 size={16} className="animate-spin" />
+                  Updating...
+                </>
+              ) : (
+                'Update Password'
+              )}
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }

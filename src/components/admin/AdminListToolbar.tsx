@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Search, Filter, Calendar, ArrowUpDown, Download, Plus, CheckCircle, XCircle, Trash, MoreHorizontal, Layers, CheckSquare, Square, ChevronDown } from 'lucide-react';
+import { Search, Filter, Calendar, ArrowUpDown, Download, Plus, CheckCircle, XCircle, Trash, MoreHorizontal, Layers, CheckSquare, Square, ChevronDown, Clock } from 'lucide-react';
 
 interface QuickStat {
   label: string;
@@ -27,7 +27,7 @@ interface AdminListToolbarProps {
   addNewLabel?: string;
   onExportClick?: (format: 'CSV' | 'EXCEL' | 'PDF') => void;
   selectedCount?: number;
-  onBulkAction?: (action: 'approve' | 'reject' | 'delete') => void;
+  onBulkAction?: (action: 'approve' | 'reject' | 'pending' | 'delete') => void;
 }
 
 export default function AdminListToolbar({
@@ -222,6 +222,12 @@ export default function AdminListToolbar({
                 className="h-8 px-3 rounded-xl bg-emerald-600 text-white text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5 hover:bg-emerald-700 transition-colors"
               >
                 <CheckCircle size={12} /> Bulk Approve
+              </button>
+              <button
+                onClick={() => onBulkAction('pending')}
+                className="h-8 px-3 rounded-xl bg-amber-500 text-white text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5 hover:bg-amber-600 transition-colors"
+              >
+                <Clock size={12} /> Bulk Pending
               </button>
               <button
                 onClick={() => onBulkAction('reject')}

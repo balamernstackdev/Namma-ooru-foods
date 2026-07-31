@@ -221,8 +221,8 @@ export default function AdminUsersPage() {
                 clearFilters();
               }}
               className={`flex items-center gap-2 px-6 py-4 border-b-2 text-xs font-black uppercase tracking-wider transition-all duration-300 ${isActive
-                  ? tab.color
-                  : 'border-transparent text-slate-400 hover:text-slate-600'
+                ? tab.color
+                : 'border-transparent text-slate-400 hover:text-slate-600'
                 }`}
             >
               <tab.icon size={16} />
@@ -384,8 +384,8 @@ export default function AdminUsersPage() {
               <button
                 onClick={() => setShowFilters(!showFilters)}
                 className={`px-5 h-12 rounded-xl text-xs font-extrabold uppercase tracking-wider flex items-center gap-2 transition-all border ${showFilters
-                    ? 'bg-slate-900 text-white border-slate-900'
-                    : 'bg-white text-slate-500 border-slate-200 hover:text-slate-800'
+                  ? 'bg-slate-900 text-white border-slate-900'
+                  : 'bg-white text-slate-500 border-slate-200 hover:text-slate-800'
                   }`}
               >
                 <Filter size={14} />
@@ -630,8 +630,8 @@ export default function AdminUsersPage() {
                           </td>
                           <td className="px-8 py-5">
                             <span className={`inline-flex px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider border ${isBlocked
-                                ? 'bg-red-50 text-red-700 border-red-100'
-                                : 'bg-blue-50 text-blue-700 border-blue-100'
+                              ? 'bg-red-50 text-red-700 border-red-100'
+                              : 'bg-blue-50 text-blue-700 border-blue-100'
                               }`}>
                               {isBlocked ? 'Blocked' : 'Active'}
                             </span>
@@ -722,8 +722,8 @@ export default function AdminUsersPage() {
                           </td>
                           <td className="px-8 py-5">
                             <span className={`inline-flex px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider border ${isBlocked
-                                ? 'bg-red-50 text-red-700 border-red-100'
-                                : 'bg-purple-50 text-purple-700 border-purple-100'
+                              ? 'bg-red-50 text-red-700 border-red-100'
+                              : 'bg-purple-50 text-purple-700 border-purple-100'
                               }`}>
                               {isBlocked ? 'Locked Out' : 'Active'}
                             </span>

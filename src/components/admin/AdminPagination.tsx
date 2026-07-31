@@ -13,6 +13,10 @@ export default function AdminPagination({ currentPage, totalPages, onPageChange 
   const handlePageChange = (page: number) => {
     onPageChange(page);
     window.scrollTo({ top: 0, behavior: 'smooth' });
+    const mainEl = document.querySelector('main');
+    if (mainEl) {
+      mainEl.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   };
 
   return (

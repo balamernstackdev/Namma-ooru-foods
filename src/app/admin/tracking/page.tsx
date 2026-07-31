@@ -89,9 +89,9 @@ export default function AdminTrackingPage() {
         <p className="text-slate-400 font-bold uppercase tracking-[0.2em] text-[10px] mt-2">Assign carrier tracking details to orders and update shipment status.</p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Order List */}
-        <div className={`${selectedOrderId ? 'hidden lg:block' : 'block'} lg:col-span-1 space-y-3`}>
+        <div className={`${selectedOrderId ? 'hidden lg:block' : 'block'} lg:col-span-5 space-y-3`}>
           <div className="bg-white rounded-2xl border border-slate-100 px-5 py-3 flex items-center gap-3 shadow-sm">
             <Package className="h-4 w-4 text-slate-300" />
             <input type="text" placeholder="Search order ID or customer..."
@@ -100,7 +100,7 @@ export default function AdminTrackingPage() {
           </div>
  
           {/* Status Tabs */}
-          <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar">
             {[
               { id: 'ALL', label: 'All' },
               { id: 'PROCESSING', label: 'Processing' },
@@ -113,7 +113,7 @@ export default function AdminTrackingPage() {
                   setActiveTab(tab.id as any);
                   setSelectedOrderId(null);
                 }}
-                className={`px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all whitespace-nowrap border
+                className={`px-3.5 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all whitespace-nowrap border
                   ${activeTab === tab.id 
                     ? 'bg-[var(--admin-sidebar)] text-white border-[var(--admin-sidebar)] shadow-md shadow-slate-900/10' 
                     : 'bg-white text-slate-400 border-slate-100 hover:text-slate-600 hover:border-slate-200'
@@ -144,17 +144,29 @@ export default function AdminTrackingPage() {
           {!isLoading && filtered.length === 0 && (
             <div className="bg-white rounded-2xl border border-slate-100 p-8 text-center text-slate-300 font-bold text-sm">No orders available for tracking</div>
           )}
-          <div className="pt-4">
-            <AdminPagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              onPageChange={setCurrentPage}
-            />
+          <div className="pt-4 border-t border-slate-100 flex items-center justify-between px-2 text-xs font-semibold text-slate-400">
+            <span>Page {currentPage} of {totalPages || 1}</span>
+            <div className="flex gap-2">
+              <button
+                disabled={currentPage === 1}
+                onClick={() => setCurrentPage(p => Math.max(p - 1, 1))}
+                className="h-9 px-4 rounded-xl border border-slate-200 bg-white disabled:opacity-40 text-[10px] font-black uppercase tracking-widest text-[var(--admin-sidebar)] hover:bg-slate-50 transition-all flex items-center justify-center cursor-pointer shadow-sm active:scale-95"
+              >
+                Prev
+              </button>
+              <button
+                disabled={currentPage === totalPages || totalPages === 0}
+                onClick={() => setCurrentPage(p => Math.min(p + 1, totalPages))}
+                className="h-9 px-4 rounded-xl border border-slate-200 bg-white disabled:opacity-40 text-[10px] font-black uppercase tracking-widest text-[var(--admin-sidebar)] hover:bg-slate-50 transition-all flex items-center justify-center cursor-pointer shadow-sm active:scale-95"
+              >
+                Next
+              </button>
+            </div>
           </div>
         </div>
  
         {/* Tracking Form */}
-        <div className={`${selectedOrderId ? 'block' : 'hidden lg:block'} lg:col-span-2`}>
+        <div className={`${selectedOrderId ? 'block' : 'hidden lg:block'} lg:col-span-7`}>
           {selectedOrder ? (
             <div className="bg-white rounded-[2rem] border border-slate-100 shadow-sm p-5 sm:p-10">
               <div className="flex items-center gap-4 mb-8">

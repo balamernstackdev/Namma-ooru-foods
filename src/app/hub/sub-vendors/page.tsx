@@ -34,6 +34,14 @@ export default function SubVendorsList() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [page, setPage] = useState(1);
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    const mainEl = document.querySelector('main');
+    if (mainEl) {
+      mainEl.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
   const { hasPermission } = useAuth();
   const hasEditPerm = hasPermission('subVendors', 'edit');
   const hasCreatePerm = hasPermission('subVendors', 'create');
@@ -77,11 +85,11 @@ export default function SubVendorsList() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-black text-slate-900 uppercase italic tracking-tight">
-            Sub <span className="text-emerald-600">Vendors</span>
+          <h1 className="text-2xl font-black text-emerald-600 uppercase italic tracking-tight">
+            <span className="text-slate-900">Sellers</span>
           </h1>
           <p className="text-xs font-bold uppercase tracking-widest text-slate-400 mt-1">
-            {total} vendors assigned to this hub
+            {total} Sellers associated with this hub
           </p>
         </div>
       </div>
@@ -217,14 +225,14 @@ export default function SubVendorsList() {
             <span>Page {page} of {totalPages} · {total} total</span>
             <div className="flex gap-2">
               <button
-                onClick={() => setPage(p => Math.max(p - 1, 1))}
+                onClick={() => handlePageChange(Math.max(page - 1, 1))}
                 disabled={page === 1}
                 className="px-3 py-1.5 border border-slate-200 rounded-lg bg-white text-slate-700 disabled:opacity-40 hover:border-emerald-300 hover:text-emerald-700 transition-all"
               >
                 Previous
               </button>
               <button
-                onClick={() => setPage(p => Math.min(p + 1, totalPages))}
+                onClick={() => handlePageChange(Math.min(page + 1, totalPages))}
                 disabled={page === totalPages}
                 className="px-3 py-1.5 border border-slate-200 rounded-lg bg-white text-slate-700 disabled:opacity-40 hover:border-emerald-300 hover:text-emerald-700 transition-all"
               >

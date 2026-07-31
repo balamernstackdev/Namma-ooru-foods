@@ -20,7 +20,7 @@ function ProductsContent() {
    const categoryParam = searchParams.get('category');
    const deliveryParam = searchParams.get('delivery');
 
-   const { data: products, error: productsError } = useSWR(`${API_URL}/api/products?limit=100`, fetcher);
+   const { data: products, error: productsError } = useSWR(`${API_URL}/api/products?limit=500`, fetcher);
    const { data: categoriesData } = useSWR(`${API_URL}/api/categories?limit=100`, fetcher);
 
    const [activeCategory, setActiveCategory] = useState<string>('All');
@@ -51,20 +51,24 @@ function ProductsContent() {
       ? categoriesData
       : (categoriesData && Array.isArray((categoriesData as any).categories) ? (categoriesData as any).categories : []);
 
+   // All products (full list, for sidebar counts)
    const allProducts: any[] = liveProductsList;
    const categoryNames: string[] = ['All', ...liveCategoriesList.map((c: any) => c.name)];
+
+   // Server-side filtered products: only fetch when a non-All category is selected
+   const filteredFetchUrl = activeCategory !== 'All'
+      ? `${API_URL}/api/products?limit=500&category=${encodeURIComponent(activeCategory)}`
+      : null;
+   const { data: filteredData } = useSWR(filteredFetchUrl, fetcher);
+   const serverFilteredProducts: any[] = filteredFetchUrl
+      ? (Array.isArray(filteredData) ? filteredData : (filteredData && Array.isArray((filteredData as any).products) ? (filteredData as any).products : []))
+      : allProducts;
 
    // Effect: Listen to URL Param change
    useEffect(() => {
       if (categoryParam) {
-         const matched = categoryNames.find(
-            cat => cat.toLowerCase() === categoryParam.toLowerCase()
-         );
-         if (matched) {
-            setActiveCategory(matched);
-         } else {
-            setActiveCategory('All');
-         }
+         // Accept the raw URL param as the active category (works for both parent and subcategory names)
+         setActiveCategory(decodeURIComponent(categoryParam));
       } else {
          setActiveCategory('All');
       }
@@ -74,7 +78,7 @@ function ProductsContent() {
       } else {
          setDeliveryFilter('all');
       }
-   }, [categoryParam, deliveryParam, categoriesData]);
+   }, [categoryParam, deliveryParam]);
 
    const resetFilters = () => {
       setActiveCategory('All');
@@ -84,15 +88,8 @@ function ProductsContent() {
       setCurrentPage(1);
    };
 
-   // Filtering Logic
-   const filteredProducts = allProducts.filter((p: any) => {
-      // Category filter
-      const catMatch = activeCategory === 'All' ||
-         p.category?.name === activeCategory ||
-         p.category === activeCategory ||
-         (Array.isArray(p.tags) && p.tags.includes(activeCategory));
-      if (!catMatch) return false;
-
+   // Filtering Logic — category is handled server-side; price/rating/delivery are client-side
+   const filteredProducts = serverFilteredProducts.filter((p: any) => {
       // Price Filter
       const price = parseFloat(p.price);
       if (priceFilter === 'under200' && price >= 200) return false;
@@ -196,12 +193,24 @@ function ProductsContent() {
                         {!collapsedGroups.categories && (
                            <div className="flex flex-col gap-1 max-h-[320px] overflow-y-auto pr-2 no-scrollbar">
                               {categoryNames.map(cat => {
-                                 const count = cat === 'All' ? allProducts.length : allProducts.filter(p => p.category?.name === cat || p.category === cat).length;
+                                 const count = cat === 'All'
+                                   ? allProducts.length
+                                   : allProducts.filter(p =>
+                                       p.category?.name?.toLowerCase() === cat.toLowerCase() ||
+                                       p.category?.parent?.name?.toLowerCase() === cat.toLowerCase() ||
+                                       p.category === cat
+                                     ).length;
+                                 // Highlight this sidebar item if it is the active category OR if the active category is a subcategory under this parent
+                                 const isActive = activeCategory.toLowerCase() === cat.toLowerCase() ||
+                                   allProducts.some(p =>
+                                     p.category?.name?.toLowerCase() === activeCategory.toLowerCase() &&
+                                     p.category?.parent?.name?.toLowerCase() === cat.toLowerCase()
+                                   );
                                  return (
                                     <button
                                        key={cat}
                                        onClick={() => { setActiveCategory(cat); setCurrentPage(1); }}
-                                       className={`flex items-center justify-between py-2 px-3 rounded-lg text-[12px] font-semibold transition-all ${activeCategory === cat ? 'bg-emerald-50 text-emerald-800' : 'text-slate-600 hover:bg-slate-50'}`}
+                                       className={`flex items-center justify-between py-2 px-3 rounded-lg text-[12px] font-semibold transition-all ${isActive ? 'bg-emerald-50 text-emerald-800' : 'text-slate-600 hover:bg-slate-50'}`}
                                     >
                                        <span className="truncate mr-2">{cat}</span>
                                        <span className="text-[10px] opacity-60 shrink-0">({count})</span>

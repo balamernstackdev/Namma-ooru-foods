@@ -340,7 +340,6 @@ export default function PayoutDetailClient({ id }: { id: string }) {
                 <th className="py-4 px-6 text-[10px] font-black uppercase tracking-widest text-slate-400">Purchased Date</th>
                 <th className="py-4 px-6 text-[10px] font-black uppercase tracking-widest text-slate-400 text-center">Delivery Status</th>
                 <th className="py-4 px-6 text-[10px] font-black uppercase tracking-widest text-slate-400 text-right">Commission Charged</th>
-                <th className="py-4 px-6 text-[10px] font-black uppercase tracking-widest text-slate-400 text-right">Refund Deduct</th>
                 <th className="py-4 px-6 text-[10px] font-black uppercase tracking-widest text-slate-400 text-right font-black">Vendor Earning</th>
               </tr>
             </thead>
@@ -363,9 +362,6 @@ export default function PayoutDetailClient({ id }: { id: string }) {
                   </td>
                   <td className="py-4 px-6 text-right text-rose-500 font-semibold text-xs">
                     -₹{Number(po.commission).toFixed(2)}
-                  </td>
-                  <td className="py-4 px-6 text-right text-rose-500 font-semibold text-xs">
-                    -₹{Number(po.refundAdjustment || 0).toFixed(2)}
                   </td>
                   <td className="py-4 px-6 text-right text-emerald-600 font-black text-xs">
                     ₹{Number(po.vendorEarning).toFixed(2)}

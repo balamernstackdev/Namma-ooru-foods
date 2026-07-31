@@ -2,14 +2,17 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useToast } from '@/context/ToastContext';
-import { Search, Edit2, Trash2, Loader2, Plus, MapPin, Building2, CheckCircle2 } from 'lucide-react';
+import { Search, Edit2, Trash2, Loader2, Plus, MapPin, Building2, CheckCircle2, Eye } from 'lucide-react';
 import { API_URL } from '@/lib/api';
 
 interface HeadVendor {
   id: number;
   name: string;
   slug: string;
+  email?: string;
+  mobile?: string;
   banner?: string;
   logo?: string;
   sortOrder?: number;
@@ -109,18 +112,22 @@ export default function AdminHubsPage() {
           <table className="w-full text-left min-w-[1000px] admin-data-table">
             <thead>
               <tr className="bg-slate-50/50">
+                <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100">Hub ID</th>
                 <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100">Hub Identity</th>
-                <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100">Slug</th>
-                <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100">Order</th>
+                <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100">Gmail</th>
+                <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100">Phone Number</th>
                 <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100">Brands</th>
                 <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50">
               {loading ? (
-                <tr><td colSpan={5} className="px-8 py-20 text-center"><Loader2 className="h-10 w-10 animate-spin mx-auto text-slate-200" /></td></tr>
-              ) : hubs.filter(h => h.name?.toLowerCase().includes(searchTerm.toLowerCase())).map(hub => (
+                <tr><td colSpan={6} className="px-8 py-20 text-center"><Loader2 className="h-10 w-10 animate-spin mx-auto text-slate-200" /></td></tr>
+              ) : hubs.filter(h => h.name?.toLowerCase().includes(searchTerm.toLowerCase())).map((hub, index) => (
                 <tr key={hub.id} className="group hover:bg-slate-50/50 transition-all">
+                  <td className="px-8 py-5 font-mono text-xs font-black text-slate-900">
+                    VEN-{(index + 1).toString().padStart(2, '0')}
+                  </td>
                   <td className="px-8 py-5">
                     <div className="flex items-center gap-4">
                       <div className="h-12 w-12 rounded-2xl bg-white border border-slate-100 shadow-sm flex items-center justify-center p-2">
@@ -131,18 +138,22 @@ export default function AdminHubsPage() {
                         )}
                       </div>
                       <div className="flex flex-col">
-                        <span className="text-[14px] font-black text-slate-900 leading-tight uppercase">{hub.name}</span>
+                        <Link href={`/admin/hubs/${hub.id}`} className="text-[14px] font-black text-slate-900 leading-tight uppercase hover:text-emerald-600 transition-colors">
+                          {hub.name}
+                        </Link>
                         <span className="text-[9px] text-emerald-600 font-bold uppercase tracking-widest mt-1 flex items-center gap-1"><MapPin size={10} /> Regional Collective</span>
                       </div>
                     </div>
                   </td>
                   <td className="px-8 py-5">
-                    <span className="text-xs font-bold text-slate-500 bg-slate-100 px-3 py-1.5 rounded-lg border border-slate-200">
-                      /{hub.slug}
+                    <span className="text-xs font-bold text-slate-500 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100">
+                      {hub.email || '-'}
                     </span>
                   </td>
-                  <td className="px-8 py-5 text-sm font-bold text-slate-700">
-                    {hub.sortOrder !== undefined && hub.sortOrder !== 999 ? hub.sortOrder : '-'}
+                  <td className="px-8 py-5">
+                    <span className="text-xs font-bold text-slate-500 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100">
+                      {hub.mobile || '-'}
+                    </span>
                   </td>
                   <td className="px-8 py-5">
                     <span className="text-[10px] font-black uppercase tracking-widest text-amber-600 bg-amber-50 px-3 py-1.5 rounded-full border border-amber-100 inline-flex items-center gap-1">
@@ -151,6 +162,13 @@ export default function AdminHubsPage() {
                   </td>
                   <td className="px-8 py-5 text-right">
                     <div className="flex items-center justify-end gap-2">
+                      <button
+                        onClick={() => router.push(`/admin/hubs/${hub.id}`)}
+                        className="h-10 w-10 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-400 hover:bg-emerald-650 hover:text-white transition-all shadow-sm"
+                        title="View Hub Details & Commission Settings"
+                      >
+                        <Eye size={16} />
+                      </button>
                       <button
                         onClick={() => router.push(`/admin/hubs/${hub.id}/edit`)}
                         className="h-10 w-10 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-400 hover:bg-emerald-600 hover:text-white transition-all shadow-sm"
@@ -178,7 +196,7 @@ export default function AdminHubsPage() {
         <div className="block md:hidden divide-y divide-slate-100">
           {loading ? (
             <div className="py-20 text-center"><Loader2 className="h-10 w-10 animate-spin mx-auto text-slate-200" /></div>
-          ) : hubs.filter(h => h.name?.toLowerCase().includes(searchTerm.toLowerCase())).map(hub => (
+          ) : hubs.filter(h => h.name?.toLowerCase().includes(searchTerm.toLowerCase())).map((hub, index) => (
             <div key={hub.id} className="p-6 space-y-4">
               <div className="flex items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
@@ -190,20 +208,25 @@ export default function AdminHubsPage() {
                     )}
                   </div>
                   <div className="flex flex-col min-w-0">
-                    <span className="text-[13px] font-black text-slate-900 leading-tight uppercase truncate">{hub.name}</span>
-                    <span className="text-[9px] text-emerald-600 font-bold uppercase tracking-widest mt-1 flex items-center gap-1 shrink-0"><MapPin size={10} /> Regional Collective</span>
+                    <Link href={`/admin/hubs/${hub.id}`} className="text-[13px] font-black text-slate-900 leading-tight uppercase truncate hover:text-emerald-600 transition-colors">
+                      {hub.name}
+                    </Link>
+                    <div className="flex items-center gap-1.5 mt-1 flex-wrap font-sans">
+                      <span className="text-[9px] text-slate-400 font-mono font-bold bg-slate-100 border border-slate-200/60 px-1.5 py-0.5 rounded">VEN-{(index + 1).toString().padStart(2, '0')}</span>
+                      <span className="text-[9px] text-emerald-600 font-bold uppercase tracking-widest flex items-center gap-1 shrink-0"><MapPin size={10} /> Regional Collective</span>
+                    </div>
                   </div>
                 </div>
               </div>
 
               <div className="space-y-2 bg-slate-50/50 rounded-2xl p-4 border border-slate-100/50 text-xs text-slate-500 font-semibold">
                 <div className="flex justify-between items-center">
-                  <span className="text-[9px] text-slate-400 font-black uppercase tracking-wider">Slug Path</span>
-                  <span className="font-bold text-slate-800">/{hub.slug}</span>
+                  <span className="text-[9px] text-slate-400 font-black uppercase tracking-wider">Gmail</span>
+                  <span className="font-bold text-slate-800">{hub.email || '-'}</span>
                 </div>
                 <div className="flex justify-between items-center pt-2 border-t border-slate-100">
-                  <span className="text-[9px] text-slate-400 font-black uppercase tracking-wider">Sort Rank</span>
-                  <span className="font-bold text-slate-800">{hub.sortOrder !== undefined && hub.sortOrder !== 999 ? hub.sortOrder : '-'}</span>
+                  <span className="text-[9px] text-slate-400 font-black uppercase tracking-wider">Phone</span>
+                  <span className="font-bold text-slate-800">{hub.mobile || '-'}</span>
                 </div>
                 <div className="flex justify-between items-center pt-2 border-t border-slate-100">
                   <span className="text-[9px] text-slate-400 font-black uppercase tracking-wider">Brands Linked</span>
@@ -215,10 +238,16 @@ export default function AdminHubsPage() {
 
               <div className="flex items-center gap-2 justify-end pt-1">
                 <button
-                  onClick={() => router.push(`/admin/hubs/${hub.id}/edit`)}
-                  className="h-11 flex-1 flex items-center justify-center gap-1.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-600 hover:bg-emerald-600 hover:text-white transition-all text-xs font-bold shadow-sm animate-in scale-in duration-350"
+                  onClick={() => router.push(`/admin/hubs/${hub.id}`)}
+                  className="h-11 flex-1 flex items-center justify-center gap-1.5 rounded-xl bg-slate-900 text-white hover:bg-slate-800 transition-all text-xs font-bold shadow-sm"
                 >
-                  <Edit2 size={14} /> Edit Hub
+                  <Eye size={14} /> View Details
+                </button>
+                <button
+                  onClick={() => router.push(`/admin/hubs/${hub.id}/edit`)}
+                  className="h-11 px-4 flex items-center justify-center gap-1.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-600 hover:bg-emerald-600 hover:text-white transition-all text-xs font-bold shadow-sm"
+                >
+                  <Edit2 size={14} />
                 </button>
                 <button
                   onClick={() => handleDelete(hub.id, hub.name)}

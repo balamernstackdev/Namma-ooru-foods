@@ -229,7 +229,7 @@ export default function CategoryForm({ initialData, mode }: CategoryFormProps) {
                       </InputWrapper>
                     </div>
 
-                    <InputWrapper label="Catalog Description" helpText="Detailed description for the category page.">
+                    <InputWrapper label="Category Description" helpText="Detailed description for the category page.">
                       <textarea
                         rows={4}
                         value={formData.description}
@@ -328,17 +328,7 @@ export default function CategoryForm({ initialData, mode }: CategoryFormProps) {
                     </div>
                   </InputWrapper>
 
-                  <InputWrapper label="Category Icon" helpText="Emoji (e.g. 🌾, 🥣) or URL path for category representation in Quick Browse strip.">
-                    <div className="relative">
-                      <input
-                        type="text"
-                        value={formData.icon}
-                        onChange={e => setFormData({ ...formData, icon: e.target.value })}
-                        placeholder="e.g. 🌾 or /icons/rice.svg"
-                        className="w-full h-14 px-6 rounded-xl border border-slate-200 focus:border-blue-500 outline-none font-bold text-slate-900 text-sm"
-                      />
-                    </div>
-                  </InputWrapper>
+
 
                   <div className="space-y-4">
                     <div className="flex items-center justify-between p-4 rounded-xl bg-slate-50 border border-slate-100 transition-all">

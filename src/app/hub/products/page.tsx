@@ -494,10 +494,11 @@ export default function HubProducts() {
                <table className="w-full text-left border-collapse min-w-[1000px] admin-data-table">
                   <thead>
                      <tr className="bg-slate-50/50">
+                        <th className="px-6 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100">Product ID</th>
                         <th className="px-6 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100">Product Info</th>
                         <th className="px-6 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100">Category</th>
-                        <th className="px-6 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100">Stock Status</th>
-                        <th className="px-6 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100">Price</th>
+                        <th className="px-6 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100">Stock</th>
+                        <th className="px-6 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100">MRP & Price</th>
                         <th className="px-6 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100 text-right">Actions</th>
                      </tr>
                   </thead>
@@ -506,7 +507,7 @@ export default function HubProducts() {
                      {isLoading ? (
                         Array.from({ length: 6 }).map((_, i) => (
                            <tr key={i} className="animate-pulse">
-                              <td className="px-6 py-4 border-b border-slate-50" colSpan={5}>
+                              <td className="px-6 py-4 border-b border-slate-50" colSpan={6}>
                                  <div className="flex items-center gap-4 py-2">
                                     <div className="h-10 w-10 bg-slate-100 rounded-xl" />
                                     <div className="space-y-1.5 flex-1">
@@ -519,7 +520,7 @@ export default function HubProducts() {
                         ))
                      ) : products.length === 0 ? (
                         <tr>
-                           <td colSpan={5} className="py-20 text-center">
+                           <td colSpan={6} className="py-20 text-center">
                               <div className="max-w-md mx-auto flex flex-col items-center gap-3">
                                  <div className="h-12 w-12 bg-slate-50 rounded-full flex items-center justify-center text-slate-400">
                                     <Package size={20} />
@@ -539,6 +540,11 @@ export default function HubProducts() {
 
                            return (
                               <tr key={product.id} className="group hover:bg-slate-50/40 transition-colors">
+                                 <td className="px-6 py-4 border-b border-slate-50">
+                                    <span className="font-mono text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded border border-emerald-100 whitespace-nowrap">
+                                       {product.productIdStr || `Pro-${String(product.id).padStart(2, '0')}`}
+                                    </span>
+                                 </td>
 
                                  <td className="px-6 py-4 border-b border-slate-50">
                                     <div className="flex items-center gap-3">
@@ -554,7 +560,7 @@ export default function HubProducts() {
                                              {product.name}
                                           </p>
                                           <div className="flex items-center gap-1.5 mt-1 flex-wrap">
-                                             <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-wider border ${product.status === 'APPROVED' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' :
+                                             <span className={`inline-flex items-center gap-1 h-6 px-2.5 rounded-full text-[9px] font-bold uppercase tracking-wider border ${product.status === 'APPROVED' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' :
                                                    product.status === 'PENDING' ? 'bg-amber-50 text-amber-700 border-amber-100' :
                                                       'bg-slate-50 text-slate-500 border-slate-200'
                                                 }`}>
@@ -566,14 +572,11 @@ export default function HubProducts() {
                                                       e.stopPropagation();
                                                       updateQueryParams({ brandId: product.subVendor ? String(product.subVendor.id) : null });
                                                    }}
-                                                   className="px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest bg-indigo-50 text-indigo-600 border border-indigo-100 hover:bg-indigo-100 hover:text-indigo-800 transition-colors cursor-pointer"
+                                                   className="inline-flex items-center h-6 px-2.5 rounded-full !text-[9px] !font-bold uppercase tracking-wider bg-indigo-50 text-indigo-600 border border-indigo-100 hover:bg-indigo-100 hover:text-indigo-800 transition-colors cursor-pointer outline-none"
                                                 >
                                                    {product.subVendor.name}
                                                 </button>
                                              )}
-                                             <span className="text-[9px] text-slate-300 font-bold uppercase tracking-wider">
-                                                ID: {product.productIdStr || `Pro-${String(product.id).padStart(2, '0')}`}
-                                             </span>
                                           </div>
                                        </div>
                                     </div>
@@ -582,37 +585,29 @@ export default function HubProducts() {
                                  <td className="px-6 py-4 border-b border-slate-50">
                                     <button
                                        onClick={() => updateQueryParams({ category: product.category?.id })}
-                                       className="inline-block text-[10px] font-black uppercase tracking-wider text-slate-600 px-3 py-1.5 bg-slate-50 rounded-xl whitespace-nowrap max-w-[160px] truncate hover:bg-slate-100 transition-colors cursor-pointer text-left border-0"
+                                       className="inline-flex items-center h-6 px-3 rounded-full !text-[9px] !font-bold uppercase tracking-wider text-slate-600 bg-slate-50 hover:bg-slate-100 border border-slate-200/50 transition-colors cursor-pointer text-left whitespace-nowrap outline-none"
                                     >
                                        {product.category?.name || 'Heritage Foods'}
                                     </button>
                                  </td>
 
                                  <td className="px-6 py-4 border-b border-slate-50">
-                                    <div className="space-y-1">
-                                       <div className="flex items-center justify-between gap-2 max-w-[120px]">
-                                          <span className="text-xs font-bold text-slate-700">{stock} units</span>
-                                          <span className={`text-[8px] font-black uppercase tracking-wider ${isLow ? 'text-red-500' : 'text-emerald-500'}`}>
-                                             {isLow ? 'Low' : 'OK'}
-                                          </span>
+                                    <span className="text-xs font-bold text-slate-750">{stock} units</span>
+                                 </td>
+
+                                 <td className="px-6 py-4 border-b border-slate-50">
+                                    <div className="flex flex-col gap-1">
+                                       <div className="text-[11px] font-medium text-slate-400">
+                                          MRP: <span className="font-semibold text-slate-700">₹{Number(product.originalPrice || product.price).toLocaleString('en-IN')}</span>
                                        </div>
-                                       <div className="h-1.5 w-28 bg-slate-50 rounded-full overflow-hidden">
-                                          <div
-                                             className={`h-full rounded-full transition-all ${isLow ? 'bg-red-400' : 'bg-emerald-500'}`}
-                                             style={{ width: `${stockPct}%` }}
-                                          />
+                                       <div className="text-xs font-bold text-slate-550">
+                                          Selling Price: <span className="font-black text-emerald-700">₹{Number(product.price).toLocaleString('en-IN')}</span>
                                        </div>
                                     </div>
                                  </td>
 
-                                 <td className="px-6 py-4 border-b border-slate-50">
-                                    <span className="text-sm font-black text-slate-900">
-                                       ₹{Number(product.price).toLocaleString('en-IN')}
-                                    </span>
-                                 </td>
-
-                                 <td className={`px-6 py-4 text-right border-b border-slate-50 relative`}>
-                                    <div className="flex items-center justify-end gap-1">
+                                 <td className="px-6 py-4 text-right border-b border-slate-50 relative">
+                                    <div className="flex items-center justify-end gap-1.5">
                                        <Link
                                           href={`/products/${product.slug || product.id}`}
                                           target="_blank"
@@ -620,6 +615,14 @@ export default function HubProducts() {
                                        >
                                           <Eye size={13} /> View
                                        </Link>
+                                       {hasEditPerm && (
+                                          <Link
+                                             href={`/hub/products/${product.id}/edit`}
+                                             className="h-9 px-3 rounded-xl border border-slate-200 text-slate-500 hover:text-slate-900 bg-white hover:bg-slate-50 flex items-center gap-1.5 text-xs transition-all no-underline"
+                                          >
+                                             <Edit2 size={13} /> Edit
+                                          </Link>
+                                       )}
                                     </div>
                                  </td>
                               </tr>

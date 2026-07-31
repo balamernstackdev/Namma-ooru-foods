@@ -282,13 +282,12 @@ export default function VendorHubReports() {
                 </div>
                 <div className="text-right shrink-0">
                   <p className="text-xs font-black text-slate-950">₹{Number(payout.amount).toLocaleString('en-IN')}</p>
-                  <span className={`text-[8px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded border mt-0.5 inline-block ${
-                    payout.status === 'COMPLETED' || payout.status === 'SETTLED'
+                  <span className={`text-[8px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded border mt-0.5 inline-block ${payout.status === 'COMPLETED' || payout.status === 'SETTLED'
                       ? 'text-emerald-700 bg-emerald-50 border-emerald-100'
                       : payout.status === 'FAILED'
-                      ? 'text-red-700 bg-red-50 border-red-100'
-                      : 'text-amber-700 bg-amber-50 border-amber-100'
-                  }`}>
+                        ? 'text-red-700 bg-red-50 border-red-100'
+                        : 'text-amber-700 bg-amber-50 border-amber-100'
+                    }`}>
                     {payout.status}
                   </span>
                 </div>
@@ -347,11 +346,10 @@ export default function VendorHubReports() {
                     <td className="py-4 pr-4 text-center font-bold">{sv.ordersCount || 0}</td>
                     <td className="py-4 pr-4 font-bold text-emerald-700">₹{Number(sv.revenue || 0).toLocaleString('en-IN')}</td>
                     <td className="py-4 pr-4">
-                      <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full border ${
-                        svStatus === 'Active' ? 'bg-green-50 text-green-700 border-green-100' :
-                        svStatus === 'Pending' ? 'bg-amber-50 text-amber-700 border-amber-100' :
-                        'bg-red-50 text-red-700 border-red-100'
-                      }`}>{svStatus}</span>
+                      <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full border ${svStatus === 'Active' ? 'bg-green-50 text-green-700 border-green-100' :
+                          svStatus === 'Pending' ? 'bg-amber-50 text-amber-700 border-amber-100' :
+                            'bg-red-50 text-red-700 border-red-100'
+                        }`}>{svStatus}</span>
                     </td>
                     <td className="py-4 text-right">
                       <a href={`/hub/sub-vendors/${sv.id}`} className="inline-flex items-center gap-1 text-emerald-600 hover:text-emerald-700 font-bold uppercase text-[10px] tracking-wider">

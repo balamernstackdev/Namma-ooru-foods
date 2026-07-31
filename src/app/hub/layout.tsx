@@ -110,9 +110,9 @@ export default function HubLayout({ children }: { children: React.ReactNode }) {
         #admin-root h2 { font-size: 20px !important; font-weight: 700 !important; }
         #admin-root h3 { font-size: 18px !important; font-weight: 700 !important; }
         #admin-root label { font-size: 12px !important; font-weight: 700 !important; text-transform: uppercase !important; letter-spacing: 0.08em !important; }
-        #admin-root p { font-size: 14px !important; font-weight: 500 !important; }
-        #admin-root td, #admin-root th { font-size: 14px !important; font-weight: 600 !important; }
-        #admin-root button { font-size: 14px !important; font-weight: 700 !important; }
+        #admin-root p { font-size: 14px; font-weight: 500; }
+        #admin-root td, #admin-root th { font-size: 14px; font-weight: 600; }
+        #admin-root button { font-size: 14px; font-weight: 700; }
 
         @media (min-width: 768px) {
           #admin-root h1 { font-size: 42px !important; }
@@ -164,7 +164,6 @@ export default function HubLayout({ children }: { children: React.ReactNode }) {
         <div className="flex-1 relative min-h-0">
           <nav className="admin-sidebar-nav absolute inset-0 overflow-y-auto px-4 py-6 space-y-0.5">
             {navGroups.map(group => {
-              const isCollapsed = collapsedGroups.includes(group.label);
               const hideHeader = (group as any).hideHeader === true;
               
               const visibleItems = group.items.filter(item => {
@@ -184,19 +183,16 @@ export default function HubLayout({ children }: { children: React.ReactNode }) {
               if (visibleItems.length === 0) return null;
 
               return (
-                <div key={group.label} className={hideHeader ? "mb-1" : "mb-4"}>
+                <div key={group.label} className={hideHeader ? "mb-1" : "mb-3"}>
                   {!hideHeader && (
-                    <button
-                      onClick={() => toggleGroup(group.label)}
-                      className="w-full flex items-center justify-between px-4 py-2.5 mb-2 rounded-xl bg-slate-100/50 hover:bg-slate-100 border border-slate-200/60 transition-all group/header"
-                    >
-                      <span className="text-[11px] font-black uppercase tracking-[0.25em] text-slate-700 group-hover/header:text-emerald-700 transition-colors">
+                    <div className="px-4 py-1.5 mb-1.5">
+                      <span className="text-[9px] font-black uppercase tracking-[0.25em] text-slate-400">
                         {group.label}
                       </span>
-                    </button>
+                    </div>
                   )}
                   <div className="flex flex-col gap-1 mt-1">
-                    {(!isCollapsed || hideHeader) && visibleItems.map(item => {
+                    {visibleItems.map(item => {
                       const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
                       return (
                         <Link

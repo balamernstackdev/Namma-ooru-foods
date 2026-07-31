@@ -133,12 +133,6 @@ export default function AdminVariantsPage() {
         <div>
           <h1 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tighter italic">Variants <span className="text-emerald-600 font-black">Management</span></h1>
         </div>
-        <Link
-          href="/admin/variants/new"
-          className="h-14 px-8 rounded-2xl bg-emerald-600 !text-white text-[11px] font-black uppercase tracking-widest flex items-center justify-center gap-3 hover:bg-emerald-700 transition-all shadow-xl shadow-emerald-500/20 active:scale-95 no-underline w-full sm:w-auto text-center"
-        >
-          <Plus size={18} className="!text-white" /> New SKU Variant
-        </Link>
       </div>
 
       <div className="bg-white rounded-[2rem] sm:rounded-[3.5rem] border border-slate-100 shadow-sm overflow-hidden w-full">
@@ -171,6 +165,13 @@ export default function AdminVariantsPage() {
               <Download size={14} />
               <span>Export</span>
             </button>
+
+            <Link
+              href="/admin/variants/new"
+              className="h-12 px-6 rounded-xl bg-emerald-600 !text-white text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-emerald-700 transition-all shadow-md active:scale-95 no-underline w-full sm:w-auto text-center shrink-0"
+            >
+              <Plus size={16} className="!text-white" /> New SKU Variant
+            </Link>
           </div>
         </div>
 
@@ -280,8 +281,8 @@ export default function AdminVariantsPage() {
             <table className="w-full text-left table-auto min-w-[1000px] admin-data-table">
               <thead>
                 <tr className="bg-slate-50/50">
-                  <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100">Product / SKU</th>
-                  <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100">Specification</th>
+                  <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100">Products </th>
+                  <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100">Variants</th>
                   <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100">Price</th>
                   <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100">Stock Balance</th>
                   <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100 text-right">Actions</th>

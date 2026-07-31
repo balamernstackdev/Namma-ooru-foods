@@ -340,9 +340,9 @@ export default function AdminOrders() {
                             </span>
                           )}
                           {resellers.map((vendor: any) => (
-                            <span key={vendor.id} className="text-[10px] font-bold text-slate-600 truncate max-w-[120px]">
-                              {vendor.name}
-                            </span>
+                             <span key={vendor.id} className="text-[10px] font-bold text-slate-600 block leading-tight">
+                               {vendor.name}
+                             </span>
                           ))}
                         </div>
                       </td>
@@ -441,10 +441,23 @@ export default function AdminOrders() {
                                           <img src={item.product?.image || settings?.logo || '/logo.webp'} className="h-full w-full object-cover" alt="" />
                                         </div>
                                         <div className="flex-1 min-w-0">
-                                          <p className="text-[13px] font-black text-slate-900 truncate leading-snug">{item.product?.name}</p>
+                                          <p className="text-[13px] font-black text-slate-900 truncate leading-snug flex items-center gap-2">
+                                            <span>{item.product?.name}</span>
+                                            {item.variantName && (
+                                              <span className="px-2 py-0.5 bg-slate-100 text-slate-600 rounded-lg text-[9px] font-black tracking-wider uppercase whitespace-nowrap border border-slate-200/50">
+                                                {item.variantName}
+                                              </span>
+                                            )}
+                                          </p>
                                           <div className="flex items-center gap-4 mt-1">
                                             <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Qty: {item.quantity}</span>
-                                            <span className="text-[12px] font-black text-emerald-600 tracking-tighter">₹{Number((item.unitPrice || item.price || 0) * item.quantity).toLocaleString()}</span>
+                                            <span className="text-[10px] text-slate-400 font-semibold">
+                                              MRP: <span className="line-through text-slate-350">₹{Number(item.product?.originalPrice || item.unitPrice || item.price || 0).toLocaleString()}</span>
+                                            </span>
+                                            <span className="text-[10px] text-slate-400 font-semibold">
+                                              Price: <span className="text-emerald-600 font-bold">₹{Number(item.unitPrice || item.price || 0).toLocaleString()}</span>
+                                            </span>
+                                            <span className="text-[12px] font-black text-emerald-700 tracking-tighter ml-auto">Subtotal: ₹{Number((item.unitPrice || item.price || 0) * item.quantity).toLocaleString()}</span>
                                           </div>
                                         </div>
                                       </div>
@@ -588,10 +601,24 @@ export default function AdminOrders() {
                                   <img src={item.product?.image || settings?.logo || '/logo.webp'} className="h-full w-full object-cover" alt="" />
                                 </div>
                                 <div className="flex-1 min-w-0">
-                                  <p className="text-xs font-black text-slate-900 truncate leading-tight">{item.product?.name}</p>
-                                  <div className="flex items-center justify-between mt-1">
-                                    <span className="text-[9px] text-slate-400 font-bold">Qty: {item.quantity}</span>
-                                    <span className="text-[11px] font-black text-emerald-600">₹{Number((item.unitPrice || item.price || 0) * item.quantity).toLocaleString()}</span>
+                                  <p className="text-xs font-black text-slate-900 truncate leading-tight flex items-center gap-1.5">
+                                    <span>{item.product?.name}</span>
+                                    {item.variantName && (
+                                      <span className="px-1.5 py-0.2 bg-slate-100 text-slate-600 rounded text-[8px] font-black tracking-wider uppercase whitespace-nowrap border border-slate-200/50">
+                                        {item.variantName}
+                                      </span>
+                                    )}
+                                  </p>
+                                  <div className="flex flex-col gap-1 mt-1">
+                                    <div className="flex items-center gap-2.5 text-[9px] text-slate-400 font-bold uppercase">
+                                      <span>Qty: {item.quantity}</span>
+                                      <span>MRP: <span className="line-through">₹{Number(item.product?.originalPrice || item.unitPrice || item.price || 0).toLocaleString()}</span></span>
+                                      <span>Price: <span className="text-emerald-600 font-bold">₹{Number(item.unitPrice || item.price || 0).toLocaleString()}</span></span>
+                                    </div>
+                                    <div className="flex items-center justify-between text-[11px] font-black text-emerald-700">
+                                      <span className="text-[9px] text-slate-400 uppercase font-black">Subtotal</span>
+                                      <span>₹{Number((item.unitPrice || item.price || 0) * item.quantity).toLocaleString()}</span>
+                                    </div>
                                   </div>
                                 </div>
                               </div>

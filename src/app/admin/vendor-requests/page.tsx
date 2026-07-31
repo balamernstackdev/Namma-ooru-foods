@@ -13,7 +13,7 @@ export default function AdminVendorRequestsPage() {
   const { addToast } = useToast();
   const [requests, setRequests] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  
+
   // Search, filter, and sorting states
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
@@ -120,10 +120,10 @@ export default function AdminVendorRequestsPage() {
       return;
     }
     addToast('Info', `Generating and downloading ${format} archive...`);
-    
+
     setTimeout(() => {
       const headers = ["S.No", "Registration ID", "Store Name", "Owner Email", "Owner Phone", "Status", "Date Requested"];
-      
+
       const rows = filteredAndSortedRequests.map((req: any, index: number) => {
         return [
           index + 1,
@@ -135,9 +135,9 @@ export default function AdminVendorRequestsPage() {
           `"${new Date(req.createdAt).toLocaleDateString('en-IN')}"`
         ];
       });
-      
+
       const csvContent = headers.join(",") + "\n" + rows.map(r => r.join(",")).join("\n");
-      
+
       const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
       const url = URL.createObjectURL(blob);
       const downloadAnchor = document.createElement('a');
@@ -147,7 +147,7 @@ export default function AdminVendorRequestsPage() {
       downloadAnchor.click();
       downloadAnchor.remove();
       URL.revokeObjectURL(url);
-      
+
       addToast('Success', 'Vendor registrations exported successfully');
     }, 1000);
   };
@@ -206,7 +206,7 @@ export default function AdminVendorRequestsPage() {
     return (
       <div className="p-12 flex flex-col items-center justify-center gap-4 text-emerald-950 font-black uppercase tracking-widest text-xs">
         <div className="h-10 w-10 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin" />
-        <span>Syncing registration logs...</span>
+        <span>Loading Hub......</span>
       </div>
     );
   }
@@ -301,12 +301,11 @@ export default function AdminVendorRequestsPage() {
                   </td>
                   <td className="px-6 py-4 text-xs font-semibold text-slate-500 border-b border-slate-50">{req.businessType}</td>
                   <td className="px-6 py-4 border-b border-slate-50">
-                    <span className={`inline-flex px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-wider ${
-                      req.status === 'Approved' ? 'bg-emerald-100 text-emerald-700' :
-                      req.status === 'Rejected' ? 'bg-red-100 text-red-700' :
-                      req.status === 'Under Review' ? 'bg-blue-100 text-blue-700' :
-                      'bg-amber-100 text-amber-700'
-                    }`}>
+                    <span className={`inline-flex px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-wider ${req.status === 'Approved' ? 'bg-emerald-100 text-emerald-700' :
+                        req.status === 'Rejected' ? 'bg-red-100 text-red-700' :
+                          req.status === 'Under Review' ? 'bg-blue-100 text-blue-700' :
+                            'bg-amber-100 text-amber-700'
+                      }`}>
                       {req.status}
                     </span>
                   </td>
@@ -318,7 +317,7 @@ export default function AdminVendorRequestsPage() {
                       >
                         <Eye size={13} /> View
                       </button>
- 
+
                       {/* Three dots Action dropdown */}
                       <div className="relative">
                         <button
@@ -327,7 +326,7 @@ export default function AdminVendorRequestsPage() {
                         >
                           <MoreHorizontal size={16} />
                         </button>
- 
+
                         {activeMenuId === req.id && (
                           <>
                             <div className="fixed inset-0 z-40" onClick={() => setActiveMenuId(null)} />
@@ -358,7 +357,7 @@ export default function AdminVendorRequestsPage() {
                   </td>
                 </tr>
               ))}
- 
+
               {filteredAndSortedRequests.length === 0 && (
                 <tr>
                   <td colSpan={7} className="px-6 py-20 text-center border-b border-slate-50">
@@ -396,12 +395,11 @@ export default function AdminVendorRequestsPage() {
                     <p className="text-[10px] text-slate-400 font-medium">Submitted {new Date(req.createdAt).toLocaleDateString()}</p>
                   </div>
                 </div>
-                <span className={`inline-flex px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-wider shrink-0 ${
-                  req.status === 'Approved' ? 'bg-emerald-100 text-emerald-700' :
-                  req.status === 'Rejected' ? 'bg-red-100 text-red-700' :
-                  req.status === 'Under Review' ? 'bg-blue-100 text-blue-700' :
-                  'bg-amber-100 text-amber-700'
-                }`}>
+                <span className={`inline-flex px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-wider shrink-0 ${req.status === 'Approved' ? 'bg-emerald-100 text-emerald-700' :
+                    req.status === 'Rejected' ? 'bg-red-100 text-red-700' :
+                      req.status === 'Under Review' ? 'bg-blue-100 text-blue-700' :
+                        'bg-amber-100 text-amber-700'
+                  }`}>
                   {req.status}
                 </span>
               </div>
@@ -412,7 +410,7 @@ export default function AdminVendorRequestsPage() {
                   <p className="text-slate-800 font-bold mt-0.5">{req.ownerName}</p>
                   <p className="text-[10px] text-slate-400 font-medium mt-0.5">{req.email} • {req.mobileNumber}</p>
                 </div>
-                
+
                 <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100">
                   <div>
                     <span className="text-[9px] text-slate-400 font-black uppercase tracking-wider block">Business Type</span>
@@ -498,7 +496,7 @@ export default function AdminVendorRequestsPage() {
                 ✕
               </button>
             </div>
-            
+
             <div className="p-8 grid md:grid-cols-2 gap-8 overflow-y-auto">
               <div className="space-y-6">
                 <div>
@@ -507,7 +505,7 @@ export default function AdminVendorRequestsPage() {
                   <p className="font-semibold text-emerald-700 text-sm mt-1">{selectedRequest.ownerName}</p>
                   <p className="text-xs text-slate-500 mt-1.5">{selectedRequest.businessType} • {selectedRequest.yearsExperience || 0} Yrs Experience</p>
                 </div>
-                
+
                 <div>
                   <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Contact Details</h4>
                   <p className="font-bold text-slate-800 text-sm">{selectedRequest.email}</p>
@@ -538,11 +536,11 @@ export default function AdminVendorRequestsPage() {
                   <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Legal Registrations</h4>
                   <div className="space-y-1.5 mt-2">
                     <p className="font-bold text-slate-700 text-xs">
-                      <span className="text-slate-400 uppercase font-black tracking-widest text-[9px] mr-1.5">GSTIN:</span> 
+                      <span className="text-slate-400 uppercase font-black tracking-widest text-[9px] mr-1.5">GSTIN:</span>
                       {selectedRequest.gstNumber || 'No GST details provided'}
                     </p>
                     <p className="font-bold text-slate-700 text-xs">
-                      <span className="text-slate-400 uppercase font-black tracking-widest text-[9px] mr-1.5">FSSAI License:</span> 
+                      <span className="text-slate-400 uppercase font-black tracking-widest text-[9px] mr-1.5">FSSAI License:</span>
                       {selectedRequest.fssaiNumber || 'No FSSAI details provided'}
                     </p>
                   </div>

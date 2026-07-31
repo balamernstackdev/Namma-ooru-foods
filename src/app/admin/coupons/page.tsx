@@ -162,7 +162,7 @@ export default function AdminCouponsPage() {
                 <tr>
                   <td colSpan={7} className="py-24 text-center">
                     <Tag size={48} className="mx-auto text-slate-100 mb-6" />
-                    <h3 className="text-xl font-black text-slate-200 uppercase tracking-widest">Registry Empty</h3>
+                    <h3 className="text-xl font-black text-slate-200 tracking-widest">Coupons are Empty</h3>
                   </td>
                 </tr>
               )}

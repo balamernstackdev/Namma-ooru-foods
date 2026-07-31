@@ -155,7 +155,12 @@ export default function SearchBar({ isMobile = false }: { isMobile?: boolean }) 
         } else if (selectedIndex < products.length + brandCount + categories.length) {
           const catIdx = selectedIndex - products.length - brandCount;
           const cat = categories[catIdx];
-          router.push(`/products?category=${cat.slug || cat.id}`);
+          const toSlug = (str: string) => (str || '').toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+          const catSlug = cat.slug || toSlug(cat.name);
+          const targetHref = cat.parent
+            ? `/categories/${cat.parent.slug || toSlug(cat.parent.name)}/${catSlug}`
+            : `/categories/${catSlug}`;
+          router.push(targetHref);
           onItemClick(cat.name, 'category');
         } else {
           const vendorIdx = selectedIndex - products.length - brandCount - categories.length;

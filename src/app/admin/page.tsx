@@ -29,55 +29,55 @@ import { API_URL } from '@/lib/api';
 const fetcher = (url: string) => fetch(url).then(res => res.json());
 
 function PendingApprovalsWidget() {
-  const router = useRouter();
-  const { data: couponsData } = useSWR<any>(`${API_URL}/api/coupons?createdByType=VENDOR&limit=500`, fetcher, { refreshInterval: 30000 });
-  const { data: annData }     = useSWR<any>(`${API_URL}/api/offer-announcements?createdByType=VENDOR`, fetcher, { refreshInterval: 30000 });
+   const router = useRouter();
+   const { data: couponsData } = useSWR<any>(`${API_URL}/api/coupons?createdByType=VENDOR&limit=500`, fetcher, { refreshInterval: 30000 });
+   const { data: annData } = useSWR<any>(`${API_URL}/api/offer-announcements?createdByType=VENDOR`, fetcher, { refreshInterval: 30000 });
 
-  const coupons       = couponsData?.coupons || [];
-  const announcements = Array.isArray(annData) ? annData : [];
+   const coupons = couponsData?.coupons || [];
+   const announcements = Array.isArray(annData) ? annData : [];
 
-  const pendingCoupons = coupons.filter((c: any) => c.status === 'PENDING').length;
-  const pendingAnn     = announcements.filter((a: any) => a.status === 'PENDING').length;
-  const total          = pendingCoupons + pendingAnn;
+   const pendingCoupons = coupons.filter((c: any) => c.status === 'PENDING').length;
+   const pendingAnn = announcements.filter((a: any) => a.status === 'PENDING').length;
+   const total = pendingCoupons + pendingAnn;
 
-  if (total === 0) return null;
+   if (total === 0) return null;
 
-  return (
-    <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-3xl p-6">
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
-          <div className="h-8 w-8 bg-amber-400 rounded-xl flex items-center justify-center">
-            <AlertTriangle className="text-white h-4 w-4" />
-          </div>
-          <h3 className="text-[13px] font-black uppercase tracking-widest text-amber-800">Vendor Approvals Pending</h3>
-        </div>
-        <button onClick={() => router.push('/admin/marketing/vendor-approvals')}
-          className="text-[10px] font-black uppercase tracking-widest text-amber-700 hover:text-amber-900 flex items-center gap-1 bg-amber-100 hover:bg-amber-200 px-3 py-1.5 rounded-xl transition-all cursor-pointer">
-          Review All <ArrowRight size={11} />
-        </button>
-      </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
-        {[
-          { label: 'Pending Coupon Requests', value: pendingCoupons, icon: Ticket,    href: '/admin/marketing/vendor-approvals', color: 'emerald' },
-          { label: 'Pending Banner Requests', value: pendingAnn,     icon: Megaphone, href: '/admin/marketing/vendor-approvals', color: 'blue' },
-        ].map(card => (
-          <button key={card.label} onClick={() => router.push(card.href)}
-            className="bg-white border border-amber-100 rounded-2xl p-4 flex items-center justify-between hover:shadow-md transition-all cursor-pointer text-left group">
-            <div>
-              <div className="text-2xl font-black text-slate-900">{card.value}</div>
-              <div className="text-[10px] font-black uppercase tracking-widest text-slate-400 mt-1">{card.label}</div>
+   return (
+      <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-3xl p-6">
+         <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+               <div className="h-8 w-8 bg-amber-400 rounded-xl flex items-center justify-center">
+                  <AlertTriangle className="text-white h-4 w-4" />
+               </div>
+               <h3 className="text-[13px] font-black uppercase tracking-widest text-amber-800">Vendor Approvals Pending</h3>
             </div>
-            <div className="flex flex-col items-end gap-2 shrink-0 ml-4">
-              <div className={`h-10 w-10 rounded-xl flex items-center justify-center ${card.color === 'emerald' ? 'bg-emerald-50 text-emerald-600' : 'bg-blue-50 text-blue-600'}`}>
-                <card.icon size={18} />
-              </div>
-              <ArrowRight size={13} className="text-slate-300 group-hover:text-slate-600 group-hover:translate-x-1 transition-all" />
-            </div>
-          </button>
-        ))}
+            <button onClick={() => router.push('/admin/marketing/vendor-approvals')}
+               className="text-[10px] font-black uppercase tracking-widest text-amber-700 hover:text-amber-900 flex items-center gap-1 bg-amber-100 hover:bg-amber-200 px-3 py-1.5 rounded-xl transition-all cursor-pointer">
+               Review All <ArrowRight size={11} />
+            </button>
+         </div>
+         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
+            {[
+               { label: 'Pending Coupon Requests', value: pendingCoupons, icon: Ticket, href: '/admin/marketing/vendor-approvals', color: 'emerald' },
+               { label: 'Pending Banner Requests', value: pendingAnn, icon: Megaphone, href: '/admin/marketing/vendor-approvals', color: 'blue' },
+            ].map(card => (
+               <button key={card.label} onClick={() => router.push(card.href)}
+                  className="bg-white border border-amber-100 rounded-2xl p-4 flex items-center justify-between hover:shadow-md transition-all cursor-pointer text-left group">
+                  <div>
+                     <div className="text-2xl font-black text-slate-900">{card.value}</div>
+                     <div className="text-[10px] font-black uppercase tracking-widest text-slate-400 mt-1">{card.label}</div>
+                  </div>
+                  <div className="flex flex-col items-end gap-2 shrink-0 ml-4">
+                     <div className={`h-10 w-10 rounded-xl flex items-center justify-center ${card.color === 'emerald' ? 'bg-emerald-50 text-emerald-600' : 'bg-blue-50 text-blue-600'}`}>
+                        <card.icon size={18} />
+                     </div>
+                     <ArrowRight size={13} className="text-slate-300 group-hover:text-slate-600 group-hover:translate-x-1 transition-all" />
+                  </div>
+               </button>
+            ))}
+         </div>
       </div>
-    </div>
-  );
+   );
 }
 
 export default function AdminDashboard() {
@@ -97,7 +97,7 @@ export default function AdminDashboard() {
       return (
          <div className="flex flex-col items-center justify-center py-40 gap-4">
             <div className="w-10 h-10 border-4 border-slate-200 border-t-emerald-600 rounded-full animate-spin"></div>
-            <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400">Syncing Intelligence Network...</p>
+            <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400">Loading Hub...</p>
          </div>
       );
    }
@@ -108,40 +108,40 @@ export default function AdminDashboard() {
       <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-1000 ease-out p-1">
 
          {/* Header Section */}
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-             <div>
-                <h1 className="text-2xl md:text-3xl lg:text-5xl font-black text-slate-900 tracking-tighter italic flex items-center gap-2 flex-wrap">
-                   Admin <span className="text-emerald-600">Dashboard</span>
-                   <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse mt-1" />
-                </h1>
-                <p className="text-slate-400 font-bold uppercase tracking-[0.2em] text-[10px] mt-2">
-                   Welcome back, <span className="text-emerald-600">{user?.name}!</span>
-                </p>
-             </div>
-             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto shrink-0">
-                <button
-                   onClick={() => router.push('/admin/marketplace-governance')}
-                   className="h-12 px-6 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-[11px] uppercase tracking-widest shadow-xl shadow-emerald-500/20 transition-all flex items-center justify-center gap-2 active:scale-95 group border-0 cursor-pointer w-full sm:w-auto"
-                >
-                   <Shield size={16} className="group-hover:scale-110 transition-transform shrink-0" />
-                   <span className="truncate">Vendor Management</span>
-                </button>
-                <button
-                   onClick={() => router.push('/admin/analytics')}
-                   className="h-12 px-6 rounded-xl bg-white border border-slate-200 text-slate-500 font-extrabold text-xs uppercase tracking-wider shadow-sm hover:shadow-md hover:bg-slate-50 transition-all flex items-center justify-center gap-2 cursor-pointer w-full sm:w-auto"
-                >
-                   <Download size={16} className="shrink-0" />
-                   <span className="truncate">Export Analysis</span>
-                </button>
-                <button
-                   onClick={() => router.push('/admin/products')}
-                   className="h-12 px-6 rounded-xl bg-[var(--admin-sidebar)] text-white font-black text-[11px] uppercase tracking-widest shadow-xl shadow-slate-900/10 hover:bg-slate-800 transition-all flex items-center justify-center gap-2 active:scale-95 group border-0 cursor-pointer w-full sm:w-auto"
-                >
-                   <Plus size={16} className="group-hover:rotate-90 transition-transform shrink-0" />
-                   <span className="truncate">New Initiative</span>
-                </button>
-             </div>
-          </div>
+         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+            <div>
+               <h1 className="text-2xl md:text-3xl lg:text-5xl font-black text-slate-900 tracking-tighter italic flex items-center gap-2 flex-wrap">
+                  Admin <span className="text-emerald-600">Dashboard</span>
+                  <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse mt-1" />
+               </h1>
+               <p className="text-slate-400 font-bold uppercase tracking-[0.2em] text-[10px] mt-2">
+                  Welcome back, <span className="text-emerald-600">{user?.name}!</span>
+               </p>
+            </div>
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto shrink-0">
+               <button
+                  onClick={() => router.push('/admin/marketplace-governance')}
+                  className="h-12 px-6 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-[11px] uppercase tracking-widest shadow-xl shadow-emerald-500/20 transition-all flex items-center justify-center gap-2 active:scale-95 group border-0 cursor-pointer w-full sm:w-auto"
+               >
+                  <Shield size={16} className="group-hover:scale-110 transition-transform shrink-0" />
+                  <span className="truncate">Vendor Management</span>
+               </button>
+               <button
+                  onClick={() => router.push('/admin/analytics')}
+                  className="h-12 px-6 rounded-xl bg-white border border-slate-200 text-slate-500 font-extrabold text-xs uppercase tracking-wider shadow-sm hover:shadow-md hover:bg-slate-50 transition-all flex items-center justify-center gap-2 cursor-pointer w-full sm:w-auto"
+               >
+                  <Download size={16} className="shrink-0" />
+                  <span className="truncate">Export Analysis</span>
+               </button>
+               <button
+                  onClick={() => router.push('/admin/products')}
+                  className="h-12 px-6 rounded-xl bg-[var(--admin-sidebar)] text-white font-black text-[11px] uppercase tracking-widest shadow-xl shadow-slate-900/10 hover:bg-slate-800 transition-all flex items-center justify-center gap-2 active:scale-95 group border-0 cursor-pointer w-full sm:w-auto"
+               >
+                  <Plus size={16} className="group-hover:rotate-90 transition-transform shrink-0" />
+                  <span className="truncate">New Initiative</span>
+               </button>
+            </div>
+         </div>
 
          {/* Metrics Grid */}
          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">

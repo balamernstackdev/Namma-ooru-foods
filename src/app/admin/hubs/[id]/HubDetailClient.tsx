@@ -131,6 +131,41 @@ export default function HubDetailClient({ id }: HubDetailClientProps) {
     }
   };
 
+  const handleEditCommission = async (vendor: any) => {
+    const currentRate = vendor.commissionRate !== undefined ? vendor.commissionRate : 10;
+    const newRateStr = prompt(`Enter new commission rate (%) for "${vendor.name}":`, String(currentRate));
+    if (newRateStr === null) return; // cancelled
+
+    const newRate = parseFloat(newRateStr);
+    if (isNaN(newRate) || newRate < 0 || newRate > 100) {
+      alert("Please enter a valid percentage between 0 and 100.");
+      return;
+    }
+
+    try {
+      const headers = {
+        ...getAuthHeaders(),
+        'Content-Type': 'application/json'
+      };
+      const res = await fetch(`${API_URL}/api/admin-ops/brands/${vendor.id}`, {
+        method: 'PUT',
+        headers,
+        body: JSON.stringify({ commissionRate: newRate })
+      });
+
+      if (res.ok) {
+        addToast('Success', `Updated commission rate for "${vendor.name}" to ${newRate}%`);
+        fetchTabData(); // Reload the list to show the updated rate
+      } else {
+        const errData = await res.json();
+        addToast('Error', errData.error || errData.message || 'Failed to update commission rate');
+      }
+    } catch (err) {
+      console.error(err);
+      addToast('Error', 'Failed to update commission rate due to a network error');
+    }
+  };
+
   useEffect(() => {
     if (hub) {
       fetchTabData();
@@ -141,7 +176,7 @@ export default function HubDetailClient({ id }: HubDetailClientProps) {
     return (
       <div className="w-full h-[60vh] flex flex-col items-center justify-center bg-white gap-6 rounded-[2.5rem] border border-slate-200 shadow-sm">
         <Loader2 className="h-10 w-10 text-emerald-600 animate-spin" />
-        <p className="text-[10px] font-black uppercase tracking-widest text-[#022c22]">Syncing Hub credentials and metrics...</p>
+        <p className="text-[10px] font-black uppercase tracking-widest text-[#022c22]">Loading Hub...</p>
       </div>
     );
   }
@@ -168,7 +203,7 @@ export default function HubDetailClient({ id }: HubDetailClientProps) {
 
   return (
     <div className="space-y-10 pb-20 animate-in fade-in slide-in-from-bottom-5 duration-700 font-sans">
-      
+
       {/* ─── HUB HEADER METADATA PANEL ─────────────────────────────────────── */}
       <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6 border-b border-slate-200 pb-8">
         <div className="space-y-2">
@@ -191,13 +226,12 @@ export default function HubDetailClient({ id }: HubDetailClientProps) {
             <div>
               <div className="flex items-center gap-3">
                 <h1 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tighter uppercase italic leading-none">{hub.name}</h1>
-                <span className={`text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full border ${
-                  hub.status === 'Blocked' 
-                    ? 'text-red-650 bg-red-50 border-red-100'
-                    : hub.status === 'Inactive'
+                <span className={`text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full border ${hub.status === 'Blocked'
+                  ? 'text-red-650 bg-red-50 border-red-100'
+                  : hub.status === 'Inactive'
                     ? 'text-slate-500 bg-slate-50 border-slate-100'
                     : 'text-emerald-600 bg-emerald-50 border-emerald-100'
-                }`}>
+                  }`}>
                   {hub.status || 'Active'}
                 </span>
               </div>
@@ -243,11 +277,10 @@ export default function HubDetailClient({ id }: HubDetailClientProps) {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`h-10 px-4 rounded-xl text-xs font-black uppercase tracking-widest flex items-center gap-2 border-0 transition-all duration-300 ${
-                  activeTab === tab.id
-                    ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-500/25 scale-[1.02]'
-                    : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100'
-                }`}
+                className={`h-10 px-4 rounded-xl text-xs font-black uppercase tracking-widest flex items-center gap-2 border-0 transition-all duration-300 ${activeTab === tab.id
+                  ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-500/25 scale-[1.02]'
+                  : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100'
+                  }`}
               >
                 <TabIcon size={13} />
                 <span>{tab.label}</span>
@@ -261,11 +294,11 @@ export default function HubDetailClient({ id }: HubDetailClientProps) {
           {loadingTab ? (
             <div className="py-24 flex flex-col items-center justify-center gap-4">
               <Loader2 className="h-10 w-10 text-emerald-600 animate-spin" />
-              <span className="text-xs font-black uppercase tracking-[0.2em] text-slate-400">Syncing Hub Registry data...</span>
+              <span className="text-xs font-black uppercase tracking-[0.2em] text-slate-400">Loading Hub......</span>
             </div>
           ) : (
             <div className="animate-in fade-in duration-300">
-              
+
               {/* 1. OVERVIEW TAB */}
               {activeTab === 'overview' && dashboard && (
                 <div className="space-y-8">
@@ -304,7 +337,7 @@ export default function HubDetailClient({ id }: HubDetailClientProps) {
               {activeTab === 'vendors' && (
                 <div className="space-y-6">
                   <h3 className="text-lg font-black text-slate-900 uppercase tracking-tight">Assigned Hub Vendors ({vendors.length})</h3>
-                  
+
                   {/* Desktop View */}
                   <div className="hidden md:block overflow-x-auto">
                     <table className="w-full text-left border-separate border-spacing-y-1 admin-data-table">
@@ -316,6 +349,7 @@ export default function HubDetailClient({ id }: HubDetailClientProps) {
                           <th className="py-4 px-6 text-center">Products</th>
                           <th className="py-4 px-6 text-center">Orders</th>
                           <th className="py-4 px-6 text-right">Revenue</th>
+                          <th className="py-4 px-6 text-center">Comm Rate</th>
                           <th className="py-4 px-6 text-center">Status</th>
                           <th className="py-4 px-6 text-right rounded-r-xl">Actions</th>
                         </tr>
@@ -343,19 +377,21 @@ export default function HubDetailClient({ id }: HubDetailClientProps) {
                             <td className="py-5 px-6 text-right text-xs font-black text-slate-900 font-mono">
                               ₹{Number(sv.revenue || 0).toLocaleString()}
                             </td>
+                            <td className="py-5 px-6 text-center text-xs font-black text-emerald-600 font-mono">
+                              {sv.commissionRate !== undefined ? sv.commissionRate : 10}%
+                            </td>
                             <td className="py-5 px-6 text-center">
-                              <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[9px] font-black tracking-widest border ${
-                                sv.userId ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-amber-50 text-amber-700 border-amber-100'
-                              }`}>
+                              <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[9px] font-black tracking-widest border ${sv.userId ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-amber-50 text-amber-700 border-amber-100'
+                                }`}>
                                 {sv.userId ? 'ACTIVE' : 'PENDING'}
                               </span>
                             </td>
                             <td className="py-5 px-6 text-right">
                               <button
-                                onClick={() => router.push(`/admin/marketplace-governance?select=${sv.id}`)}
-                                className="h-9 px-3 rounded-lg bg-slate-900 text-white text-[10px] font-black uppercase tracking-wider flex items-center justify-center gap-1 hover:bg-slate-800 transition-colors ml-auto"
+                                onClick={() => handleEditCommission(sv)}
+                                className="h-9 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-black uppercase tracking-wider flex items-center justify-center gap-1.5 transition-colors ml-auto shadow-sm"
                               >
-                                <Eye size={12} /> Manage
+                                <RefreshCcw size={12} /> Commission
                               </button>
                             </td>
                           </tr>
@@ -376,9 +412,8 @@ export default function HubDetailClient({ id }: HubDetailClientProps) {
                             <span className="text-xs font-mono font-black text-slate-400 block">SEL-{sv.id.toString().padStart(2, '0')}</span>
                             <span className="text-sm font-black text-slate-900 block">{sv.name}</span>
                           </div>
-                          <span className={`inline-flex px-2 py-0.5 rounded text-[8px] font-black tracking-widest border ${
-                            sv.userId ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-amber-50 text-amber-700 border-amber-100'
-                          }`}>
+                          <span className={`inline-flex px-2 py-0.5 rounded text-[8px] font-black tracking-widest border ${sv.userId ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-amber-50 text-amber-700 border-amber-100'
+                            }`}>
                             {sv.userId ? 'ACTIVE' : 'PENDING'}
                           </span>
                         </div>
@@ -399,12 +434,16 @@ export default function HubDetailClient({ id }: HubDetailClientProps) {
                             <span className="text-[9px] text-slate-400 font-black uppercase tracking-wider block">Orders</span>
                             <span className="text-slate-800 font-bold font-mono mt-0.5 block">{sv.ordersCount || 0} Orders</span>
                           </div>
+                          <div className="pt-2 border-t border-slate-100 mt-2 col-span-2">
+                            <span className="text-[9px] text-slate-400 font-black uppercase tracking-wider block">Commission Rate</span>
+                            <span className="text-emerald-600 font-black font-mono mt-0.5 block">{sv.commissionRate !== undefined ? sv.commissionRate : 10}%</span>
+                          </div>
                         </div>
                         <button
-                          onClick={() => router.push(`/admin/marketplace-governance?select=${sv.id}`)}
-                          className="w-full h-10 rounded-xl bg-slate-50 border border-slate-200 text-slate-700 hover:text-slate-900 text-xs font-bold transition-all flex items-center justify-center gap-1"
+                          onClick={() => handleEditCommission(sv)}
+                          className="w-full h-10 rounded-xl bg-emerald-50 border border-emerald-100 text-emerald-700 hover:bg-emerald-100 hover:text-emerald-800 text-xs font-bold transition-all flex items-center justify-center gap-1.5"
                         >
-                          <Eye size={13} /> View Vendor
+                          <RefreshCcw size={13} /> Edit Commission
                         </button>
                       </div>
                     ))}
@@ -416,12 +455,13 @@ export default function HubDetailClient({ id }: HubDetailClientProps) {
               {activeTab === 'users' && (
                 <div className="space-y-6">
                   <h3 className="text-lg font-black text-slate-900 uppercase tracking-tight">Hub Login Accounts ({users.length})</h3>
-                  
+
                   <div className="overflow-x-auto">
                     <table className="w-full text-left border-separate border-spacing-y-1 admin-data-table">
                       <thead>
                         <tr className="bg-slate-50/50 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
-                          <th className="py-4 px-6 rounded-l-xl">Username</th>
+                          <th className="py-4 px-6 rounded-l-xl">ID</th>
+                          <th className="py-4 px-6">Username</th>
                           <th className="py-4 px-6">Name / Manager</th>
                           <th className="py-4 px-6">Email Address</th>
                           <th className="py-4 px-6">Mobile Phone</th>
@@ -431,8 +471,11 @@ export default function HubDetailClient({ id }: HubDetailClientProps) {
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-50">
-                        {users.map(u => (
+                        {users.map((u, index) => (
                           <tr key={u.id} className="hover:bg-slate-50/60 transition-colors">
+                            <td className="py-5 px-6 font-mono text-xs font-black text-slate-900">
+                              VEN-{(index + 1).toString().padStart(2, '0')}
+                            </td>
                             <td className="py-5 px-6 font-mono text-xs font-bold text-slate-900">
                               {u.username}
                             </td>
@@ -447,9 +490,8 @@ export default function HubDetailClient({ id }: HubDetailClientProps) {
                               {u.mobile || '-'}
                             </td>
                             <td className="py-5 px-6 text-center">
-                              <span className={`inline-flex px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider ${
-                                u.role === 'Hub Manager' ? 'bg-indigo-50 text-indigo-700 border border-indigo-100' : 'bg-slate-50 text-slate-600 border border-slate-200'
-                              }`}>
+                              <span className={`inline-flex px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider ${u.role === 'Hub Manager' ? 'bg-indigo-50 text-indigo-700 border border-indigo-100' : 'bg-slate-50 text-slate-600 border border-slate-200'
+                                }`}>
                                 {u.role}
                               </span>
                             </td>
@@ -464,7 +506,7 @@ export default function HubDetailClient({ id }: HubDetailClientProps) {
                           </tr>
                         ))}
                         {users.length === 0 && (
-                          <tr><td colSpan={7} className="py-20 text-center text-slate-400 font-bold text-xs uppercase tracking-widest">No User Accounts linked to this Hub.</td></tr>
+                          <tr><td colSpan={8} className="py-20 text-center text-slate-400 font-bold text-xs uppercase tracking-widest">No User Accounts linked to this Hub.</td></tr>
                         )}
                       </tbody>
                     </table>
@@ -476,7 +518,7 @@ export default function HubDetailClient({ id }: HubDetailClientProps) {
               {activeTab === 'orders' && (
                 <div className="space-y-6">
                   <h3 className="text-lg font-black text-slate-900 uppercase tracking-tight">Hub Transactions / Orders ({orders.length})</h3>
-                  
+
                   <div className="overflow-x-auto">
                     <table className="w-full text-left border-separate border-spacing-y-1 admin-data-table">
                       <thead>
@@ -511,13 +553,12 @@ export default function HubDetailClient({ id }: HubDetailClientProps) {
                                 {o.paymentMethod || 'ONLINE'}
                               </td>
                               <td className="py-5 px-6 text-center">
-                                <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[9px] font-black tracking-widest border ${
-                                  o.status === 'DELIVERED' 
-                                    ? 'bg-emerald-50 text-emerald-700 border-emerald-100'
-                                    : o.status === 'CANCELLED'
+                                <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[9px] font-black tracking-widest border ${o.status === 'DELIVERED'
+                                  ? 'bg-emerald-50 text-emerald-700 border-emerald-100'
+                                  : o.status === 'CANCELLED'
                                     ? 'bg-rose-50 text-rose-700 border-rose-100'
                                     : 'bg-amber-50 text-amber-700 border-amber-100'
-                                }`}>
+                                  }`}>
                                   {o.status}
                                 </span>
                               </td>
@@ -540,7 +581,7 @@ export default function HubDetailClient({ id }: HubDetailClientProps) {
               {activeTab === 'products' && (
                 <div className="space-y-6">
                   <h3 className="text-lg font-black text-slate-900 uppercase tracking-tight">Active Hub Catalog Items ({products.length})</h3>
-                  
+
                   <div className="overflow-x-auto">
                     <table className="w-full text-left border-separate border-spacing-y-1 admin-data-table">
                       <thead>
@@ -582,11 +623,10 @@ export default function HubDetailClient({ id }: HubDetailClientProps) {
                               ₹{Number(p.price).toLocaleString()}
                             </td>
                             <td className="py-5 px-6 text-center">
-                              <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[9px] font-black tracking-widest border ${
-                                p.status === 'APPROVED' || p.status === 'PUBLISHED' 
-                                  ? 'bg-emerald-50 text-emerald-700 border-emerald-100'
-                                  : 'bg-rose-50 text-rose-700 border-rose-100'
-                              }`}>
+                              <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[9px] font-black tracking-widest border ${p.status === 'APPROVED' || p.status === 'PUBLISHED'
+                                ? 'bg-emerald-50 text-emerald-700 border-emerald-100'
+                                : 'bg-rose-50 text-rose-700 border-rose-100'
+                                }`}>
                                 {p.status}
                               </span>
                             </td>
@@ -605,7 +645,7 @@ export default function HubDetailClient({ id }: HubDetailClientProps) {
               {activeTab === 'payouts' && (
                 <div className="space-y-6">
                   <h3 className="text-lg font-black text-slate-900 uppercase tracking-tight">Sub-Vendor Payouts Ledger ({payouts.length})</h3>
-                  
+
                   <div className="overflow-x-auto">
                     <table className="w-full text-left border-separate border-spacing-y-1 admin-data-table">
                       <thead>
@@ -645,11 +685,10 @@ export default function HubDetailClient({ id }: HubDetailClientProps) {
                               {pay.transactionRef || '--'}
                             </td>
                             <td className="py-5 px-6 text-center">
-                              <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[9px] font-black tracking-widest border ${
-                                pay.status === 'SETTLED' || pay.status === 'COMPLETED'
-                                  ? 'bg-emerald-50 text-emerald-700 border-emerald-100'
-                                  : 'bg-amber-50 text-amber-700 border-amber-100'
-                              }`}>
+                              <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[9px] font-black tracking-widest border ${pay.status === 'SETTLED' || pay.status === 'COMPLETED'
+                                ? 'bg-emerald-50 text-emerald-700 border-emerald-100'
+                                : 'bg-amber-50 text-amber-700 border-amber-100'
+                                }`}>
                                 {pay.status}
                               </span>
                             </td>
@@ -667,7 +706,7 @@ export default function HubDetailClient({ id }: HubDetailClientProps) {
               {/* 7. ANALYTICS TAB */}
               {activeTab === 'analytics' && dashboard && (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                  
+
                   {/* Subvendor Revenue share */}
                   <div className="bg-slate-50/40 border border-slate-100 rounded-3xl p-8 space-y-6">
                     <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest pb-3 border-b border-slate-200/60">

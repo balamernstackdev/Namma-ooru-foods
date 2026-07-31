@@ -77,12 +77,12 @@ const navGroups = [
     label: 'Marketing',
     items: [
       { label: 'Coupons', href: '/admin/coupons', icon: Ticket },
-      { label: 'Promotions', href: '/admin/promotions', icon: ClipboardList },
+      // { label: 'Promotions', href: '/admin/promotions', icon: ClipboardList },
       { label: 'Banners', href: '/admin/banners', icon: ImageIcon },
       { label: 'Announcement Bars', href: '/admin/marketing/announcement-bar', icon: Megaphone },
       { label: 'Popup Campaigns', href: '/admin/marketing/popup-campaigns', icon: Layers },
       { label: 'Email Subscribers', href: '/admin/marketing/subscribers', icon: Mail },
-      { label: 'Vendor Approvals', href: '/admin/marketing/vendor-approvals', icon: ShieldCheck },
+      // { label: 'Vendor Approvals', href: '/admin/marketing/vendor-approvals', icon: ShieldCheck },
     ]
   },
   {
@@ -247,16 +247,16 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           letter-spacing: 0.08em !important;
         }
         #admin-root p {
-          font-size: 14px !important;
-          font-weight: 500 !important;
+          font-size: 14px;
+          font-weight: 500;
         }
         #admin-root td, #admin-root th {
-          font-size: 14px !important;
-          font-weight: 600 !important;
+          font-size: 14px;
+          font-weight: 600;
         }
         #admin-root button, #admin-root .btn-text {
-          font-size: 14px !important;
-          font-weight: 700 !important;
+          font-size: 14px;
+          font-weight: 700;
         }
 
         @media (min-width: 768px) {

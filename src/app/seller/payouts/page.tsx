@@ -210,7 +210,6 @@ export default function VendorPayoutsPage() {
                 <th className="py-4 px-6 text-[10px] font-black uppercase tracking-widest text-[#6B7280] text-center">Fulfill Orders</th>
                 <th className="py-4 px-6 text-[10px] font-black uppercase tracking-widest text-[#6B7280] text-right">Gross Revenue</th>
                 <th className="py-4 px-6 text-[10px] font-black uppercase tracking-widest text-[#6B7280] text-right">Commission Charged</th>
-                <th className="py-4 px-6 text-[10px] font-black uppercase tracking-widest text-[#6B7280] text-right">Refund Adjustment</th>
                 <th className="py-4 px-6 text-[10px] font-black uppercase tracking-widest text-[#6B7280] text-right">Net Payable</th>
                 <th className="py-4 px-6 text-[10px] font-black uppercase tracking-widest text-[#6B7280] text-center">Status</th>
                 <th className="py-4 px-6 text-[10px] font-black uppercase tracking-widest text-[#6B7280]">Reference / UTR</th>
@@ -220,13 +219,13 @@ export default function VendorPayoutsPage() {
             <tbody>
               {loadingPayouts ? (
                 <tr>
-                  <td colSpan={10} className="py-16 text-center">
+                  <td colSpan={9} className="py-16 text-center">
                     <div className="h-8 w-8 border-4 border-[#E5E7EB] border-t-[#0F7A4D] rounded-full animate-spin mx-auto"></div>
                   </td>
                 </tr>
               ) : payouts?.length === 0 ? (
                 <tr>
-                  <td colSpan={10} className="py-16 text-center">
+                  <td colSpan={9} className="py-16 text-center">
                     <Landmark className="h-12 w-12 text-[#D1D5DB] mx-auto mb-3" />
                     <p className="text-xs font-black text-[#6B7280] uppercase tracking-widest">No statement logs yet</p>
                   </td>
@@ -257,9 +256,6 @@ export default function VendorPayoutsPage() {
                     </td>
                     <td className="py-4 px-6 text-right font-semibold text-[#111827] text-xs">
                       -₹{Number(p.commission).toFixed(2)}
-                    </td>
-                    <td className="py-4 px-6 text-right font-semibold text-[#DC2626] text-xs">
-                      -₹{Number(p.refundAmount || 0).toFixed(2)}
                     </td>
                     <td className="py-4 px-6 text-right font-black text-[#0F7A4D] text-xs">
                       ₹{Number(p.payableAmount).toFixed(2)}
@@ -358,12 +354,8 @@ export default function VendorPayoutsPage() {
                     <span className="text-[8px] font-black uppercase tracking-widest text-[#6B7280] block mb-1">Commission</span>
                     <span className="text-xs font-semibold text-[#111827]">-₹{Number(p.commission).toFixed(2)}</span>
                   </div>
-                  <div>
-                    <span className="text-[8px] font-black uppercase tracking-widest text-[#6B7280] block mb-1">Refund Adjust.</span>
-                    <span className="text-xs font-semibold text-[#DC2626]">-₹{Number(p.refundAmount || 0).toFixed(2)}</span>
-                  </div>
-                  <div>
-                    <span className="text-[8px] font-black uppercase tracking-widest text-[#6B7280] block mb-1">Net Payable</span>
+                  <div className="col-span-2 pt-2 border-t border-[#E5E7EB] flex justify-between items-center">
+                    <span className="text-[8px] font-black uppercase tracking-widest text-[#6B7280]">Net Payable</span>
                     <span className="text-sm font-black text-[#0F7A4D]">₹{Number(p.payableAmount).toFixed(2)}</span>
                   </div>
                 </div>
