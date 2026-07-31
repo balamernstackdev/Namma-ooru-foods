@@ -82,7 +82,7 @@ export default function EditProductClient({ id }: { id?: string }) {
    const fileInputRef = useRef<HTMLInputElement>(null);
    const productId = id || (params.id as string);
 
-   // Form State
+   const [openFaqIdx, setOpenFaqIdx] = useState<number | null>(0);
    const [relatedProducts, setRelatedProducts] = useState<any[]>([]);
    const [comboProducts, setComboProducts] = useState<any[]>([]);
    const [formData, setFormData] = useState({
@@ -104,7 +104,8 @@ export default function EditProductClient({ id }: { id?: string }) {
       comboOffer: '',
       freeDelivery: '',
       isComboFallbackEnabled: true,
-      productHighlights: [] as { title: string; description: string; sortOrder: number; isActive: boolean }[]
+      productHighlights: [] as { title: string; description: string; sortOrder: number; isActive: boolean }[],
+      faqs: [] as { q: string; a: string }[]
    });
 
    const [isHydrated, setIsHydrated] = useState(false);
@@ -174,7 +175,8 @@ export default function EditProductClient({ id }: { id?: string }) {
             })) : [],
             comboOffer: product.comboOffer || '',
             freeDelivery: product.freeDelivery || '',
-            isComboFallbackEnabled: product.isComboFallbackEnabled ?? true
+            isComboFallbackEnabled: product.isComboFallbackEnabled ?? true,
+            faqs: product.faqs ? product.faqs.map((f: any) => ({ q: f.question || f.q || '', a: f.answer || f.a || '' })) : []
          });
          if (product.relatedProducts) {
             setRelatedProducts(product.relatedProducts);
@@ -242,6 +244,7 @@ export default function EditProductClient({ id }: { id?: string }) {
             isComboFallbackEnabled: formData.isComboFallbackEnabled,
             relatedProducts: relatedProducts.map(rp => rp.relatedProductId || rp.id),
             productCombos: comboProducts,
+            faqs: formData.faqs,
             inventoryMode: formData.inventoryMode,
             productHighlights: formData.productHighlights.map((h: any, idx: number) => ({
                title: h.title,
@@ -749,6 +752,32 @@ export default function EditProductClient({ id }: { id?: string }) {
                   </div>
                </div>
             </div>
+             {/* 5. FAQ CARD */}
+             <div className="bg-white rounded-[20px] border border-[#E5E7EB] shadow-[0_4px_12px_rgba(0,0,0,0.05)] overflow-hidden">
+                <div className="px-6 py-5 border-b border-[#E5E7EB] bg-[#F8FAF7] flex items-center justify-between">
+                   <h3 className="text-[10px] font-black text-[#111827] uppercase tracking-widest">FAQ</h3>
+                   <button type="button" onClick={() => { const newFaqs = [...formData.faqs, { q: '', a: '' }]; setFormData({ ...formData, faqs: newFaqs }); setOpenFaqIdx(newFaqs.length - 1); }} className="px-3 py-1.5 rounded-lg bg-[#0F7A4D] text-white text-[10px] font-black uppercase tracking-widest hover:bg-[#0c623d] transition-all">+ Add FAQ</button>
+                </div>
+                <div className="p-4 space-y-2">
+                   {formData.faqs.map((faq: any, idx: number) => (
+                      <div key={idx} className={`rounded-xl border transition-all ${openFaqIdx === idx ? 'border-[#0F7A4D] bg-[#DCFCE7]/10' : 'border-[#E5E7EB]'}`}>
+                         <div onClick={() => setOpenFaqIdx(openFaqIdx === idx ? null : idx)} className="px-5 py-4 flex items-center justify-between cursor-pointer">
+                            <span className="text-[11px] font-black text-[#111827] uppercase truncate max-w-[280px]">{faq.q || `Question ${idx + 1}`}</span>
+                            <div className="flex items-center gap-2">
+                               <button type="button" onClick={(e) => { e.stopPropagation(); const newFaqs = [...formData.faqs]; newFaqs.splice(idx, 1); setFormData({ ...formData, faqs: newFaqs }); }} className="text-slate-400 hover:text-red-500"><Trash2 size={12} /></button>
+                               {openFaqIdx === idx ? <ChevronUp size={14} className="text-[#0F7A4D]" /> : <ChevronDown size={14} className="text-slate-450" />}
+                            </div>
+                         </div>
+                         {openFaqIdx === idx && (
+                            <div className="px-5 pb-5 space-y-4">
+                               <input className="w-full h-10 px-4 rounded-lg border border-[#E5E7EB] bg-white focus:border-[#0F7A4D] focus:ring-4 focus:ring-[#0F7A4D]/5 text-sm font-bold outline-none text-[#111827]" placeholder="Question" value={faq.q} onChange={e => { const newFaqs = [...formData.faqs]; newFaqs[idx].q = e.target.value; setFormData({ ...formData, faqs: newFaqs }); }} />
+                               <textarea rows={2} className="w-full p-4 rounded-lg border border-[#E5E7EB] bg-white focus:border-[#0F7A4D] focus:ring-4 focus:ring-[#0F7A4D]/5 text-sm font-bold outline-none text-[#111827] resize-none" placeholder="Answer" value={faq.a} onChange={e => { const newFaqs = [...formData.faqs]; newFaqs[idx].a = e.target.value; setFormData({ ...formData, faqs: newFaqs }); }} />
+                            </div>
+                         )}
+                      </div>
+                   ))}
+                </div>
+             </div>
 
          </form>
       </div>
