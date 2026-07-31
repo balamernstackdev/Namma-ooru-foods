@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useMemo } from 'react';
 import useSWR from 'swr';
-import { API_URL } from '@/lib/api';
+import { API_URL, resolveImageUrl } from '@/lib/api';
 
 export interface PlatformSettings {
   logo: string;
@@ -48,9 +48,9 @@ export function PlatformSettingsProvider({ children }: { children: React.ReactNo
     }, {} as Record<string, string>);
 
     return {
-      logo: map['platform_logo'] || defaultSettings.logo,
+      logo: resolveImageUrl(map['platform_logo'], defaultSettings.logo),
       name: map['platform_name'] || defaultSettings.name,
-      favicon: map['platform_favicon'] || defaultSettings.favicon,
+      favicon: resolveImageUrl(map['platform_favicon'], defaultSettings.favicon),
       primaryColor: map['platform_primary_color'] || defaultSettings.primaryColor,
       secondaryColor: map['platform_secondary_color'] || defaultSettings.secondaryColor,
       quickBrowseEnabled: map['quick_browse_enabled'] !== undefined ? map['quick_browse_enabled'] === 'true' : true,

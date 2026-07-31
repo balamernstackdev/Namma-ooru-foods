@@ -8,6 +8,21 @@
 // export const API_URL = 'http://localhost:5000'
 
 export const API_URL = 'https://api.nammaorrufoods.com'
+
+/**
+ * Resolves an image URL from the API.
+ * Relative paths like /uploads/... are prepended with the API_URL so they work in production.
+ * Absolute http(s):// URLs are returned as-is.
+ */
+export function resolveImageUrl(url: string | null | undefined, fallback = '/logo.webp'): string {
+  if (!url || url.trim() === '') return fallback;
+  if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:') || url.startsWith('/ai_images') || url.startsWith('/logo')) {
+    return url;
+  }
+  // Relative path (e.g., /uploads/...) — prefix with backend API URL
+  return `${API_URL}${url.startsWith('/') ? '' : '/'}${url}`;
+}
+
 export async function fetchWithTimeout(url: string, options: RequestInit = {}, timeout = 1500): Promise<Response> {
     const controller = new AbortController();
     const id = setTimeout(() => controller.abort(), timeout);

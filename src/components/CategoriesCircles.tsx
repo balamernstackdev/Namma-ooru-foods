@@ -8,7 +8,7 @@ import { Sparkle, ArrowUpRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import CarouselNavigation from './CarouselNavigation';
 
-import { API_URL } from '@/lib/api';
+import { API_URL, resolveImageUrl } from '@/lib/api';
 
 const fetcher = (url: string) => fetch(url, { cache: 'no-store' }).then(res => res.json());
 
@@ -214,9 +214,11 @@ export default function CategoriesCircles() {
               const cacheBuster = category.updatedAt ? new Date(category.updatedAt).getTime() : Date.now();
               const rawImageUrl = (category.image && category.image.trim() !== '') 
                 ? category.image 
-                : `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" fill="%23f1f5f9"><rect width="200" height="200" /><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="20" fill="%2394a3b8">No Image</text></svg>`;
+                : null;
               
-              const imageUrl = rawImageUrl.startsWith('http') ? `${rawImageUrl}?t=${cacheBuster}` : rawImageUrl;
+              const imageUrl = rawImageUrl
+                ? resolveImageUrl(rawImageUrl) + (rawImageUrl.startsWith('http') ? `?t=${cacheBuster}` : '')
+                : `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" fill="%23f1f5f9"><rect width="200" height="200" /><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="20" fill="%2394a3b8">No Image</text></svg>`;
 
               return (
                 <motion.div

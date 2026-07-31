@@ -2,6 +2,7 @@
 
 import Image, { ImageProps } from 'next/image';
 import { useState, useEffect } from 'react';
+import { resolveImageUrl } from '@/lib/api';
 
 interface OptimizedImageProps extends Omit<ImageProps, 'src'> {
   src: string;
@@ -9,11 +10,12 @@ interface OptimizedImageProps extends Omit<ImageProps, 'src'> {
 }
 
 export default function OptimizedImage({ src, alt, fallback = '/ai_images/organic_grains_1776231059575.png', ...props }: OptimizedImageProps) {
-  const [imgSrc, setImgSrc] = useState(src);
+  const resolved = resolveImageUrl(src, fallback);
+  const [imgSrc, setImgSrc] = useState(resolved);
 
   useEffect(() => {
-    setImgSrc(src);
-  }, [src]);
+    setImgSrc(resolveImageUrl(src, fallback));
+  }, [src, fallback]);
 
   return (
     <Image
@@ -21,9 +23,7 @@ export default function OptimizedImage({ src, alt, fallback = '/ai_images/organi
       src={imgSrc || fallback}
       alt={alt}
       onError={() => setImgSrc(fallback)}
-      // For a multi-vendor external image site, we often don't know the domains ahead of time
-      // So we use unoptimized=true for external links or configure remotePatterns in next.config
-      unoptimized={src?.startsWith('http')} 
+      unoptimized={imgSrc?.startsWith('http')}
       className={`transition-opacity duration-300 ${props.className}`}
     />
   );
