@@ -14,7 +14,7 @@ export function ActionGroup({ children, className = '' }: ActionGroupProps) {
   );
 }
 
-// Premium Tooltip Button Component
+// Premiudddooltip Button Component
 interface PremiumActionButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   icon: React.ElementType;
   tooltip: string;
@@ -41,7 +41,7 @@ export function PremiumActionButton({ icon: Icon, tooltip, variant, className = 
       >
         <Icon size={16} strokeWidth={2.5} />
       </button>
-      
+
       {/* Tooltip */}
       <div className="absolute bottom-full mb-2 opacity-0 group-hover/btn:opacity-100 transition-opacity duration-200 pointer-events-none z-50 whitespace-nowrap">
         <div className="bg-slate-900 text-white text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-lg shadow-xl">
@@ -64,11 +64,11 @@ export const EditButton = (props: Omit<PremiumActionButtonProps, 'icon' | 'toolt
 );
 
 export const SuspendButton = ({ isSuspended, tooltip, ...props }: Omit<PremiumActionButtonProps, 'icon' | 'tooltip' | 'variant'> & { tooltip?: string, isSuspended?: boolean }) => (
-  <PremiumActionButton 
-    icon={isSuspended ? Power : Ban} 
-    tooltip={tooltip || (isSuspended ? "Restore Entity" : "Suspend Entity")} 
-    variant={isSuspended ? "restore" : "suspend"} 
-    {...props} 
+  <PremiumActionButton
+    icon={isSuspended ? Power : Ban}
+    tooltip={tooltip || (isSuspended ? "Restore Entity" : "Suspend Entity")}
+    variant={isSuspended ? "restore" : "suspend"}
+    {...props}
   />
 );
 
