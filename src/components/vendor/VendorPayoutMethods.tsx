@@ -24,7 +24,7 @@ export default function VendorPayoutMethods() {
   const [status, setStatus] = useState<{type: 'success' | 'error' | null, msg: string}>({ type: null, msg: '' });
 
   // Bank Form State
-  const [bankData, setBankData] = useState({ accountHolderName: '', bankName: '', accountNumber: '', ifscCode: '' });
+  const [bankData, setBankData] = useState({ accountHolderName: '', bankName: '', accountType: '', accountNumber: '', ifscCode: '' });
 
   const handleAddBank = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,7 +42,7 @@ export default function VendorPayoutMethods() {
       if (!res.ok) throw new Error('Failed to add Bank Account');
       await mutatePayoutMethods();
       setIsAdding(false);
-      setBankData({ accountHolderName: '', bankName: '', accountNumber: '', ifscCode: '' });
+      setBankData({ accountHolderName: '', bankName: '', accountType: '', accountNumber: '', ifscCode: '' });
       setStatus({ type: 'success', msg: 'Bank Account added successfully.' });
     } catch (err: any) {
       setStatus({ type: 'error', msg: err.message });
@@ -105,7 +105,12 @@ export default function VendorPayoutMethods() {
                    {method.type === 'BANK' ? method.accountNumber : method.upiId}
                  </p>
                  {method.type === 'BANK' && (
-                   <p className="text-[11px] font-bold text-[#6B7280] tracking-widest uppercase">IFSC: {method.ifscCode}</p>
+                   <>
+                     <p className="text-[11px] font-bold text-[#6B7280] tracking-widest uppercase">IFSC: {method.ifscCode}</p>
+                     {method.accountType && (
+                       <p className="text-[11px] font-bold text-[#0F7A4D] tracking-widest uppercase">{method.accountType.replace('_', ' ')} Account</p>
+                     )}
+                   </>
                  )}
                </div>
 
@@ -150,6 +155,23 @@ export default function VendorPayoutMethods() {
                       type="text" required value={bankData.bankName} onChange={e => setBankData({...bankData, bankName: e.target.value})}
                       className="w-full h-12 px-4 rounded-[14px] bg-white border border-[#E5E7EB] focus:outline-none focus:border-[#0F7A4D] focus:ring-4 focus:ring-[#0F7A4D]/10 transition-all font-medium text-[#111827]"
                     />
+                  </div>
+                  <div className="space-y-3">
+                    <label className="text-[11px] font-black uppercase tracking-widest text-[#6B7280]">Account Type</label>
+                    <div className="relative">
+                      <select
+                        required
+                        value={bankData.accountType}
+                        onChange={e => setBankData({...bankData, accountType: e.target.value})}
+                        className="w-full h-12 px-4 pr-10 rounded-[14px] bg-white border border-[#E5E7EB] focus:outline-none focus:border-[#0F7A4D] focus:ring-4 focus:ring-[#0F7A4D]/10 transition-all font-medium text-[#111827] appearance-none cursor-pointer"
+                      >
+                        <option value="">Select Account Type</option>
+                        <option value="SAVINGS">Savings Account</option>
+                        <option value="CURRENT">Current Account</option>
+                        <option value="OVERDRAFT">Overdraft Account</option>
+                      </select>
+                      <svg className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="6 9 12 15 18 9"/></svg>
+                    </div>
                   </div>
                   <div className="space-y-3">
                     <label className="text-[11px] font-black uppercase tracking-widest text-[#6B7280]">Account Number</label>
