@@ -130,6 +130,29 @@ const server = http.createServer(async (req, res) => {
       'Content-Type': 'application/json',
       'Cache-Control': 'no-store, max-age=0'
     });
+    
+    let rootFiles = [];
+    try {
+      rootFiles = fs.readdirSync(__dirname).filter(f => f !== 'node_modules');
+    } catch (e) {
+      rootFiles = ['error: ' + e.message];
+    }
+
+    let nextStaticExists = false;
+    let nextStaticFilesCount = 0;
+    try {
+      const p = path.join(__dirname, '.next/static');
+      nextStaticExists = fs.existsSync(p);
+      if (nextStaticExists) {
+        nextStaticFilesCount = fs.readdirSync(p).length;
+      }
+    } catch (e) {}
+
+    let publicExists = false;
+    try {
+      publicExists = fs.existsSync(path.join(__dirname, 'public'));
+    } catch (e) {}
+
     return res.end(JSON.stringify({
       status: 'ok',
       service: 'nammaoorufoods-frontend',
@@ -138,6 +161,14 @@ const server = http.createServer(async (req, res) => {
       bindingMode: isSocket ? 'socket' : 'tcp',
       port: port,
       isNextReady: isNextReady,
+      diagnostics: {
+        __dirname: __dirname,
+        cwd: process.cwd(),
+        nextStaticExists: nextStaticExists,
+        nextStaticFilesCount: nextStaticFilesCount,
+        publicExists: publicExists,
+        rootFiles: rootFiles
+      },
       memoryUsageMB: {
         rss: Math.round(process.memoryUsage().rss / 1024 / 1024),
         heapTotal: Math.round(process.memoryUsage().heapTotal / 1024 / 1024),
