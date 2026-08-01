@@ -168,7 +168,7 @@ export default function CategoriesCircles() {
   if (displayCategories.length === 0) return null;
 
   return (
-    <section className="w-full pt-2 md:pt-4 pb-1 md:pb-2 bg-white relative overflow-hidden">
+    <section className="hidden md:block w-full pt-2 md:pt-4 pb-1 md:pb-2 bg-white relative overflow-hidden">
 
 
       <div className="standard-container relative z-10">

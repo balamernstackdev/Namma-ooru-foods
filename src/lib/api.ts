@@ -1,13 +1,10 @@
-// export const API_URL = process.env.NEXT_PUBLIC_API_URL || (
-//     typeof window !== 'undefined'
-//         ? (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname.startsWith('192.168.'))
-//             ? 'http://localhost:5000'
-//             : 'https://api.nammaorrufoods.com'
-//         : 'https://api.nammaorrufoods.com'
-// );
-// export const API_URL = 'http://localhost:5000'
-
-export const API_URL = 'https://api.nammaorrufoods.com'
+export const API_URL = process.env.NEXT_PUBLIC_API_URL || (
+    typeof window !== 'undefined'
+        ? (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname.startsWith('192.168.'))
+            ? 'http://localhost:5000'
+            : 'https://api.nammaorrufoods.com'
+        : 'https://api.nammaorrufoods.com'
+);
 
 /**
  * Resolves an image URL from the API.
@@ -15,12 +12,12 @@ export const API_URL = 'https://api.nammaorrufoods.com'
  * Absolute http(s):// URLs are returned as-is.
  */
 export function resolveImageUrl(url: string | null | undefined, fallback = '/logo.webp'): string {
-  if (!url || url.trim() === '') return fallback;
-  if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:') || url.startsWith('/ai_images') || url.startsWith('/logo')) {
-    return url;
-  }
-  // Relative path (e.g., /uploads/...) — prefix with backend API URL
-  return `${API_URL}${url.startsWith('/') ? '' : '/'}${url}`;
+    if (!url || url.trim() === '') return fallback;
+    if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:') || url.startsWith('/ai_images') || url.startsWith('/logo')) {
+        return url;
+    }
+    // Relative path (e.g., /uploads/...) — prefix with backend API URL
+    return `${API_URL}${url.startsWith('/') ? '' : '/'}${url}`;
 }
 
 export async function fetchWithTimeout(url: string, options: RequestInit = {}, timeout = 1500): Promise<Response> {
