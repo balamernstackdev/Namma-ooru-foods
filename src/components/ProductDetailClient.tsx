@@ -553,7 +553,7 @@ export default function ProductDetailClient({ product: initialProduct, allProduc
                         <h3 className="text-2xl font-black text-slate-900 tracking-tight mb-4">About {product.name}</h3>
                         <div
                            className="prose prose-emerald max-w-none text-[15px] text-slate-600 leading-relaxed break-words"
-                           dangerouslySetInnerHTML={{ __html: renderHtml(product.description || product.whatIsProduct) || "This product represents the rich heritage of authentic farming. Carefully sourced and packaged to deliver pure nutrition without synthesis." }}
+                           dangerouslySetInnerHTML={{ __html: renderHtml(product.whatIsProduct || product.description) || "This product represents the rich heritage of authentic farming. Carefully sourced and packaged to deliver pure nutrition without synthesis." }}
                         />
                      </div>
                      {/* PRODUCT VIDEO (If exists) */}

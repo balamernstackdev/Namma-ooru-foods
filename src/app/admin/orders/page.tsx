@@ -35,9 +35,6 @@ export default function AdminOrders() {
   const { orders = [], statusCounts = {}, totalPages = 1 } = data || {};
 
   const getStatusCount = (status: string) => {
-    if (status === 'PENDING') {
-      return (statusCounts['PENDING'] || 0) + (statusCounts['PROCESSING'] || 0);
-    }
     return statusCounts[status] || 0;
   };
 
@@ -224,7 +221,7 @@ export default function AdminOrders() {
   );
 
   const quickStats = [
-    { label: 'Pending Processing', value: getStatusCount('PENDING'), gradient: 'from-amber-500 to-amber-600', icon: <Clock size={24} /> },
+    { label: 'Pending Dispatch', value: getStatusCount('PROCESSING'), gradient: 'from-amber-500 to-amber-600', icon: <Clock size={24} /> },
     { label: 'In Transit', value: getStatusCount('SHIPPED'), gradient: 'from-blue-600 to-blue-700', icon: <Truck size={24} /> },
     { label: 'Delivered', value: getStatusCount('DELIVERED'), gradient: 'from-emerald-600 to-emerald-700', icon: <CheckCircle2 size={24} /> },
     { label: 'Cancelled Orders', value: getStatusCount('CANCELLED'), gradient: 'from-rose-500 to-rose-600', icon: <XCircle size={24} /> },
@@ -254,7 +251,7 @@ export default function AdminOrders() {
         onSearchChange={setSearchTerm}
         statusOptions={[
           { label: 'All Orders', value: 'ALL' },
-          { label: 'Pending', value: 'PENDING' },
+          { label: 'Pending Dispatch', value: 'PROCESSING' },
           { label: 'Shipped', value: 'SHIPPED' },
           { label: 'Delivered', value: 'DELIVERED' },
           { label: 'Cancelled', value: 'CANCELLED' },

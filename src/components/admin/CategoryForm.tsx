@@ -154,7 +154,13 @@ export default function CategoryForm({ initialData, mode }: CategoryFormProps) {
         mutate(() => true);
         router.refresh();
         router.push('/admin/categories');
+      } else {
+        const err = await res.json();
+        addToast('Error', err.message || err.error || 'Failed to delete category');
       }
+    } catch (err: any) {
+      console.error('Delete category error:', err);
+      addToast('Error', err.message || 'Failed to delete category due to network or server error');
     } finally {
       setSubmitting(false);
     }
