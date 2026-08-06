@@ -184,6 +184,38 @@ export default function AdminTrackingPage() {
                   <p className="text-xs text-slate-400 font-medium truncate">{selectedOrder.user?.name} · ₹{Number(selectedOrder.totalAmount).toLocaleString()}</p>
                 </div>
               </div>
+
+              {/* Delivery Details Card */}
+              {selectedOrder.shippingAddress ? (
+                <div className="mb-6 bg-slate-50 border border-slate-100 rounded-2xl p-5 text-xs font-semibold text-slate-600 space-y-3 animate-in fade-in duration-300">
+                  <div className="flex justify-between border-b border-slate-200/60 pb-2">
+                    <span className="font-black uppercase tracking-wider text-slate-400 text-[10px]">Customer Contact</span>
+                    <span className="font-bold text-slate-800">{selectedOrder.user?.email || 'N/A'}</span>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Recipient Name</p>
+                      <p className="text-sm font-black text-slate-800">{selectedOrder.shippingAddress.recipientName || selectedOrder.shippingAddress.name || 'Customer'}</p>
+                      {selectedOrder.shippingAddress.phone && (
+                        <p className="text-slate-600 font-bold mt-1">Phone: {selectedOrder.shippingAddress.phone}</p>
+                      )}
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Shipping Address</p>
+                      <p className="text-slate-600 leading-relaxed font-bold">
+                        {selectedOrder.shippingAddress.line1}
+                        {selectedOrder.shippingAddress.line2 ? `, ${selectedOrder.shippingAddress.line2}` : ''}
+                        <br />
+                        {selectedOrder.shippingAddress.city}, {selectedOrder.shippingAddress.state} - {selectedOrder.shippingAddress.pincode}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="mb-6 bg-amber-50/50 border border-amber-100 rounded-2xl p-4 text-xs font-bold text-amber-700 animate-in fade-in duration-300">
+                  ⚠️ Shipping Address not found for this order.
+                </div>
+              )}
  
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-8">
                 {[

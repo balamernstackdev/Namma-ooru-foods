@@ -210,41 +210,41 @@ function PaymentSuccessContent() {
                      <h3 className="text-lg font-black text-slate-900 tracking-tight mb-6">Order Summary</h3>
 
                      <div className="space-y-4 mb-6">
-                         <div className="flex justify-between items-center text-slate-600 font-medium text-sm">
-                            <span>Total Items</span>
-                            <span className="font-bold text-slate-900 px-3 py-1 bg-slate-100 rounded-full">{order?.orderItems?.length || order?.items?.length || 1} Items</span>
-                         </div>
-                         <div className="flex justify-between items-center text-slate-600 font-medium text-sm">
-                            <span>Subtotal</span>
-                            <span className="font-bold text-slate-900">₹{order ? (order.totalAmount - (order.gstAmount || 0) - (order.deliveryFee || 0) + (order.discountAmount || 0)) : '---'}</span>
-                         </div>
-                         
-                         {Number(order?.gstAmount || 0) > 0 && (
-                            <div className="flex justify-between items-center text-slate-600 font-medium text-sm">
-                               <span>{gstTaxLabel}</span>
-                               <span className="font-bold text-slate-900">₹{order?.gstAmount}</span>
-                            </div>
-                         )}
+                        <div className="flex justify-between items-center text-slate-600 font-medium text-sm">
+                           <span>Total Items</span>
+                           <span className="font-bold text-slate-900 px-3 py-1 bg-slate-100 rounded-full">{order?.orderItems?.length || order?.items?.length || 1} Items</span>
+                        </div>
+                        <div className="flex justify-between items-center text-slate-600 font-medium text-sm">
+                           <span>Subtotal</span>
+                           <span className="font-bold text-slate-900">₹{order ? (order.totalAmount - (order.gstAmount || 0) - (order.deliveryFee || 0) + (order.discountAmount || 0)) : '---'}</span>
+                        </div>
 
-                         {Number(order?.deliveryFee || 0) > 0 ? (
-                            <div className="flex justify-between items-center text-slate-600 font-medium text-sm">
-                               <span>Delivery Fee</span>
-                               <span className="font-bold text-slate-900">₹{order?.deliveryFee}</span>
-                            </div>
-                         ) : (
-                            <div className="flex justify-between items-center text-slate-600 font-medium text-sm">
-                               <span>Delivery Fee</span>
-                               <span className="font-bold text-[#059669]">FREE</span>
-                            </div>
-                         )}
+                        {Number(order?.gstAmount || 0) > 0 && (
+                           <div className="flex justify-between items-center text-slate-600 font-medium text-sm">
+                              <span>{gstTaxLabel}</span>
+                              <span className="font-bold text-slate-900">₹{order?.gstAmount}</span>
+                           </div>
+                        )}
 
-                         {Number(order?.discountAmount || 0) > 0 && (
-                            <div className="flex justify-between items-center text-emerald-600 font-medium text-sm">
-                               <span>Discount</span>
-                               <span className="font-bold">-₹{order?.discountAmount}</span>
-                            </div>
-                         )}
-                      </div>
+                        {Number(order?.deliveryFee || 0) > 0 ? (
+                           <div className="flex justify-between items-center text-slate-600 font-medium text-sm">
+                              <span>Delivery Fee</span>
+                              <span className="font-bold text-slate-900">₹{order?.deliveryFee}</span>
+                           </div>
+                        ) : (
+                           <div className="flex justify-between items-center text-slate-600 font-medium text-sm">
+                              <span>Delivery Fee</span>
+                              <span className="font-bold text-[#059669]">FREE</span>
+                           </div>
+                        )}
+
+                        {Number(order?.discountAmount || 0) > 0 && (
+                           <div className="flex justify-between items-center text-emerald-600 font-medium text-sm">
+                              <span>Discount</span>
+                              <span className="font-bold">-₹{order?.discountAmount}</span>
+                           </div>
+                        )}
+                     </div>
 
                      <div className="border-t border-slate-100 pt-6">
                         <div className="flex justify-between items-end">
@@ -264,10 +264,11 @@ function PaymentSuccessContent() {
                               <MapPin size={18} className="text-slate-600" />
                            </div>
                            <div>
-                              <p className="font-bold text-slate-900 mb-1">{order.shippingAddress.name || 'Customer'}</p>
+                              <p className="font-bold text-slate-900 mb-1">{order.shippingAddress.recipientName || order.shippingAddress.name || 'Customer'}</p>
                               <p className="text-sm text-slate-500 leading-relaxed font-medium">
-                                 {order.shippingAddress.line1}, {order.shippingAddress.city}, <br />
-                                 {order.shippingAddress.state} - {order.shippingAddress.pincode}
+                                 {order.shippingAddress.line1}
+                                 {order.shippingAddress.line2 ? `, ${order.shippingAddress.line2}` : ''}, <br />
+                                 {order.shippingAddress.city}, {order.shippingAddress.state} - {order.shippingAddress.pincode}
                               </p>
                            </div>
                         </div>

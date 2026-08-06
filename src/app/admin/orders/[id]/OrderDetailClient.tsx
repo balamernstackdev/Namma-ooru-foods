@@ -325,10 +325,11 @@ export default function OrderDetailClient({ id }: OrderDetailClientProps) {
               </h3>
 
               <div className="text-xs font-semibold text-slate-600 leading-relaxed space-y-1">
-                <p className="font-extrabold text-slate-800">{order.shippingAddress.name}</p>
+                <p className="font-extrabold text-slate-800">{order.shippingAddress.recipientName || order.shippingAddress.name || 'Customer'}</p>
                 {order.shippingAddress.phone && <p>Phone: {order.shippingAddress.phone}</p>}
-                <p>{order.shippingAddress.street}</p>
-                <p>{order.shippingAddress.city}, {order.shippingAddress.state} - {order.shippingAddress.zipCode}</p>
+                <p>{order.shippingAddress.line1}</p>
+                {order.shippingAddress.line2 && <p>{order.shippingAddress.line2}</p>}
+                <p>{order.shippingAddress.city}, {order.shippingAddress.state} - {order.shippingAddress.pincode}</p>
                 <p>{order.shippingAddress.country || 'India'}</p>
               </div>
             </div>

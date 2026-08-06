@@ -216,11 +216,9 @@ export default function CheckoutPage() {
             })
          });
 
-
-
          const dbOrder = await orderRes.json();
          if (!orderRes.ok) throw new Error(dbOrder.error || 'Failed to create order');
-         setConfirmedOrderId(dbOrder.id);
+         setConfirmedOrderId(dbOrder.order.id);
 
          const commitOrderCache = () => {
             setFinalOrderData({
@@ -239,7 +237,7 @@ export default function CheckoutPage() {
                   customerId: user?.id,
                   customerEmail: email || user?.email || '',
                   customerPhone: addresses.find(a => a.id === selectedAddressId)?.phone || '9999999999',
-                  dbOrderId: dbOrder.id
+                  dbOrderId: dbOrder.order.id
                })
             });
             const razorpayOrder = await res.json();
@@ -261,7 +259,7 @@ export default function CheckoutPage() {
                            razorpay_payment_id: response.razorpay_payment_id,
                            razorpay_order_id: response.razorpay_order_id,
                            razorpay_signature: response.razorpay_signature,
-                           dbOrderId: dbOrder.id
+                           dbOrderId: dbOrder.order.id
                         })
                      });
                      const verifyData = await verifyRes.json();
@@ -302,7 +300,7 @@ export default function CheckoutPage() {
                   customerEmail: email || user?.email || '',
                   customerPhone: addresses.find(a => a.id === selectedAddressId)?.phone || '9999999999',
                   returnUrl: `${API_URL}/api/payments/verify`,
-                  dbOrderId: dbOrder.id
+                  dbOrderId: dbOrder.order.id
                })
             });
             const hdfcOrder = await res.json();

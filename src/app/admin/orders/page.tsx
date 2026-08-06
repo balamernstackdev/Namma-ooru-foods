@@ -221,7 +221,7 @@ export default function AdminOrders() {
   );
 
   const quickStats = [
-    { label: 'Pending Dispatch', value: getStatusCount('PROCESSING'), gradient: 'from-amber-500 to-amber-600', icon: <Clock size={24} /> },
+    { label: 'Paid', value: getStatusCount('PROCESSING'), gradient: 'from-teal-500 to-teal-600', icon: <Clock size={24} /> },
     { label: 'In Transit', value: getStatusCount('SHIPPED'), gradient: 'from-blue-600 to-blue-700', icon: <Truck size={24} /> },
     { label: 'Delivered', value: getStatusCount('DELIVERED'), gradient: 'from-emerald-600 to-emerald-700', icon: <CheckCircle2 size={24} /> },
     { label: 'Cancelled Orders', value: getStatusCount('CANCELLED'), gradient: 'from-rose-500 to-rose-600', icon: <XCircle size={24} /> },
@@ -251,7 +251,7 @@ export default function AdminOrders() {
         onSearchChange={setSearchTerm}
         statusOptions={[
           { label: 'All Orders', value: 'ALL' },
-          { label: 'Pending Dispatch', value: 'PROCESSING' },
+          { label: 'Paid', value: 'PROCESSING' },
           { label: 'Shipped', value: 'SHIPPED' },
           { label: 'Delivered', value: 'DELIVERED' },
           { label: 'Cancelled', value: 'CANCELLED' },
@@ -351,9 +351,10 @@ export default function AdminOrders() {
                           order.status === 'DELIVERED' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' :
                           order.status === 'SHIPPED' ? 'bg-blue-50 text-blue-700 border-blue-100' :
                           order.status === 'CANCELLED' ? 'bg-red-50 text-red-700 border-red-100' :
+                          order.status === 'PROCESSING' ? 'bg-teal-50 text-teal-700 border-teal-100' :
                           'bg-amber-50 text-amber-700 border-amber-100'
                         }`}>
-                          {order.status}
+                          {order.status === 'PROCESSING' ? 'Paid' : order.status}
                         </span>
                       </td>
                       <td className="px-6 py-4 text-right border-b border-slate-50">
@@ -566,9 +567,10 @@ export default function AdminOrders() {
                       order.status === 'DELIVERED' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' :
                       order.status === 'SHIPPED' ? 'bg-blue-50 text-blue-700 border-blue-100' :
                       order.status === 'CANCELLED' ? 'bg-red-50 text-red-700 border-red-100' :
+                      order.status === 'PROCESSING' ? 'bg-teal-50 text-teal-700 border-teal-100' :
                       'bg-amber-50 text-amber-700 border-amber-100'
                     }`}>
-                      {order.status}
+                      {order.status === 'PROCESSING' ? 'Paid' : order.status}
                     </span>
                   </div>
                 </div>
