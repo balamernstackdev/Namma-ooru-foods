@@ -138,7 +138,12 @@ export default function AdminTrackingPage() {
                 </span>
               </div>
               <p className="font-black text-[var(--admin-sidebar)] text-sm mt-1">{order.user?.name || 'Customer'}</p>
-              <p className="text-xs text-slate-400 font-medium">₹{Number(order.totalAmount).toLocaleString()}</p>
+              <div className="flex items-center justify-between mt-1.5">
+                <p className="text-xs text-slate-500 font-bold">₹{Number(order.totalAmount).toLocaleString()}</p>
+                <p className="text-[9px] font-bold text-slate-400 bg-slate-50 border border-slate-100 rounded px-1.5 py-0.5">
+                  {new Date(order.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                </p>
+              </div>
             </button>
           ))}
           {!isLoading && filtered.length === 0 && (
@@ -182,6 +187,9 @@ export default function AdminTrackingPage() {
                 <div className="min-w-0">
                   <h3 className="font-black text-[var(--admin-sidebar)] text-base sm:text-lg truncate">Order #{selectedOrder.id} — Shipment Details</h3>
                   <p className="text-xs text-slate-400 font-medium truncate">{selectedOrder.user?.name} · ₹{Number(selectedOrder.totalAmount).toLocaleString()}</p>
+                  <p className="text-[10px] font-black uppercase tracking-wider text-emerald-700 mt-1.5 bg-emerald-50 border border-emerald-100 rounded-lg px-2.5 py-1 inline-block">
+                    Received: {new Date(selectedOrder.createdAt).toLocaleString('en-IN', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                  </p>
                 </div>
               </div>
 
