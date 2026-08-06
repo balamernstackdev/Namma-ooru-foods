@@ -37,6 +37,7 @@ interface QuickBrowseCategoriesProps {
 }
 
 export default function QuickBrowseCategories({ activeSlug = 'all' }: QuickBrowseCategoriesProps) {
+  return null;
   const { settings } = usePlatformSettings();
   const { data: categories, error } = useSWR(`${API_URL}/api/categories/quick-browse`, fetcher);
 
