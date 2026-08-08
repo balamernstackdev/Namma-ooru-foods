@@ -155,7 +155,7 @@ export default function OrderDetailClient({ id }: OrderDetailClientProps) {
             <ArrowLeft size={12} /> Back to Notifications
           </button>
           <h1 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tighter italic flex items-center gap-3">
-            Order <span className="text-emerald-600">#ORD-{order.id.toString().padStart(4, '0')}</span>
+            Order <span className="text-emerald-600">#{order.orderIdStr || order.id.toString().padStart(4, '0')}</span>
           </h1>
           <p className="text-slate-400 font-bold uppercase tracking-[0.2em] text-[10px] mt-2">
             Placed on {new Date(order.createdAt).toLocaleString('en-IN', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
@@ -324,13 +324,41 @@ export default function OrderDetailClient({ id }: OrderDetailClientProps) {
                 Shipping Address
               </h3>
 
-              <div className="text-xs font-semibold text-slate-600 leading-relaxed space-y-1">
-                <p className="font-extrabold text-slate-800">{order.shippingAddress.recipientName || order.shippingAddress.name || 'Customer'}</p>
-                {order.shippingAddress.phone && <p>Phone: {order.shippingAddress.phone}</p>}
-                <p>{order.shippingAddress.line1}</p>
-                {order.shippingAddress.line2 && <p>{order.shippingAddress.line2}</p>}
-                <p>{order.shippingAddress.city}, {order.shippingAddress.state} - {order.shippingAddress.pincode}</p>
-                <p>{order.shippingAddress.country || 'India'}</p>
+              <div className="text-xs font-semibold text-slate-600 leading-relaxed space-y-3">
+                <div>
+                  <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider block mb-0.5">Recipient Name:</span>
+                  <p className="font-extrabold text-slate-900 text-sm">{order.shippingAddress.recipientName || order.shippingAddress.name || 'Customer'}</p>
+                </div>
+                {order.shippingAddress.phone && (
+                  <div>
+                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider block mb-0.5">Contact Number:</span>
+                    <p className="font-bold text-slate-800">{order.shippingAddress.phone}</p>
+                  </div>
+                )}
+                <div>
+                  <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider block mb-0.5">Street Address:</span>
+                  <p className="text-slate-700 font-bold">{order.shippingAddress.line1}</p>
+                </div>
+                {order.shippingAddress.line2 && (
+                  <div>
+                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider block mb-0.5">Landmark / Area:</span>
+                    <p className="text-slate-700 font-bold bg-slate-50 px-2.5 py-1.5 rounded-lg border border-slate-100 w-fit">{order.shippingAddress.line2}</p>
+                  </div>
+                )}
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider block mb-0.5">City:</span>
+                    <p className="text-slate-700 font-bold">{order.shippingAddress.city}</p>
+                  </div>
+                  <div>
+                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider block mb-0.5">Pincode:</span>
+                    <p className="text-slate-700 font-bold">{order.shippingAddress.pincode}</p>
+                  </div>
+                </div>
+                <div>
+                  <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider block mb-0.5">Country:</span>
+                  <p className="text-slate-700 font-bold">{order.shippingAddress.country || 'India'}</p>
+                </div>
               </div>
             </div>
           )}

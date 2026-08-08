@@ -89,19 +89,19 @@ export default function PaymentsPage() {
 
         {/* Stats */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-          <div className="bg-emerald-950 rounded-[1.5rem] p-5 text-white">
-            <p className="text-[10px] font-black uppercase tracking-widest text-emerald-400 mb-2">Total Spent</p>
-            <p className="text-2xl font-black">₹{totalSpent.toLocaleString()}</p>
-            <p className="text-[10px] text-emerald-300/60 font-medium mt-1">Across {transactions.filter(t => t.type === 'debit' && t.status === 'Success').length} orders</p>
+          <div className="bg-white rounded-[1.5rem] p-5 border border-slate-100 shadow-sm">
+            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Total Spent</p>
+            <p className="text-2xl font-black text-slate-900">₹{totalSpent.toLocaleString()}</p>
+            <p className="text-[10px] text-slate-400 font-medium mt-1">Across {transactions.filter(t => t.type === 'debit' && t.status === 'Success').length} orders</p>
           </div>
           <div className="bg-white rounded-[1.5rem] p-5 border border-slate-100 shadow-sm">
             <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Total Refunded</p>
             <p className="text-2xl font-black text-blue-600">₹{totalRefunded.toLocaleString()}</p>
             <p className="text-[10px] text-slate-400 font-medium mt-1">{transactions.filter(t => t.type === 'credit').length} refunds</p>
           </div>
-          <div className="bg-amber-50 rounded-[1.5rem] p-5 border border-amber-100">
-            <p className="text-[10px] font-black uppercase tracking-widest text-amber-600 mb-2">Wallet Balance</p>
-            <p className="text-2xl font-black text-emerald-950">₹0.00</p>
+          <div className="bg-white rounded-[1.5rem] p-5 border border-slate-100 shadow-sm">
+            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Wallet Balance</p>
+            <p className="text-2xl font-black text-slate-900">₹0.00</p>
             <p className="text-[10px] text-slate-400 font-medium mt-1">Available credits</p>
           </div>
         </div>

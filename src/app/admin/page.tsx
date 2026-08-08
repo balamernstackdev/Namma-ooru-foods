@@ -233,7 +233,9 @@ export default function AdminDashboard() {
                         {recentOrders.length > 0 ? recentOrders.map((order: any, i: number) => (
                            <tr key={i} className="group hover:bg-slate-50/80 transition-all cursor-pointer" onClick={() => router.push(`/admin/orders?id=${order.id}`)}>
                               <td className="py-4 px-4 bg-slate-50/30 group-hover:bg-transparent rounded-l-2xl">
-                                 <span className="text-[14px] font-black text-slate-900 tabular-nums leading-none">#ORD-{order.id.toString().padStart(4, '0')}</span>
+                                 <span className="text-[14px] font-black text-slate-900 tabular-nums leading-none">
+                                    {order.orderIdStr ? `#${order.orderIdStr}` : `#ORD-${order.id.toString().padStart(4, '0')}`}
+                                 </span>
                                  <p className="text-[11px] text-slate-400 font-bold mt-1.5 flex items-center gap-1">
                                     <Clock size={10} /> {order.date}
                                  </p>

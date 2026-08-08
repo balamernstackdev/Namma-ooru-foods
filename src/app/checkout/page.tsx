@@ -38,6 +38,7 @@ export default function CheckoutPage() {
 
    // Address Creation States
    const [isAddingAddress, setIsAddingAddress] = useState(false);
+   const [editingAddressId, setEditingAddressId] = useState<number | null>(null);
    const [newAddress, setNewAddress] = useState({
       name: '', phone: '', line1: '', line2: '', city: '', state: '', pincode: '', isDefault: false, type: 'Home'
    });
@@ -157,16 +158,30 @@ export default function CheckoutPage() {
    const saveAddress = async () => {
       setIsProcessing(true);
       try {
-         const payload = { ...newAddress, userId: user?.id, email: email || 'guest@example.com' };
-         const res = await fetch(`${API_URL}/api/addresses`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-         });
+         const payload = { ...newAddress, state: newAddress.state || 'Tamil Nadu', userId: user?.id, email: email || 'guest@example.com' };
+         let res;
+         if (editingAddressId) {
+            res = await fetch(`${API_URL}/api/addresses/${editingAddressId}`, {
+               method: 'PUT',
+               headers: { 'Content-Type': 'application/json' },
+               body: JSON.stringify(payload)
+            });
+         } else {
+            res = await fetch(`${API_URL}/api/addresses`, {
+               method: 'POST',
+               headers: { 'Content-Type': 'application/json' },
+               body: JSON.stringify(payload)
+            });
+         }
          const data = await res.json();
          if (res.ok) {
-            setAddresses([...addresses, data]);
-            setSelectedAddressId(data.id);
+            if (editingAddressId) {
+               setAddresses(addresses.map(a => a.id === editingAddressId ? data : a));
+               setEditingAddressId(null);
+            } else {
+               setAddresses([...addresses, data]);
+               setSelectedAddressId(data.id);
+            }
             setIsAddingAddress(false);
             setNewAddress({ name: '', phone: '', line1: '', line2: '', city: '', state: '', pincode: '', isDefault: false, type: 'Home' });
          }
@@ -250,6 +265,11 @@ export default function CheckoutPage() {
                name: "Namma Ooru Foods",
                description: "Purchase Order",
                order_id: razorpayOrder.orderId,
+               modal: {
+                  ondismiss: function () {
+                     setIsProcessing(false);
+                  }
+               },
                handler: async function (response: any) {
                   try {
                      const verifyRes = await fetch(`${API_URL}/api/payments/razorpay/verify`, {
@@ -651,21 +671,48 @@ export default function CheckoutPage() {
                                                 {addr.type === 'Home' ? <Home size={14} className="text-[#6b7280]" /> : <Briefcase size={14} className="text-[#6b7280]" />}
                                                 <h4 className="font-bold text-[#111827] text-sm">{addr.type || 'Home'}</h4>
                                              </div>
-                                             <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${selectedAddressId === addr.id ? 'border-[#16a34a] bg-[#16a34a]' : 'border-[#d1d5db]'}`}>
-                                                {selectedAddressId === addr.id && <CheckCircle size={12} className="text-white" />}
+                                             <div className="flex items-center gap-2.5">
+                                                <button
+                                                   onClick={(e) => {
+                                                      e.stopPropagation();
+                                                      setEditingAddressId(addr.id);
+                                                      setNewAddress({
+                                                         name: addr.recipientName || addr.name || '',
+                                                         phone: addr.phone || '',
+                                                         line1: addr.line1 || '',
+                                                         line2: addr.line2 || '',
+                                                         city: addr.city || '',
+                                                         state: addr.state || '',
+                                                         pincode: addr.pincode || '',
+                                                         isDefault: addr.isDefault || false,
+                                                         type: addr.type || 'Home'
+                                                      });
+                                                      setIsAddingAddress(true);
+                                                   }}
+                                                   className="text-xs font-black uppercase tracking-wider text-[#16a34a] hover:underline"
+                                                >
+                                                   Edit
+                                                </button>
+                                                <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${selectedAddressId === addr.id ? 'border-[#16a34a] bg-[#16a34a]' : 'border-[#d1d5db]'}`}>
+                                                   {selectedAddressId === addr.id && <CheckCircle size={12} className="text-white" />}
+                                                </div>
                                              </div>
                                           </div>
-                                          <p className="font-bold text-[#111827] text-sm mb-1">{addr.name} • {addr.phone}</p>
-                                          <p className="text-[#6b7280] text-[13px] leading-relaxed line-clamp-2">{addr.line1}, {addr.city}</p>
+                                          <p className="font-bold text-[#111827] text-sm mb-1">{addr.recipientName || addr.name} • {addr.phone}</p>
+                                          <p className="text-[#6b7280] text-[13px] leading-relaxed mt-1">
+                                             {addr.line1}
+                                             {addr.line2 ? `, ${addr.line2}` : ''}
+                                             <br />
+                                             {addr.city}, {addr.state} - {addr.pincode}
+                                          </p>
                                        </div>
                                     ))}
                                  </div>
                               )}
-
                               {/* ADD NEW ADDRESS FORM */}
                               {(isAddingAddress || addresses.length === 0) ? (
                                  <div className="bg-white rounded-[24px] p-6 border border-[#e5e7eb] shadow-sm space-y-5">
-                                    <h3 className="font-bold text-[#111827] text-lg mb-4">Add New Location</h3>
+                                    <h3 className="font-bold text-[#111827] text-lg mb-4">{editingAddressId ? 'Edit Address' : 'Add New Location'}</h3>
 
                                     <div className="flex gap-3 mb-2">
                                        {['Home', 'Office', 'Other'].map(t => (
@@ -697,6 +744,12 @@ export default function CheckoutPage() {
                                        className="w-full h-[48px] md:h-[56px] px-4 md:px-5 rounded-xl md:rounded-[18px] bg-white border border-[#e5e7eb] focus:border-[#16a34a] focus:ring-4 focus:ring-[#16a34a]/10 outline-none transition-all text-[13px] md:text-[15px] font-semibold text-[#111827]"
                                        value={newAddress.line1} onChange={e => setNewAddress({ ...newAddress, line1: e.target.value })}
                                     />
+                                    <input
+                                       placeholder="Landmark / Area / Apartment (Optional)" type="text"
+                                       className="w-full h-[48px] md:h-[56px] px-4 md:px-5 rounded-xl md:rounded-[18px] bg-white border border-[#e5e7eb] focus:border-[#16a34a] focus:ring-4 focus:ring-[#16a34a]/10 outline-none transition-all text-[13px] md:text-[15px] font-semibold text-[#111827]"
+                                       value={newAddress.line2} onChange={e => setNewAddress({ ...newAddress, line2: e.target.value })}
+                                    />
+
                                     <div className="grid grid-cols-2 gap-4 md:gap-5">
                                        <input
                                           placeholder="City" type="text"
@@ -718,22 +771,20 @@ export default function CheckoutPage() {
                                        <button
                                           onClick={saveAddress} disabled={isProcessing || !newAddress.name || !newAddress.line1 || newAddress.phone.length !== 10 || newAddress.pincode.length !== 6 || !newAddress.city}
                                           className="h-[48px] md:h-[56px] px-6 md:px-8 rounded-xl md:rounded-[18px] bg-gradient-to-r from-[#059669] to-[#16a34a] text-white font-bold text-[13px] md:text-sm shadow-[0_4px_14px_rgba(22,163,74,0.3)] hover:shadow-[0_6px_20px_rgba(22,163,74,0.4)] hover:-translate-y-0.5 transition-all disabled:opacity-50"
-                                       >Save Address</button>
+                                       >{editingAddressId ? 'Update Address' : 'Save Address'}</button>
                                        {addresses.length > 0 && (
-                                          <button onClick={() => setIsAddingAddress(false)} className="h-[48px] md:h-[56px] px-5 md:px-6 rounded-xl md:rounded-[18px] font-bold text-[13px] md:text-sm text-[#6b7280] hover:bg-[#f3f4f6] transition-all">Cancel</button>
+                                          <button onClick={() => { setIsAddingAddress(false); setEditingAddressId(null); setNewAddress({ name: '', phone: '', line1: '', line2: '', city: '', state: '', pincode: '', isDefault: false, type: 'Home' }); }} className="h-[48px] md:h-[56px] px-5 md:px-6 rounded-xl md:rounded-[18px] font-bold text-[13px] md:text-sm text-[#6b7280] hover:bg-[#f3f4f6] transition-all">Cancel</button>
                                        )}
                                     </div>
                                  </div>
                               ) : (
                                  <button
-                                    onClick={() => setIsAddingAddress(true)}
+                                    onClick={() => { setEditingAddressId(null); setIsAddingAddress(true); setNewAddress({ name: '', phone: '', line1: '', line2: '', city: '', state: '', pincode: '', isDefault: false, type: 'Home' }); }}
                                     className="h-[48px] md:h-[56px] w-full rounded-xl md:rounded-[18px] border-2 border-dashed border-[#d1d5db] flex items-center justify-center gap-2 text-[#6b7280] font-bold text-[13px] md:text-sm hover:border-[#16a34a] hover:text-[#16a34a] hover:bg-[#f0fdf4] transition-all"
                                  >
                                     <Plus size={18} /> Add New Address
                                  </button>
                               )}
-
-
                               <div className="pt-6">
                                  <button
                                     onClick={() => setStep(3)}

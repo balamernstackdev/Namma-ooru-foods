@@ -170,7 +170,7 @@ export default function AdminOrders() {
         
         return [
           index + 1,
-          `ORD-${o.id.toString().padStart(4, '0')}`,
+          o.orderIdStr || `ORD-${o.id.toString().padStart(4, '0')}`,
           `"${new Date(o.createdAt).toLocaleDateString('en-IN')}"`,
           `"${(o.user?.name || '').replace(/"/g, '""')}"`,
           `"${(o.user?.email || '').replace(/"/g, '""')}"`,
@@ -316,7 +316,7 @@ export default function AdminOrders() {
                       </td>
                       <td className="px-6 py-4 border-b border-slate-50">
                         <span className="text-[13px] font-extrabold text-slate-900 flex items-center gap-1.5 leading-none">
-                          #ORD-{order.id.toString().padStart(4, '0')}
+                          #{order.orderIdStr || order.id.toString().padStart(4, '0')}
                           <ChevronDown size={13} className={`text-slate-300 transition-transform ${expandedOrder === order.id ? 'rotate-180' : ''}`} />
                         </span>
                         <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider mt-1 block">
@@ -327,6 +327,9 @@ export default function AdminOrders() {
                         <div className="flex flex-col">
                           <span className="text-sm font-bold text-slate-800">{order.user?.name}</span>
                           <span className="text-[10px] text-slate-400 font-medium lowercase">{order.user?.email}</span>
+                          {(order.shippingAddress?.phone || order.user?.phone) && (
+                            <span className="text-[10px] text-slate-500 font-bold mt-0.5">📞 {order.shippingAddress?.phone || order.user?.phone}</span>
+                          )}
                         </div>
                       </td>
                       <td className="px-6 py-4 border-b border-slate-50">
@@ -465,6 +468,45 @@ export default function AdminOrders() {
                               ));
                             })()}
                           </div>
+                          {order.shippingAddress && (
+                            <div className="mt-6 pt-4 border-t border-slate-200/60 text-xs font-semibold text-slate-700 space-y-3 bg-white p-5 rounded-2xl border border-slate-100 shadow-sm w-fit min-w-[340px]">
+                              <span className="text-[10px] font-black text-emerald-950 uppercase tracking-widest block border-b border-slate-100 pb-1 mb-2">Delivery Details</span>
+                              
+                              <div>
+                                <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider block mb-0.5">Recipient Name:</span>
+                                <p className="font-extrabold text-slate-900 text-[13px]">{order.shippingAddress.recipientName || order.shippingAddress.name || 'Customer'}</p>
+                              </div>
+
+                              <div>
+                                <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider block mb-0.5">Contact Number:</span>
+                                <p className="font-bold text-slate-800">{order.shippingAddress.phone}</p>
+                              </div>
+
+                              <div>
+                                <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider block mb-0.5">Street Address / Building:</span>
+                                <p className="text-slate-700 font-bold">{order.shippingAddress.line1}</p>
+                              </div>
+
+                              {order.shippingAddress.line2 && (
+                                <div>
+                                  <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider block mb-0.5">Landmark / Area:</span>
+                                  <p className="text-slate-700 font-bold bg-slate-50 px-2.5 py-1.5 rounded-lg border border-slate-100 w-fit">{order.shippingAddress.line2}</p>
+                                </div>
+                              )}
+
+                              <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                  <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider block mb-0.5">City:</span>
+                                  <p className="text-slate-700 font-bold">{order.shippingAddress.city}</p>
+                                </div>
+                                <div>
+                                  <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider block mb-0.5">Pincode:</span>
+                                  <p className="text-slate-700 font-bold">{order.shippingAddress.pincode}</p>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+
                           {order.transactions && order.transactions.length > 0 && (
                             <div className="mt-6 pt-4 border-t border-slate-200/60 flex flex-wrap items-center justify-end gap-3">
                               <span className="text-[10px] text-slate-400 font-bold mr-auto">Provider Ref: {order.transactions[0].providerRef}</span>
@@ -513,7 +555,7 @@ export default function AdminOrders() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <span className="text-[13px] font-extrabold text-slate-900 flex items-center gap-1.5 leading-none">
-                      #ORD-{order.id.toString().padStart(4, '0')}
+                      #{order.orderIdStr || order.id.toString().padStart(4, '0')}
                     </span>
                     <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">
                       {new Date(order.createdAt).toLocaleDateString('en-IN')}

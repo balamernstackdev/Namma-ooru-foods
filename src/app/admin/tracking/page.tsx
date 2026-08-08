@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Truck, Save, Package, CheckCircle, ExternalLink } from 'lucide-react';
+import { Truck, Save, Package, CheckCircle, ExternalLink, Printer, Download } from 'lucide-react';
 import useSWR from 'swr';
 import { API_URL } from '@/lib/api';
 import AdminPagination from '@/components/admin/AdminPagination';
@@ -80,6 +80,581 @@ export default function AdminTrackingPage() {
     } finally { setSaving(false); }
   };
 
+  const printShipmentLabel = (order: any) => {
+    const addr = order.shippingAddress || {};
+    const recipientName = addr.recipientName || addr.name || order.user?.name || 'Customer';
+    const phone = addr.phone || order.user?.phone || '';
+    const landmark = addr.line2 || '';
+    const street = addr.line1 || '';
+    const city = addr.city || '';
+    const state = addr.state || 'Tamil Nadu';
+    const pincode = addr.pincode || '';
+    const orderIdStr = order.orderIdStr || `ORD-${String(order.id).padStart(6, '0')}`;
+    const orderDate = new Date(order.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '-');
+    const itemsList = order.items || order.orderItems || [];
+    const itemCount = itemsList.length;
+    const paymentMethod = order.paymentMethod?.toLowerCase().includes('cod') ? 'COD' : 'PREPAID';
+
+    // Automatically calculate package weight
+    let totalWeightKg = 0;
+    for (const item of itemsList) {
+      const qty = Number(item.quantity) || 1;
+      let wVal = null;
+      let uVal = null;
+
+      // 1. Try to parse from variantName first (e.g. "250g", "1 kg")
+      if (item.variantName) {
+        const match = item.variantName.toLowerCase().match(/(\d+(?:\.\d+)?)\s*(g|gm|grams|kg|kgs|kilo|kilograms)/i);
+        if (match) {
+          wVal = parseFloat(match[1]);
+          uVal = match[2];
+        }
+      }
+
+      // 2. Fallback to product weight and unit fields
+      if ((wVal === null || wVal === undefined || wVal === 0) && item.product) {
+        wVal = Number(item.product.weight);
+        uVal = item.product.unit || 'g';
+      }
+
+      // 3. Fallback to parsing product name if product weight is missing
+      if ((wVal === null || wVal === undefined || wVal === 0) && item.product?.name) {
+        const match = item.product.name.toLowerCase().match(/(\d+(?:\.\d+)?)\s*(g|gm|grams|kg|kgs|kilo|kilograms)/i);
+        if (match) {
+          wVal = parseFloat(match[1]);
+          uVal = match[2];
+        }
+      }
+
+      if (wVal && uVal) {
+        const normUnit = uVal.toLowerCase().trim();
+        if (normUnit.startsWith('k') || normUnit.startsWith('kilo')) {
+          totalWeightKg += wVal * qty;
+        } else {
+          totalWeightKg += (wVal / 1000) * qty;
+        }
+      }
+    }
+
+    const packageWeightStr = totalWeightKg > 0 ? `${totalWeightKg.toFixed(3)} Kg` : '— Kg';
+
+    // Pre-generate barcode SVG inline (no popup script needed)
+    const barcodeWidth = 120;
+    const barcodeHeight = 32;
+    let hash = 0;
+    for (let i = 0; i < orderIdStr.length; i++) {
+      hash = (hash << 5) - hash + orderIdStr.charCodeAt(i);
+      hash |= 0;
+    }
+    let seed = Math.abs(hash || 12345);
+    function seededRand() { const x = Math.sin(seed++) * 10000; return x - Math.floor(x); }
+    const bars: { x: number; w: number; black: boolean }[] = [];
+    let cx = 0;
+    bars.push({ x: cx, w: 2, black: true }); cx += 2;
+    bars.push({ x: cx, w: 2, black: false }); cx += 2;
+    for (let i = 0; i < 45; i++) {
+      const w = Math.floor(seededRand() * 3) + 1;
+      bars.push({ x: cx, w, black: i % 2 === 0 }); cx += w;
+    }
+    bars.push({ x: cx, w: 2, black: true }); cx += 2;
+    const totalW = cx;
+    const barcodeSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="${totalW}" height="${barcodeHeight}" style="display:block;margin:0 auto;">${
+      bars.filter(b => b.black).map(b => `<rect x="${b.x}" y="0" width="${b.w}" height="${barcodeHeight}" fill="#000"/>`).join('')
+    }</svg>`;
+
+    const w = window.open('', '_blank', 'width=900,height=700');
+    if (!w) { alert('Please allow popups to print the label.'); return; }
+
+    w.document.write(`<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Shipment Label - ${orderIdStr}</title>
+  <style>
+    @page { size: 100mm 150mm; margin: 0; }
+    @media print { html, body { margin: 0; padding: 0; width: 100mm; } }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 11px;
+      color: #111;
+      background: white;
+      width: 100mm;
+      border: 2px solid #222;
+    }
+
+    /* ── HEADER ── */
+    .label-header {
+      display: flex;
+      align-items: center;
+      background: #fffbf0;
+      border-bottom: 2.5px solid #222;
+      padding: 6px 10px;
+      gap: 10px;
+    }
+    .label-header-img {
+      height: 48px;
+      width: auto;
+      flex-shrink: 0;
+    }
+    .label-brand {
+      flex: 1;
+    }
+    .label-brand-name {
+      font-size: 22px;
+      font-weight: 900;
+      color: #111;
+      line-height: 1;
+      letter-spacing: -0.5px;
+    }
+    .label-brand-name span.namma { color: #f97316; font-size: 13px; font-weight: 900; }
+    .label-brand-name span.ooru { color: #dc2626; font-size: 22px; }
+    .label-brand-name span.foods { color: #166534; font-size: 14px; }
+    .label-tagline {
+      font-size: 9px;
+      color: #166534;
+      font-weight: 700;
+      margin-top: 2px;
+      text-align: center;
+      border-top: 1.5px solid #166534;
+      padding-top: 3px;
+    }
+
+    /* ── BODY TWO-COL ── */
+    .label-body {
+      display: grid;
+      grid-template-columns: 55mm 1fr;
+      border-bottom: 2px solid #222;
+    }
+
+    /* LEFT: SHIP TO */
+    .ship-to-block {
+      border-right: 2px solid #222;
+      padding: 8px 8px 6px;
+    }
+    .ship-to-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: #166534;
+      color: white;
+      font-size: 9px;
+      font-weight: 900;
+      padding: 3px 8px;
+      border-radius: 4px;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .ship-to-name {
+      font-size: 14px;
+      font-weight: 900;
+      color: #111;
+      margin-bottom: 4px;
+      line-height: 1.2;
+    }
+    .ship-to-addr {
+      font-size: 10px;
+      color: #333;
+      line-height: 1.6;
+      font-weight: 500;
+    }
+    .ship-to-divider {
+      border-top: 1.5px dashed #bbb;
+      margin: 6px 0;
+    }
+    .ship-to-meta {
+      font-size: 9.5px;
+      color: #333;
+      font-weight: 600;
+      line-height: 1.8;
+    }
+    .ship-to-meta span { color: #555; font-weight: 500; }
+
+    /* RIGHT: ORDER INFO */
+    .order-info-block { padding: 6px 7px; display: flex; flex-direction: column; gap: 0; }
+    .order-info-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 0;
+      border-bottom: 1.5px solid #e5e5e5;
+    }
+    .order-info-row:last-child { border-bottom: none; }
+    .order-info-icon { font-size: 14px; flex-shrink: 0; }
+    .order-info-label { font-size: 8px; color: #777; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
+    .order-info-value { font-size: 11px; font-weight: 900; color: #111; line-height: 1.1; }
+    .order-info-value.red { color: #dc2626; font-size: 10px; }
+    .order-info-value.prepaid { color: #166534; }
+
+    /* TWO-CELL ROW */
+    .order-two-cell {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      border-bottom: 1.5px solid #e5e5e5;
+    }
+    .order-cell {
+      padding: 5px 0;
+    }
+    .order-cell:first-child { border-right: 1.5px solid #e5e5e5; }
+
+    /* PINCODE + BARCODE ROW */
+    .pin-bar-row {
+      display: grid;
+      grid-template-columns: 55mm 1fr;
+      border-bottom: 2px solid #222;
+    }
+    .pincode-block {
+      border-right: 2px solid #222;
+      padding: 6px 8px;
+    }
+    .pincode-label {
+      font-size: 8px;
+      font-weight: 900;
+      background: #166534;
+      color: white;
+      display: inline-block;
+      padding: 1px 6px;
+      border-radius: 3px;
+      margin-bottom: 4px;
+      text-transform: uppercase;
+    }
+    .pincode-value {
+      font-size: 24px;
+      font-weight: 900;
+      letter-spacing: 2px;
+      color: #111;
+      font-family: 'Courier New', monospace;
+    }
+    .barcode-block {
+      padding: 6px 8px;
+      text-align: center;
+    }
+    .barcode-label {
+      font-size: 8px;
+      font-weight: 900;
+      background: #166534;
+      color: white;
+      display: inline-block;
+      padding: 1px 6px;
+      border-radius: 3px;
+      margin-bottom: 4px;
+      text-transform: uppercase;
+    }
+    .barcode-graphic {
+      height: 32px;
+      width: 100%;
+      display: flex;
+      align-items: stretch;
+      justify-content: center;
+      background: white;
+      margin-bottom: 2px;
+      overflow: hidden;
+    }
+    .barcode-graphic div { flex-shrink: 0; }
+    .barcode-id { font-size: 8px; font-weight: 700; color: #333; font-family: 'Courier New', monospace; }
+
+    /* FOOTER */
+    .label-footer {
+      display: grid;
+      grid-template-columns: 60mm 1fr;
+    }
+    .handling-icons {
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      padding: 6px 6px;
+      border-right: 1.5px dashed #bbb;
+    }
+    .handling-item { text-align: center; }
+    .handling-icon { font-size: 18px; }
+    .handling-text { font-size: 7px; font-weight: 900; text-transform: uppercase; color: #166534; margin-top: 1px; line-height: 1.1; }
+    .return-block {
+      padding: 6px 8px;
+    }
+    .return-title { font-size: 8px; font-weight: 700; color: #555; margin-bottom: 2px; }
+    .return-name { font-size: 9px; font-weight: 900; color: #111; }
+    .return-addr { font-size: 8px; color: #444; line-height: 1.5; font-weight: 500; }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <div class="label-header">
+    <img class="label-header-img" src="/logo.webp" alt="Logo" onerror="this.style.display='none'" />
+    <div class="label-brand">
+      <div class="label-brand-name">
+        <span class="namma">Namma</span><br/>
+        <span class="ooru">Ooru</span> <span class="foods">Foods</span>
+      </div>
+    </div>
+  </div>
+  <div class="label-tagline">🌿 — நம்ம ஊரு சுவை - உங்கன் இல்லம் தேடி ! 🌿</div>
+
+  <!-- BODY: SHIP TO + ORDER INFO -->
+  <div class="label-body">
+    <div class="ship-to-block">
+      <div class="ship-to-badge">📍 SHIP TO</div>
+      <div class="ship-to-name">${recipientName}</div>
+      <div class="ship-to-addr">
+        ${street ? street + ',<br/>' : ''}
+        ${landmark ? landmark + ',<br/>' : ''}
+        ${city ? city + ' - ' + pincode + ',<br/>' : ''}
+        ${state}, India.
+      </div>
+      <div class="ship-to-divider"></div>
+      <div class="ship-to-meta">
+        📞 Mobile &nbsp; : <span>${phone ? '+91 ' + phone : 'N/A'}</span><br/>
+        ${landmark ? '📍 Landmark : <span>' + landmark + '</span>' : ''}
+      </div>
+    </div>
+    <div class="order-info-block">
+      <div class="order-info-row">
+        <div class="order-info-icon">🛍</div>
+        <div>
+          <div class="order-info-label">Order ID</div>
+          <div class="order-info-value red">${orderIdStr}</div>
+        </div>
+        <div style="margin-left:auto; text-align:right;">
+          <div class="order-info-icon">📅</div>
+          <div class="order-info-label">Order Date</div>
+          <div class="order-info-value" style="font-size:9px;">${orderDate}</div>
+        </div>
+      </div>
+      <div class="order-info-row">
+        <div class="order-info-icon">🚚</div>
+        <div>
+          <div class="order-info-label">Delivery Type</div>
+          <div class="order-info-value prepaid">${paymentMethod}</div>
+        </div>
+      </div>
+      <div class="order-two-cell">
+        <div class="order-cell">
+          <div class="order-info-label">Package Weight</div>
+          <div class="order-info-value">${packageWeightStr}</div>
+        </div>
+        <div class="order-cell" style="padding-left:6px; display:flex; align-items:center; gap:4px;">
+          <div>
+            <div class="order-info-label">No. of Items</div>
+            <div class="order-info-value">${itemCount}</div>
+          </div>
+          <span style="font-size:18px; margin-left:auto;">📦</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PINCODE + BARCODE ROW -->
+  <div class="pin-bar-row">
+    <div class="pincode-block">
+      <div class="pincode-label">PINCODE</div>
+      <div class="pincode-value">${pincode || '——————'}</div>
+    </div>
+    <div class="barcode-block">
+      <div class="barcode-label">BARCODE</div>
+      <div class="barcode-graphic">${barcodeSvg}</div>
+      <div class="barcode-id">${orderIdStr}</div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="label-footer">
+    <div class="handling-icons">
+      <div class="handling-item">
+        <div class="handling-icon">🤲</div>
+        <div class="handling-text">HANDLE<br/>WITH CARE</div>
+      </div>
+      <div class="handling-item">
+        <div class="handling-icon">⚗️</div>
+        <div class="handling-text">FRAGILE</div>
+      </div>
+      <div class="handling-item">
+        <div class="handling-icon">☂️</div>
+        <div class="handling-text">KEEP DRY</div>
+      </div>
+      <div class="handling-item">
+        <div class="handling-icon">⬆️</div>
+        <div class="handling-text">THIS SIDE<br/>UP</div>
+      </div>
+    </div>
+    <div class="return-block">
+      <div class="return-title">If Undelivered, Please Return To:</div>
+      <div class="return-name">NAMMA OORU FOODS PVT. LTD.,</div>
+      <div class="return-addr">
+        No.9, Abdul Kabharkhan Road,<br/>
+        Chinna Chokkikulam, Madurai,<br/>
+        Pin - 625 002 , Tamilnadu.
+      </div>
+    </div>
+  </div>
+
+  <script>
+    setTimeout(function() { window.print(); }, 300);
+  </script>
+</body>
+</html>`);
+    w.document.close();
+  };
+
+
+  const printAdminInvoice = (order: any) => {
+    const items = order.items || order.orderItems || [];
+    const subtotal = Number(order.totalAmount) - Number(order.gstAmount || 0) - Number(order.deliveryFee || 0) + Number(order.discountAmount || 0);
+    const orderIdStr = order.orderIdStr || `ORD-${String(order.id).padStart(4, '0')}`;
+
+    const itemRows = items.map((item: any, idx: number) => {
+      const rate = Number(item.price || item.unitPrice || 0);
+      const mrp = Number(item.product?.price || rate);
+      const code = item.product?.productIdStr || item.product?.sku || `ITEM${String(item.productId || idx + 1).padStart(4, '0')}`;
+      return `<tr style="border-bottom:1px solid #f1f5f9; color:#334155; font-weight:500;">
+        <td style="padding:8px 4px;">${idx + 1}</td>
+        <td style="padding:8px 4px; font-family:monospace;">${code}</td>
+        <td style="padding:8px 4px; font-weight:700; color:#0f172a;">${item.product?.name || item.name || '—'}</td>
+        <td style="padding:8px 4px; text-align:right; font-family:monospace;">${Number(item.quantity).toFixed(3)}</td>
+        <td style="padding:8px 4px; text-align:right; font-family:monospace;">${mrp.toFixed(2)}</td>
+        <td style="padding:8px 4px; text-align:right; font-family:monospace;">${rate.toFixed(2)}</td>
+        <td style="padding:8px 4px; text-align:right; font-family:monospace; font-weight:700; color:#0f172a;">${(rate * item.quantity).toFixed(2)}</td>
+      </tr>`;
+    }).join('');
+
+    const gstSection = Number(order.gstAmount || 0) > 0 ? `
+      <div style="margin-bottom:24px;">
+        <p style="font-size:9px;font-weight:900;color:#94a3b8;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px;">GST Details:</p>
+        <table style="width:100%;border-collapse:collapse;font-size:11px;">
+          <thead><tr style="border-top:1px solid #e2e8f0;border-bottom:1px solid #e2e8f0;">
+            <th style="padding:6px 4px;font-size:9px;font-weight:900;color:#94a3b8;text-transform:uppercase;">GST%</th>
+            <th style="padding:6px 4px;text-align:right;font-size:9px;font-weight:900;color:#94a3b8;text-transform:uppercase;">Taxable</th>
+            <th style="padding:6px 4px;text-align:right;font-size:9px;font-weight:900;color:#94a3b8;text-transform:uppercase;">SGST</th>
+            <th style="padding:6px 4px;text-align:right;font-size:9px;font-weight:900;color:#94a3b8;text-transform:uppercase;">CGST</th>
+            <th style="padding:6px 4px;text-align:right;font-size:9px;font-weight:900;color:#94a3b8;text-transform:uppercase;">Total</th>
+          </tr></thead>
+          <tbody>
+            <tr style="border-bottom:1px solid #f1f5f9;color:#334155;font-weight:600;">
+              <td style="padding:6px 4px;font-family:monospace;">5.00%</td>
+              <td style="padding:6px 4px;text-align:right;font-family:monospace;">${subtotal.toFixed(2)}</td>
+              <td style="padding:6px 4px;text-align:right;font-family:monospace;">${(Number(order.gstAmount || 0) / 2).toFixed(2)}</td>
+              <td style="padding:6px 4px;text-align:right;font-family:monospace;">${(Number(order.gstAmount || 0) / 2).toFixed(2)}</td>
+              <td style="padding:6px 4px;text-align:right;font-family:monospace;font-weight:700;">${(subtotal + Number(order.gstAmount || 0)).toFixed(2)}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>` : '';
+
+    const deliveryInfo = order.status === 'DELIVERED'
+      ? `Delivered on ${new Date(order.deliveryDate || order.updatedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}`
+      : `${new Date(order.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })} — ${new Date(new Date(order.createdAt).getTime() + 5 * 24 * 60 * 60 * 1000).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}`;
+
+    const addr = order.shippingAddress || {};
+    const recipientName = addr.recipientName || addr.name || order.user?.name || 'Customer';
+    const phone = addr.phone || order.user?.phone || 'N/A';
+    const addrLine = [addr.line1, addr.line2, addr.city ? `${addr.city} - ${addr.pincode}` : ''].filter(Boolean).join(', ');
+
+    const w = window.open('', '_blank', 'width=900,height=800');
+    if (!w) { alert('Please allow popups to print the invoice.'); return; }
+
+    w.document.write(`<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Invoice - ${orderIdStr}</title>
+  <style>
+    @page { size: A4 portrait; margin: 0; }
+    @media print {
+      html, body { margin: 0; padding: 0; width: 210mm; height: 297mm; background: white; }
+      .invoice-wrap { min-height: 297mm; padding: 1.5cm 1.8cm; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between; }
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; font-size: 12px; color: #1e293b; background: white; padding: 28px 36px 20px; }
+    table { width: 100%; border-collapse: collapse; }
+    img { max-height: 24px; width: auto; }
+  </style>
+</head>
+<body>
+<div class="invoice-wrap">
+  <div>
+    <!-- Header -->
+    <div style="display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #f1f5f9;padding-bottom:16px;margin-bottom:24px;">
+      <img src="/logo.webp" alt="Namma Ooru Foods" onerror="this.style.display='none'" />
+      <span style="font-size:14px;font-weight:900;color:#1e293b;">Namma Ooru Foods</span>
+    </div>
+    <p style="font-size:10px;color:#64748b;font-weight:700;text-align:center;margin-bottom:24px;">
+      9, First Floor, Opp. Jayam Hospital Chokkikulam Madurai Tamil Nadu 625002<br/>Phone : 9000896898
+    </p>
+
+    <!-- Two-Col Meta -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:2rem;margin-bottom:24px;padding-bottom:24px;border-bottom:1px solid #f1f5f9;">
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <div><span style="font-size:9px;font-weight:900;color:#94a3b8;text-transform:uppercase;letter-spacing:0.05em;display:block;">Order Number :</span>
+          <p style="font-weight:900;font-size:14px;color:#1e293b;">${orderIdStr}</p></div>
+        <div><span style="font-size:9px;font-weight:900;color:#94a3b8;text-transform:uppercase;letter-spacing:0.05em;display:block;">Bill Date :</span>
+          <p style="font-weight:700;color:#334155;">${new Date(order.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })} ${new Date(order.createdAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}</p></div>
+        <div><span style="font-size:9px;font-weight:900;color:#94a3b8;text-transform:uppercase;letter-spacing:0.05em;display:block;">Customer Details :</span>
+          <p style="font-weight:900;color:#1e293b;">${recipientName}</p>
+          <p style="font-weight:700;color:#475569;">${phone}</p></div>
+        <div><span style="font-size:9px;font-weight:900;color:#94a3b8;text-transform:uppercase;letter-spacing:0.05em;display:block;">Operator :</span>
+          <p style="font-weight:700;color:#334155;">Namma Ooru Foods</p></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <div><span style="font-size:9px;font-weight:900;color:#94a3b8;text-transform:uppercase;letter-spacing:0.05em;display:block;">Delivery Area :</span>
+          <p style="font-weight:700;color:#334155;">${addr.state || 'Tamil Nadu'}</p></div>
+        <div><span style="font-size:9px;font-weight:900;color:#94a3b8;text-transform:uppercase;letter-spacing:0.05em;display:block;">Delivery Address :</span>
+          <p style="font-weight:700;color:#334155;line-height:1.6;">${addrLine}</p></div>
+        <div><span style="font-size:9px;font-weight:900;color:#94a3b8;text-transform:uppercase;letter-spacing:0.05em;display:block;">Expected Delivery Time :</span>
+          <p style="font-weight:700;color:#334155;">${deliveryInfo}</p></div>
+        <div><span style="font-size:9px;font-weight:900;color:#94a3b8;text-transform:uppercase;letter-spacing:0.05em;display:block;">Payment Type :</span>
+          <p style="font-weight:700;color:#334155;">${order.paymentMethod === 'Razorpay Online' ? 'Online Payment (Razorpay)' : order.paymentMethod || 'Online Payment'}</p></div>
+      </div>
+    </div>
+
+    <!-- Items Table -->
+    <div style="margin-bottom:24px;">
+      <table>
+        <thead><tr style="border-top:1px solid #e2e8f0;border-bottom:1px solid #e2e8f0;">
+          <th style="padding:10px 4px;font-size:10px;font-weight:900;color:#94a3b8;text-transform:uppercase;letter-spacing:0.05em;text-align:left;width:36px;">No</th>
+          <th style="padding:10px 4px;font-size:10px;font-weight:900;color:#94a3b8;text-transform:uppercase;letter-spacing:0.05em;text-align:left;width:90px;">Item Code</th>
+          <th style="padding:10px 4px;font-size:10px;font-weight:900;color:#94a3b8;text-transform:uppercase;letter-spacing:0.05em;text-align:left;">Item</th>
+          <th style="padding:10px 4px;font-size:10px;font-weight:900;color:#94a3b8;text-transform:uppercase;letter-spacing:0.05em;text-align:right;width:60px;">Qty</th>
+          <th style="padding:10px 4px;font-size:10px;font-weight:900;color:#94a3b8;text-transform:uppercase;letter-spacing:0.05em;text-align:right;width:60px;">MRP</th>
+          <th style="padding:10px 4px;font-size:10px;font-weight:900;color:#94a3b8;text-transform:uppercase;letter-spacing:0.05em;text-align:right;width:60px;">Rate</th>
+          <th style="padding:10px 4px;font-size:10px;font-weight:900;color:#94a3b8;text-transform:uppercase;letter-spacing:0.05em;text-align:right;width:72px;">Amt</th>
+        </tr></thead>
+        <tbody>
+          ${itemRows}
+          <tr style="border-bottom:1px solid #e2e8f0;font-weight:900;color:#0f172a;">
+            <td colspan="3" style="padding:12px 4px;">Total Item(s): ${items.length}</td>
+            <td colspan="3" style="padding:12px 4px;text-align:right;">Total (Incl. Taxes)</td>
+            <td style="padding:12px 4px;text-align:right;font-family:monospace;">₹${Number(order.totalAmount).toFixed(2)}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    ${gstSection}
+
+    <!-- Payment Summary -->
+    <div style="border:1px dashed #cbd5e1;border-radius:1rem;padding:20px;margin-bottom:16px;">
+      <p style="font-size:10px;font-weight:900;color:#94a3b8;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:12px;">Payment Summary :</p>
+      <div style="display:flex;justify-content:space-between;align-items:center;font-weight:700;color:#334155;">
+        <span>${order.paymentMethod === 'Razorpay Online' ? 'Online Payment (Razorpay)' : order.paymentMethod || 'Online Payment'}</span>
+        <span style="font-family:monospace;">(-) ${Number(order.totalAmount).toFixed(2)}</span>
+      </div>
+      ${Number(order.discountAmount || 0) > 0 ? `<div style="margin-top:16px;padding-top:12px;border-top:1px solid #f1f5f9;text-align:center;color:#047857;font-weight:900;font-size:12px;">You saved ₹${Number(order.discountAmount).toFixed(2)} !</div>` : ''}
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div style="text-align:center;padding-top:16px;border-top:1px solid #f1f5f9;font-size:10px;color:#94a3b8;font-weight:700;line-height:1.5;">
+    Thank You! Shop Again<br/>9000896898
+  </div>
+</div>
+<script>
+  setTimeout(function() { window.print(); }, 300);
+</script>
+</body>
+</html>`);
+    w.document.close();
+  };
+
   const selectedOrder = orders.find((o: any) => o.id === selectedOrderId);
 
   return (
@@ -129,7 +704,7 @@ export default function AdminTrackingPage() {
             <button key={order.id} id={`admin-track-order-${order.id}`} onClick={() => setSelectedOrderId(order.id)}
               className={`w-full text-left rounded-2xl border-2 p-5 transition-all ${selectedOrderId === order.id ? 'border-[var(--admin-accent)] bg-amber-50/30' : 'border-slate-100 bg-white hover:border-slate-200'}`}>
               <div className="flex items-center justify-between">
-                <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Order #{order.id}</p>
+                <p className="text-xs font-black text-slate-400 uppercase tracking-widest">{order.orderIdStr || `#${order.id}`}</p>
                 <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-lg 
                   ${order.status === 'SHIPPED' ? 'bg-blue-100 text-blue-700' : 
                     order.status === 'DELIVERED' ? 'bg-emerald-100 text-emerald-700' : 
@@ -184,12 +759,22 @@ export default function AdminTrackingPage() {
                 <div className="h-12 w-12 rounded-2xl bg-emerald-50 flex items-center justify-center shrink-0">
                   <Truck className="h-6 w-6 text-emerald-600" />
                 </div>
-                <div className="min-w-0">
-                  <h3 className="font-black text-[var(--admin-sidebar)] text-base sm:text-lg truncate">Order #{selectedOrder.id} — Shipment Details</h3>
+                <div className="min-w-0 flex-1">
+                  <h3 className="font-black text-[var(--admin-sidebar)] text-base sm:text-lg truncate">{selectedOrder.orderIdStr || `#${selectedOrder.id}`} — Shipment Details</h3>
                   <p className="text-xs text-slate-400 font-medium truncate">{selectedOrder.user?.name} · ₹{Number(selectedOrder.totalAmount).toLocaleString()}</p>
                   <p className="text-[10px] font-black uppercase tracking-wider text-emerald-700 mt-1.5 bg-emerald-50 border border-emerald-100 rounded-lg px-2.5 py-1 inline-block">
                     Received: {new Date(selectedOrder.createdAt).toLocaleString('en-IN', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
                   </p>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <button id="print-label-btn-top" onClick={() => printShipmentLabel(selectedOrder)}
+                    className="flex items-center justify-center gap-1 px-3 py-2 rounded-xl bg-orange-600 hover:bg-orange-700 text-white text-[8px] font-black uppercase tracking-widest transition-all">
+                    <Printer className="h-3 w-3" /> Print Label
+                  </button>
+                  <button id="download-invoice-btn-top" onClick={() => printAdminInvoice(selectedOrder)}
+                    className="flex items-center justify-center gap-1 px-3 py-2 rounded-xl bg-violet-600 hover:bg-violet-700 text-white text-[8px] font-black uppercase tracking-widest transition-all">
+                    <Download className="h-3 w-3" /> Invoice
+                  </button>
                 </div>
               </div>
 
@@ -200,22 +785,40 @@ export default function AdminTrackingPage() {
                     <span className="font-black uppercase tracking-wider text-slate-400 text-[10px]">Customer Contact</span>
                     <span className="font-bold text-slate-800">{selectedOrder.user?.email || 'N/A'}</span>
                   </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Recipient Name</p>
-                      <p className="text-sm font-black text-slate-800">{selectedOrder.shippingAddress.recipientName || selectedOrder.shippingAddress.name || 'Customer'}</p>
-                      {selectedOrder.shippingAddress.phone && (
-                        <p className="text-slate-600 font-bold mt-1">Phone: {selectedOrder.shippingAddress.phone}</p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-1">
+                    <div className="space-y-3">
+                      <div>
+                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider block mb-0.5">Recipient Name:</span>
+                        <p className="text-sm font-black text-slate-800">{selectedOrder.shippingAddress.recipientName || selectedOrder.shippingAddress.name || 'Customer'}</p>
+                      </div>
+                      {(selectedOrder.shippingAddress.phone || selectedOrder.user?.phone) && (
+                        <div>
+                          <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider block mb-0.5">Contact Phone:</span>
+                          <p className="text-slate-800 font-bold">{selectedOrder.shippingAddress.phone || selectedOrder.user?.phone}</p>
+                        </div>
                       )}
                     </div>
-                    <div>
-                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Shipping Address</p>
-                      <p className="text-slate-600 leading-relaxed font-bold">
-                        {selectedOrder.shippingAddress.line1}
-                        {selectedOrder.shippingAddress.line2 ? `, ${selectedOrder.shippingAddress.line2}` : ''}
-                        <br />
-                        {selectedOrder.shippingAddress.city}, {selectedOrder.shippingAddress.state} - {selectedOrder.shippingAddress.pincode}
-                      </p>
+                    <div className="space-y-3">
+                      <div>
+                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider block mb-0.5">Street Address:</span>
+                        <p className="text-slate-800 font-bold leading-relaxed">{selectedOrder.shippingAddress.line1}</p>
+                      </div>
+                      {selectedOrder.shippingAddress.line2 && (
+                        <div>
+                          <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider block mb-0.5">Landmark / Area:</span>
+                          <p className="text-slate-800 font-bold bg-white px-2.5 py-1.5 rounded-lg border border-slate-200/60 w-fit">{selectedOrder.shippingAddress.line2}</p>
+                        </div>
+                      )}
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider block mb-0.5">City:</span>
+                          <p className="text-slate-800 font-bold">{selectedOrder.shippingAddress.city}</p>
+                        </div>
+                        <div>
+                          <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider block mb-0.5">Pincode:</span>
+                          <p className="text-slate-800 font-bold">{selectedOrder.shippingAddress.pincode}</p>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -252,6 +855,7 @@ export default function AdminTrackingPage() {
                     {markingDelivered ? 'Updating...' : <><CheckCircle className="h-4 w-4" /> Mark Delivered</>}
                   </button>
                 )}
+
                 {form.trackingUrl && (
                   <a href={form.trackingUrl} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl border-2 border-slate-100 text-xs font-black uppercase tracking-widest text-slate-400 hover:bg-slate-50 transition-all w-full sm:w-auto">
                     Preview Link <ExternalLink className="h-3.5 w-3.5" />

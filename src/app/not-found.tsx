@@ -159,7 +159,8 @@ export default function NotFound() {
       </p>
       <Link 
         href="/" 
-        className="mt-8 h-12 px-8 rounded-xl bg-[#022c22] text-white font-black text-[11px] uppercase tracking-widest flex items-center justify-center shadow-lg shadow-emerald-950/20 active:scale-95 transition-all hover:bg-emerald-900"
+        className="mt-8 h-12 px-8 rounded-xl text-white font-black text-[11px] uppercase tracking-widest flex items-center justify-center shadow-lg active:scale-95 transition-all hover:opacity-90"
+        style={{ color: '#ffffff', backgroundColor: '#16a34a' }}
       >
         Return Home
       </Link>

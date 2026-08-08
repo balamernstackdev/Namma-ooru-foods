@@ -10,7 +10,7 @@ import {
   LogOut, Bell, List, Layers, Tag, Ticket, Star, Truck, Clock,
   RotateCcw, BookOpen, Image as ImageIcon, Mail, ClipboardList,
   ChevronDown, ChevronRight, Shield, ShieldCheck, Play, Megaphone,
-  Menu
+  Menu, CreditCard
 } from 'lucide-react';
 import { useState } from 'react';
 import useSWR from 'swr';
@@ -68,6 +68,7 @@ const navGroups = [
     label: 'Orders',
     items: [
       { label: 'Orders', href: '/admin/orders', icon: ShoppingBag },
+      { label: 'Transactions', href: '/admin/transactions', icon: CreditCard },
       { label: 'Shipment Tracker', href: '/admin/tracking', icon: Truck },
       { label: 'Refund Requests', href: '/admin/refund-requests', icon: RotateCcw },
     ]
