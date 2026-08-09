@@ -137,7 +137,7 @@ export default function CreatePopupCampaignPage() {
       formData.append('image', file);
 
       const token = localStorage.getItem('namma_orru_token');
-      const res = await fetch(`${API_URL}/api/upload`, {
+      const res = await fetch(`${API_URL}/api/upload/image`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`
@@ -149,9 +149,9 @@ export default function CreatePopupCampaignPage() {
       if (!res.ok) throw new Error(data.message || 'Upload failed');
 
       if (type === 'desktop') {
-        setFormData(prev => ({ ...prev, desktopImage: data.imageUrl }));
+        setFormData(prev => ({ ...prev, desktopImage: data.url }));
       } else {
-        setFormData(prev => ({ ...prev, mobileImage: data.imageUrl }));
+        setFormData(prev => ({ ...prev, mobileImage: data.url }));
       }
 
       toast.success('Image uploaded successfully');
@@ -175,7 +175,7 @@ export default function CreatePopupCampaignPage() {
 
     try {
       const token = localStorage.getItem('namma_orru_token');
-      const res = await fetch(`${API_URL}/api/admin/popups`, {
+      const res = await fetch(`${API_URL}/api/popup-campaigns`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
