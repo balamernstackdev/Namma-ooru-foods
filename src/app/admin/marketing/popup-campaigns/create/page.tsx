@@ -11,12 +11,9 @@ import {
   X,
   Mail,
   Check,
-  Sparkles,
-  FileText,
   CheckCircle2,
   AlertCircle,
-  HelpCircle,
-  Link2, ImageIcon
+  Link2
 } from 'lucide-react';
 import { API_URL } from '@/lib/api';
 import toast from 'react-hot-toast';
@@ -41,27 +38,91 @@ const SmartCheckbox = ({
   label: string
 }) => {
   return (
-    <label className="flex items-center gap-3 p-4 rounded-xl border border-slate-200 cursor-pointer hover:bg-slate-50 transition-colors bg-white">
-      <div className={`flex items-center justify-center w-6 h-6 rounded-lg border transition-all ${checked ? "bg-emerald-500 border-emerald-500" : "border-slate-300"}`}>
-        {checked && <Check size={14} className="text-white" />}
+    <label className="flex items-center gap-3 cursor-pointer group select-none">
+      <div
+        onClick={() => onChange(!checked)}
+        className={`h-5 w-5 rounded-lg border-2 flex items-center justify-center transition-all ${
+          checked
+            ? 'bg-emerald-600 border-emerald-600 text-white shadow-sm shadow-emerald-500/10'
+            : 'border-slate-350 bg-white group-hover:border-slate-400'
+        }`}
+      >
+        {checked && <Check size={12} strokeWidth={3} className="animate-in zoom-in-50 duration-150" />}
       </div>
-      <span className="text-xs font-bold text-slate-700 uppercase tracking-widest">{label}</span>
-      <input type="checkbox" className="hidden" checked={checked} onChange={e => onChange(e.target.checked)} />
+      <span className="text-xs font-bold text-slate-700 uppercase tracking-wide transition-colors group-hover:text-slate-950">
+        {label}
+      </span>
     </label>
   );
 };
 
-const ToggleSwitch = ({ label, description, checked, onChange }: any) => {
+// --- Custom Toggle Switch Component ---
+const ToggleSwitch = ({
+  checked,
+  onChange,
+  label,
+  description
+}: {
+  checked: boolean;
+  onChange: (val: boolean) => void;
+  label: string;
+  description?: string;
+}) => {
   return (
-    <div className="flex items-start justify-between p-4 rounded-xl border border-slate-200 bg-white">
-      <div className="space-y-1 pr-4">
-        <label className="text-[10px] font-black uppercase tracking-widest text-slate-900 block">{label}</label>
-        {description && <p className="text-xs font-medium text-slate-500">{description}</p>}
+    <div className="flex items-center justify-between p-4 bg-slate-50 border border-slate-100 rounded-xl hover:bg-slate-100/50 transition-colors">
+      <div className="flex flex-col text-left">
+        <span className="text-xs font-bold text-slate-700 uppercase tracking-wide">{label}</span>
+        {description && <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider mt-0.5">{description}</span>}
       </div>
-      <label className="relative inline-flex items-center cursor-pointer shrink-0 mt-1">
-        <input type="checkbox" className="sr-only peer" checked={checked} onChange={e => onChange(e.target.checked)} />
-        <div className="w-11 h-6 bg-slate-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
-      </label>
+      <button
+        type="button"
+        onClick={() => onChange(!checked)}
+        className={`w-11 h-6 rounded-full p-1 transition-colors duration-300 outline-none shrink-0 ${checked ? 'bg-emerald-600' : 'bg-slate-200'}`}
+      >
+        <div className={`w-4 h-4 rounded-full bg-white shadow-sm transform transition-transform duration-300 ${checked ? 'translate-x-5' : 'translate-x-0'}`} />
+      </button>
+    </div>
+  );
+};
+
+// --- Custom Number Stepper Component ---
+const NumberStepper = ({
+  value,
+  onChange,
+  min = 0,
+  label
+}: {
+  value: string;
+  onChange: (val: string) => void;
+  min?: number;
+  label: string
+}) => {
+  const numVal = parseInt(value) || 0;
+  return (
+    <div className="space-y-1.5 text-left">
+      <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">{label}</label>
+      <div className="flex items-center h-12 w-full bg-slate-50 border border-slate-200 rounded-xl overflow-hidden focus-within:border-emerald-600 transition-colors">
+        <button
+          type="button"
+          onClick={() => onChange(String(Math.max(min, numVal - 1)))}
+          className="w-12 h-full flex items-center justify-center text-slate-500 hover:bg-slate-100 active:bg-slate-200 transition-colors font-bold text-lg select-none"
+        >
+          −
+        </button>
+        <input
+          type="number"
+          value={value}
+          onChange={e => onChange(String(Math.max(min, parseInt(e.target.value) || 0)))}
+          className="flex-1 h-full bg-transparent text-center font-bold text-xs text-slate-900 outline-none select-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+        />
+        <button
+          type="button"
+          onClick={() => onChange(String(numVal + 1))}
+          className="w-12 h-full flex items-center justify-center text-slate-500 hover:bg-slate-100 active:bg-slate-200 transition-colors font-bold text-lg select-none"
+        >
+          +
+        </button>
+      </div>
     </div>
   );
 };
@@ -72,14 +133,15 @@ export default function CreatePopupCampaignPage() {
   const [uploadingDesktop, setUploadingDesktop] = useState(false);
   const [uploadingMobile, setUploadingMobile] = useState(false);
 
-  const [statusMode, setStatusMode] = useState('active');
-  const [redirectType, setRedirectType] = useState('none');
-  const [externalUrl, setExternalUrl] = useState('');
-  const [popupActionType, setPopupActionType] = useState('none');
-  const [selectedTargetId, setSelectedTargetId] = useState('');
+  // Custom states for redesign routing & actions
+  const [statusMode, setStatusMode] = useState<'active' | 'scheduled' | 'disabled'>('active');
+  const [redirectType, setRedirectType] = useState<string>('none');
+  const [externalUrl, setExternalUrl] = useState<string>('');
+  const [popupActionType, setPopupActionType] = useState<string>('none');
+  const [selectedTargetId, setSelectedTargetId] = useState<string>('');
 
-  const [previewMode, setPreviewMode] = useState('desktop');
-  const [isPreviewCopied, setIsPreviewCopied] = useState(false);
+  // Preview view switcher state
+  const [previewMode, setPreviewMode] = useState<'desktop' | 'mobile'>('desktop');
 
   const [formData, setFormData] = useState({
     title: '',
@@ -92,113 +154,167 @@ export default function CreatePopupCampaignPage() {
     couponCode: '',
     discountPct: '',
     popupType: 'NEWSLETTER',
-    displayDelay: 3,
+    displayDelay: '3',
     oncePerSession: true,
     oncePerUser: false,
     onlyGuest: false,
     onlyLoggedIn: false,
-    targetNewCustomers: false,
-    targetReturningCustomers: false,
-    showOnAll: true,
-    showOnHome: false,
-    showOnCategory: false,
-    showOnProduct: false,
-    showOnCart: false,
-    showOnCheckout: false,
     startDate: '',
     endDate: '',
-    couponExpiry: '',
-    discountType: 'PERCENTAGE',
-    copySuccessMsg: 'Coupon copied!',
-    showCouponCode: true,
-    autoCopy: false,
-    exitIntent: false,
-    autoCloseTimer: '',
-    status: 'active',
-    priority: 0,
+    priority: '0',
     isActive: true
   });
 
-  const previewDesktopImage = formData.desktopImage;
-  const previewMobileImage = formData.mobileImage;
-
-  const { data: couponsData } = useSWR(`${API_URL}/api/coupons?limit=100`, fetcher);
+  // Fetch coupons with high limit to populate the Apply Coupon dropdown fully
+  const { data: couponsData } = useSWR<any>(`${API_URL}/api/coupons?limit=100`, fetcher);
   const coupons = couponsData?.coupons || [];
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: 'desktop' | 'mobile') => {
+  // Synchronize local redirection states into formData.redirectUrl
+  useEffect(() => {
+    let computedUrl = '';
+
+    if (popupActionType !== 'none') {
+      if (popupActionType === 'product' && selectedTargetId) {
+        computedUrl = `/products/detail?id=${selectedTargetId}`;
+      } else if (popupActionType === 'category' && selectedTargetId) {
+        computedUrl = `/products?category=${selectedTargetId}`;
+      } else if (popupActionType === 'vendor' && selectedTargetId) {
+        computedUrl = `/vendors/${selectedTargetId}`;
+      } else if (popupActionType === 'collection' && selectedTargetId) {
+        computedUrl = `/products?collection=${selectedTargetId}`;
+      } else if (popupActionType === 'coupon') {
+        computedUrl = '/promotions';
+      }
+    } else {
+      if (redirectType === 'home') computedUrl = '/';
+      else if (redirectType === 'shop') computedUrl = '/products';
+      else if (redirectType === 'categories') computedUrl = '/categories';
+      else if (redirectType === 'vendors') computedUrl = '/vendors';
+      else if (redirectType === 'products') computedUrl = '/products';
+      else if (redirectType === 'offers') computedUrl = '/promotions';
+      else if (redirectType === 'coupon') computedUrl = '/promotions';
+      else if (redirectType === 'contact') computedUrl = '/about';
+      else if (redirectType === 'about') computedUrl = '/about';
+      else if (redirectType === 'external') computedUrl = externalUrl;
+    }
+
+    setFormData(prev => ({ ...prev, redirectUrl: computedUrl }));
+  }, [redirectType, externalUrl, popupActionType, selectedTargetId]);
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, field: 'desktopImage' | 'mobileImage') => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (type === 'desktop') setUploadingDesktop(true);
+    if (field === 'desktopImage') setUploadingDesktop(true);
     else setUploadingMobile(true);
 
     try {
-      const formData = new FormData();
-      formData.append('image', file);
-
       const token = localStorage.getItem('namma_orru_token');
+      const body = new FormData();
+      body.append('image', file);
+
       const res = await fetch(`${API_URL}/api/upload/image`, {
         method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`
-        },
-        body: formData
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        body
       });
-
       const data = await res.json();
-      if (!res.ok) throw new Error(data.message || 'Upload failed');
 
-      if (type === 'desktop') {
-        setFormData(prev => ({ ...prev, desktopImage: data.url }));
+      if (res.ok && data.url) {
+        setFormData(prev => ({ ...prev, [field]: data.url }));
+        toast.success('Image uploaded successfully');
       } else {
-        setFormData(prev => ({ ...prev, mobileImage: data.url }));
+        toast.error(data.error || 'Failed to upload image');
       }
-
-      toast.success('Image uploaded successfully');
-    } catch (error: any) {
-      toast.error(error.message || 'Upload failed');
+    } catch (err) {
+      toast.error('Failed to upload image');
     } finally {
-      if (type === 'desktop') setUploadingDesktop(false);
-      else setUploadingMobile(false);
+      setUploadingDesktop(false);
+      setUploadingMobile(false);
     }
   };
 
-  const handlePreviewCopy = () => {
-    navigator.clipboard.writeText(formData.couponCode || 'SAVE20');
-    setIsPreviewCopied(true);
-    setTimeout(() => setIsPreviewCopied(false), 2000);
+  const handleStatusChange = (mode: 'active' | 'scheduled' | 'disabled') => {
+    setStatusMode(mode);
+    setFormData(prev => ({
+      ...prev,
+      isActive: mode !== 'disabled',
+      // If we go active manually, clear future dates that might keep it scheduled
+      startDate: mode === 'active' ? '' : prev.startDate
+    }));
+  };
+
+  const getStatusExplanation = () => {
+    const isCampActive = statusMode !== 'disabled';
+    const now = new Date();
+    const sDate = formData.startDate ? new Date(formData.startDate) : null;
+    const eDate = formData.endDate ? new Date(formData.endDate) : null;
+
+    if (!isCampActive) {
+      return { text: 'Campaign is manually disabled and will not show to users.', color: 'text-rose-600' };
+    }
+    if (statusMode === 'scheduled' || (sDate && sDate > now)) {
+      return {
+        text: `Campaign is scheduled to automatically go live on ${sDate ? sDate.toLocaleString() : 'the start date'}.`,
+        color: 'text-amber-600 font-bold'
+      };
+    }
+    if (eDate && eDate < now) {
+      return { text: `Campaign has expired on ${eDate.toLocaleString()} and is no longer showing.`, color: 'text-slate-400' };
+    }
+    return { text: 'Campaign is currently live and active on the homepage.', color: 'text-emerald-600 font-bold' };
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitting(true);
+    if (!formData.title) {
+      toast.error('Title is required');
+      return;
+    }
 
+    setSubmitting(true);
     try {
       const token = localStorage.getItem('namma_orru_token');
+      const activeValue = statusMode !== 'disabled';
+
+      const payload = {
+        ...formData,
+        isActive: activeValue,
+        startDate: formData.startDate ? new Date(formData.startDate).toISOString() : null,
+        endDate: formData.endDate ? new Date(formData.endDate).toISOString() : null,
+        displayDelay: parseInt(formData.displayDelay) || 0,
+        priority: parseInt(formData.priority) || 0,
+        discountPct: formData.discountPct ? parseFloat(formData.discountPct) : null
+      };
+
       const res = await fetch(`${API_URL}/api/popup-campaigns`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
+          ...(token && { Authorization: `Bearer ${token}` })
         },
-        body: JSON.stringify({
-          ...formData,
-          priority: parseInt(formData.priority?.toString()) || 0,
-          displayDelay: parseInt(formData.displayDelay?.toString()) || 0
-        })
+        body: JSON.stringify(payload)
       });
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || 'Failed to create campaign');
-
-      toast.success('Campaign created successfully!');
-      router.push('/admin/marketing/popup-campaigns');
-    } catch (error: any) {
-      toast.error(error.message || 'Something went wrong');
+      if (res.ok) {
+        toast.success('Campaign created successfully!');
+        router.push('/admin/marketing/popup-campaigns');
+      } else {
+        const errorData = await res.json();
+        toast.error(errorData.error || 'Failed to create campaign');
+      }
+    } catch (err) {
+      toast.error('An error occurred while creating campaign');
     } finally {
       setSubmitting(false);
     }
   };
+
+  // Preview elements variables
+  const showEmailFormInPreview = formData.popupType === 'NEWSLETTER' || formData.popupType === 'FIRST_ORDER';
+  const previewDesktopImage = formData.desktopImage || '';
+  const previewMobileImage = formData.mobileImage || formData.desktopImage || '';
+
   return (
     <div className="space-y-8 animate-in fade-in duration-500 pb-16">
       {/* Header */}
@@ -219,391 +335,113 @@ export default function CreatePopupCampaignPage() {
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-8">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 items-start">
+        {/* Form Column */}
+        <form onSubmit={handleSubmit} className="space-y-6">
 
-        {/* TOP SECTION: Split Layout (Form + Preview) */}
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 items-start">
-
-          {/* Left Column (Basic Info) */}
-          <div className="space-y-6">
-
-            {/* Card 1: Campaign Status & General Settings */}
-            <div className="bg-white rounded-[25px] border border-slate-200 shadow-sm p-6 sm:p-8 space-y-6">
-              <div className="flex flex-col gap-3 border-b border-slate-100 pb-5">
-                <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Campaign Status</span>
-
-                <div className="grid grid-cols-3 gap-3">
-                  {[
-                    { id: 'active', label: 'Active', color: 'bg-emerald-500', text: 'text-emerald-700', border: 'border-emerald-200', activeBg: 'bg-emerald-50' },
-                    { id: 'scheduled', label: 'Scheduled', color: 'bg-amber-400', text: 'text-amber-700', border: 'border-amber-200', activeBg: 'bg-amber-50' },
-                    { id: 'disabled', label: 'Disabled', color: 'bg-rose-500', text: 'text-rose-700', border: 'border-rose-200', activeBg: 'bg-rose-50' }
-                  ].map(opt => {
-                    const isSelected = statusMode === opt.id;
-                    return (
-                      <button
-                        key={opt.id}
-                        type="button"
-                        onClick={() => {
-                          setStatusMode(opt.id as any);
-                          setFormData({ ...formData, status: opt.id === 'scheduled' ? 'active' : opt.id });
-                        }}
-                        className={`flex items-center justify-center gap-2 py-3 px-4 rounded-xl border text-[10px] font-black uppercase tracking-widest transition-all ${isSelected
-                          ? `${opt.border} ${opt.activeBg} ${opt.text} shadow-sm`
-                          : 'border-slate-200 bg-white text-slate-500 hover:bg-slate-50'
-                          }`}
-                      >
-                        <span className={`h-1.5 w-1.5 rounded-full ${isSelected ? opt.color : 'bg-slate-300'}`} />
-                        {opt.label}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                <div className="space-y-1.5 text-left">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Campaign Title</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. Summer Mega Sale 2024"
-                    value={formData.title}
-                    onChange={e => setFormData({ ...formData, title: e.target.value })}
-                    className="h-12 w-full px-4 rounded-xl bg-slate-50 border border-slate-200 outline-none font-bold text-xs text-slate-900 focus:bg-white focus:border-emerald-600 transition-colors"
-                  />
-                </div>
-
-                <div className="space-y-1.5 text-left">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Offer Subtitle (Optional)</label>
-                  <input
-                    type="text"
-                    placeholder="e.g. valid till stocks last"
-                    value={formData.subtitle}
-                    onChange={e => setFormData({ ...formData, subtitle: e.target.value })}
-                    className="h-12 w-full px-4 rounded-xl bg-slate-50 border border-slate-200 outline-none font-bold text-xs text-slate-900 focus:bg-white focus:border-emerald-600 transition-colors"
-                  />
-                </div>
-
-                <div className="space-y-1.5 text-left">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Description</label>
-                  <textarea
-                    rows={3}
-                    placeholder="Get 50% off on all items!"
-                    value={formData.description}
-                    onChange={e => setFormData({ ...formData, description: e.target.value })}
-                    className="w-full p-4 rounded-xl bg-slate-50 border border-slate-200 outline-none font-bold text-xs text-slate-900 focus:bg-white focus:border-emerald-600 transition-colors resize-none"
-                  />
-                </div>
-
-                <div className="space-y-1.5 text-left">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Popup Layout Type</label>
-                  <select
-                    value={formData.popupType}
-                    onChange={e => setFormData({ ...formData, popupType: e.target.value })}
-                    className="h-12 w-full px-4 rounded-xl bg-slate-50 border-2 border-slate-100 outline-none font-bold text-xs text-slate-700 focus:bg-white focus:border-emerald-600 transition-colors cursor-pointer"
-                  >
-                    <option value="NEWSLETTER">Newsletter Subscription</option>
-                    <option value="FIRST_ORDER">First Order Offer</option>
-                    <option value="COUPON">Coupon Highlight</option>
-                    <option value="ANNOUNCEMENT">Announcement</option>
-                    <option value="FESTIVAL">Festival Offer</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-          </div>
-          {/* End of Left Column */}
-
-          {/* Live Preview Column (Sticky) */}
-          <div className="bg-slate-900 rounded-[30px] p-6 sm:p-8 border border-slate-800 shadow-2xl sticky top-8 text-white min-h-[520px] flex flex-col justify-between overflow-hidden">
-            {/* Preview Header / Device Toggle */}
-            <div className="flex items-center justify-between border-b border-slate-800 pb-4">
-              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-400 flex items-center gap-2">
-                <span className="h-2 w-2 rounded-full bg-emerald-500 animate-ping" />
-                Live Visual Preview
-              </span>
-              <div className="flex bg-slate-950 p-1 rounded-xl border border-slate-800">
-                <button
-                  type="button"
-                  onClick={() => setPreviewMode('desktop')}
-                  className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all ${previewMode === 'desktop' ? 'bg-amber-400 text-emerald-950 shadow-md font-bold' : 'text-slate-400 hover:text-white'
-                    }`}
-                >
-                  Desktop
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setPreviewMode('mobile')}
-                  className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all ${previewMode === 'mobile' ? 'bg-amber-400 text-emerald-950 shadow-md font-bold' : 'text-slate-400 hover:text-white'
-                    }`}
-                >
-                  Mobile
-                </button>
-              </div>
-            </div>
-
-            {/* Preview Render Area */}
-            <div className="flex-1 flex items-center justify-center pt-8">
-              {previewMode === 'desktop' ? (
-                <div className="w-[600px] bg-white rounded-2xl overflow-hidden shadow-2xl border border-slate-100 flex flex-col animate-in zoom-in-95 duration-300 relative">
-                  <div className="h-8 bg-slate-100 border-b border-slate-200 flex items-center px-4 gap-2">
-                    <div className="h-3 w-3 rounded-full bg-rose-400" />
-                    <div className="h-3 w-3 rounded-full bg-amber-400" />
-                    <div className="h-3 w-3 rounded-full bg-emerald-400" />
-                  </div>
-                  {previewDesktopImage ? (
-                    <div className="h-[300px] w-full bg-cover bg-center relative" style={{ backgroundImage: `url('${previewDesktopImage}')` }}>
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                    </div>
-                  ) : (
-                    <div className="h-[200px] w-full bg-slate-50 flex items-center justify-center border-b border-slate-100">
-                      <ImageIcon className="text-slate-200" size={48} />
-                    </div>
-                  )}
-                  <div className="p-8 text-center space-y-4 relative bg-white">
-                    {formData.popupType === 'COUPON' && (
-                      <div className="absolute -top-6 left-1/2 -translate-x-1/2 bg-rose-500 text-white text-[10px] font-black uppercase tracking-widest px-4 py-1.5 rounded-full shadow-lg">
-                        {formData.discountPct ? `${formData.discountPct}% OFF` : 'SPECIAL OFFER'}
-                      </div>
-                    )}
-                    <h2 className="text-2xl font-black text-slate-900 tracking-tight">
-                      {formData.title || 'Your Campaign Title Here'}
-                    </h2>
-                    {formData.subtitle && (
-                      <p className="text-emerald-600 font-bold text-xs uppercase tracking-widest">
-                        {formData.subtitle}
-                      </p>
-                    )}
-                    <p className="text-slate-500 text-sm font-medium leading-relaxed max-w-sm mx-auto">
-                      {formData.description || 'Add a compelling description to entice your users...'}
-                    </p>
-
-                    {formData.popupType === 'COUPON' && (
-                      <div className="pt-2 pb-1">
-                        <div className="relative flex items-center justify-center h-12 w-64 mx-auto border-2 border-dashed border-emerald-200 bg-emerald-50 rounded-xl">
-                          <span className="font-mono font-black tracking-widest text-emerald-800 text-lg">
-                            {formData.couponCode || 'SAVE20'}
-                          </span>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={handlePreviewCopy}
-                          disabled={isPreviewCopied}
-                          className={`mt-3 h-10 px-6 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${isPreviewCopied
-                            ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/30'
-                            : 'bg-slate-900 text-white hover:bg-slate-800'
-                            }`}
-                        >
-                          {isPreviewCopied ? 'Copied' : 'Copy Coupon'}
-                        </button>
-                      </div>
-                    )}
-
-                    <button type="button" className="mt-4 h-12 px-8 rounded-xl bg-emerald-600 text-white font-black text-xs uppercase tracking-widest shadow-xl shadow-emerald-600/20">
-                      {formData.buttonText || 'Claim Offer'}
-                    </button>
-                    <p className="text-[9px] text-slate-400 font-bold uppercase tracking-wider mt-4 cursor-pointer hover:text-slate-600">
-                      No thanks, close this window
-                    </p>
-                  </div>
-                </div>
-              ) : (
-                <div className="w-[320px] bg-white rounded-[40px] overflow-hidden shadow-2xl border-4 border-slate-800 flex flex-col animate-in zoom-in-95 duration-300 relative h-[550px]">
-                  <div className="absolute top-0 inset-x-0 h-6 bg-slate-800 flex items-center justify-center rounded-b-xl w-32 mx-auto z-20" />
-                  {previewMobileImage ? (
-                    <div className="h-[240px] w-full bg-cover bg-center relative" style={{ backgroundImage: `url('${previewMobileImage}')` }}>
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                    </div>
-                  ) : (
-                    <div className="h-[180px] w-full bg-slate-50 flex items-center justify-center border-b border-slate-100">
-                      <ImageIcon className="text-slate-200" size={48} />
-                    </div>
-                  )}
-                  <div className="p-6 text-center space-y-4 bg-white flex-1 flex flex-col justify-center relative">
-                    {formData.popupType === 'COUPON' && (
-                      <div className="absolute -top-5 left-1/2 -translate-x-1/2 bg-rose-500 text-white text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-full shadow-lg">
-                        {formData.discountPct ? `${formData.discountPct}% OFF` : 'SPECIAL OFFER'}
-                      </div>
-                    )}
-                    <h2 className="text-xl font-black text-slate-900 tracking-tight">
-                      {formData.title || 'Campaign Title'}
-                    </h2>
-                    {formData.subtitle && (
-                      <p className="text-emerald-600 font-bold text-[10px] uppercase tracking-widest">
-                        {formData.subtitle}
-                      </p>
-                    )}
-                    <p className="text-slate-500 text-xs font-medium leading-relaxed">
-                      {formData.description || 'Compelling description...'}
-                    </p>
-
-                    {formData.popupType === 'COUPON' && (
-                      <div className="pt-2 pb-1 space-y-3">
-                        <div className="relative flex items-center justify-center h-12 w-full border-2 border-dashed border-emerald-200 bg-emerald-50 rounded-xl">
-                          <span className="font-mono font-black tracking-widest text-emerald-800 text-lg">
-                            {formData.couponCode || 'SAVE20'}
-                          </span>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={handlePreviewCopy}
-                          disabled={isPreviewCopied}
-                          className={`w-full h-10 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${isPreviewCopied
-                            ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/30'
-                            : 'bg-slate-900 text-white hover:bg-slate-800'
-                            }`}
-                        >
-                          {isPreviewCopied ? 'Copied' : 'Copy Coupon'}
-                        </button>
-                      </div>
-                    )}
-
-                    <button type="button" className="w-full h-12 rounded-xl bg-emerald-600 text-white font-black text-[10px] uppercase tracking-widest shadow-xl shadow-emerald-600/20 mt-auto">
-                      {formData.buttonText || 'Claim Offer'}
-                    </button>
-                    <p className="text-[9px] text-slate-400 font-bold uppercase tracking-wider mt-2">
-                      Close
-                    </p>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-        {/* End of Top Split Layout */}
-
-        {/* BOTTOM SECTION: Full Width Configs */}
-        <div className="flex flex-col gap-8 animate-in slide-in-from-bottom-4 duration-500 w-full">
-
-          {/* Card: POPUP BUTTON ACTIONS */}
+          {/* Card 1: Campaign Status & General Settings */}
           <div className="bg-white rounded-[25px] border border-slate-200 shadow-sm p-6 sm:p-8 space-y-6">
+            <div className="flex flex-col gap-3 border-b border-slate-100 pb-5">
+              <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Campaign Status</span>
+
+              <div className="grid grid-cols-3 gap-3">
+                {[
+                  { id: 'active', label: 'Active', color: 'bg-emerald-500', text: 'text-emerald-700', border: 'border-emerald-200', activeBg: 'bg-emerald-50' },
+                  { id: 'scheduled', label: 'Scheduled', color: 'bg-amber-400', text: 'text-amber-700', border: 'border-amber-200', activeBg: 'bg-amber-50' },
+                  { id: 'disabled', label: 'Disabled', color: 'bg-rose-500', text: 'text-rose-700', border: 'border-rose-200', activeBg: 'bg-rose-50' }
+                ].map(opt => {
+                  const isSelected = statusMode === opt.id;
+                  return (
+                    <button
+                      key={opt.id}
+                      type="button"
+                      onClick={() => handleStatusChange(opt.id as any)}
+                      className={`h-14 rounded-2xl border-2 flex items-center justify-center gap-2.5 transition-all ${
+                        isSelected
+                          ? `${opt.activeBg} ${opt.border} ${opt.text} font-black scale-[1.02] shadow-sm`
+                          : 'bg-slate-50 border-slate-100 text-slate-500 hover:bg-slate-100'
+                      }`}
+                    >
+                      <span className={`h-2.5 w-2.5 rounded-full ${opt.color}`} />
+                      <span className="text-xs uppercase tracking-wider">{opt.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Automated explanation */}
+              <div className="flex items-start gap-2 pt-2">
+                <AlertCircle size={14} className="text-slate-400 mt-0.5 shrink-0" />
+                <p className={`text-[11px] font-bold ${getStatusExplanation().color}`}>
+                  {getStatusExplanation().text}
+                </p>
+              </div>
+            </div>
+
             <h3 className="text-sm font-black text-slate-900 border-b border-slate-100 pb-3 uppercase tracking-wider">
-              Popup Button Actions
+              Basic Campaign Information
             </h3>
+
+            {/* Title & Subtitle */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-1.5 text-left">
-                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Button Text</label>
+                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Popup Title *</label>
                 <input
                   type="text"
-                  placeholder="e.g. Claim Offer"
-                  value={formData.buttonText}
-                  onChange={e => setFormData({ ...formData, buttonText: e.target.value })}
+                  required
+                  placeholder="e.g. Taste the purity of namma ooru"
+                  value={formData.title}
+                  onChange={e => setFormData({ ...formData, title: e.target.value })}
                   className="h-12 w-full px-4 rounded-xl bg-slate-50 border border-slate-200 outline-none font-bold text-xs text-slate-900 focus:bg-white focus:border-emerald-600 transition-colors"
                 />
               </div>
               <div className="space-y-1.5 text-left">
-                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Redirect To Page</label>
-                <select
-                  value={formData.redirectUrl}
-                  onChange={e => setFormData({ ...formData, redirectUrl: e.target.value })}
-                  className="h-12 w-full px-4 rounded-xl bg-slate-50 border border-slate-200 outline-none font-bold text-xs text-slate-900 focus:bg-white focus:border-emerald-600 transition-colors cursor-pointer"
-                >
-                  <option value="">No Redirect</option>
-                  <option value="/products">All Products (/products)</option>
-                  <option value="/categories">Categories (/categories)</option>
-                  <option value="/cart">Cart (/cart)</option>
-                </select>
-              </div>
-              <div className="space-y-1.5 text-left">
-                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Popup Action</label>
-                <select
-                  className="h-12 w-full px-4 rounded-xl bg-slate-50 border border-slate-200 outline-none font-bold text-xs text-slate-900 focus:bg-white focus:border-emerald-600 transition-colors cursor-pointer"
-                >
-                  <option value="NONE">None</option>
-                  <option value="COPY_COUPON">Copy Coupon to Clipboard</option>
-                  <option value="CLOSE">Close Popup</option>
-                </select>
-              </div>
-              <div className="space-y-1.5 text-left">
-                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Apply Coupon (Optional)</label>
-                <select
-                  value={formData.couponCode}
-                  onChange={e => {
-                    const selectedCode = e.target.value;
-                    const selectedCoupon = coupons.find((c: any) => c.code === selectedCode);
-                    setFormData(prev => ({
-                      ...prev,
-                      couponCode: selectedCode,
-                      discountPct: selectedCoupon ? selectedCoupon.value?.toString() : prev.discountPct
-                    }));
-                  }}
-                  className="h-12 w-full px-4 rounded-xl bg-slate-50 border border-slate-200 outline-none font-bold text-xs text-slate-900 focus:bg-white focus:border-emerald-600 transition-colors cursor-pointer"
-                >
-                  <option value="">Select Coupon</option>
-                  {coupons.map((c: any) => (
-                    <option key={c.id || c.code} value={c.code}>{c.code} ({c.value}{(c.benefitType || c.type) === 'PERCENTAGE' ? '%' : ' flat'} off)</option>
-                  ))}
-                </select>
-              </div>
-              <div className="space-y-1.5 text-left">
-                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Discount %</label>
+                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Popup Subtitle</label>
                 <input
                   type="text"
-                  placeholder="e.g. 20"
-                  value={formData.discountPct}
-                  onChange={e => setFormData({ ...formData, discountPct: e.target.value })}
-                  className="h-12 w-full px-4 rounded-xl bg-slate-50 border border-slate-200 outline-none font-bold text-xs text-slate-900 focus:bg-white focus:border-emerald-600 transition-colors"
-                />
-              </div>
-              <div className="space-y-1.5 text-left">
-                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Display Priority</label>
-                <input
-                  type="number"
-                  min="0"
-                  value={formData.priority || 0}
-                  onChange={e => setFormData({ ...formData, priority: parseInt(e.target.value) || 0 })}
+                  placeholder="e.g. Limited Time Invitation"
+                  value={formData.subtitle}
+                  onChange={e => setFormData({ ...formData, subtitle: e.target.value })}
                   className="h-12 w-full px-4 rounded-xl bg-slate-50 border border-slate-200 outline-none font-bold text-xs text-slate-900 focus:bg-white focus:border-emerald-600 transition-colors"
                 />
               </div>
             </div>
-          </div>
 
-          {/* Card: DISPLAY SETTINGS */}
-          <div className="bg-white rounded-[25px] border border-slate-200 shadow-sm p-6 sm:p-8 space-y-6">
-            <h3 className="text-sm font-black text-slate-900 border-b border-slate-100 pb-3 uppercase tracking-wider">
-              Display Settings
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <ToggleSwitch
-                label="Show Once Per Session"
-                description="Do not spam. Display only once until user closes tab/browser"
-                checked={formData.oncePerSession}
-                onChange={(val: boolean) => setFormData(prev => ({ ...prev, oncePerSession: val }))}
+            {/* Description */}
+            <div className="space-y-1.5 text-left">
+              <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Description / Message</label>
+              <textarea
+                placeholder="e.g. Join 10,000+ families eating fresh, chemical-free produce direct from local farmers."
+                value={formData.description}
+                onChange={e => setFormData({ ...formData, description: e.target.value })}
+                className="h-24 w-full p-4 rounded-xl bg-slate-50 border border-slate-200 outline-none font-bold text-xs text-slate-900 focus:bg-white focus:border-emerald-600 transition-all resize-none"
               />
-              <ToggleSwitch
-                label="Show Once Per User"
-                description="Lifetime cap. Display only once per unique visitor"
-                checked={formData.oncePerUser}
-                onChange={(val: boolean) => setFormData(prev => ({ ...prev, oncePerUser: val }))}
-              />
-              <div className="space-y-1.5 text-left">
-                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Display Delay (Seconds)</label>
-                <input
-                  type="number"
-                  min="0"
-                  value={formData.displayDelay || 0}
-                  onChange={e => setFormData({ ...formData, displayDelay: parseInt(e.target.value) || 0 })}
-                  className="h-12 w-full px-4 rounded-xl bg-slate-50 border border-slate-200 outline-none font-bold text-xs text-slate-900 focus:bg-white focus:border-emerald-600 transition-colors"
-                />
-              </div>
-              <div className="space-y-1.5 text-left">
-                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Auto Close Timer (Seconds)</label>
-                <input
-                  type="number"
-                  placeholder="e.g. 10"
-                  value={formData.autoCloseTimer || ''}
-                  onChange={e => setFormData({ ...formData, autoCloseTimer: e.target.value })}
-                  className="h-12 w-full px-4 rounded-xl bg-slate-50 border border-slate-200 outline-none font-bold text-xs text-slate-900 focus:bg-white focus:border-emerald-600 transition-colors"
-                />
-              </div>
+            </div>
+
+            {/* Popup Type */}
+            <div className="space-y-1.5 text-left">
+              <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Popup Layout Type</label>
+              <select
+                value={formData.popupType}
+                onChange={e => setFormData({ ...formData, popupType: e.target.value })}
+                className="h-12 w-full px-4 rounded-xl bg-slate-50 border-2 border-slate-100 outline-none font-bold text-xs text-slate-700 focus:bg-white focus:border-emerald-600 transition-colors cursor-pointer"
+              >
+                <option value="NEWSLETTER">Newsletter Subscription</option>
+                <option value="FIRST_ORDER">First Order Offer</option>
+                <option value="COUPON">Coupon Highlight</option>
+                <option value="ANNOUNCEMENT">Announcement</option>
+                <option value="FESTIVAL">Festival Offer</option>
+              </select>
             </div>
           </div>
 
-          {/* Card: CAMPAIGN IMAGES */}
+          {/* Card 2: Visual Media & Guidelines */}
           <div className="bg-white rounded-[25px] border border-slate-200 shadow-sm p-6 sm:p-8 space-y-6">
             <h3 className="text-sm font-black text-slate-900 border-b border-slate-100 pb-3 uppercase tracking-wider">
               Campaign Images
             </h3>
+
+            {/* Image Guidelines Box */}
             <div className="bg-emerald-50/50 border border-emerald-100 rounded-2xl p-5 space-y-3 relative overflow-hidden text-left">
               <div className="flex items-center gap-2">
                 <CheckCircle2 size={16} className="text-emerald-600" />
@@ -620,193 +458,624 @@ export default function CreatePopupCampaignPage() {
                 </div>
                 <div className="bg-white border border-slate-200 rounded-xl p-2.5">
                   <p className="text-[9px] uppercase tracking-widest text-slate-400 mb-0.5">Format</p>
-                  <p className="font-black text-slate-800">WEBP</p>
+                  <p className="font-black text-slate-800">PNG / JPG / WEBP</p>
                 </div>
                 <div className="bg-white border border-slate-200 rounded-xl p-2.5">
-                  <p className="text-[9px] uppercase tracking-widest text-slate-400 mb-0.5">Max Size</p>
-                  <p className="font-black text-slate-800">2 MB</p>
+                  <p className="text-[9px] uppercase tracking-widest text-slate-400 mb-0.5">Max Weight</p>
+                  <p className="font-black text-red-600">2 MB</p>
                 </div>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Desktop Image Upload */}
-              <div className="space-y-2 text-left">
-                <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Desktop Image (700 × 600 px)</span>
-                <label className="relative flex flex-col items-center justify-center w-full aspect-[7/6] rounded-2xl border-2 border-dashed border-slate-200 hover:border-emerald-500 bg-slate-50 hover:bg-emerald-50/30 transition-all cursor-pointer overflow-hidden group">
-                  <input type="file" className="hidden" accept="image/png, image/jpeg, image/webp" onChange={e => handleImageUpload(e, 'desktop')} />
-                  {formData.desktopImage ? (
-                    <img src={formData.desktopImage} alt="Desktop Preview" className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="flex flex-col items-center gap-3 text-slate-400 group-hover:text-emerald-600 transition-colors">
-                      {uploadingDesktop ? <Loader2 size={24} className="animate-spin" /> : <Upload size={24} />}
-                      <span className="text-[10px] font-black uppercase tracking-widest">Upload Desktop Image</span>
-                    </div>
-                  )}
+            {/* Upload grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+
+              {/* Desktop Image */}
+              <div className="space-y-3 text-left">
+                <label className="text-[10px] uppercase font-black tracking-widest text-slate-400 block">
+                  Desktop Image <span className="text-slate-350">(700 × 600 px, Aspect 7:6)</span>
                 </label>
+
+                {formData.desktopImage ? (
+                  <div className="space-y-3 animate-in fade-in duration-200">
+                    <div className="relative aspect-[7/6] w-full rounded-2xl border border-slate-200 overflow-hidden bg-slate-50 flex items-center justify-center">
+                      <img
+                        src={formData.desktopImage}
+                        alt="Desktop Popup Preview"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => document.getElementById('desktop-image-file')?.click()}
+                        disabled={uploadingDesktop}
+                        className="flex-1 h-11 rounded-xl border-2 border-slate-200 hover:border-slate-350 text-slate-700 bg-white font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all"
+                      >
+                        {uploadingDesktop ? <Loader2 size={14} className="animate-spin text-slate-400" /> : 'Replace'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setFormData(prev => ({ ...prev, desktopImage: '' }))}
+                        className="h-11 px-4 rounded-xl border-2 border-red-100 hover:border-red-200 text-red-600 bg-white font-bold text-xs uppercase tracking-wider flex items-center justify-center transition-all"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div
+                    onClick={() => !uploadingDesktop && document.getElementById('desktop-image-file')?.click()}
+                    className="aspect-[7/6] w-full rounded-2xl border-2 border-dashed border-slate-200 hover:border-emerald-500 bg-slate-50 flex flex-col items-center justify-center gap-2.5 cursor-pointer transition-all"
+                  >
+                    {uploadingDesktop ? (
+                      <Loader2 className="h-8 w-8 animate-spin text-emerald-600" />
+                    ) : (
+                      <>
+                        <Upload className="text-slate-400" size={24} />
+                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">+ Upload Desktop Image</span>
+                      </>
+                    )}
+                  </div>
+                )}
+
+                <input
+                  id="desktop-image-file"
+                  type="file"
+                  accept="image/*"
+                  onChange={e => handleImageUpload(e, 'desktopImage')}
+                  className="hidden"
+                />
               </div>
 
-              {/* Mobile Image Upload */}
-              <div className="space-y-2 text-left">
-                <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Mobile Image (400 × 600 px)</span>
-                <label className="relative flex flex-col items-center justify-center w-full aspect-[2/3] max-w-[280px] mx-auto rounded-2xl border-2 border-dashed border-slate-200 hover:border-emerald-500 bg-slate-50 hover:bg-emerald-50/30 transition-all cursor-pointer overflow-hidden group">
-                  <input type="file" className="hidden" accept="image/png, image/jpeg, image/webp" onChange={e => handleImageUpload(e, 'mobile')} />
-                  {formData.mobileImage ? (
-                    <img src={formData.mobileImage} alt="Mobile Preview" className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="flex flex-col items-center gap-3 text-slate-400 group-hover:text-emerald-600 transition-colors">
-                      {uploadingMobile ? <Loader2 size={24} className="animate-spin" /> : <Upload size={24} />}
-                      <span className="text-[10px] font-black uppercase tracking-widest">Upload Mobile Image</span>
-                    </div>
-                  )}
+              {/* Mobile Image */}
+              <div className="space-y-3 text-left">
+                <label className="text-[10px] uppercase font-black tracking-widest text-slate-400 block">
+                  Mobile Image <span className="text-slate-350">(400 × 600 px, Aspect 2:3)</span>
                 </label>
+
+                {formData.mobileImage ? (
+                  <div className="space-y-3 animate-in fade-in duration-200">
+                    <div className="relative aspect-[2/3] max-h-[190px] mx-auto rounded-2xl border border-slate-200 overflow-hidden bg-slate-50 flex items-center justify-center">
+                      <img
+                        src={formData.mobileImage}
+                        alt="Mobile Popup Preview"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div className="flex gap-2 max-w-[190px] mx-auto">
+                      <button
+                        type="button"
+                        onClick={() => document.getElementById('mobile-image-file')?.click()}
+                        disabled={uploadingMobile}
+                        className="flex-1 h-11 rounded-xl border-2 border-slate-200 hover:border-slate-350 text-slate-700 bg-white font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all"
+                      >
+                        {uploadingMobile ? <Loader2 size={14} className="animate-spin text-slate-400" /> : 'Replace'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setFormData(prev => ({ ...prev, mobileImage: '' }))}
+                        className="h-11 px-3 rounded-xl border-2 border-red-100 hover:border-red-200 text-red-600 bg-white font-bold text-xs uppercase tracking-wider flex items-center justify-center transition-all"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div
+                    onClick={() => !uploadingMobile && document.getElementById('mobile-image-file')?.click()}
+                    className="aspect-[2/3] max-h-[190px] mx-auto w-full rounded-2xl border-2 border-dashed border-slate-200 hover:border-emerald-500 bg-slate-50 flex flex-col items-center justify-center gap-2.5 cursor-pointer transition-all"
+                  >
+                    {uploadingMobile ? (
+                      <Loader2 className="h-8 w-8 animate-spin text-emerald-600" />
+                    ) : (
+                      <>
+                        <Upload className="text-slate-400" size={24} />
+                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">+ Upload Mobile Image</span>
+                      </>
+                    )}
+                  </div>
+                )}
+
+                <input
+                  id="mobile-image-file"
+                  type="file"
+                  accept="image/*"
+                  onChange={e => handleImageUpload(e, 'mobileImage')}
+                  className="hidden"
+                />
               </div>
+
             </div>
           </div>
 
-          {/* Card: COUPON CONFIGURATION (Conditional) */}
-          {formData.popupType === 'COUPON' && (
-            <div className="bg-white rounded-[25px] border border-slate-200 shadow-sm p-6 sm:p-8 space-y-6">
-              <h3 className="text-sm font-black text-slate-900 border-b border-slate-100 pb-3 uppercase tracking-wider">
-                Coupon Configuration
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-1.5 text-left">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Coupon Selection</label>
-                  <select
-                    className="h-12 w-full px-4 rounded-xl bg-slate-50 border border-slate-200 outline-none font-bold text-xs text-slate-900 focus:bg-white focus:border-emerald-600 transition-colors cursor-pointer"
-                  >
-                    <option value="EXISTING">Select Existing Coupon</option>
-                    <option value="NEW">Create New Coupon</option>
-                  </select>
-                </div>
-                <div className="space-y-1.5 text-left">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Coupon Code</label>
+          {/* Card 3: Action Buttons & Redirections */}
+          <div className="bg-white rounded-[25px] border border-slate-200 shadow-sm p-6 sm:p-8 space-y-6">
+            <h3 className="text-sm font-black text-slate-900 border-b border-slate-100 pb-3 uppercase tracking-wider">
+              Popup Button Actions
+            </h3>
+
+            {/* Button text */}
+            <div className="space-y-1.5 text-left">
+              <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Button Text</label>
+              <input
+                type="text"
+                placeholder="e.g. Claim Offer / Shop Now"
+                value={formData.buttonText}
+                onChange={e => setFormData({ ...formData, buttonText: e.target.value })}
+                className="h-12 w-full px-4 rounded-xl bg-slate-50 border border-slate-200 outline-none font-bold text-xs text-slate-900 focus:bg-white focus:border-emerald-600 transition-colors"
+              />
+            </div>
+
+            {/* Redirect To selection */}
+            <div className="space-y-1.5 text-left">
+              <div className="flex items-center justify-between">
+                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Redirect To Page</label>
+                {redirectType !== 'none' && (
+                  <span className="text-[9px] font-black text-emerald-600 uppercase tracking-widest flex items-center gap-1">
+                    <Check size={10} strokeWidth={3} /> Path: {formData.redirectUrl}
+                  </span>
+                )}
+              </div>
+              <select
+                value={redirectType}
+                onChange={e => {
+                  setRedirectType(e.target.value);
+                  setPopupActionType('none'); // Clear specific target action to prevent conflicts
+                  setSelectedTargetId('');
+                }}
+                className="h-12 w-full px-4 rounded-xl bg-slate-50 border-2 border-slate-100 outline-none font-bold text-xs text-slate-700 focus:bg-white focus:border-emerald-600 transition-colors cursor-pointer"
+              >
+                <option value="none">No Redirect</option>
+                <option value="home">Home Page</option>
+                <option value="shop">Shop Page</option>
+                <option value="categories">Categories Page</option>
+                <option value="vendors">Vendors Page</option>
+                <option value="offers">Offers Page</option>
+                <option value="coupon">Coupon Page</option>
+                <option value="contact">Contact Us</option>
+                <option value="about">About Us</option>
+                <option value="external">External Website</option>
+              </select>
+            </div>
+
+            {/* Conditional input for External Website URL */}
+            {redirectType === 'external' && (
+              <div className="space-y-1.5 text-left animate-in slide-in-from-top-2 duration-200">
+                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Website URL *</label>
+                <div className="relative">
+                  <Link2 className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                   <input
-                    type="text"
-                    placeholder="e.g. SAVE20"
-                    value={formData.couponCode}
-                    onChange={e => setFormData({ ...formData, couponCode: e.target.value })}
-                    className="h-12 w-full px-4 rounded-xl bg-slate-50 border border-slate-200 outline-none font-bold text-xs text-slate-900 focus:bg-white focus:border-emerald-600 transition-colors"
-                  />
-                </div>
-                <div className="space-y-1.5 text-left">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Discount Type</label>
-                  <select
-                    value={formData.discountType}
-                    onChange={e => setFormData({ ...formData, discountType: e.target.value })}
-                    className="h-12 w-full px-4 rounded-xl bg-slate-50 border border-slate-200 outline-none font-bold text-xs text-slate-900 focus:bg-white focus:border-emerald-600 transition-colors cursor-pointer"
-                  >
-                    <option value="PERCENTAGE">Percentage (%)</option>
-                    <option value="FLAT">Flat Amount (₹)</option>
-                  </select>
-                </div>
-                <div className="space-y-1.5 text-left">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Discount Value</label>
-                  <input
-                    type="text"
-                    placeholder="e.g. 20"
-                    value={formData.discountPct}
-                    onChange={e => setFormData({ ...formData, discountPct: e.target.value })}
-                    className="h-12 w-full px-4 rounded-xl bg-slate-50 border border-slate-200 outline-none font-bold text-xs text-slate-900 focus:bg-white focus:border-emerald-600 transition-colors"
-                  />
-                </div>
-                <div className="space-y-1.5 text-left">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Coupon Start Date</label>
-                  <input
-                    type="datetime-local"
-                    className="h-12 w-full px-4 rounded-xl bg-slate-50 border border-slate-200 outline-none font-bold text-xs text-slate-900 focus:bg-white focus:border-emerald-600 transition-colors"
-                  />
-                </div>
-                <div className="space-y-1.5 text-left">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Coupon Expiry Date</label>
-                  <input
-                    type="datetime-local"
-                    value={formData.couponExpiry}
-                    onChange={e => setFormData({ ...formData, couponExpiry: e.target.value })}
-                    className="h-12 w-full px-4 rounded-xl bg-slate-50 border border-slate-200 outline-none font-bold text-xs text-slate-900 focus:bg-white focus:border-emerald-600 transition-colors"
+                    type="url"
+                    required
+                    placeholder="https://example.com"
+                    value={externalUrl}
+                    onChange={e => setExternalUrl(e.target.value)}
+                    className="h-12 w-full pl-11 pr-4 rounded-xl bg-slate-50 border border-slate-200 outline-none font-bold text-xs text-slate-900 focus:bg-white focus:border-emerald-600 transition-colors"
                   />
                 </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {/* Card: SCHEDULING */}
-          <div className="bg-white rounded-[25px] border border-slate-200 shadow-sm p-6 sm:p-8 space-y-6">
-            <h3 className="text-sm font-black text-slate-900 border-b border-slate-100 pb-3 uppercase tracking-wider">
-              Scheduling
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Section 3: Popup Action (Searchable Link targeting) */}
+            <div className="border-t border-slate-150 pt-5 space-y-5">
+              <div className="flex flex-col text-left">
+                <span className="text-xs font-black text-slate-900 uppercase tracking-wider">Link Specific Target (Alternative)</span>
+                <span className="text-[9px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">
+                  Let users open a specific item without writing paths manually
+                </span>
+              </div>
+
               <div className="space-y-1.5 text-left">
-                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Start Date & Time</label>
+                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Popup Action</label>
+                <select
+                  value={popupActionType}
+                  onChange={e => {
+                    const newType = e.target.value;
+                    setPopupActionType(newType);
+                    setRedirectType('none'); // Clear general redirection to prevent state conflicts
+                    setSelectedTargetId('');
+
+                    if (newType === 'coupon') {
+                      setSelectedTargetId('coupon');
+                    }
+                  }}
+                  className="h-12 w-full px-4 rounded-xl bg-slate-50 border-2 border-slate-100 outline-none font-bold text-xs text-slate-700 focus:bg-white focus:border-emerald-600 transition-colors cursor-pointer"
+                >
+                  <option value="none">None</option>
+                  <option value="product">Open Product</option>
+                  <option value="category">Open Category</option>
+                  <option value="vendor">Open Vendor</option>
+                  <option value="coupon">Open Coupon</option>
+                  <option value="collection">Open Collection</option>
+                </select>
+              </div>
+
+              {/* Autocomplete selectors */}
+              {popupActionType !== 'none' && popupActionType !== 'coupon' && (
+                <div className="space-y-1.5 text-left animate-in slide-in-from-top-2 duration-200">
+                  <label className="text-[10px] uppercase font-black tracking-widest text-slate-400">
+                    Search & Select {popupActionType} *
+                  </label>
+                  <SearchableSelect
+                    type={popupActionType as any}
+                    value={selectedTargetId}
+                    onChange={(val, name) => {
+                      setSelectedTargetId(val);
+                      toast.success(`Target linked: ${name}`);
+                    }}
+                    placeholder={`Search ${popupActionType}...`}
+                  />
+                </div>
+              )}
+            </div>
+
+            {/* Coupons & Discounts (Section 4) */}
+            <div className="border-t border-slate-150 pt-5 grid grid-cols-1 md:grid-cols-3 gap-6">
+
+              <div className="space-y-1.5 text-left md:col-span-2">
+                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Apply Coupon (Optional)</label>
+                <select
+                  value={formData.couponCode}
+                  onChange={e => {
+                    const code = e.target.value;
+                    setFormData(prev => ({ ...prev, couponCode: code }));
+
+                    // Pre-fill percentage value if found in selected coupon
+                    const match = coupons.find((c: any) => c.code === code);
+                    if (match && match.type === 'PERCENTAGE') {
+                      setFormData(prev => ({ ...prev, discountPct: String(match.value) }));
+                    }
+                  }}
+                  className="h-12 w-full px-4 rounded-xl bg-slate-50 border-2 border-slate-100 outline-none font-bold text-xs text-slate-700 focus:bg-white focus:border-emerald-600 transition-colors cursor-pointer"
+                >
+                  <option value="">Select Coupon</option>
+                  {coupons?.map((c: any) => (
+                    <option key={c.id} value={c.code}>
+                      {c.code} ({c.type === 'PERCENTAGE' ? `${c.value}%` : `₹${c.value}`} Off)
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="space-y-1.5 text-left">
+                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Discount %</label>
                 <input
-                  type="datetime-local"
-                  value={formData.startDate}
-                  onChange={e => setFormData({ ...formData, startDate: e.target.value })}
+                  type="number"
+                  min="0"
+                  max="100"
+                  placeholder="e.g. 20"
+                  value={formData.discountPct}
+                  onChange={e => setFormData({ ...formData, discountPct: e.target.value })}
                   className="h-12 w-full px-4 rounded-xl bg-slate-50 border border-slate-200 outline-none font-bold text-xs text-slate-900 focus:bg-white focus:border-emerald-600 transition-colors"
                 />
               </div>
+
+            </div>
+
+          </div>
+
+          {/* Card 4: Display Settings & Timing Rules */}
+          <div className="bg-white rounded-[25px] border border-slate-200 shadow-sm p-6 sm:p-8 space-y-6">
+            <h3 className="text-sm font-black text-slate-900 border-b border-slate-100 pb-3 uppercase tracking-wider">
+              Display Settings
+            </h3>
+
+            {/* Smart Steppers */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <NumberStepper
+                label="Display Delay (Seconds)"
+                value={formData.displayDelay}
+                onChange={val => setFormData(prev => ({ ...prev, displayDelay: val }))}
+              />
+              <NumberStepper
+                label="Display Priority Order"
+                value={formData.priority}
+                onChange={val => setFormData(prev => ({ ...prev, priority: val }))}
+              />
+            </div>
+
+            {/* Datepickers (Conditional: highlight if scheduled) */}
+            <div className={`grid grid-cols-1 md:grid-cols-2 gap-6 p-4 rounded-2xl border transition-all ${
+              statusMode === 'scheduled'
+                ? 'bg-amber-50/40 border-amber-200 shadow-sm shadow-amber-400/5'
+                : 'bg-slate-50/50 border-slate-100'
+            }`}>
               <div className="space-y-1.5 text-left">
-                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">End Date & Time</label>
+                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                  Campaign Start Date {statusMode === 'scheduled' && '*'}
+                </label>
+                <input
+                  type="datetime-local"
+                  required={statusMode === 'scheduled'}
+                  value={formData.startDate}
+                  onChange={e => setFormData({ ...formData, startDate: e.target.value })}
+                  className="h-12 w-full px-4 rounded-xl bg-white border border-slate-200 outline-none font-bold text-xs text-slate-700 focus:bg-white focus:border-emerald-600 transition-colors cursor-pointer"
+                />
+              </div>
+              <div className="space-y-1.5 text-left">
+                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Campaign End Date</label>
                 <input
                   type="datetime-local"
                   value={formData.endDate}
                   onChange={e => setFormData({ ...formData, endDate: e.target.value })}
-                  className="h-12 w-full px-4 rounded-xl bg-slate-50 border border-slate-200 outline-none font-bold text-xs text-slate-900 focus:bg-white focus:border-emerald-600 transition-colors"
+                  className="h-12 w-full px-4 rounded-xl bg-white border border-slate-200 outline-none font-bold text-xs text-slate-700 focus:bg-white focus:border-emerald-600 transition-colors cursor-pointer"
                 />
               </div>
             </div>
+
+            {/* Behavioral rules toggles */}
+            <div className="space-y-3 bg-slate-50/60 p-5 rounded-2xl border border-slate-100">
+              <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 block mb-2 text-left">
+                Audience Exclusion & Frequency Rules
+              </span>
+
+              <div className="grid grid-cols-1 gap-3">
+                <ToggleSwitch
+                  label="Show Once Per Session"
+                  description="Do not spam. Display only once until user closes tab/browser"
+                  checked={formData.oncePerSession}
+                  onChange={val => setFormData(prev => ({ ...prev, oncePerSession: val }))}
+                />
+
+                <ToggleSwitch
+                  label="Show Once Per User"
+                  description="Lifetime cap. Display only once per unique visitor"
+                  checked={formData.oncePerUser}
+                  onChange={val => setFormData(prev => ({ ...prev, oncePerUser: val }))}
+                />
+
+                <ToggleSwitch
+                  label="Guest Users Only"
+                  description="Show only to anonymous/non-logged-in sessions"
+                  checked={formData.onlyGuest}
+                  onChange={val => setFormData(prev => ({
+                    ...prev,
+                    onlyGuest: val,
+                    onlyLoggedIn: val ? false : prev.onlyLoggedIn // Mutually exclusive
+                  }))}
+                />
+
+                <ToggleSwitch
+                  label="Logged-in Users Only"
+                  description="Show only to authenticated member sessions"
+                  checked={formData.onlyLoggedIn}
+                  onChange={val => setFormData(prev => ({
+                    ...prev,
+                    onlyLoggedIn: val,
+                    onlyGuest: val ? false : prev.onlyGuest // Mutually exclusive
+                  }))}
+                />
+              </div>
+            </div>
+
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Card: DISPLAY RULES */}
-            <div className="bg-white rounded-[25px] border border-slate-200 shadow-sm p-6 space-y-5">
-              <h3 className="text-sm font-black text-slate-900 border-b border-slate-100 pb-3 uppercase tracking-wider">
-                Display Rules (Pages)
-              </h3>
+          {/* Form Actions */}
+          <div className="flex items-center gap-3 justify-end pt-4">
+            <Link
+              href="/admin/marketing/popup-campaigns"
+              className="h-12 px-6 rounded-xl border border-slate-200 text-slate-500 hover:bg-slate-50 font-bold text-xs uppercase tracking-wider flex items-center justify-center transition-all"
+            >
+              Cancel
+            </Link>
+            <button
+              type="submit"
+              disabled={submitting}
+              className="h-12 px-10 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs uppercase tracking-widest flex items-center justify-center gap-2 shadow-xl shadow-emerald-600/20 active:scale-95 disabled:opacity-50 transition-all cursor-pointer"
+            >
+              {submitting ? <Loader2 size={16} className="animate-spin" /> : 'Launch Campaign'}
+            </button>
+          </div>
 
-              <SmartCheckbox label="All Pages" checked={formData.showOnAll} onChange={val => setFormData({ ...formData, showOnAll: val })} />
-              <SmartCheckbox label="Homepage Only" checked={formData.showOnHome} onChange={val => setFormData({ ...formData, showOnHome: val })} />
-              <SmartCheckbox label="Category Pages" checked={formData.showOnCategory} onChange={val => setFormData({ ...formData, showOnCategory: val })} />
-              <SmartCheckbox label="Product Pages" checked={formData.showOnProduct} onChange={val => setFormData({ ...formData, showOnProduct: val })} />
-              <SmartCheckbox label="Cart Page" checked={formData.showOnCart} onChange={val => setFormData({ ...formData, showOnCart: val })} />
-              <SmartCheckbox label="Checkout Page" checked={formData.showOnCheckout} onChange={val => setFormData({ ...formData, showOnCheckout: val })} />
+        </form>
+
+        {/* Live Preview Column (Sticky) */}
+        <div className="bg-slate-900 rounded-[30px] p-6 sm:p-8 border border-slate-800 shadow-2xl sticky top-8 text-white min-h-[520px] flex flex-col justify-between overflow-hidden">
+
+          {/* Preview Header / Device Toggle */}
+          <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-400 flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full bg-emerald-500 animate-ping" />
+              Live Visual Preview
+            </span>
+            <div className="flex bg-slate-950 p-1 rounded-xl border border-slate-800">
+              <button
+                type="button"
+                onClick={() => setPreviewMode('desktop')}
+                className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all ${
+                  previewMode === 'desktop' ? 'bg-amber-400 text-emerald-950 shadow-md font-bold' : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                Desktop
+              </button>
+              <button
+                type="button"
+                onClick={() => setPreviewMode('mobile')}
+                className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all ${
+                  previewMode === 'mobile' ? 'bg-amber-400 text-emerald-950 shadow-md font-bold' : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                Mobile
+              </button>
             </div>
+          </div>
 
-            {/* Card: AUDIENCE TARGETING */}
-            <div className="bg-white rounded-[25px] border border-slate-200 shadow-sm p-6 space-y-5">
-              <h3 className="text-sm font-black text-slate-900 border-b border-slate-100 pb-3 uppercase tracking-wider">
-                Audience Targeting
-              </h3>
+          {/* Active Preview Deck */}
+          <div className="my-8 flex justify-center items-center flex-1">
+            {previewMode === 'desktop' ? (
 
-              <SmartCheckbox label="Guest Users" checked={formData.onlyGuest} onChange={val => setFormData({ ...formData, onlyGuest: val })} />
-              <SmartCheckbox label="Logged-in Users" checked={formData.onlyLoggedIn} onChange={val => setFormData({ ...formData, onlyLoggedIn: val })} />
-              <SmartCheckbox label="New Customers" checked={formData.targetNewCustomers} onChange={val => setFormData({ ...formData, targetNewCustomers: val })} />
-              <SmartCheckbox label="Returning Customers" checked={formData.targetReturningCustomers} onChange={val => setFormData({ ...formData, targetReturningCustomers: val })} />
-            </div>
+              /* Desktop Preview (Horizontal layout) */
+              <div className="w-full max-w-[650px] bg-white rounded-[2rem] shadow-2xl overflow-hidden flex flex-col md:flex-row min-h-[320px] text-slate-800 animate-in fade-in duration-300">
+                {/* Image side */}
+                <div className="relative w-full md:w-[45%] h-36 md:h-auto bg-emerald-900 overflow-hidden flex flex-col justify-end p-6 text-white min-h-[160px]">
+                  {previewDesktopImage ? (
+                    <img
+                      src={previewDesktopImage}
+                      alt="Upload Preview"
+                      className="absolute inset-0 w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="absolute inset-0 bg-gradient-to-br from-emerald-950 to-emerald-800 flex items-center justify-center text-slate-500/50">
+                      <Gift size={48} strokeWidth={1} />
+                    </div>
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-t md:bg-gradient-to-r from-emerald-950/70 via-transparent to-transparent z-0" />
+
+                  <div className="relative z-10 text-left">
+                    <div className="h-10 w-10 rounded-2xl bg-amber-400 flex items-center justify-center shadow-lg mb-2 rotate-3 shrink-0">
+                      <Gift className="h-5 w-5 text-emerald-950" />
+                    </div>
+                    <h2 className="text-2xl font-black tracking-tighter leading-none">
+                      {formData.discountPct ? `${formData.discountPct}%` : 'DEAL'}<span className="text-amber-400">OFF</span>
+                    </h2>
+                    <p className="text-[8px] font-black uppercase tracking-widest opacity-85 mt-0.5">
+                      {formData.popupType.replace('_', ' ')}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Content side */}
+                <div className="flex-1 p-6 md:p-8 bg-white relative flex flex-col justify-center text-left">
+                  <button type="button" className="absolute top-4 right-4 h-8 w-8 flex items-center justify-center rounded-full bg-slate-50 text-slate-400 border border-slate-100 hover:bg-slate-150 transition-all shrink-0">
+                    <X size={14} />
+                  </button>
+
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-1.5">
+                      <div className="h-[1px] w-6 bg-amber-400" />
+                      <span className="text-[8px] font-black text-amber-500 uppercase tracking-widest">
+                        {formData.subtitle || 'Invitation Header'}
+                      </span>
+                    </div>
+
+                    <h3 className="text-xl font-black text-emerald-950 tracking-tighter leading-tight">
+                      {formData.title || 'Taste the pure goodness'}
+                    </h3>
+
+                    <p className="text-slate-500 text-[11px] leading-relaxed">
+                      {formData.description || 'Enter description context here.'}
+                    </p>
+
+                    {showEmailFormInPreview ? (
+                      <div className="space-y-2">
+                        <div className="relative">
+                          <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-300" />
+                          <input
+                            type="email"
+                            disabled
+                            placeholder="Your email address"
+                            className="w-full h-10 pl-9 pr-3 rounded-xl border border-slate-200 bg-slate-50 text-xs text-slate-400"
+                          />
+                        </div>
+                        <button
+                          type="button"
+                          className="w-full h-10 bg-emerald-950 text-white rounded-xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2"
+                        >
+                          {formData.buttonText}
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        className="w-full h-10 bg-emerald-950 text-white rounded-xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2"
+                      >
+                        {formData.buttonText}
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+            ) : (
+
+              /* Mobile Preview (Vertical layout) */
+              <div className="w-full max-w-[320px] bg-white rounded-[2rem] shadow-2xl overflow-hidden flex flex-col min-h-[440px] text-slate-800 animate-in fade-in duration-300">
+                {/* Image side */}
+                <div className="relative w-full h-44 bg-emerald-900 overflow-hidden flex flex-col justify-end p-5 text-white">
+                  {previewMobileImage ? (
+                    <img
+                      src={previewMobileImage}
+                      alt="Upload Preview"
+                      className="absolute inset-0 w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="absolute inset-0 bg-gradient-to-br from-emerald-950 to-emerald-850 flex items-center justify-center text-slate-500/50">
+                      <Gift size={40} strokeWidth={1} />
+                    </div>
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-emerald-950/75 via-transparent to-transparent z-0" />
+
+                  <div className="relative z-10 text-left">
+                    <h2 className="text-xl font-black tracking-tighter leading-none">
+                      {formData.discountPct ? `${formData.discountPct}%` : 'DEAL'}<span className="text-amber-400">OFF</span>
+                    </h2>
+                    <p className="text-[7px] font-black uppercase tracking-widest opacity-85 mt-0.5">
+                      {formData.popupType.replace('_', ' ')}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Content side */}
+                <div className="flex-1 p-5 bg-white relative flex flex-col justify-center text-left">
+                  <button type="button" className="absolute top-4 right-4 h-7 w-7 flex items-center justify-center rounded-full bg-slate-50 text-slate-400 border border-slate-100 hover:bg-slate-150 transition-all shrink-0">
+                    <X size={12} />
+                  </button>
+
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-1.5">
+                      <div className="h-[1px] w-4 bg-amber-400" />
+                      <span className="text-[7.5px] font-black text-amber-500 uppercase tracking-widest">
+                        {formData.subtitle || 'Invitation Header'}
+                      </span>
+                    </div>
+
+                    <h3 className="text-base font-black text-emerald-950 tracking-tighter leading-snug">
+                      {formData.title || 'Taste the pure goodness'}
+                    </h3>
+
+                    <p className="text-slate-500 text-[10px] leading-relaxed line-clamp-3">
+                      {formData.description || 'Enter description context here.'}
+                    </p>
+
+                    {showEmailFormInPreview ? (
+                      <div className="space-y-1.5 pt-1">
+                        <input
+                          type="email"
+                          disabled
+                          placeholder="Your email address"
+                          className="w-full h-9 px-3 rounded-lg border border-slate-200 bg-slate-50 text-[10px] text-slate-400"
+                        />
+                        <button
+                          type="button"
+                          className="w-full h-9 bg-emerald-950 text-white rounded-lg font-black text-[9px] uppercase tracking-widest flex items-center justify-center gap-2"
+                        >
+                          {formData.buttonText}
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        className="w-full h-9 bg-emerald-950 text-white rounded-lg font-black text-[9px] uppercase tracking-widest flex items-center justify-center gap-2"
+                      >
+                        {formData.buttonText}
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+            )}
+          </div>
+
+          {/* Footer Info */}
+          <div className="text-[10px] text-slate-500 border-t border-slate-800 pt-4 font-bold uppercase tracking-wider text-center">
+            Delay: {formData.displayDelay}s • Per Session: {formData.oncePerSession ? 'Yes' : 'No'} • Redirect: {formData.redirectUrl || 'None'}
           </div>
 
         </div>
 
-        {/* Form Actions (Moved to bottom) */}
-        <div className="flex items-center gap-4 justify-end pt-8 pb-4 border-t border-slate-200">
-          <Link
-            href="/admin/marketing/popup-campaigns"
-            className="h-14 px-8 rounded-2xl border border-slate-200 text-slate-500 hover:bg-slate-50 font-black text-xs uppercase tracking-wider flex items-center justify-center transition-all"
-          >
-            Cancel
-          </Link>
-          <button
-            type="submit"
-            disabled={submitting}
-            className="h-14 px-10 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs uppercase tracking-widest flex items-center justify-center gap-2 shadow-xl shadow-emerald-600/20 active:scale-95 disabled:opacity-50 transition-all cursor-pointer"
-          >
-            {submitting ? <Loader2 size={18} className="animate-spin" /> : 'Launch Campaign'}
-          </button>
-        </div>
-
-      </form>
+      </div>
     </div>
   );
 }
-
