@@ -155,7 +155,7 @@ const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 const CartPage = () => {
    const router = useRouter();
-   const { cart, removeFromCart, updateQuantity, updateVariant, getTotal } = useCartStore();
+   const { cart, removeFromCart, updateQuantity, updateVariant, getTotal, appliedCoupon, setAppliedCoupon } = useCartStore();
    const { user } = useAuth();
    const total = getTotal();
 
@@ -168,9 +168,46 @@ const CartPage = () => {
       return found ? found.value : fallback;
    };
 
-   const freeShippingThreshold = parseFloat(getSettingVal('free_shipping_threshold', '499'));
-   const flatDeliveryFee = parseFloat(getSettingVal('delivery_fee', '49'));
-   const progress = Math.min(100, (total / freeShippingThreshold) * 100);
+    const freeShippingThreshold = parseFloat(getSettingVal('free_shipping_threshold', '499'));
+    const freeShippingEnabled = getSettingVal('free_shipping_enabled', 'false') === 'true';
+    const progress = Math.min(100, (total / freeShippingThreshold) * 100);
+
+    // Automatically calculate package weight and dynamic courier charges:
+    // ₹50 for the first 1kg, and ₹50 for each additional kg or fraction thereof.
+    let totalWeightKg = 0;
+    cart.forEach((item) => {
+       const qty = Number(item.quantity) || 1;
+       let wVal = null;
+       let uVal = null;
+
+       if (item.variant) {
+          const match = item.variant.toLowerCase().match(/(\d+(?:\.\d+)?)\s*(g|gm|grams|kg|kgs|kilo|kilograms)/i);
+          if (match) {
+             wVal = parseFloat(match[1]);
+             uVal = match[2];
+          }
+       }
+       if ((wVal === null || wVal === undefined || wVal === 0) && item.name) {
+          const match = item.name.toLowerCase().match(/(\d+(?:\.\d+)?)\s*(g|gm|grams|kg|kgs|kilo|kilograms)/i);
+          if (match) {
+             wVal = parseFloat(match[1]);
+             uVal = match[2];
+          }
+       }
+
+       if (wVal && uVal) {
+          const normUnit = uVal.toLowerCase().trim();
+          if (normUnit.startsWith('k') || normUnit.startsWith('kilo')) {
+             totalWeightKg += wVal * qty;
+          } else {
+             totalWeightKg += (wVal / 1000) * qty;
+          }
+       } else {
+          totalWeightKg += 0.5 * qty;
+       }
+    });
+
+    const weightShippingFee = Math.max(1, Math.ceil(totalWeightKg)) * 50;
 
    // Coupon state
    const [couponCode, setCouponCode] = useState('');
@@ -189,9 +226,11 @@ const CartPage = () => {
       setCouponMessage('');
 
       try {
-         const cartItems = cart
-            .filter(i => !i.isBundle)
-            .map(i => ({ productId: i.productId, price: i.price, quantity: i.quantity }));
+         const cartItems = cart.map(i => ({
+            productId: i.productId,
+            price: i.price,
+            quantity: i.quantity
+         }));
 
          console.log('[COUPON] Validating:', code, 'for', cartItems.length, 'items, total:', total);
 
@@ -214,6 +253,7 @@ const CartPage = () => {
             setCouponError(msg);
             setCouponApplied(false);
             setCouponDiscount(0);
+            setAppliedCoupon(null);
             toast.error(msg);
          } else {
             setCouponDiscount(data.discount || 0);
@@ -221,6 +261,12 @@ const CartPage = () => {
             setCouponError('');
             const successMsg = data.message || `Coupon applied! You save ₹${data.discount}`;
             setCouponMessage(successMsg);
+            setAppliedCoupon({
+               code,
+               discount: data.discount || 0,
+               type: data.type,
+               message: successMsg
+            });
             toast.success(successMsg);
          }
       } catch (err) {
@@ -239,8 +285,54 @@ const CartPage = () => {
       setCouponApplied(false);
       setCouponMessage('');
       setCouponError('');
+      setAppliedCoupon(null);
       toast.info('Coupon removed');
    };
+
+   // Load applied coupon from store on mount
+   useEffect(() => {
+      if (appliedCoupon) {
+         setCouponCode(appliedCoupon.code);
+         setCouponDiscount(appliedCoupon.discount);
+         setCouponApplied(true);
+         setCouponMessage(appliedCoupon.message);
+      }
+   }, [appliedCoupon]);
+
+   // Re-validate coupon when cart contents or total changes
+   useEffect(() => {
+      if (couponApplied && couponCode) {
+         const revalidateCoupon = async () => {
+            try {
+               const cartItems = cart.map(i => ({ productId: i.productId, price: i.price, quantity: i.quantity }));
+               const res = await fetch(`${API_URL}/api/coupons/validate`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                     code: couponCode,
+                     userId: user?.id || null,
+                     orderTotal: total,
+                     items: cartItems
+                  })
+               });
+               const data = await res.json();
+               if (res.ok) {
+                  setCouponDiscount(data.discount || 0);
+                  setAppliedCoupon({ code: couponCode, discount: data.discount, type: data.type, message: data.message });
+               } else {
+                  setCouponDiscount(0);
+                  setCouponApplied(false);
+                  setAppliedCoupon(null);
+                  setCouponError(data.error || 'Coupon is no longer valid');
+                  toast.error(data.error || 'Coupon is no longer valid');
+               }
+            } catch (err) {
+               console.error('Revalidation error:', err);
+            }
+         };
+         revalidateCoupon();
+      }
+   }, [cart, total]);
 
    const gstEnabled = getSettingVal('gst_enabled', 'true') === 'true';
    const defaultGstRate = parseFloat(getSettingVal('gst_default_rate', '18'));
@@ -273,7 +365,7 @@ const CartPage = () => {
       computedGst = parseFloat(computedGst.toFixed(2));
    }
 
-   const shipping = total >= freeShippingThreshold || total === 0 ? 0 : flatDeliveryFee;
+    const shipping = (freeShippingEnabled && total >= freeShippingThreshold) || total === 0 ? 0 : weightShippingFee;
    let finalTotal = 0;
    if (gstTaxType === 'exclusive') {
       finalTotal = total + computedGst - couponDiscount + shipping;
@@ -331,39 +423,41 @@ const CartPage = () => {
             ) : (
                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 xl:gap-12 items-start pb-20">
                   <div className="lg:col-span-8 flex flex-col gap-6">
-                     <div className="bg-gradient-to-r from-emerald-50 to-teal-50/30 rounded-[20px] p-5 md:p-6 border border-emerald-100 shadow-[0_8px_30px_rgba(4,120,87,0.04)] relative overflow-hidden">
-                        <div className="absolute top-0 right-0 p-4 opacity-10 pointer-events-none">
-                           <Truck size={80} className="text-emerald-900" />
-                        </div>
-                        <div className="flex flex-col gap-4 relative z-10">
-                           <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-3">
-                                 <div className="h-10 w-10 md:h-12 md:w-12 rounded-full bg-white shadow-sm flex items-center justify-center shrink-0">
-                                    <Truck className="h-5 w-5 md:h-6 md:w-6 text-emerald-600" />
-                                 </div>
-                                 <div>
-                                    <h4 className="text-[14px] md:text-[16px] font-bold text-slate-800">
-                                       {total >= freeShippingThreshold ? 'Free Shipping Unlocked 🎉' : 'Almost there!'}
-                                    </h4>
-                                    <p className="text-[12px] md:text-[13px] font-medium text-slate-500">
-                                       {total >= freeShippingThreshold ? `You are saving ₹${flatDeliveryFee} on delivery` : `Add ₹${(freeShippingThreshold - total).toFixed(2)} more for free delivery`}
-                                    </p>
-                                 </div>
-                              </div>
-                              <span className="text-[13px] md:text-[14px] font-black text-emerald-600 bg-white px-3 md:px-4 py-1.5 rounded-full shadow-sm border border-emerald-50 shrink-0">
-                                 {progress.toFixed(0)}%
-                              </span>
-                           </div>
-                           <div className="h-2.5 md:h-3 w-full bg-white rounded-full overflow-hidden shadow-inner border border-emerald-100">
-                              <div
-                                 className="h-full bg-gradient-to-r from-emerald-400 to-emerald-600 rounded-full transition-all duration-1000 relative overflow-hidden"
-                                 style={{ width: `${progress}%` }}
-                              >
-                                 <div className="absolute inset-0 bg-white/20 animate-[shimmer_2s_infinite] -skew-x-12 translate-x-[-150%]" />
-                              </div>
-                           </div>
-                        </div>
-                     </div>
+                      {freeShippingEnabled && (
+                         <div className="bg-gradient-to-r from-emerald-50 to-teal-50/30 rounded-[20px] p-5 md:p-6 border border-emerald-100 shadow-[0_8px_30px_rgba(4,120,87,0.04)] relative overflow-hidden">
+                            <div className="absolute top-0 right-0 p-4 opacity-10 pointer-events-none">
+                               <Truck size={80} className="text-emerald-900" />
+                            </div>
+                            <div className="flex flex-col gap-4 relative z-10">
+                               <div className="flex items-center justify-between">
+                                  <div className="flex items-center gap-3">
+                                     <div className="h-10 w-10 md:h-12 md:w-12 rounded-full bg-white shadow-sm flex items-center justify-center shrink-0">
+                                        <Truck className="h-5 w-5 md:h-6 md:w-6 text-emerald-600" />
+                                     </div>
+                                     <div>
+                                        <h4 className="text-[14px] md:text-[16px] font-bold text-slate-800">
+                                           {total >= freeShippingThreshold ? 'Free Shipping Unlocked 🎉' : 'Almost there!'}
+                                        </h4>
+                                        <p className="text-[12px] md:text-[13px] font-medium text-slate-500">
+                                           {total >= freeShippingThreshold ? `You are saving ₹${weightShippingFee} on delivery` : `Add ₹${(freeShippingThreshold - total).toFixed(2)} more for free delivery`}
+                                        </p>
+                                     </div>
+                                  </div>
+                                  <span className="text-[13px] md:text-[14px] font-black text-emerald-600 bg-white px-3 md:px-4 py-1.5 rounded-full shadow-sm border border-emerald-50 shrink-0">
+                                     {progress.toFixed(0)}%
+                                  </span>
+                               </div>
+                               <div className="h-2.5 md:h-3 w-full bg-white rounded-full overflow-hidden shadow-inner border border-emerald-100">
+                                  <div
+                                     className="h-full bg-gradient-to-r from-emerald-400 to-emerald-600 rounded-full transition-all duration-1000 relative overflow-hidden"
+                                     style={{ width: `${progress}%` }}
+                                  >
+                                     <div className="absolute inset-0 bg-white/20 animate-[shimmer_2s_infinite] -skew-x-12 translate-x-[-150%]" />
+                                  </div>
+                                </div>
+                             </div>
+                          </div>
+                      )}
 
                      {/* PRODUCTS LIST */}
                      <div className="flex flex-col gap-4">

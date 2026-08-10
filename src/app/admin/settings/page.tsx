@@ -39,6 +39,7 @@ export default function AdminSettings() {
    const [deliveryFee, setDeliveryFee] = React.useState(40);
    const [freeShippingThreshold, setFreeShippingThreshold] = React.useState(1000);
    const [shippingMinOrderAmount, setShippingMinOrderAmount] = React.useState(0);
+   const [freeShippingEnabled, setFreeShippingEnabled] = React.useState(false);
 
    // UI, Toast, and Ref States
    const [saving, setSaving] = React.useState(false);
@@ -88,7 +89,7 @@ export default function AdminSettings() {
       if (loading || !initialSettingsRef.current) return false;
       const current: Record<string, any> = {
          storeName, storeCategory, supportEmail, supportWhatsapp, autoGenerateCategoryContent,
-         deliveryRadius, deliveryFee, freeShippingThreshold, shippingMinOrderAmount,
+         deliveryRadius, deliveryFee, freeShippingThreshold, shippingMinOrderAmount, freeShippingEnabled,
          enableCod, razorpayKey, razorpaySecret, activePaymentGateway: visibleGateway, gstNumber, hdfcMerchantId, hdfcClientId, hdfcApiKey, hdfcApiUrl,
          orderEmail, enableWhatsappAlerts, lowStockThreshold,
          platformLogo, platformFavicon, primaryColor, secondaryColor,
@@ -110,7 +111,7 @@ export default function AdminSettings() {
       return false;
    }, [
       loading, storeName, storeCategory, supportEmail, supportWhatsapp, autoGenerateCategoryContent,
-      deliveryRadius, deliveryFee, freeShippingThreshold, shippingMinOrderAmount,
+      deliveryRadius, deliveryFee, freeShippingThreshold, shippingMinOrderAmount, freeShippingEnabled,
       enableCod, razorpayKey, razorpaySecret, visibleGateway, gstNumber, hdfcMerchantId, hdfcClientId, hdfcApiKey, hdfcApiUrl,
       orderEmail, enableWhatsappAlerts, lowStockThreshold,
       platformLogo, platformFavicon, primaryColor, secondaryColor,
@@ -154,6 +155,7 @@ export default function AdminSettings() {
             const feeSetting = data.find((s: any) => s.key === 'delivery_fee');
             const thresholdSetting = data.find((s: any) => s.key === 'free_shipping_threshold');
             const minOrderAmountSetting = data.find((s: any) => s.key === 'shipping_min_order_amount');
+            const enabledSetting = data.find((s: any) => s.key === 'free_shipping_enabled');
 
             // Payments
             const codSetting = data.find((s: any) => s.key === 'enable_cod');
@@ -204,6 +206,7 @@ export default function AdminSettings() {
             const valFee = feeSetting ? Number(feeSetting.value) : 40;
             const valThreshold = thresholdSetting ? Number(thresholdSetting.value) : 1000;
             const valMinOrderAmount = minOrderAmountSetting ? Number(minOrderAmountSetting.value) : 0;
+            const valFreeEnabled = enabledSetting ? enabledSetting.value === 'true' : false;
 
             const valCod = codSetting ? codSetting.value === 'true' : true;
             const valRazorpay = razorpaySetting?.value || '';
@@ -235,6 +238,7 @@ export default function AdminSettings() {
                storeName: valStoreName, storeCategory: valStoreCategory, supportEmail: valSupportEmail, supportWhatsapp: valSupportWhatsapp, autoGenerateCategoryContent: valAutoGen,
                quickBrowseEnabled: valQuickBrowse,
                deliveryRadius: valRadius, deliveryFee: valFee, freeShippingThreshold: valThreshold, shippingMinOrderAmount: valMinOrderAmount,
+               freeShippingEnabled: valFreeEnabled,
                enableCod: valCod, razorpayKey: valRazorpay, razorpaySecret: valRazorpaySecret, activePaymentGateway: valActiveGateway, gstNumber: valGstNum, hdfcMerchantId: valHdfcMerch, hdfcClientId: valHdfcClient, hdfcApiKey: valHdfcKey, hdfcApiUrl: valHdfcUrl,
                orderEmail: valOrderEmail, enableWhatsappAlerts: valWhatsappAlerts, lowStockThreshold: valStockThresh,
                platformLogo: valLogo, platformFavicon: valFavicon, primaryColor: valPrimaryColor, secondaryColor: valSecondaryColor,
@@ -255,6 +259,7 @@ export default function AdminSettings() {
             setDeliveryFee(valFee);
             setFreeShippingThreshold(valThreshold);
             setShippingMinOrderAmount(valMinOrderAmount);
+            setFreeShippingEnabled(valFreeEnabled);
             setEnableCod(valCod);
             setRazorpayKey(valRazorpay);
             setRazorpaySecret(valRazorpaySecret);
@@ -303,6 +308,7 @@ export default function AdminSettings() {
       setDeliveryFee(init.deliveryFee);
       setFreeShippingThreshold(init.freeShippingThreshold);
       setShippingMinOrderAmount(init.shippingMinOrderAmount);
+      setFreeShippingEnabled(init.freeShippingEnabled);
 
       setEnableCod(init.enableCod);
       setRazorpayKey(init.razorpayKey);
@@ -365,6 +371,7 @@ export default function AdminSettings() {
             { key: 'delivery_fee', value: deliveryFee.toString(), type: 'NUMBER', group: 'LOGISTICS' },
             { key: 'free_shipping_threshold', value: freeShippingThreshold.toString(), type: 'NUMBER', group: 'LOGISTICS' },
             { key: 'shipping_min_order_amount', value: shippingMinOrderAmount.toString(), type: 'NUMBER', group: 'LOGISTICS' },
+            { key: 'free_shipping_enabled', value: freeShippingEnabled.toString(), type: 'BOOLEAN', group: 'LOGISTICS' },
 
             { key: 'enable_cod', value: enableCod.toString(), type: 'BOOLEAN', group: 'PAYMENT' },
             { key: 'razorpay_key', value: razorpayKey, type: 'STRING', group: 'PAYMENT' },
@@ -630,6 +637,19 @@ export default function AdminSettings() {
 
                      {activeTab === 2 && (
                         <div className="space-y-6 text-left">
+                           <div className="flex items-center justify-between p-6 rounded-2xl bg-slate-50 border border-slate-100 transition-all text-left">
+                              <div>
+                                 <p className="text-[12px] font-black text-[#022c22] uppercase">Enable Free Delivery Option</p>
+                                 <p className="text-[10px] font-bold text-slate-400 mt-1">Allow customers to get free shipping when their order subtotal meets the threshold specified below</p>
+                              </div>
+                              <button
+                                 type="button"
+                                 onClick={() => setFreeShippingEnabled(!freeShippingEnabled)}
+                                 className={`h-7 w-12 rounded-full transition-all relative shrink-0 ${freeShippingEnabled ? 'bg-emerald-600' : 'bg-slate-200'}`}
+                              >
+                                 <div className={`absolute top-1 h-5 w-5 rounded-full bg-white transition-all ${freeShippingEnabled ? 'left-6' : 'left-1'}`} />
+                              </button>
+                           </div>
 
                            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                               <div className="flex flex-col gap-3">

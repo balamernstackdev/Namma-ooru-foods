@@ -44,26 +44,35 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         {toasts.map((toast) => (
           <div
             key={toast.id}
-            className={`flex items-center gap-3 px-6 py-3.5 rounded-full shadow-[0_20px_50px_rgba(0,0,0,0.3)] animate-in fade-in slide-in-from-bottom-4 duration-500 border border-white/10 ${
+            className={`flex items-start gap-3 px-5 py-4 rounded-[20px] shadow-[0_20px_50px_rgba(0,0,0,0.3)] animate-in fade-in slide-in-from-bottom-4 duration-500 border border-white/10 ${
               toast.type === 'error' 
                 ? 'bg-red-950 text-white' 
                 : 'bg-emerald-950 text-white'
             }`}
           >
-            <div className={`h-6 w-6 rounded-full flex items-center justify-center ${
+            <div className={`h-6 w-6 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${
               toast.type === 'error'
                 ? 'bg-red-500 text-red-950'
                 : 'bg-emerald-500 text-emerald-950'
             }`}>
-              <CheckCircle2 size={14} strokeWidth={3} />
+              {toast.message.toLowerCase().includes('cart') ? (
+                <ShoppingCart size={13} strokeWidth={2.5} />
+              ) : (
+                <CheckCircle2 size={14} strokeWidth={3} />
+              )}
             </div>
             <div className="flex flex-col">
               {toast.title && <span className="text-[10px] font-black uppercase tracking-widest opacity-60 leading-none mb-1">{toast.title}</span>}
-              <span className="text-[13px] font-bold whitespace-nowrap">{toast.message}</span>
+              <span className="text-[13px] font-bold">{toast.message}</span>
+              {toast.message.toLowerCase().includes('cart') && (
+                <Link href="/cart" className="text-[11px] font-black text-emerald-400 hover:text-emerald-300 underline uppercase tracking-wider mt-1.5 w-fit">
+                  View Cart →
+                </Link>
+              )}
             </div>
             <button 
               onClick={() => setToasts((prev) => prev.filter((t) => t.id !== toast.id))}
-              className="ml-2 text-white/40 hover:text-white transition-colors"
+              className="ml-2 text-white/40 hover:text-white transition-colors shrink-0 mt-1"
             >
               <X size={14} />
             </button>

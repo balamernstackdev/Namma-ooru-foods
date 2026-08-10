@@ -99,12 +99,48 @@ export default function CheckoutPage() {
 
    const subtotal = getTotal();
 
-   // Fetch dynamic shipping values
-   const freeDeliveryAbove = parseFloat(getSettingVal('free_shipping_threshold', '499'));
-   const flatDeliveryFee = parseFloat(getSettingVal('delivery_fee', '49'));
-   const minOrderForDelivery = parseFloat(getSettingVal('shipping_min_order_amount', '0'));
+    // Fetch dynamic shipping values
+    const freeDeliveryAbove = parseFloat(getSettingVal('free_shipping_threshold', '499'));
+    const freeShippingEnabled = getSettingVal('free_shipping_enabled', 'false') === 'true';
+    const minOrderForDelivery = parseFloat(getSettingVal('shipping_min_order_amount', '0'));
 
-   const delivery = (discountType === 'FREE_SHIPPING' || subtotal >= freeDeliveryAbove) ? 0 : flatDeliveryFee;
+    // Automatically calculate package weight and dynamic courier charges:
+    // ₹50 for the first 1kg, and ₹50 for each additional kg or fraction thereof.
+    let totalWeightKg = 0;
+    cart.forEach((item) => {
+       const qty = Number(item.quantity) || 1;
+       let wVal = null;
+       let uVal = null;
+
+       if (item.variant) {
+          const match = item.variant.toLowerCase().match(/(\d+(?:\.\d+)?)\s*(g|gm|grams|kg|kgs|kilo|kilograms)/i);
+          if (match) {
+             wVal = parseFloat(match[1]);
+             uVal = match[2];
+          }
+       }
+       if ((wVal === null || wVal === undefined || wVal === 0) && item.name) {
+          const match = item.name.toLowerCase().match(/(\d+(?:\.\d+)?)\s*(g|gm|grams|kg|kgs|kilo|kilograms)/i);
+          if (match) {
+             wVal = parseFloat(match[1]);
+             uVal = match[2];
+          }
+       }
+
+       if (wVal && uVal) {
+          const normUnit = uVal.toLowerCase().trim();
+          if (normUnit.startsWith('k') || normUnit.startsWith('kilo')) {
+             totalWeightKg += wVal * qty;
+          } else {
+             totalWeightKg += (wVal / 1000) * qty;
+          }
+       } else {
+          totalWeightKg += 0.5 * qty;
+       }
+    });
+
+    const weightShippingFee = Math.max(1, Math.ceil(totalWeightKg)) * 50;
+    const delivery = (discountType === 'FREE_SHIPPING' || (freeShippingEnabled && subtotal >= freeDeliveryAbove)) ? 0 : weightShippingFee;
 
    let total = 0;
    if (gstTaxType === 'exclusive') {
@@ -128,13 +164,22 @@ export default function CheckoutPage() {
       }
    }, [paymentMethod]);
 
-   useEffect(() => {
-      setMounted(true);
-      if (user?.id) {
-         setEmail(user.email);
-         loadAddresses();
-      }
-   }, [user]);
+    useEffect(() => {
+       setMounted(true);
+       if (user?.id) {
+          setEmail(user.email);
+          loadAddresses();
+       }
+    }, [user]);
+
+    useEffect(() => {
+       if (appliedCoupon) {
+          setPromoCode(appliedCoupon.code);
+          setDiscount(appliedCoupon.discount);
+          setDiscountType(appliedCoupon.type);
+          setPromoSuccess(appliedCoupon.message);
+       }
+    }, [appliedCoupon]);
 
    useEffect(() => {
       if (mounted && cart.length === 0 && step < 4) {
@@ -202,11 +247,20 @@ export default function CheckoutPage() {
             body: JSON.stringify({ code: promoCode, userId: user?.id, orderTotal: subtotal, items: cart })
          });
          const data = await res.json();
-         if (!res.ok) { setPromoError(data.error); setDiscount(0); return; }
+         if (!res.ok) { 
+            setPromoError(data.error); 
+            setDiscount(0); 
+            setAppliedCoupon(null);
+            return; 
+         }
          setDiscount(data.discount);
          setDiscountType(data.type);
          setPromoSuccess(data.message);
-      } catch { setPromoError('Failed to validate coupon'); }
+         setAppliedCoupon({ code: promoCode, discount: data.discount, type: data.type, message: data.message });
+      } catch { 
+         setPromoError('Failed to validate coupon'); 
+         setAppliedCoupon(null);
+      }
    };
 
    const [confirmedOrderId, setConfirmedOrderId] = useState<number | null>(null);
@@ -894,8 +948,10 @@ export default function CheckoutPage() {
                                           {/* Tooltip */}
                                           <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 bg-[#111827] text-white text-[11px] p-3 rounded-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 shadow-xl border border-white/10 before:content-[''] before:absolute before:top-full before:left-1/2 before:-translate-x-1/2 before:border-4 before:border-transparent before:border-t-[#111827]">
                                              <div className="space-y-1.5">
-                                                <div className="flex justify-between"><span className="text-slate-300">Flat Delivery Fee:</span> <span className="font-bold">₹{flatDeliveryFee}</span></div>
-                                                <div className="flex justify-between"><span className="text-slate-300">Free Delivery Above:</span> <span className="font-bold">₹{freeDeliveryAbove}</span></div>
+                                                <div className="flex justify-between"><span className="text-slate-300">Courier Charge:</span> <span className="font-bold">₹{weightShippingFee}</span></div>
+                                                {freeShippingEnabled && (
+                                                   <div className="flex justify-between"><span className="text-slate-300">Free Delivery Above:</span> <span className="font-bold">₹{freeDeliveryAbove}</span></div>
+                                                )}
                                                 <div className="flex justify-between"><span className="text-slate-300">Standard Delivery:</span> <span className="font-bold">1-3 Days</span></div>
                                              </div>
                                           </div>
@@ -904,11 +960,11 @@ export default function CheckoutPage() {
                                     <div className="flex items-center gap-2">
                                        {delivery === 0 ? (
                                           <>
-                                             <span className="text-slate-400 line-through text-[12px]">₹{flatDeliveryFee}</span>
+                                             <span className="text-slate-400 line-through text-[12px]">₹{weightShippingFee}</span>
                                              <span className="text-[#16a34a] font-black uppercase tracking-wider text-[12px]">FREE</span>
                                           </>
                                        ) : (
-                                          <span className="text-[#111827] font-bold">₹{flatDeliveryFee}</span>
+                                          <span className="text-[#111827] font-bold">₹{delivery}</span>
                                        )}
                                     </div>
                                  </div>
@@ -917,11 +973,11 @@ export default function CheckoutPage() {
                                     <div className="text-[11px] font-bold text-[#16a34a] bg-[#16a34a]/10 px-2.5 py-1.5 rounded-lg inline-flex items-center gap-1.5 mt-1 w-fit">
                                        <span>🚚</span> Free Delivery Applied!
                                     </div>
-                                 ) : (
+                                 ) : freeShippingEnabled ? (
                                     <div className="text-[11px] font-bold text-amber-600 bg-amber-50 px-2.5 py-1.5 rounded-lg inline-block mt-1 w-fit border border-amber-100/50 leading-relaxed">
                                        Add <span className="font-black">₹{(freeDeliveryAbove - subtotal).toFixed(2)}</span> more to unlock <span className="uppercase tracking-wider font-black">FREE delivery</span>
                                     </div>
-                                 )}
+                                 ) : null}
                               </div>
                            </div>
 
@@ -945,30 +1001,8 @@ export default function CheckoutPage() {
                               </div>
                               <div className="flex-1">
                                  <button className="h-[34px] px-4 bg-slate-100 text-slate-600 font-bold text-[12px] uppercase tracking-wider rounded-lg hover:bg-emerald-50 hover:text-emerald-600 transition-colors"
-                                    onClick={async () => {
-                                       try {
-                                          const res = await fetch(`${API_URL}/api/coupons/validate`, {
-                                             method: 'POST',
-                                             headers: { 'Content-Type': 'application/json' },
-                                             body: JSON.stringify({ code: promoCode, userId: user?.id, orderTotal: subtotal, items: cart })
-                                          });
-                                          const data = await res.json();
-                                          if (!res.ok) {
-                                             setPromoError(data.error);
-                                             setDiscount(0);
-                                             setAppliedCoupon(null);
-                                             return;
-                                          }
-                                          setDiscount(data.discount);
-                                          setDiscountType(data.type);
-                                          setPromoSuccess(data.message);
-                                          setAppliedCoupon({ code: promoCode, discount: data.discount, type: data.type, message: data.message });
-                                       } catch {
-                                          setPromoError('Failed to validate coupon');
-                                          setAppliedCoupon(null);
-                                       }
-                                    }}
-                                 >Apply</button>
+                                          onClick={applyPromo}
+                                       >Apply</button>
                                  {promoError && (<p className="text-red-600 text-[12px] mt-1">{promoError}</p>)}
                                  {promoSuccess && (<p className="text-green-600 text-[12px] mt-1">{promoSuccess}</p>)}
                                  <p className="text-[11px] text-[#64748b]">100% secure encrypted payment</p>

@@ -173,7 +173,7 @@ export default function AdminTrackingPage() {
   <style>
     @page { size: 100mm 150mm; margin: 0; }
     @media print { html, body { margin: 0; padding: 0; width: 100mm; } }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     body {
       font-family: Arial, Helvetica, sans-serif;
       font-size: 11px;
@@ -186,37 +186,25 @@ export default function AdminTrackingPage() {
     /* ── HEADER ── */
     .label-header {
       display: flex;
+      justify-content: center;
       align-items: center;
-      background: #fffbf0;
+      background: white;
       border-bottom: 2.5px solid #222;
-      padding: 6px 10px;
-      gap: 10px;
+      padding: 8px 10px;
     }
     .label-header-img {
-      height: 48px;
+      height: 60px;
       width: auto;
-      flex-shrink: 0;
+      max-width: 100%;
+      object-fit: contain;
     }
-    .label-brand {
-      flex: 1;
-    }
-    .label-brand-name {
-      font-size: 22px;
-      font-weight: 900;
-      color: #111;
-      line-height: 1;
-      letter-spacing: -0.5px;
-    }
-    .label-brand-name span.namma { color: #f97316; font-size: 13px; font-weight: 900; }
-    .label-brand-name span.ooru { color: #dc2626; font-size: 22px; }
-    .label-brand-name span.foods { color: #166534; font-size: 14px; }
     .label-tagline {
       font-size: 9px;
-      color: #166534;
+      color: #000;
       font-weight: 700;
       margin-top: 2px;
       text-align: center;
-      border-top: 1.5px solid #166534;
+      border-top: 1.5px solid #000;
       padding-top: 3px;
     }
 
@@ -236,7 +224,7 @@ export default function AdminTrackingPage() {
       display: inline-flex;
       align-items: center;
       gap: 4px;
-      background: #166534;
+      background: #000;
       color: white;
       font-size: 9px;
       font-weight: 900;
@@ -270,6 +258,7 @@ export default function AdminTrackingPage() {
       line-height: 1.8;
     }
     .ship-to-meta span { color: #555; font-weight: 500; }
+    .ship-to-meta span.bold-phone { color: #000; font-weight: 900; font-size: 11px; }
 
     /* RIGHT: ORDER INFO */
     .order-info-block { padding: 6px 7px; display: flex; flex-direction: column; gap: 0; }
@@ -284,8 +273,8 @@ export default function AdminTrackingPage() {
     .order-info-icon { font-size: 14px; flex-shrink: 0; }
     .order-info-label { font-size: 8px; color: #777; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
     .order-info-value { font-size: 11px; font-weight: 900; color: #111; line-height: 1.1; }
-    .order-info-value.red { color: #dc2626; font-size: 10px; }
-    .order-info-value.prepaid { color: #166534; }
+    .order-info-value.red { color: #000; font-size: 10px; }
+    .order-info-value.prepaid { color: #000; }
 
     /* TWO-CELL ROW */
     .order-two-cell {
@@ -311,7 +300,7 @@ export default function AdminTrackingPage() {
     .pincode-label {
       font-size: 8px;
       font-weight: 900;
-      background: #166534;
+      background: #000;
       color: white;
       display: inline-block;
       padding: 1px 6px;
@@ -333,7 +322,7 @@ export default function AdminTrackingPage() {
     .barcode-label {
       font-size: 8px;
       font-weight: 900;
-      background: #166534;
+      background: #000;
       color: white;
       display: inline-block;
       padding: 1px 6px;
@@ -367,8 +356,8 @@ export default function AdminTrackingPage() {
       border-right: 1.5px dashed #bbb;
     }
     .handling-item { text-align: center; }
-    .handling-icon { font-size: 18px; }
-    .handling-text { font-size: 7px; font-weight: 900; text-transform: uppercase; color: #166534; margin-top: 1px; line-height: 1.1; }
+    .handling-icon { font-size: 18px; filter: grayscale(100%); }
+    .handling-text { font-size: 7px; font-weight: 900; text-transform: uppercase; color: #000; margin-top: 1px; line-height: 1.1; }
     .return-block {
       padding: 6px 8px;
     }
@@ -381,20 +370,14 @@ export default function AdminTrackingPage() {
 
   <!-- HEADER -->
   <div class="label-header">
-    <img class="label-header-img" src="/logo.webp" alt="Logo" onerror="this.style.display='none'" />
-    <div class="label-brand">
-      <div class="label-brand-name">
-        <span class="namma">Namma</span><br/>
-        <span class="ooru">Ooru</span> <span class="foods">Foods</span>
-      </div>
-    </div>
+    <img class="label-header-img" src="/IMG_1890.PNG" alt="Namma Ooru Foods" onerror="this.style.display='none'" />
   </div>
-  <div class="label-tagline">🌿 — நம்ம ஊரு சுவை - உங்கன் இல்லம் தேடி ! 🌿</div>
+  <div class="label-tagline">நம்ம ஊரு சுவை - உங்கள் இல்லம் தேடி!</div>
 
   <!-- BODY: SHIP TO + ORDER INFO -->
   <div class="label-body">
     <div class="ship-to-block">
-      <div class="ship-to-badge">📍 SHIP TO</div>
+      <div class="ship-to-badge"><b>SHIP TO</b></div>
       <div class="ship-to-name">${recipientName}</div>
       <div class="ship-to-addr">
         ${street ? street + ',<br/>' : ''}
@@ -404,25 +387,22 @@ export default function AdminTrackingPage() {
       </div>
       <div class="ship-to-divider"></div>
       <div class="ship-to-meta">
-        📞 Mobile &nbsp; : <span>${phone ? '+91 ' + phone : 'N/A'}</span><br/>
-        ${landmark ? '📍 Landmark : <span>' + landmark + '</span>' : ''}
+        Mobile &nbsp; : <span class="bold-phone">${phone ? '+91 ' + phone : 'N/A'}</span><br/>
+        ${landmark ? 'Landmark : <span>' + landmark + '</span>' : ''}
       </div>
     </div>
     <div class="order-info-block">
       <div class="order-info-row">
-        <div class="order-info-icon">🛍</div>
         <div>
           <div class="order-info-label">Order ID</div>
           <div class="order-info-value red">${orderIdStr}</div>
         </div>
         <div style="margin-left:auto; text-align:right;">
-          <div class="order-info-icon">📅</div>
           <div class="order-info-label">Order Date</div>
           <div class="order-info-value" style="font-size:9px;">${orderDate}</div>
         </div>
       </div>
       <div class="order-info-row">
-        <div class="order-info-icon">🚚</div>
         <div>
           <div class="order-info-label">Delivery Type</div>
           <div class="order-info-value prepaid">${paymentMethod}</div>
@@ -433,12 +413,9 @@ export default function AdminTrackingPage() {
           <div class="order-info-label">Package Weight</div>
           <div class="order-info-value">${packageWeightStr}</div>
         </div>
-        <div class="order-cell" style="padding-left:6px; display:flex; align-items:center; gap:4px;">
-          <div>
-            <div class="order-info-label">No. of Items</div>
-            <div class="order-info-value">${itemCount}</div>
-          </div>
-          <span style="font-size:18px; margin-left:auto;">📦</span>
+        <div class="order-cell" style="padding-left:6px;">
+          <div class="order-info-label">No. of Items</div>
+          <div class="order-info-value">${itemCount}</div>
         </div>
       </div>
     </div>
@@ -465,15 +442,15 @@ export default function AdminTrackingPage() {
         <div class="handling-text">HANDLE<br/>WITH CARE</div>
       </div>
       <div class="handling-item">
-        <div class="handling-icon">⚗️</div>
+        <div class="handling-icon">🍷</div>
         <div class="handling-text">FRAGILE</div>
       </div>
       <div class="handling-item">
-        <div class="handling-icon">☂️</div>
+        <div class="handling-icon">&#9730;</div>
         <div class="handling-text">KEEP DRY</div>
       </div>
       <div class="handling-item">
-        <div class="handling-icon">⬆️</div>
+        <div class="handling-icon">&#9650;</div>
         <div class="handling-text">THIS SIDE<br/>UP</div>
       </div>
     </div>
