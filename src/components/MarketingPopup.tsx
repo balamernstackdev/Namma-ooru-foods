@@ -132,7 +132,23 @@ const MarketingPopup = () => {
 
         setIsSubscribed(true);
         toast.success(data.message || 'Subscription successful!');
-        setTimeout(closePopup, 4000);
+        
+        // Auto-copy coupon code if available
+        if (activeCampaign.couponCode) {
+          try {
+            await navigator.clipboard.writeText(activeCampaign.couponCode);
+            toast.success('Coupon code copied to clipboard!');
+          } catch (err) {
+            console.error('Failed to auto-copy coupon: ', err);
+          }
+        }
+
+        setTimeout(() => {
+          closePopup();
+          if (activeCampaign.redirectUrl) {
+            window.location.href = activeCampaign.redirectUrl;
+          }
+        }, 4000);
       } else {
         toast.error(data.error || 'Failed to subscribe');
       }
@@ -324,9 +340,23 @@ const MarketingPopup = () => {
                   <p className="text-slate-500 text-sm">Thank you for subscribing! We have registered your details.</p>
                   
                   {activeCampaign.couponCode && (
-                    <div className="bg-emerald-50 px-6 py-2.5 rounded-full text-emerald-700 font-mono font-black text-base uppercase tracking-widest border border-emerald-100">
-                      Code: {activeCampaign.couponCode}
-                    </div>
+                    <button
+                      onClick={async () => {
+                        try {
+                          await navigator.clipboard.writeText(activeCampaign.couponCode);
+                          toast.success('Coupon code copied!');
+                        } catch (err) {
+                          toast.error('Failed to copy code');
+                        }
+                      }}
+                      className="group relative flex items-center justify-between gap-3 bg-emerald-50 hover:bg-emerald-100/80 active:scale-95 px-6 py-2.5 rounded-full text-emerald-700 font-mono font-black text-base uppercase tracking-widest border border-emerald-100 transition-all cursor-pointer shadow-sm"
+                      title="Click to copy coupon code"
+                    >
+                      <span>Code: {activeCampaign.couponCode}</span>
+                      <span className="text-[10px] font-sans font-bold text-emerald-600 bg-white border border-emerald-200/50 px-2 py-0.5 rounded-md uppercase tracking-wider group-hover:bg-emerald-50 transition-colors">
+                        Copy
+                      </span>
+                    </button>
                   )}
                 </motion.div>
               )}

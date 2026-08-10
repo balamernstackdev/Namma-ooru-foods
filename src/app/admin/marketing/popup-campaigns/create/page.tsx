@@ -611,7 +611,7 @@ export default function CreatePopupCampaignPage() {
             <div className="space-y-1.5 text-left">
               <div className="flex items-center justify-between">
                 <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Redirect To Page</label>
-                {redirectType !== 'none' && (
+                {formData.redirectUrl && (
                   <span className="text-[9px] font-black text-emerald-600 uppercase tracking-widest flex items-center gap-1">
                     <Check size={10} strokeWidth={3} /> Path: {formData.redirectUrl}
                   </span>
