@@ -241,6 +241,7 @@ export default function EditHubWizard() {
     // Section 2: Hub Information
     name: '',
     displayName: '',
+    commission: '',
     shortDescription: '',
     fullDescription: '',
     logo: '',
@@ -282,6 +283,7 @@ export default function EditHubWizard() {
 
         name: data.name || '',
         displayName: data.displayName || '',
+        commission: data.commission !== null && data.commission !== undefined ? data.commission.toString() : '',
         shortDescription: data.shortDescription || '',
         fullDescription: data.description || data.fullDescription || '',
         logo: data.logo || '',
@@ -442,6 +444,7 @@ export default function EditHubWizard() {
       const payload = {
         name: formData.name,
         displayName: formData.displayName,
+        commission: formData.commission !== '' ? parseFloat(formData.commission) : null,
         shortDescription: formData.shortDescription,
         fullDescription: formData.fullDescription || formData.shortDescription,
         logo: formData.logo,
@@ -556,6 +559,10 @@ export default function EditHubWizard() {
             <div>
               <label className="block text-[10px] font-black uppercase text-slate-500 mb-1">Display Name</label>
               <input type="text" name="displayName" value={formData.displayName} onChange={handleInputChange} className="w-full bg-slate-50 rounded-xl px-4 py-3 text-sm font-bold border border-slate-200 outline-none focus:border-emerald-500 transition-colors" />
+            </div>
+            <div>
+              <label className="block text-[10px] font-black uppercase text-slate-500 mb-1">Commission (%)</label>
+              <input type="number" step="0.01" min="0" max="100" name="commission" value={formData.commission} onChange={handleInputChange} className="w-full bg-slate-50 rounded-xl px-4 py-3 text-sm font-bold border border-slate-200 outline-none focus:border-emerald-500 transition-colors" placeholder="Hub-wide commission rate (e.g. 10.00)" />
             </div>
             <div className="md:col-span-2">
               <label className="block text-[10px] font-black uppercase text-slate-500 mb-1">Short Description (Tagline)</label>

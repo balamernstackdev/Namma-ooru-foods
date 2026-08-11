@@ -7,7 +7,7 @@ import { useToast } from '@/context/ToastContext';
 import {
   Users, Search, Mail, Phone, Edit2, Trash2, Loader2, Plus,
   ShieldAlert, Sparkles, Filter, RefreshCw, AlertCircle, Bookmark, CheckCircle2,
-  TrendingUp, Award, DollarSign, PackageOpen, LayoutGrid, CheckSquare
+  TrendingUp, Award, DollarSign, PackageOpen, LayoutGrid, CheckSquare, Eye
 } from 'lucide-react';
 import { API_URL } from '@/lib/api';
 import AdminPagination from '@/components/admin/AdminPagination';
@@ -608,7 +608,7 @@ export default function AdminUsersPage() {
                               </div>
                               <div className="flex flex-col">
                                 <span className="text-[13px] font-black text-slate-900 leading-tight">{user.name}</span>
-                                <span className="text-[11px] text-slate-400 font-bold mt-1">{user.email}</span>
+                                <span className="text-[11px] text-slate-400 font-bold mt-1">{user.email && !user.email.includes('@nammaoorufarms.local') ? user.email : ''}</span>
                                 {user.phone && <span className="text-[10px] text-slate-400 font-semibold mt-0.5">{user.phone}</span>}
                               </div>
                             </div>
@@ -663,7 +663,7 @@ export default function AdminUsersPage() {
                               </div>
                               <div className="flex flex-col min-w-0">
                                 <span className="text-[13px] font-black text-slate-900 leading-tight truncate">{user.subVendor?.name || 'Store Pending'}</span>
-                                <span className="text-[11px] text-slate-400 font-bold mt-1 truncate">{user.email}</span>
+                                <span className="text-[11px] text-slate-400 font-bold mt-1 truncate">{user.email && !user.email.includes('@nammaoorufarms.local') ? user.email : ''}</span>
                                 {user.phone && <span className="text-[10px] text-slate-400 font-semibold mt-0.5">{user.phone}</span>}
                               </div>
                             </div>
@@ -704,7 +704,7 @@ export default function AdminUsersPage() {
                               </div>
                               <div className="flex flex-col">
                                 <span className="text-[13px] font-black text-slate-900 leading-tight">{user.name}</span>
-                                <span className="text-[11px] text-slate-400 font-bold mt-1">{user.email}</span>
+                                <span className="text-[11px] text-slate-400 font-bold mt-1">{user.email && !user.email.includes('@nammaoorufarms.local') ? user.email : ''}</span>
                               </div>
                             </div>
                           </td>
@@ -734,6 +734,16 @@ export default function AdminUsersPage() {
                       {/* Actions */}
                       <td className="px-8 py-5 text-right">
                         <div className="flex items-center justify-end gap-2">
+                          {/* View Seller Products button — only for sellers with a subVendor */}
+                          {activeTab === 'seller' && user.subVendor?.id && (
+                            <Link
+                              href={`/admin/products?seller=${user.subVendor.id}`}
+                              className="h-10 w-10 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-400 hover:bg-blue-500 hover:text-white transition-all shadow-sm no-underline hover:border-blue-500"
+                              title="View Seller Products"
+                            >
+                              <Eye size={15} />
+                            </Link>
+                          )}
                           <Link
                             href={`/admin/users/edit/${user.id}`}
                             className="h-10 w-10 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-400 hover:bg-emerald-600 hover:text-white transition-all shadow-sm no-underline hover:border-emerald-600"

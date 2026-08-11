@@ -35,6 +35,8 @@ interface VendorOrder {
 export default function VendorOrders() {
   const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('ALL');
+  const [showFilterDropdown, setShowFilterDropdown] = useState(false);
   const [updatingOrderId, setUpdatingOrderId] = useState<number | null>(null);
   const [openDropdownId, setOpenDropdownId] = useState<number | null>(null);
   const [expandedOrderId, setExpandedOrderId] = useState<number | null>(null);
@@ -46,7 +48,7 @@ export default function VendorOrders() {
 
   React.useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm]);
+  }, [searchTerm, statusFilter]);
 
   const { data: orders, error, mutate } = useSWR<VendorOrder[]>(
     user?.brandId ? `${API_URL}/api/orders/vendor?subVendorId=${user.brandId}` : null,
@@ -151,10 +153,12 @@ export default function VendorOrders() {
     }
   };
 
-  const filteredOrders = orders?.filter(o =>
-    o.user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    o.items.some(i => i.productName.toLowerCase().includes(searchTerm.toLowerCase()))
-  ) || [];
+  const filteredOrders = orders?.filter(o => {
+    const matchesSearch = o.user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      o.items.some(i => i.productName.toLowerCase().includes(searchTerm.toLowerCase()));
+    const matchesStatus = statusFilter === 'ALL' || o.status === statusFilter;
+    return matchesSearch && matchesStatus;
+  }) || [];
 
   const totalPages = Math.ceil(filteredOrders.length / ITEMS_PER_PAGE) || 1;
   const paginatedOrders = React.useMemo(() => {
@@ -197,7 +201,7 @@ export default function VendorOrders() {
       </div>
 
       {/* Search */}
-      <div className="flex flex-col md:flex-row gap-4">
+      <div className="flex flex-col md:flex-row gap-4 relative">
         <div className="flex-1 relative">
           <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
           <input
@@ -208,9 +212,37 @@ export default function VendorOrders() {
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
-        <button className="h-16 px-8 rounded-[1.5rem] bg-white border border-slate-200/80 text-slate-700 hover:bg-slate-50 transition-all text-[11px] font-black uppercase tracking-widest flex items-center gap-3 shadow-sm">
-          <Filter size={18} /> Filter Desk
-        </button>
+        <div className="relative">
+          <button 
+            type="button"
+            onClick={() => setShowFilterDropdown(!showFilterDropdown)}
+            className="h-16 px-8 rounded-[1.5rem] bg-white border border-slate-200/80 text-slate-700 hover:bg-slate-50 transition-all text-[11px] font-black uppercase tracking-widest flex items-center gap-3 shadow-sm"
+          >
+            <Filter size={18} /> {statusFilter === 'ALL' ? 'Filter Desk' : `Status: ${statusFilter}`}
+          </button>
+          
+          {showFilterDropdown && (
+            <div className="absolute right-0 mt-2 w-56 bg-white border border-slate-200 rounded-2xl shadow-xl z-50 p-2 py-3 space-y-1">
+              {['ALL', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCELLED'].map((status) => (
+                <button
+                  key={status}
+                  type="button"
+                  onClick={() => {
+                    setStatusFilter(status);
+                    setShowFilterDropdown(false);
+                  }}
+                  className={`w-full text-left px-4 py-2.5 rounded-xl text-xs font-bold transition-all uppercase tracking-wide ${
+                    statusFilter === status 
+                      ? 'bg-[#0F7A4D]/10 text-[#0F7A4D] font-black' 
+                      : 'text-slate-600 hover:bg-slate-50'
+                  }`}
+                >
+                  {status === 'ALL' ? 'All Orders' : status}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Orders */}
@@ -234,36 +266,54 @@ export default function VendorOrders() {
               animate={{ opacity: 1, y: 0 }}
               className="bg-white rounded-[2.5rem] border border-slate-200/60 shadow-[0_4px_20px_rgba(0,0,0,0.015)] hover:border-emerald-500/20 transition-all group relative"
             >
-              {/* Collapsed row */}
+              {/* Clean row for sellers */}
               <div className="flex flex-col lg:flex-row items-start lg:items-center gap-6 lg:gap-10 p-6 md:p-8">
                 {/* Order Identity */}
-                <div className="flex items-center gap-6 w-full lg:w-1/4">
+                <div className="flex items-center gap-6 w-full lg:w-[15%]">
                   <div className="h-20 w-20 rounded-2xl bg-slate-50 flex flex-col items-center justify-center border border-slate-100 shrink-0">
                     <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Order</span>
                     <span className="text-xl font-black text-slate-800">#{order.id}</span>
                   </div>
-                  <div className="flex flex-col min-w-0">
-                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Customer</span>
-                    <h4 className="text-[15px] font-black text-slate-850 truncate">{order.user.name}</h4>
-                    <p className="text-[10px] font-bold text-slate-450 truncate">{order.user.email}</p>
-                  </div>
                 </div>
 
                 {/* Products */}
-                <div className="w-full lg:flex-1 flex flex-col gap-3 lg:gap-4">
-                  <div className="text-[9px] font-black text-slate-400 uppercase tracking-[0.3em]">Products</div>
-                  <div className="flex flex-wrap gap-3">
-                    {order.items.map(item => (
-                      <div key={item.id} className="flex items-center gap-3 bg-slate-50 px-4 py-2 rounded-xl border border-slate-100">
-                        <Package size={14} className="text-[#0F7A4D]" />
-                        <span className="text-[11px] font-black text-slate-700">{item.productName} × {item.quantity}</span>
-                      </div>
-                    ))}
+                <div className="w-full lg:w-[65%] flex flex-col gap-3 lg:gap-4">
+                  <div className="text-[9px] font-black text-slate-400 uppercase tracking-[0.3em]">Products & Earnings</div>
+                  <div className="flex flex-col gap-2.5">
+                    {order.items.map((item: any) => {
+                      const comm = item.commissionRate || 10;
+                      const itemGross = item.price * item.quantity;
+                      const itemEarnings = itemGross * (1 - comm / 100);
+                      return (
+                        <div key={item.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50 px-4 py-3 rounded-2xl border border-slate-100/80 text-[11px] font-bold text-slate-700">
+                          <div className="flex items-center gap-3">
+                            <Package size={14} className="text-[#0F7A4D] shrink-0" />
+                            <div>
+                              <span className="font-black text-slate-800">{item.productName}</span>
+                              <span className="text-[10px] text-slate-400 font-bold ml-2">Qty: {item.quantity} × ₹{item.price}</span>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-4 text-[10px] font-black tracking-tight text-slate-500">
+                            <div>
+                              <span className="text-slate-400 font-bold">Gross: </span>
+                              <span className="font-black text-slate-700">₹{itemGross}</span>
+                            </div>
+                            <div className="bg-amber-50/60 px-2 py-0.5 rounded border border-amber-100/50 text-amber-700">
+                              <span>Comm: {comm}%</span>
+                            </div>
+                            <div className="bg-emerald-50 px-2.5 py-0.5 rounded border border-emerald-100 text-[#0F7A4D]">
+                              <span>Earnings: </span>
+                              <span className="font-bold">₹{itemEarnings.toFixed(2)}</span>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
 
                 {/* Status & Amount */}
-                <div className="flex flex-col items-start lg:items-end gap-2 lg:gap-3 w-full lg:w-1/5 border-t border-slate-100 pt-4 lg:pt-0 lg:border-t-0">
+                <div className="flex flex-col items-start lg:items-end gap-2 lg:gap-3 w-full lg:w-[20%] border-t border-slate-100 pt-4 lg:pt-0 lg:border-t-0">
                   <div className="flex items-center gap-2">
                     <span className={`text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full border ${order.status === 'DELIVERED' ? 'bg-[#DCFCE7] border-[#DCFCE7] text-[#15803D]' :
                         order.status === 'SHIPPED' ? 'bg-[#DBEAFE] border-[#DBEAFE] text-[#2563EB]' :
@@ -272,162 +322,14 @@ export default function VendorOrders() {
                               'bg-[#F3F4F6] border-[#F3F4F6] text-[#4B5563]'
                       }`}>{order.status}</span>
                   </div>
-                  <div className="text-xl font-black text-slate-800 tracking-tighter">₹{order.totalAmount}</div>
-                </div>
-
-                {/* Actions */}
-                <div className="flex items-center gap-3 w-full lg:w-auto justify-end pt-4 lg:pt-0 border-t lg:border-t-0 lg:border-l border-slate-100 lg:pl-8 relative">
-                  {/* Expand toggle */}
-                  <button
-                    onClick={() => setExpandedOrderId(isExpanded ? null : order.id)}
-                    className="h-14 w-14 rounded-2xl bg-slate-50 border border-slate-200 text-slate-500 flex items-center justify-center hover:bg-slate-100 transition-all"
-                    title="View Details"
-                  >
-                    {isExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-                  </button>
-
-                  {/* Quick advance status */}
-                  <button
-                    onClick={() => handleUpdateStatus(order.id, getNextStatus(order.status))}
-                    disabled={updatingOrderId === order.id || order.status === 'DELIVERED'}
-                    title={`Mark as ${getNextStatus(order.status)}`}
-                    className="h-14 w-14 rounded-2xl bg-[#0F7A4D] hover:bg-[#0c623d] text-white flex items-center justify-center transition-all shadow-sm disabled:opacity-40"
-                  >
-                    {updatingOrderId === order.id ? (
-                      <Loader2 size={20} className="animate-spin" />
-                    ) : (
-                      <CheckCircle size={20} />
-                    )}
-                  </button>
-
-                  {/* Dropdown */}
-                  <div className="relative">
-                    <button
-                      onClick={() => setOpenDropdownId(openDropdownId === order.id ? null : order.id)}
-                      className="h-14 w-14 rounded-2xl bg-white border border-slate-200 text-slate-400 flex items-center justify-center hover:bg-slate-50 transition-all"
-                    >
-                      <MoreVertical size={20} />
-                    </button>
-                    {openDropdownId === order.id && (
-                      <div className="absolute right-0 top-16 w-56 bg-white rounded-2xl border border-slate-200 shadow-xl py-2 z-50">
-                        <button onClick={() => handleUpdateStatus(order.id, 'PROCESSING')} className="w-full px-4 py-3 flex items-center gap-3 text-left text-[12px] font-bold text-slate-600 hover:bg-slate-50 transition-all">
-                          <Clock size={16} className="text-amber-500" /> Processing
-                        </button>
-                        <button onClick={() => handleUpdateStatus(order.id, 'SHIPPED')} className="w-full px-4 py-3 flex items-center gap-3 text-left text-[12px] font-bold text-slate-600 hover:bg-slate-50 transition-all">
-                          <Truck size={16} className="text-blue-500" /> Shipped
-                        </button>
-                        <button onClick={() => handleUpdateStatus(order.id, 'DELIVERED')} className="w-full px-4 py-3 flex items-center gap-3 text-left text-[12px] font-bold text-slate-600 hover:bg-slate-50 transition-all">
-                          <CheckCircle size={16} className="text-emerald-500" /> Delivered
-                        </button>
-                        <div className="border-t border-slate-100 my-1" />
-                        <button onClick={() => handleUpdateStatus(order.id, 'CANCELLED')} className="w-full px-4 py-3 flex items-center gap-3 text-left text-[12px] font-bold text-red-650 hover:bg-red-50 transition-all">
-                          <XCircle size={16} className="text-red-500" /> Cancel Order
-                        </button>
-                      </div>
-                    )}
+                  <div className="text-right">
+                    <span className="text-[9px] font-black uppercase text-slate-400 tracking-wider block">Your Total Earnings</span>
+                    <span className="text-xl font-black text-[#0F7A4D] tracking-tighter">
+                      ₹{order.items.reduce((sum: number, item: any) => sum + (item.price * item.quantity) * (1 - (item.commissionRate || 10) / 100), 0).toFixed(2)}
+                    </span>
                   </div>
                 </div>
               </div>
-
-              {/* Expanded Panel */}
-              {isExpanded && (
-                <div className="border-t border-slate-100 px-8 pb-8 pt-6 space-y-6">
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-
-                    {/* Delivery Address */}
-                    <div className="bg-slate-50 rounded-2xl p-5 border border-slate-100">
-                      <div className="flex items-center gap-2 mb-4">
-                        <MapPin size={16} className="text-[#0F7A4D]" />
-                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Delivery Address</span>
-                      </div>
-                      {order.shippingAddress ? (
-                        <div className="space-y-1">
-                          <p className="text-sm font-black text-slate-800">
-                            {order.shippingAddress.recipientName || order.user.name}
-                          </p>
-                          <p className="text-xs font-bold text-slate-500">
-                            📞 {order.shippingAddress.phone || order.user.phone || 'N/A'}
-                          </p>
-                          <p className="text-xs text-slate-600 font-medium mt-1">
-                            {order.shippingAddress.line1}
-                            {order.shippingAddress.line2 ? `, ${order.shippingAddress.line2}` : ''}, {order.shippingAddress.city}, {order.shippingAddress.state} - {order.shippingAddress.pincode}
-                          </p>
-                        </div>
-                      ) : (
-                        <p className="text-xs text-slate-400 font-medium">No address on record</p>
-                      )}
-                    </div>
-
-                    {/* Tracking Form */}
-                    <div className="bg-amber-50/20 rounded-2xl p-5 border border-amber-100">
-                      <div className="flex items-center gap-2 mb-4">
-                        <Truck size={16} className="text-amber-500" />
-                        <span className="text-[10px] font-black text-amber-500 uppercase tracking-widest">Shipment Tracking</span>
-                      </div>
-                      <div className="space-y-3">
-                        <input
-                          type="text"
-                          placeholder="Carrier Name (e.g. DTDC, Blue Dart)"
-                          value={trackingForm.carrierName}
-                          onChange={e => setTrackingForms(prev => ({ ...prev, [order.id]: { ...trackingForm, carrierName: e.target.value } }))}
-                          className="w-full h-10 px-4 rounded-xl bg-white border border-slate-200 text-xs font-bold text-slate-700 placeholder:text-slate-300 outline-none focus:border-[#0F7A4D] transition-all"
-                        />
-                        <input
-                          type="text"
-                          placeholder="Tracking Number"
-                          value={trackingForm.trackingNumber}
-                          onChange={e => setTrackingForms(prev => ({ ...prev, [order.id]: { ...trackingForm, trackingNumber: e.target.value } }))}
-                          className="w-full h-10 px-4 rounded-xl bg-white border border-slate-200 text-xs font-mono font-bold text-slate-700 placeholder:text-slate-300 outline-none focus:border-[#0F7A4D] transition-all"
-                        />
-                        <input
-                          type="url"
-                          placeholder="Tracking URL (https://...)"
-                          value={trackingForm.trackingUrl}
-                          onChange={e => setTrackingForms(prev => ({ ...prev, [order.id]: { ...trackingForm, trackingUrl: e.target.value } }))}
-                          className="w-full h-10 px-4 rounded-xl bg-white border border-slate-200 text-xs font-bold text-slate-700 placeholder:text-slate-300 outline-none focus:border-[#0F7A4D] transition-all"
-                        />
-                        <div className="space-y-1">
-                          <label className="block text-[9px] uppercase font-black tracking-widest text-slate-400">Estimated Delivery Date & Time</label>
-                          <input
-                            type="datetime-local"
-                            value={trackingForm.estimatedDelivery}
-                            onChange={e => setTrackingForms(prev => ({ ...prev, [order.id]: { ...trackingForm, estimatedDelivery: e.target.value } }))}
-                            className="w-full h-10 px-4 rounded-xl bg-white border border-slate-200 text-xs font-bold text-slate-700 placeholder:text-slate-300 outline-none focus:border-[#0F7A4D] transition-all"
-                          />
-                        </div>
-                        <div className="flex items-center gap-3 pt-1">
-                          <button
-                            onClick={() => handleSaveTracking(order.id)}
-                            disabled={savingTrackingId === order.id}
-                            className="flex items-center gap-2 px-5 py-2.5 bg-[#0F7A4D] hover:bg-[#0c623d] disabled:opacity-50 text-white text-[11px] font-black uppercase tracking-widest rounded-xl transition-all"
-                          >
-                            {savingTrackingId === order.id ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
-                            Save & Mark Shipped
-                          </button>
-                          {trackingForm.trackingUrl && (
-                            <a href={trackingForm.trackingUrl} target="_blank" rel="noopener noreferrer"
-                              className="flex items-center gap-1.5 text-[10px] font-black text-blue-600 hover:text-blue-800 uppercase tracking-widest"
-                            >
-                              Preview Link <ExternalLink size={12} />
-                            </a>
-                          )}
-                        </div>
-                      </div>
-                      {providerRef && (
-                        <div className="mt-6 pt-6 border-t border-slate-100 flex flex-wrap items-center justify-end gap-3">
-                          <span className="text-[10px] text-slate-400 font-bold mr-auto">Provider Ref: {providerRef}</span>
-                          <button onClick={() => handleVerifyPayment(providerRef)} className="px-4 py-2 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-lg text-xs font-bold transition-colors flex items-center gap-1.5">
-                            <RotateCcw size={14} /> Verify Payment Status
-                          </button>
-                          <button onClick={() => handleRefund(providerRef, order.totalAmount)} className="px-4 py-2 bg-amber-50 text-amber-700 hover:bg-amber-100 rounded-lg text-xs font-bold transition-colors flex items-center gap-1.5">
-                            <XCircle size={14} /> Initiate Refund
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              )}
 
               {/* Deco */}
               <div className="absolute top-0 right-0 w-32 h-full overflow-hidden rounded-[2.5rem] pointer-events-none">

@@ -302,10 +302,12 @@ export default function OrderDetailClient({ id }: OrderDetailClientProps) {
               </div>
 
               <div className="space-y-3 pt-3 border-t border-slate-100 text-xs font-bold text-slate-500">
-                <div className="flex items-center gap-2">
-                  <Mail size={14} className="text-slate-300 shrink-0" />
-                  <span className="truncate">{order.user?.email}</span>
-                </div>
+                {order.user?.email && !order.user.email.includes('@nammaoorufarms.local') && (
+                  <div className="flex items-center gap-2">
+                    <Mail size={14} className="text-slate-300 shrink-0" />
+                    <span className="truncate">{order.user.email}</span>
+                  </div>
+                )}
                 {order.user?.phone && (
                   <div className="flex items-center gap-2">
                     <Phone size={14} className="text-slate-300 shrink-0" />

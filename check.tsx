@@ -608,7 +608,7 @@ export default function AdminUsersPage() {
                               </div>
                               <div className="flex flex-col">
                                 <span className="text-[13px] font-black text-slate-900 leading-tight">{user.name}</span>
-                                <span className="text-[11px] text-slate-400 font-bold mt-1">{user.email}</span>
+                                <span className="text-[11px] text-slate-400 font-bold mt-1">{user.email && !user.email.includes('@nammaoorufarms.local') ? user.email : ''}</span>
                                 {user.phone && <span className="text-[10px] text-slate-400 font-semibold mt-0.5">{user.phone}</span>}
                               </div>
                             </div>
@@ -663,7 +663,7 @@ export default function AdminUsersPage() {
                               </div>
                               <div className="flex flex-col min-w-0">
                                 <span className="text-[13px] font-black text-slate-900 leading-tight truncate">{user.subVendor?.name || 'Store Pending'}</span>
-                                <span className="text-[11px] text-slate-400 font-bold mt-1 truncate">{user.email}</span>
+                                <span className="text-[11px] text-slate-400 font-bold mt-1 truncate">{user.email && !user.email.includes('@nammaoorufarms.local') ? user.email : ''}</span>
                                 {user.phone && <span className="text-[10px] text-slate-400 font-semibold mt-0.5">{user.phone}</span>}
                               </div>
                             </div>
@@ -704,7 +704,7 @@ export default function AdminUsersPage() {
                               </div>
                               <div className="flex flex-col">
                                 <span className="text-[13px] font-black text-slate-900 leading-tight">{user.name}</span>
-                                <span className="text-[11px] text-slate-400 font-bold mt-1">{user.email}</span>
+                                <span className="text-[11px] text-slate-400 font-bold mt-1">{user.email && !user.email.includes('@nammaoorufarms.local') ? user.email : ''}</span>
                               </div>
                             </div>
                           </td>

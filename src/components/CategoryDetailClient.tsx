@@ -290,168 +290,122 @@ export default function CategoryDetailClient({
             </div>
           </div>
 
-          {/* SUBCATEGORY CARDS SECTION */}
+          {/* SUBCATEGORY TABS SECTION */}
           {hasSubcategories && (
-            <div className="w-full pt-4 pb-8 md:py-8 bg-slate-50/60 border-y border-slate-100">
+            <div className="w-full pt-5 pb-6 bg-white border-b border-slate-100">
               <div className="standard-container px-4">
-                <div className="flex items-center justify-between mb-4">
-                  <div>
-                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-700 block">Subcategories</span>
-                    <h3 className="text-lg md:text-xl font-black text-slate-900 uppercase tracking-tight">Select a Subcategory</h3>
-                  </div>
-
+                <div className="mb-3">
+                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-700 block">Subcategories</span>
+                  <h3 className="text-base md:text-lg font-black text-slate-900 uppercase tracking-tight">Browse by Subcategory</h3>
                 </div>
 
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
-                  {subcategoriesList.slice((subCurrentPage - 1) * subItemsPerPage, subCurrentPage * subItemsPerPage).map((sub, idx) => {
-                    const globalIdx = (subCurrentPage - 1) * subItemsPerPage + idx;
-                    const subImg = sub.image || category.image || '/ai_images/organic_grains_1776231059575.png';
-                    const subCode = sub.code || `SUB-${String(globalIdx + 1).padStart(2, '0')}`;
+                {/* Scrollable Tab Pills */}
+                <div className="flex flex-wrap gap-2">
+                  {/* All Products Tab */}
+                  <button
+                    type="button"
+                    onClick={() => handleSelectSubcategory('all')}
+                    className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-[11px] md:text-xs font-black uppercase tracking-wider border transition-all duration-200 cursor-pointer whitespace-nowrap ${
+                      activeSubSlug === 'all'
+                        ? 'bg-emerald-700 text-white border-emerald-700 shadow-md shadow-emerald-200'
+                        : 'bg-white text-slate-700 border-slate-200 hover:border-emerald-500 hover:text-emerald-700 hover:bg-emerald-50'
+                    }`}
+                  >
+                    All
+                    {categoryProducts.length > 0 && (
+                      <span className={`text-[9px] rounded-full px-1.5 py-0.5 font-bold ${
+                        activeSubSlug === 'all' ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-500'
+                      }`}>
+                        {categoryProducts.length}
+                      </span>
+                    )}
+                  </button>
+
+                  {subcategoriesList.map((sub) => {
                     const isSelected = activeSubSlug === sub.slug;
                     return (
                       <button
                         key={sub.id}
                         type="button"
                         onClick={() => handleSelectSubcategory(sub.slug)}
-                        className={`relative flex flex-col h-full rounded-2xl bg-white border text-left transition-all duration-300 group cursor-pointer overflow-hidden ${isSelected ? 'border-emerald-600 ring-2 ring-emerald-600/20 shadow-lg' : 'border-slate-200/90 hover:border-emerald-600 hover:shadow-xl shadow-xs'}`}
+                        className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-[11px] md:text-xs font-black uppercase tracking-wider border transition-all duration-200 cursor-pointer whitespace-nowrap ${
+                          isSelected
+                            ? 'bg-emerald-700 text-white border-emerald-700 shadow-md shadow-emerald-200'
+                            : 'bg-white text-slate-700 border-slate-200 hover:border-emerald-500 hover:text-emerald-700 hover:bg-emerald-50'
+                        }`}
                       >
-                        {/* Top Image Box */}
-                        <div className="relative w-full aspect-square bg-slate-50 overflow-hidden flex items-center justify-center p-2 border-b border-slate-100">
-                          <Image
-                            src={subImg}
-                            alt={sub.name}
-                            fill
-                            className="object-cover transition-transform duration-500 group-hover:scale-105"
-                            unoptimized
-                          />
-                        </div>
-
-                        {/* Details */}
-                        <div className="flex flex-col flex-1 p-3.5 flex-grow justify-between bg-white">
-                          <div>
-                            <div className="flex items-center justify-between gap-1 mb-1">
-                              <div className="flex items-center gap-1 text-[10px]">
-                                <span className="font-black tracking-wider uppercase text-emerald-700 leading-tight">
-                                  {categoryName}
-                                </span>
-                              </div>
-                              <span className="text-[8px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded font-mono font-bold border border-slate-200 shrink-0">
-                                {subCode}
-                              </span>
-                            </div>
-
-                            <p className="text-[13px] md:text-[15px] font-bold text-[#1e293b] leading-snug line-clamp-2 tracking-tight group-hover:text-[#052e16] transition-colors uppercase mb-1">
-                              {sub.name}
-                            </p>
-
-                            {sub.description && (
-                              <p className="text-[10px] text-slate-400 font-medium line-clamp-2 leading-tight mb-2">
-                                {sub.description}
-                              </p>
-                            )}
-                          </div>
-
-
-                        </div>
+                        {sub.name}
+                        {sub.productCount > 0 && (
+                          <span className={`text-[9px] rounded-full px-1.5 py-0.5 font-bold ${
+                            isSelected ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-500'
+                          }`}>
+                            {sub.productCount}
+                          </span>
+                        )}
                       </button>
                     );
                   })}
                 </div>
-
-                {/* --- Subcategories Pagination Controls --- */}
-                {Math.ceil(subcategoriesList.length / subItemsPerPage) > 1 && (
-                  <div className="mt-8 flex justify-center items-center gap-2">
-                    <button
-                      onClick={() => {
-                        setSubCurrentPage(prev => Math.max(prev - 1, 1));
-                        window.scrollTo({ top: 300, behavior: 'smooth' });
-                      }}
-                      disabled={subCurrentPage === 1}
-                      className="h-8 w-8 md:h-10 md:w-10 rounded-full border border-slate-200 flex items-center justify-center text-emerald-900 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-emerald-50 transition-colors"
-                    >
-                      <ChevronLeft size={16} />
-                    </button>
-
-                    <div className="flex items-center gap-2 px-3">
-                      <span className="text-xs md:text-sm font-bold text-slate-600">
-                        Page {subCurrentPage} of {Math.ceil(subcategoriesList.length / subItemsPerPage)}
-                      </span>
-                    </div>
-
-                    <button
-                      onClick={() => {
-                        setSubCurrentPage(prev => Math.min(prev + 1, Math.ceil(subcategoriesList.length / subItemsPerPage)));
-                        window.scrollTo({ top: 300, behavior: 'smooth' });
-                      }}
-                      disabled={subCurrentPage === Math.ceil(subcategoriesList.length / subItemsPerPage)}
-                      className="h-8 w-8 md:h-10 md:w-10 rounded-full border border-slate-200 flex items-center justify-center text-emerald-900 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-emerald-50 transition-colors"
-                    >
-                      <ChevronRight size={16} />
-                    </button>
-                  </div>
-                )}
               </div>
             </div>
           )}
         </>
       )}
 
-      {/* PRODUCT LISTING GRID (Loaded when a subcategory or All Products is selected, or if main category has no subcategories) */}
-      {(isSubcategoryPage || !hasSubcategories || activeSubSlug !== 'all') && (
-        <div className="w-full py-8">
-          <div className="standard-container px-4">
-            <div className="flex items-center justify-between mb-6 pb-3 border-b border-slate-100">
-              <span className="text-[10px] md:text-xs font-black text-slate-400 uppercase tracking-widest">
-                Showing {displayedProducts.length} Premium Item{displayedProducts.length === 1 ? '' : 's'} {activeSubcategory ? `in ${activeSubcategory.name}` : ''}
-              </span>
-              <div className="flex items-center gap-2 text-slate-400 text-[10px] font-black uppercase tracking-widest">
-                <LayoutGrid size={14} className="text-emerald-800" /> Grid View
-              </div>
+      {/* PRODUCT LISTING GRID */}
+      <div className="w-full py-8">
+        <div className="standard-container px-4">
+          <div className="flex items-center justify-between mb-6 pb-3 border-b border-slate-100">
+            <span className="text-[10px] md:text-xs font-black text-slate-400 uppercase tracking-widest">
+              Showing {displayedProducts.length} Premium Item{displayedProducts.length === 1 ? '' : 's'} {activeSubcategory ? `in ${activeSubcategory.name}` : ''}
+            </span>
+            <div className="flex items-center gap-2 text-slate-400 text-[10px] font-black uppercase tracking-widest">
+              <LayoutGrid size={14} className="text-emerald-800" /> Grid View
             </div>
-
-            <AnimatePresence mode="popLayout">
-              {displayedProducts.length > 0 ? (
-                <motion.div
-                  layout
-                  className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2.5 sm:gap-4 lg:gap-6"
-                >
-                  {displayedProducts.map((product) => (
-                    <motion.div
-                      layout
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.95 }}
-                      transition={{ duration: 0.2 }}
-                      key={product.id}
-                    >
-                      <ProductCard product={product} />
-                    </motion.div>
-                  ))}
-                </motion.div>
-              ) : (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="flex flex-col items-center justify-center text-center py-20 bg-slate-50 rounded-3xl border border-slate-200/80 my-4"
-                >
-                  <div className="h-16 w-16 rounded-full bg-white flex items-center justify-center shadow-sm text-2xl mb-4 border border-slate-100">
-                    📦
-                  </div>
-                  <h3 className="text-base md:text-lg font-black text-slate-900 uppercase tracking-tight mb-1">
-                    No products found
-                  </h3>
-                  <p className="text-xs text-slate-500 font-medium max-w-xs leading-relaxed mb-4">
-                    {activeSubcategory
-                      ? `No products currently listed under "${activeSubcategory.name}".`
-                      : 'No products currently listed in this category.'
-                    }
-                  </p>
-                </motion.div>
-              )}
-            </AnimatePresence>
           </div>
+
+          <AnimatePresence mode="popLayout">
+            {displayedProducts.length > 0 ? (
+              <motion.div
+                layout
+                className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2.5 sm:gap-4 lg:gap-6"
+              >
+                {displayedProducts.map((product) => (
+                  <motion.div
+                    layout
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    transition={{ duration: 0.2 }}
+                    key={product.id}
+                  >
+                    <ProductCard product={product} />
+                  </motion.div>
+                ))}
+              </motion.div>
+            ) : (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="flex flex-col items-center justify-center text-center py-20 bg-slate-50 rounded-3xl border border-slate-200/80 my-4"
+              >
+                <div className="h-16 w-16 rounded-full bg-white flex items-center justify-center shadow-sm text-2xl mb-4 border border-slate-100">
+                  📦
+                </div>
+                <h3 className="text-base md:text-lg font-black text-slate-900 uppercase tracking-tight mb-1">
+                  No products found
+                </h3>
+                <p className="text-xs text-slate-500 font-medium max-w-xs leading-relaxed mb-4">
+                  {activeSubcategory
+                    ? `No products currently listed under "${activeSubcategory.name}".`
+                    : 'No products currently listed in this category.'
+                  }
+                </p>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
-      )}
+      </div>
 
     </div>
   );

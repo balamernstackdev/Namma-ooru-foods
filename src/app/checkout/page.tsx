@@ -167,7 +167,7 @@ export default function CheckoutPage() {
     useEffect(() => {
        setMounted(true);
        if (user?.id) {
-          setEmail(user.email);
+          setEmail(user.email && !user.email.includes('@nammaoorufarms.local') ? user.email : '');
           loadAddresses();
        }
     }, [user]);
@@ -304,7 +304,7 @@ export default function CheckoutPage() {
                body: JSON.stringify({
                   amount: total,
                   customerId: user?.id,
-                  customerEmail: email || user?.email || '',
+                  customerEmail: email || (user?.email && !user.email.includes('@nammaoorufarms.local') ? user.email : ''),
                   customerPhone: addresses.find(a => a.id === selectedAddressId)?.phone || '9999999999',
                   dbOrderId: dbOrder.order.id
                })
@@ -351,7 +351,7 @@ export default function CheckoutPage() {
                },
                prefill: {
                   name: user?.name || "Guest",
-                  email: email || user?.email || "",
+                  email: email || (user?.email && !user.email.includes('@nammaoorufarms.local') ? user.email : ""),
                   contact: addresses.find(a => a.id === selectedAddressId)?.phone || ""
                },
                theme: {
@@ -371,7 +371,7 @@ export default function CheckoutPage() {
                body: JSON.stringify({
                   amount: total,
                   customerId: user?.id,
-                  customerEmail: email || user?.email || '',
+                  customerEmail: email || (user?.email && !user.email.includes('@nammaoorufarms.local') ? user.email : ''),
                   customerPhone: addresses.find(a => a.id === selectedAddressId)?.phone || '9999999999',
                   returnUrl: `${API_URL}/api/payments/verify`,
                   dbOrderId: dbOrder.order.id

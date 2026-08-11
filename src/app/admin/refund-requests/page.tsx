@@ -143,7 +143,7 @@ export default function AdminRefundRequestsPage() {
                       <td className="p-4 font-mono text-xs font-black text-slate-700">{req.ticketId}</td>
                       <td className="p-4">
                         <p className="text-xs font-bold text-slate-800">{req.user?.name || 'User'}</p>
-                        <p className="text-[10px] text-slate-500 truncate max-w-[150px]">{req.user?.email}</p>
+                        <p className="text-[10px] text-slate-500 truncate max-w-[150px]">{req.user?.email && !req.user.email.includes('@nammaoorufarms.local') ? req.user.email : ''}</p>
                       </td>
                       <td className="p-4">
                         <p className="text-xs font-black text-slate-700">{req.issueType.replace('_', ' ')}</p>
@@ -178,7 +178,7 @@ export default function AdminRefundRequestsPage() {
                     <div className="space-y-1">
                       <span className="text-[9px] text-slate-400 uppercase tracking-wider block font-bold">Customer</span>
                       <span className="font-extrabold text-slate-800 block truncate">{req.user?.name || 'User'}</span>
-                      <span className="text-[10px] text-slate-500 block truncate lowercase">{req.user?.email}</span>
+                      <span className="text-[10px] text-slate-500 block truncate lowercase">{req.user?.email && !req.user.email.includes('@nammaoorufarms.local') ? req.user.email : ''}</span>
                     </div>
                     <div className="space-y-1">
                       <span className="text-[9px] text-slate-400 uppercase tracking-wider block font-bold">Amount</span>
@@ -234,7 +234,7 @@ export default function AdminRefundRequestsPage() {
                 <div className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm">
                   <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Customer</p>
                   <p className="text-xs font-bold text-slate-800">{selectedRequest.user?.name}</p>
-                  <p className="text-[10px] text-slate-500">{selectedRequest.user?.email}</p>
+                  <p className="text-[10px] text-slate-500">{selectedRequest.user?.email && !selectedRequest.user.email.includes('@nammaoorufarms.local') ? selectedRequest.user.email : ''}</p>
                   <p className="text-[10px] text-slate-500">{selectedRequest.user?.phone}</p>
                 </div>
                 <div className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm">

@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import useSWR from 'swr';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { API_URL } from '@/lib/api';
 import { Search, Users, ChevronRight, ChevronLeft, Phone, Mail } from 'lucide-react';
 import { format } from 'date-fns';
@@ -21,6 +22,13 @@ const fmt  = (n: number) => Number(n || 0).toLocaleString('en-IN');
 const fmtRs = (n: number) => `₹${fmt(Math.round(n))}`;
 
 export default function HubCustomersPage() {
+  const router = useRouter();
+  useEffect(() => {
+    router.replace('/hub/dashboard');
+  }, [router]);
+
+  return null;
+
   const [searchTerm, setSearchTerm] = useState('');
   const [page, setPage] = useState(1);
 

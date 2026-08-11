@@ -189,9 +189,29 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-[var(--admin-muted)]">
-        <div className="h-12 w-12 border-4 border-slate-900/10 border-t-[var(--primary)] rounded-full animate-spin" />
-        <span className="mt-4 text-[10px] font-black uppercase tracking-[0.3em] text-slate-900/40">Loading Dashboard...</span>
+      <div className="min-h-screen flex bg-slate-50">
+        {/* Sidebar skeleton */}
+        <div className="hidden lg:flex w-[280px] shrink-0 flex-col bg-slate-900 animate-pulse">
+          <div className="p-6 border-b border-slate-800">
+            <div className="h-8 w-32 bg-slate-700 rounded-lg" />
+          </div>
+          <div className="flex-1 p-4 space-y-3">
+            {[1,2,3,4,5,6,7,8].map(i => (
+              <div key={i} className="h-9 w-full bg-slate-800 rounded-xl" />
+            ))}
+          </div>
+        </div>
+        {/* Main content skeleton */}
+        <div className="flex-1 flex flex-col min-h-screen">
+          <div className="h-16 bg-white border-b border-slate-100 animate-pulse" />
+          <div className="flex-1 p-8 space-y-6">
+            <div className="h-8 w-56 bg-slate-200 rounded-xl animate-pulse" />
+            <div className="grid grid-cols-4 gap-4">
+              {[1,2,3,4].map(i => <div key={i} className="h-28 bg-white rounded-2xl border border-slate-100 animate-pulse" />)}
+            </div>
+            <div className="h-64 bg-white rounded-2xl border border-slate-100 animate-pulse" />
+          </div>
+        </div>
       </div>
     );
   }
@@ -359,19 +379,26 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       </AnimatePresence>
 
       {/* ─── SIDEBAR ─────────────────────────────────────────────────── */}
+      {/* Mobile overlay backdrop */}
+      {isSidebarOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm lg:hidden"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
       <aside className={`
-        w-72 bg-white text-slate-900 flex flex-col fixed top-0 left-0 bottom-0 z-50 border-r border-slate-200 transition-transform duration-500 ease-in-out
+        w-[280px] bg-white text-slate-900 flex flex-col fixed top-0 left-0 bottom-0 z-50 border-r border-slate-200 transition-transform duration-300 ease-in-out
         ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `} data-lenis-prevent>
 
         {/* Brand Header */}
-        <div className="p-8 border-b border-slate-100 bg-slate-50/30 shrink-0 relative z-10">
-          <Link href="/" className="flex items-center gap-4 transition-all hover:opacity-80 active:scale-95">
-            <div className="h-16 w-16 flex items-center justify-center flex-shrink-0 bg-white rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.05)] border border-slate-100 overflow-hidden">
-              <img src={settings.logo || "/logo.webp"} alt="Logo" className="h-14 w-14 object-contain" />
+        <div className="p-5 border-b border-slate-100 bg-slate-50/30 shrink-0 relative z-10">
+          <Link href="/" className="flex items-center gap-3 transition-all hover:opacity-80 active:scale-95">
+            <div className="h-12 w-12 flex items-center justify-center flex-shrink-0 bg-white rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.05)] border border-slate-100 overflow-hidden">
+              <img src={settings.logo || "/logo.webp"} alt="Logo" className="h-10 w-10 object-contain" />
             </div>
             <div className="flex flex-col">
-              <span className="text-[17px] font-black tracking-tighter leading-none text-slate-900 uppercase italic">Namma Ooru Foods Pvt Ltd</span>
+              <span className="text-[14px] font-black tracking-tighter leading-none text-slate-900 uppercase italic">Namma Ooru Foods Pvt Ltd</span>
               <span className="text-[9px] font-bold uppercase tracking-[0.4em] text-slate-400 mt-1.5">Admin Console</span>
             </div>
           </Link>
@@ -380,7 +407,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         {/* Navigation - Enhanced Scroll Zone */}
         <div className="flex-1 relative min-h-0">
           <nav
-            className="admin-sidebar-nav absolute inset-0 overflow-y-auto px-4 py-6 space-y-0.5"
+            className="admin-sidebar-nav absolute inset-0 overflow-y-auto px-3 py-4 space-y-0.5"
           >
             {navGroups.map(group => {
               const isCollapsed = collapsedGroups.includes(group.label);
@@ -486,10 +513,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       </aside>
 
       {/* ─── MAIN CONTENT ─────────────────────────────────────────────── */}
-      <main className="flex-1 lg:ml-72 min-w-0 relative flex flex-col min-h-screen overflow-y-auto overflow-x-hidden">
+      <main className="flex-1 lg:ml-[280px] min-w-0 relative flex flex-col min-h-screen overflow-y-auto overflow-x-hidden">
 
-        {/* Admin Top Header */}
-        <header className="flex lg:hidden h-20 bg-white/80 backdrop-blur-md border-b border-slate-100 items-center justify-between px-4 md:px-8 sticky top-0 z-40">
+        {/* Admin Top Header - shown on all non-lg screens */}
+        <header className="flex lg:hidden h-16 bg-white/90 backdrop-blur-md border-b border-slate-100 items-center justify-between px-4 sticky top-0 z-40 shadow-sm">
           <div className="flex items-center gap-2 md:gap-4 min-w-0 flex-1">
             <button
               onClick={() => setIsSidebarOpen(!isSidebarOpen)}

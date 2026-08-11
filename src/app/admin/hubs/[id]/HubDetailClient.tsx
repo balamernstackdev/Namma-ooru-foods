@@ -225,7 +225,7 @@ export default function HubDetailClient({ id }: HubDetailClientProps) {
             )}
             <div>
               <div className="flex items-center gap-3">
-                <h1 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tighter uppercase italic leading-none">{hub.name}</h1>
+                <h1 className="text-xl md:text-2xl font-black text-slate-900 tracking-tighter uppercase italic leading-none">{hub.name}</h1>
                 <span className={`text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full border ${hub.status === 'Blocked'
                   ? 'text-red-650 bg-red-50 border-red-100'
                   : hub.status === 'Inactive'
@@ -342,56 +342,56 @@ export default function HubDetailClient({ id }: HubDetailClientProps) {
                   <div className="hidden md:block overflow-x-auto">
                     <table className="w-full text-left border-separate border-spacing-y-1 admin-data-table">
                       <thead>
-                        <tr className="bg-slate-50/50 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
-                          <th className="py-4 px-6 rounded-l-xl">Vendor ID</th>
-                          <th className="py-4 px-6">Vendor Name</th>
-                          <th className="py-4 px-6">Owner Name</th>
-                          <th className="py-4 px-6 text-center">Products</th>
-                          <th className="py-4 px-6 text-center">Orders</th>
-                          <th className="py-4 px-6 text-right">Revenue</th>
-                          <th className="py-4 px-6 text-center">Comm Rate</th>
-                          <th className="py-4 px-6 text-center">Status</th>
-                          <th className="py-4 px-6 text-right rounded-r-xl">Actions</th>
+                        <tr className="bg-slate-50/50 text-[9px] font-black text-slate-400 uppercase tracking-[0.1em]">
+                          <th className="py-2.5 px-4 rounded-l-xl">Vendor ID</th>
+                          <th className="py-2.5 px-4">Vendor Store</th>
+                          <th className="py-2.5 px-4">Owner</th>
+                          <th className="py-2.5 px-4 text-center">Products</th>
+                          <th className="py-2.5 px-4 text-center">Orders</th>
+                          <th className="py-2.5 px-4 text-right">Revenue</th>
+                          <th className="py-2.5 px-4 text-center">Comm. %</th>
+                          <th className="py-2.5 px-4 text-center">Status</th>
+                          <th className="py-2.5 px-4 text-right rounded-r-xl">Actions</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-50">
                         {vendors.map(sv => (
                           <tr key={sv.id} className="hover:bg-slate-50/60 transition-colors">
-                            <td className="py-5 px-6 font-mono text-xs font-black text-slate-900">
+                            <td className="py-3 px-4 font-mono text-[11px] font-black text-slate-900">
                               SEL-{sv.id.toString().padStart(2, '0')}
                             </td>
-                            <td className="py-5 px-6">
-                              <span className="text-sm font-black text-slate-900 block">{sv.name}</span>
-                              <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1 block">slug: {sv.slug}</span>
+                            <td className="py-3 px-4">
+                              <span className="text-xs font-black text-slate-900 block">{sv.name}</span>
+                              <span className="text-[9px] text-slate-400 font-bold uppercase tracking-widest mt-0.5 block">slug: {sv.slug}</span>
                             </td>
-                            <td className="py-5 px-6">
-                              <span className="text-xs font-black text-slate-700 block">{sv.owner?.name || 'Unassigned'}</span>
-                              <span className="text-[10px] text-slate-400 mt-1 block">{sv.owner?.email || '-'}</span>
+                            <td className="py-3 px-4">
+                              <span className="text-[11px] font-black text-slate-700 block max-w-[130px] truncate" title={sv.owner?.name || 'Unassigned'}>{sv.owner?.name || 'Unassigned'}</span>
+                              <span className="text-[9px] text-slate-450 mt-0.5 block max-w-[130px] truncate" title={sv.owner?.email || '-'}>{sv.owner?.email || '-'}</span>
                             </td>
-                            <td className="py-5 px-6 text-center text-xs font-bold text-slate-700">
+                            <td className="py-3 px-4 text-center text-[11px] font-bold text-slate-700">
                               {sv._count?.products || 0}
                             </td>
-                            <td className="py-5 px-6 text-center text-xs font-bold text-slate-700 font-mono">
+                            <td className="py-3 px-4 text-center text-[11px] font-bold text-slate-700 font-mono">
                               {sv.ordersCount || 0}
                             </td>
-                            <td className="py-5 px-6 text-right text-xs font-black text-slate-900 font-mono">
+                            <td className="py-3 px-4 text-right text-[11px] font-black text-slate-900 font-mono whitespace-nowrap">
                               ₹{Number(sv.revenue || 0).toLocaleString()}
                             </td>
-                            <td className="py-5 px-6 text-center text-xs font-black text-emerald-600 font-mono">
+                            <td className="py-3 px-4 text-center text-[11px] font-black text-emerald-600 font-mono">
                               {sv.commissionRate !== undefined ? sv.commissionRate : 10}%
                             </td>
-                            <td className="py-5 px-6 text-center">
-                              <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[9px] font-black tracking-widest border ${sv.userId ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-amber-50 text-amber-700 border-amber-100'
+                            <td className="py-3 px-4 text-center">
+                              <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[8px] font-black tracking-widest border ${sv.userId ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-amber-50 text-amber-700 border-amber-100'
                                 }`}>
                                 {sv.userId ? 'ACTIVE' : 'PENDING'}
                               </span>
                             </td>
-                            <td className="py-5 px-6 text-right">
+                            <td className="py-3 px-4 text-right">
                               <button
                                 onClick={() => handleEditCommission(sv)}
-                                className="h-9 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-black uppercase tracking-wider flex items-center justify-center gap-1.5 transition-colors ml-auto shadow-sm"
+                                className="h-8 px-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[9px] font-black uppercase tracking-wider flex items-center justify-center gap-1 transition-colors ml-auto shadow-sm"
                               >
-                                <RefreshCcw size={12} /> Commission
+                                <RefreshCcw size={10} /> Commission
                               </button>
                             </td>
                           </tr>

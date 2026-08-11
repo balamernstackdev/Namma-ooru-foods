@@ -92,7 +92,7 @@ export default function AdminRefundsPage() {
                   </td>
                   <td className="px-8 py-5">
                     <p className="text-xs font-black text-[var(--admin-sidebar)]">{order.user?.name || 'N/A'}</p>
-                    <p className="text-[10px] text-slate-400">{order.user?.email}</p>
+                    <p className="text-[10px] text-slate-400">{order.user?.email && !order.user.email.includes('@nammaoorufarms.local') ? order.user.email : ''}</p>
                   </td>
                   <td className="px-8 py-5 max-w-[200px]">
                     <p className="text-xs text-slate-500 font-medium line-clamp-2">

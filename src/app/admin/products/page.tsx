@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Plus, Search, Edit2, Trash2, CheckCircle2, XCircle, Package, LayoutGrid, List, MoreHorizontal, Square, CheckSquare, Eye, Check, X, ShieldAlert } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { Plus, Search, Edit2, Trash2, CheckCircle2, XCircle, Package, LayoutGrid, List, MoreHorizontal, Square, CheckSquare, Eye, Check, X, ShieldAlert, ArrowLeft } from 'lucide-react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
 import { usePlatformSettings } from '@/context/PlatformSettingsContext';
@@ -44,6 +44,8 @@ export default function AdminProducts() {
    const { user } = useAuth();
    const { settings } = usePlatformSettings();
    const { addToast } = useToast();
+   const searchParams = useSearchParams();
+   const sellerFilter = searchParams.get('seller') || '';
 
    // State controls
    const [searchTerm, setSearchTerm] = useState('');
@@ -66,7 +68,7 @@ export default function AdminProducts() {
 
    React.useEffect(() => {
       setCurrentPage(1);
-   }, [searchTerm, statusFilter]);
+   }, [searchTerm, statusFilter, sellerFilter]);
 
    const getStock = (p: Product) => {
       if (p.variants && p.variants.length > 0) {
@@ -83,7 +85,10 @@ export default function AdminProducts() {
 
          const matchesStatus = statusFilter === 'all' || p.status === statusFilter;
 
-         return matchesSearch && matchesStatus;
+         // Filter by seller (subVendorId) if coming from sellers page
+         const matchesSeller = !sellerFilter || String(p.subVendor?.id) === sellerFilter;
+
+         return matchesSearch && matchesStatus && matchesSeller;
       })
       .sort((a, b) => {
          if (sortOrder === 'latest') return b.id - a.id;
@@ -223,8 +228,8 @@ export default function AdminProducts() {
 
    const quickStats = [
       { label: 'Total Catalog', value: statTotal, gradient: 'from-slate-800 to-slate-900', icon: <Package size={24} /> },
-      { label: 'Published Items', value: statActive, gradient: 'from-emerald-600 to-emerald-700', icon: <CheckCircle2 size={24} /> },
-      { label: 'Pending Moderation', value: statPending, gradient: 'from-amber-500 to-amber-600', icon: <ShieldAlert size={24} /> },
+      { label: 'Active Items', value: statActive, gradient: 'from-emerald-600 to-emerald-700', icon: <CheckCircle2 size={24} /> },
+      { label: 'Inactive Items', value: statPending, gradient: 'from-amber-500 to-amber-600', icon: <ShieldAlert size={24} /> },
       { label: 'Low Stock Alert', value: statLowStock, gradient: 'from-rose-500 to-rose-600', icon: <Package size={24} /> },
    ];
 
@@ -239,6 +244,28 @@ export default function AdminProducts() {
                <p className="text-slate-400 font-bold uppercase tracking-[0.2em] text-[10px] mt-2">Configure organic catalog, manage inventory levels, and configure pricing.</p>
             </div>
          </div>
+
+         {/* Seller filter active banner */}
+         {sellerFilter && (
+            <div className="flex items-center gap-3 bg-blue-50 border border-blue-200 rounded-2xl px-5 py-3.5">
+               <div className="flex items-center gap-2 flex-1 min-w-0">
+                  <Package size={15} className="text-blue-500 shrink-0" />
+                  <span className="text-sm font-black text-blue-700 truncate">
+                     Showing products for Seller #{sellerFilter}
+                  </span>
+                  <span className="text-xs text-blue-500 font-bold">
+                     — {filteredAndSorted.length} product{filteredAndSorted.length !== 1 ? 's' : ''} found
+                  </span>
+               </div>
+               <Link
+                  href="/admin/users?tab=seller"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-600 text-white text-xs font-bold hover:bg-blue-700 transition-all no-underline shrink-0"
+               >
+                  <ArrowLeft size={13} />
+                  Back to Sellers
+               </Link>
+            </div>
+         )}
 
          {/* Advanced filter toolbar */}
          <AdminListToolbar
@@ -365,12 +392,18 @@ export default function AdminProducts() {
                                              {product.name}
                                           </p>
                                           <div className="flex items-center gap-1.5 mt-1 flex-wrap">
-                                             <span className={`inline-flex items-center gap-1 h-6 px-2.5 rounded-full text-[9px] font-bold uppercase tracking-wider border ${product.status === 'APPROVED' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' :
-                                                product.status === 'PENDING' ? 'bg-amber-50 text-amber-700 border-amber-100' :
-                                                   'bg-slate-50 text-slate-500 border-slate-200'
-                                                }`}>
-                                                {product.status}
-                                             </span>
+                                             <div className="flex items-center gap-2.5">
+                                                <button
+                                                   type="button"
+                                                   onClick={() => handleStatusChange(product.id, product.status === 'APPROVED' ? 'PENDING' : 'APPROVED')}
+                                                   className={`h-5 w-9 rounded-full transition-all relative ${product.status === 'APPROVED' ? 'bg-emerald-500' : 'bg-slate-200'}`}
+                                                >
+                                                   <div className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-all`} style={{ left: product.status === 'APPROVED' ? '18px' : '2px' }} />
+                                                </button>
+                                                <span className={`text-[10px] font-black tracking-widest uppercase ${product.status === 'APPROVED' ? 'text-emerald-700' : 'text-slate-400'}`}>
+                                                   {product.status === 'APPROVED' ? 'Active' : 'Inactive'}
+                                                </span>
+                                             </div>
                                              {product.subVendor && (
                                                 <span className="inline-flex items-center h-6 px-2.5 rounded-full text-[9px] font-bold uppercase tracking-wider bg-indigo-50 text-indigo-600 border border-indigo-100">
                                                    {product.subVendor.name}
@@ -425,13 +458,56 @@ export default function AdminProducts() {
                                  </td>
 
                                  <td className={`px-6 py-4 text-right border-b border-slate-50 relative ${activeMenuId === product.id ? '!z-[60]' : ''}`}>
-                                    <div className="flex items-center justify-end gap-1">
+                                    <div className="flex items-center justify-end gap-2">
+                                       <a
+                                          href={`/products/${product.id}`}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          className="h-9 px-3 rounded-xl border border-slate-200 text-slate-500 hover:text-slate-900 bg-white hover:bg-slate-50 flex items-center gap-1.5 text-xs font-bold transition-all no-underline cursor-pointer"
+                                       >
+                                          <Eye size={13} /> View
+                                       </a>
                                        <Link
                                           href={`/admin/products/edit/${product.id}`}
-                                          className="h-9 px-3 rounded-xl border border-slate-200 text-slate-500 hover:text-slate-900 bg-white hover:bg-slate-50 flex items-center gap-1.5 text-xs transition-all no-underline"
+                                          className="h-9 px-3 rounded-xl border border-slate-200 text-slate-500 hover:text-slate-900 bg-white hover:bg-slate-50 flex items-center gap-1.5 text-xs font-bold transition-all no-underline"
                                        >
                                           <Edit2 size={13} /> Edit
                                        </Link>
+
+                                       <div className="relative">
+                                          <button
+                                             onClick={() => setActiveMenuId(activeMenuId === product.id ? null : product.id)}
+                                             className="h-9 w-9 flex items-center justify-center rounded-xl bg-slate-50 border border-slate-200 text-slate-400 hover:text-slate-600 transition-colors"
+                                          >
+                                             <MoreHorizontal size={16} />
+                                          </button>
+
+                                          {activeMenuId === product.id && (
+                                             <>
+                                                <div className="fixed inset-0 z-40" onClick={() => setActiveMenuId(null)} />
+                                                <div className="absolute right-0 mt-2 w-44 bg-white border border-slate-200 rounded-2xl shadow-xl p-2 z-50 animate-in fade-in slide-in-from-top-2 duration-200 text-left">
+                                                   <button
+                                                      onClick={() => { handleStatusChange(product.id, 'APPROVED'); setActiveMenuId(null); }}
+                                                      className="w-full text-left px-4 py-2.5 rounded-xl text-xs font-bold text-slate-600 hover:bg-emerald-50 hover:text-emerald-800 transition-colors flex items-center gap-2"
+                                                   >
+                                                      <Check size={14} /> Activate Product
+                                                   </button>
+                                                   <button
+                                                      onClick={() => { handleStatusChange(product.id, 'PENDING'); setActiveMenuId(null); }}
+                                                      className="w-full text-left px-4 py-2.5 rounded-xl text-xs font-bold text-slate-600 hover:bg-amber-50 hover:text-amber-800 transition-colors flex items-center gap-2"
+                                                   >
+                                                      <ShieldAlert size={14} /> Deactivate Product
+                                                   </button>
+                                                   <button
+                                                      onClick={() => { handleDelete(product.id); setActiveMenuId(null); }}
+                                                      className="w-full text-left px-4 py-2.5 rounded-xl text-xs font-bold text-slate-600 hover:bg-red-50 hover:text-red-800 transition-colors flex items-center gap-2"
+                                                   >
+                                                      <Trash2 size={14} /> Delete Product
+                                                   </button>
+                                                </div>
+                                             </>
+                                          )}
+                                       </div>
                                     </div>
                                  </td>
                               </tr>
@@ -537,13 +613,19 @@ export default function AdminProducts() {
                                     />
                                  </div>
                               </div>
-                              <div className="col-span-2 pt-2 border-t border-slate-100 flex items-center gap-1.5 flex-wrap">
-                                 <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider border ${product.status === 'APPROVED' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' :
-                                    product.status === 'PENDING' ? 'bg-amber-50 text-amber-700 border-amber-100' :
-                                       'bg-slate-50 text-slate-500 border-slate-200'
-                                    }`}>
-                                    Status: {product.status}
-                                 </span>
+                              <div className="col-span-2 pt-2 border-t border-slate-100 flex items-center gap-2.5 flex-wrap">
+                                 <div className="flex items-center gap-2">
+                                    <button
+                                       type="button"
+                                       onClick={() => handleStatusChange(product.id, product.status === 'APPROVED' ? 'PENDING' : 'APPROVED')}
+                                       className={`h-5 w-9 rounded-full transition-all relative ${product.status === 'APPROVED' ? 'bg-emerald-500' : 'bg-slate-200'}`}
+                                    >
+                                       <div className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-all`} style={{ left: product.status === 'APPROVED' ? '18px' : '2px' }} />
+                                    </button>
+                                    <span className={`text-[10px] font-black tracking-widest uppercase ${product.status === 'APPROVED' ? 'text-emerald-700' : 'text-slate-400'}`}>
+                                       Status: {product.status === 'APPROVED' ? 'Active' : 'Inactive'}
+                                    </span>
+                                 </div>
                                  {product.subVendor && (
                                      <span className="px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest bg-indigo-50 text-indigo-600 border border-indigo-100">
                                         {product.subVendor.name}
@@ -572,6 +654,14 @@ export default function AdminProducts() {
                            </div>
 
                            <div className="flex items-center gap-2 pt-1">
+                              <a
+                                 href={`/products/${product.id}`}
+                                 target="_blank"
+                                 rel="noopener noreferrer"
+                                 className="h-11 flex-1 flex items-center justify-center gap-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-all text-xs font-bold no-underline cursor-pointer"
+                              >
+                                 <Eye size={14} /> View
+                              </a>
                               <Link
                                  href={`/admin/products/edit/${product.id}`}
                                  className="h-11 flex-1 flex items-center justify-center gap-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-all text-xs font-bold no-underline"
@@ -595,13 +685,13 @@ export default function AdminProducts() {
                                              onClick={() => { handleStatusChange(product.id, 'APPROVED'); setActiveMenuId(null); }}
                                              className="w-full text-left px-4 py-2.5 rounded-xl text-xs font-bold text-slate-600 hover:bg-emerald-50 hover:text-emerald-800 transition-colors flex items-center gap-2"
                                           >
-                                             <Check size={14} /> Publish Product
+                                             <Check size={14} /> Activate Product
                                           </button>
                                           <button
                                              onClick={() => { handleStatusChange(product.id, 'PENDING'); setActiveMenuId(null); }}
                                              className="w-full text-left px-4 py-2.5 rounded-xl text-xs font-bold text-slate-600 hover:bg-amber-50 hover:text-amber-800 transition-colors flex items-center gap-2"
                                           >
-                                             <ShieldAlert size={14} /> Mark Pending
+                                             <ShieldAlert size={14} /> Deactivate Product
                                           </button>
                                           <button
                                              onClick={() => { handleDelete(product.id); setActiveMenuId(null); }}

@@ -90,7 +90,7 @@ export default function AdminAuditLogsPage() {
                       </div>
                       <div className="flex flex-col">
                         <span className="text-xs font-black text-[var(--admin-sidebar)]">{log.user?.name}</span>
-                        <span className="text-[10px] text-slate-400">{log.user?.email}</span>
+                        <span className="text-[10px] text-slate-400">{log.user?.email && !log.user.email.includes('@nammaoorufarms.local') ? log.user.email : ''}</span>
                       </div>
                     </div>
                   </td>

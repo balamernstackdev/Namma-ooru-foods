@@ -10,7 +10,11 @@ const fetcher = (url: string) => fetch(url).then(r => r.json());
 
 export default function AdminTrackingPage() {
   const [currentPage, setCurrentPage] = useState(1);
-  const { data, isLoading, mutate } = useSWR(`${API_URL}/api/orders?page=${currentPage}&limit=10`, fetcher);
+  const { data, isLoading, mutate } = useSWR(
+    `${API_URL}/api/orders?page=${currentPage}&limit=10`,
+    fetcher,
+    { revalidateOnFocus: false, dedupingInterval: 30000 }
+  );
   const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
   const [form, setForm] = useState({ carrierName: '', trackingNumber: '', trackingUrl: '', estimatedDelivery: '' });
   const [saving, setSaving] = useState(false);
@@ -27,6 +31,36 @@ export default function AdminTrackingPage() {
     if (activeTab === 'DELIVERED' && o.status !== 'DELIVERED') return false;
     return String(o.id).includes(searchTerm) || o.user?.name?.toLowerCase().includes(searchTerm.toLowerCase());
   });
+  // Compute display shipping fee for any order (matches invoice logic)
+  const getOrderShipping = (order: any): number => {
+    const stored = Number(order.shippingFees || order.deliveryFee || 0);
+    if (stored > 0) return stored;
+    // Derive from items weight: ceil(kg) x Rs50
+    const items = order.items || order.orderItems || [];
+    let kg = 0;
+    items.forEach((item: any) => {
+      const qty = Number(item.quantity || 0);
+      const variantStr = item.variant || item.variantName || '';
+      let wVal: number | null = null;
+      let uVal = '';
+      if (variantStr) {
+        const m = variantStr.toLowerCase().match(/(\d+(?:\.\d+)?)\s*(g|gm|grams|kg|kgs|kilo|kilograms)/i);
+        if (m) { wVal = parseFloat(m[1]); uVal = m[2]; }
+      }
+      if (!wVal && item.product) {
+        wVal = item.product.weight ? Number(item.product.weight) : null;
+        uVal = item.product.unit || 'g';
+      }
+      if (wVal && uVal) {
+        const u = uVal.toLowerCase().trim();
+        kg += u.startsWith('k') ? wVal * qty : (wVal / 1000) * qty;
+      } else {
+        kg += 0.5 * qty;
+      }
+    });
+    return Math.max(1, Math.ceil(kg)) * 50;
+  };
+
 
   useEffect(() => {
     if (!selectedOrderId) return;
@@ -466,7 +500,7 @@ export default function AdminTrackingPage() {
   </div>
 
   <script>
-    setTimeout(function() { window.print(); }, 300);
+    window.onload = function() { window.print(); };
   </script>
 </body>
 </html>`);
@@ -476,17 +510,74 @@ export default function AdminTrackingPage() {
 
   const printAdminInvoice = (order: any) => {
     const items = order.items || order.orderItems || [];
-    const subtotal = Number(order.totalAmount) - Number(order.gstAmount || 0) - Number(order.deliveryFee || 0) + Number(order.discountAmount || 0);
+    const storedShippingFee = Number(order.shippingFees || order.deliveryFee || 0);
     const orderIdStr = order.orderIdStr || `ORD-${String(order.id).padStart(4, '0')}`;
+
+    let totalWeightKg = 0;
+    items.forEach((item: any) => {
+      const qty = Number(item.quantity || 0);
+      let wVal = null;
+      let uVal = null;
+
+      // 1. Try parsing weight from variant (e.g. "250g", "1 kg")
+      const variantStr = item.variant || item.variantName || '';
+      if (variantStr) {
+        const match = variantStr.toLowerCase().match(/(\d+(?:\.\d+)?)\s*(g|gm|grams|kg|kgs|kilo|kilograms)/i);
+        if (match) {
+          wVal = parseFloat(match[1]);
+          uVal = match[2];
+        }
+      }
+
+      // 2. Fallback to product weight and unit fields
+      if ((wVal === null || wVal === undefined || wVal === 0) && item.product) {
+        wVal = item.product.weight ? Number(item.product.weight) : null;
+        uVal = item.product.unit || 'g';
+
+        // 3. Fallback to parsing weight from product name
+        if ((wVal === null || wVal === undefined || wVal === 0) && item.product.name) {
+          const match = item.product.name.toLowerCase().match(/(\d+(?:\.\d+)?)\s*(g|gm|grams|kg|kgs|kilo|kilograms)/i);
+          if (match) {
+            wVal = parseFloat(match[1]);
+            uVal = match[2];
+          }
+        }
+      }
+
+      if (wVal && uVal) {
+        const normUnit = uVal.toLowerCase().trim();
+        if (normUnit.startsWith('k') || normUnit.startsWith('kilo')) {
+          totalWeightKg += wVal * qty;
+        } else {
+          totalWeightKg += (wVal / 1000) * qty;
+        }
+      } else {
+        // Fallback: assume 0.5 kg (500g) per item if no weight can be parsed
+        totalWeightKg += 0.5 * qty;
+      }
+    });
+
+    // Compute display shipping fee: use stored value if > 0, else derive from weight
+    // Formula: ceil(totalWeightKg) × ₹50 per kg (same as backend)
+    const calculatedShippingFee = Math.max(1, Math.ceil(totalWeightKg)) * 50;
+    const shippingFees = storedShippingFee > 0 ? storedShippingFee : calculatedShippingFee;
+
+    // Subtotal = items value only (no shipping, no gst, no discount adjustment)
+    const subtotal = Number(order.totalAmount) - Number(order.gstAmount || 0) - storedShippingFee + Number(order.discountAmount || 0);
+
+    // Grand total adjusts for the shipping difference (computed vs. stored)
+    const displayGrandTotal = Number(order.totalAmount) + (shippingFees - storedShippingFee);
 
     const itemRows = items.map((item: any, idx: number) => {
       const rate = Number(item.price || item.unitPrice || 0);
       const mrp = Number(item.product?.price || rate);
       const code = item.product?.productIdStr || item.product?.sku || `ITEM${String(item.productId || idx + 1).padStart(4, '0')}`;
+      const variantDisplay = item.variant || item.variantName || item.product?.unit || '—';
       return `<tr style="border-bottom:1px solid #f1f5f9; color:#334155; font-weight:500;">
         <td style="padding:8px 4px;">${idx + 1}</td>
         <td style="padding:8px 4px; font-family:monospace;">${code}</td>
         <td style="padding:8px 4px; font-weight:700; color:#0f172a;">${item.product?.name || item.name || '—'}</td>
+        <td style="padding:8px 4px; font-size:10px; color:#64748b; font-weight:600;">${variantDisplay}</td>
         <td style="padding:8px 4px; text-align:right; font-family:monospace;">${Number(item.quantity).toFixed(3)}</td>
         <td style="padding:8px 4px; text-align:right; font-family:monospace;">${mrp.toFixed(2)}</td>
         <td style="padding:8px 4px; text-align:right; font-family:monospace;">${rate.toFixed(2)}</td>
@@ -535,13 +626,13 @@ export default function AdminTrackingPage() {
   <meta charset="utf-8"/>
   <title>Invoice - ${orderIdStr}</title>
   <style>
-    @page { size: A4 portrait; margin: 0; }
+    @page { size: A4 portrait; margin: 8mm; }
     @media print {
-      html, body { margin: 0; padding: 0; width: 210mm; height: 297mm; background: white; }
-      .invoice-wrap { min-height: 297mm; padding: 1.5cm 1.8cm; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between; }
+      html, body { margin: 0; padding: 0; background: white; height: auto; }
+      .invoice-wrap { min-height: 255mm; padding: 0.4cm 0.8cm; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between; page-break-inside: avoid; }
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; font-size: 12px; color: #1e293b; background: white; padding: 28px 36px 20px; }
+    body { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; font-size: 12px; color: #1e293b; background: white; padding: 18px 24px; }
     table { width: 100%; border-collapse: collapse; }
     img { max-height: 24px; width: auto; }
   </style>
@@ -588,19 +679,44 @@ export default function AdminTrackingPage() {
       <table>
         <thead><tr style="border-top:1px solid #e2e8f0;border-bottom:1px solid #e2e8f0;">
           <th style="padding:10px 4px;font-size:10px;font-weight:900;color:#94a3b8;text-transform:uppercase;letter-spacing:0.05em;text-align:left;width:36px;">No</th>
-          <th style="padding:10px 4px;font-size:10px;font-weight:900;color:#94a3b8;text-transform:uppercase;letter-spacing:0.05em;text-align:left;width:90px;">Item Code</th>
+          <th style="padding:10px 4px;font-size:10px;font-weight:900;color:#94a3b8;text-transform:uppercase;letter-spacing:0.05em;text-align:left;width:80px;">Item Code</th>
           <th style="padding:10px 4px;font-size:10px;font-weight:900;color:#94a3b8;text-transform:uppercase;letter-spacing:0.05em;text-align:left;">Item</th>
-          <th style="padding:10px 4px;font-size:10px;font-weight:900;color:#94a3b8;text-transform:uppercase;letter-spacing:0.05em;text-align:right;width:60px;">Qty</th>
-          <th style="padding:10px 4px;font-size:10px;font-weight:900;color:#94a3b8;text-transform:uppercase;letter-spacing:0.05em;text-align:right;width:60px;">MRP</th>
-          <th style="padding:10px 4px;font-size:10px;font-weight:900;color:#94a3b8;text-transform:uppercase;letter-spacing:0.05em;text-align:right;width:60px;">Rate</th>
-          <th style="padding:10px 4px;font-size:10px;font-weight:900;color:#94a3b8;text-transform:uppercase;letter-spacing:0.05em;text-align:right;width:72px;">Amt</th>
+          <th style="padding:10px 4px;font-size:10px;font-weight:900;color:#94a3b8;text-transform:uppercase;letter-spacing:0.05em;text-align:left;width:54px;">Weight</th>
+          <th style="padding:10px 4px;font-size:10px;font-weight:900;color:#94a3b8;text-transform:uppercase;letter-spacing:0.05em;text-align:right;width:54px;">Qty</th>
+          <th style="padding:10px 4px;font-size:10px;font-weight:900;color:#94a3b8;text-transform:uppercase;letter-spacing:0.05em;text-align:right;width:54px;">MRP</th>
+          <th style="padding:10px 4px;font-size:10px;font-weight:900;color:#94a3b8;text-transform:uppercase;letter-spacing:0.05em;text-align:right;width:54px;">Rate</th>
+          <th style="padding:10px 4px;font-size:10px;font-weight:900;color:#94a3b8;text-transform:uppercase;letter-spacing:0.05em;text-align:right;width:66px;">Amt</th>
         </tr></thead>
         <tbody>
           ${itemRows}
-          <tr style="border-bottom:1px solid #e2e8f0;font-weight:900;color:#0f172a;">
-            <td colspan="3" style="padding:12px 4px;">Total Item(s): ${items.length}</td>
-            <td colspan="3" style="padding:12px 4px;text-align:right;">Total (Incl. Taxes)</td>
-            <td style="padding:12px 4px;text-align:right;font-family:monospace;">₹${Number(order.totalAmount).toFixed(2)}</td>
+          <tr style="border-bottom:1px solid #f1f5f9;font-weight:600;color:#475569;font-size:11px;">
+            <td colspan="4" style="padding:8px 4px;">Total Item(s): ${items.length}</td>
+            <td colspan="3" style="padding:8px 4px;text-align:right;">Items Subtotal</td>
+            <td style="padding:8px 4px;text-align:right;font-family:monospace;">₹${subtotal.toFixed(2)}</td>
+          </tr>
+          <tr style="border-bottom:1px solid #f1f5f9;font-weight:600;color:#475569;font-size:11px;">
+            <td colspan="4" style="padding:8px 4px;">Total Weight: ${totalWeightKg.toFixed(3)} kg</td>
+            <td colspan="3" style="padding:8px 4px;text-align:right;">Shipping Charges</td>
+            <td style="padding:8px 4px;text-align:right;font-family:monospace;">₹${shippingFees.toFixed(2)}</td>
+          </tr>
+          ${Number(order.gstAmount || 0) > 0 ? `
+          <tr style="border-bottom:1px solid #f1f5f9;font-weight:600;color:#475569;font-size:11px;">
+            <td colspan="4" style="padding:8px 4px;"></td>
+            <td colspan="3" style="padding:8px 4px;text-align:right;">GST Amount</td>
+            <td style="padding:8px 4px;text-align:right;font-family:monospace;">₹${Number(order.gstAmount).toFixed(2)}</td>
+          </tr>` : ''}
+          ${Number(order.discountAmount || 0) > 0 ? `
+          <tr style="border-bottom:1px solid #f1f5f9;font-weight:600;color:#475569;font-size:11px;">
+            <td colspan="4" style="padding:8px 4px;"></td>
+            <td colspan="3" style="padding:8px 4px;text-align:right;">Discount</td>
+            <td style="padding:8px 4px;text-align:right;font-family:monospace;">(-) ₹${Number(order.discountAmount).toFixed(2)}</td>
+          </tr>` : ''}
+          <tr style="border-bottom:1px solid #e2e8f0;font-weight:900;color:#0f172a;font-size:12px;">
+            <td colspan="4" style="padding:12px 4px;">
+              <span style="font-size:9px;font-weight:600;color:#94a3b8;font-style:italic;">* All Tax Included</span>
+            </td>
+            <td colspan="3" style="padding:12px 4px;text-align:right;">Grand Total (Incl. Taxes)</td>
+            <td style="padding:12px 4px;text-align:right;font-family:monospace;">₹${displayGrandTotal.toFixed(2)}</td>
           </tr>
         </tbody>
       </table>
@@ -609,23 +725,23 @@ export default function AdminTrackingPage() {
     ${gstSection}
 
     <!-- Payment Summary -->
-    <div style="border:1px dashed #cbd5e1;border-radius:1rem;padding:20px;margin-bottom:16px;">
-      <p style="font-size:10px;font-weight:900;color:#94a3b8;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:12px;">Payment Summary :</p>
-      <div style="display:flex;justify-content:space-between;align-items:center;font-weight:700;color:#334155;">
+    <div style="border:1px dashed #cbd5e1;border-radius:0.75rem;padding:14px 20px;margin-bottom:12px;">
+      <p style="font-size:9px;font-weight:900;color:#94a3b8;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px;">Payment Summary :</p>
+      <div style="display:flex;justify-content:space-between;align-items:center;font-weight:700;color:#334155;font-size:11px;">
         <span>${order.paymentMethod === 'Razorpay Online' ? 'Online Payment (Razorpay)' : order.paymentMethod || 'Online Payment'}</span>
-        <span style="font-family:monospace;">(-) ${Number(order.totalAmount).toFixed(2)}</span>
+        <span style="font-family:monospace;">(-) ₹${displayGrandTotal.toFixed(2)}</span>
       </div>
-      ${Number(order.discountAmount || 0) > 0 ? `<div style="margin-top:16px;padding-top:12px;border-top:1px solid #f1f5f9;text-align:center;color:#047857;font-weight:900;font-size:12px;">You saved ₹${Number(order.discountAmount).toFixed(2)} !</div>` : ''}
+      ${Number(order.discountAmount || 0) > 0 ? `<div style="margin-top:8px;padding-top:8px;border-top:1px solid #f1f5f9;text-align:center;color:#047857;font-weight:900;font-size:11px;">You saved ₹${Number(order.discountAmount).toFixed(2)} !</div>` : ''}
     </div>
   </div>
 
-  <!-- Footer -->
-  <div style="text-align:center;padding-top:16px;border-top:1px solid #f1f5f9;font-size:10px;color:#94a3b8;font-weight:700;line-height:1.5;">
+  <!-- Footer always at bottom inside invoice-wrap -->
+  <div style="text-align:center;padding-top:12px;border-top:1px solid #f1f5f9;font-size:10px;color:#94a3b8;font-weight:700;line-height:1.5;margin-top:8px;">
     Thank You! Shop Again<br/>9000896898
   </div>
 </div>
 <script>
-  setTimeout(function() { window.print(); }, 300);
+  window.onload = function() { window.print(); };
 </script>
 </body>
 </html>`);
@@ -676,7 +792,24 @@ export default function AdminTrackingPage() {
             ))}
           </div>
  
-          {isLoading && <div className="text-center py-12"><div className="h-8 w-8 border-2 border-slate-100 border-t-[var(--admin-accent)] rounded-full animate-spin mx-auto" /></div>}
+          {/* Loading skeleton */}
+          {isLoading && (
+            <div className="space-y-3">
+              {[1,2,3,4,5].map(i => (
+                <div key={i} className="bg-white rounded-2xl border border-slate-100 p-5 animate-pulse">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="h-3 w-20 bg-slate-100 rounded" />
+                    <div className="h-5 w-16 bg-slate-100 rounded-lg" />
+                  </div>
+                  <div className="h-4 w-32 bg-slate-100 rounded mb-2" />
+                  <div className="flex items-center justify-between">
+                    <div className="h-3 w-12 bg-slate-100 rounded" />
+                    <div className="h-3 w-20 bg-slate-100 rounded" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
           {filtered.map((order: any) => (
             <button key={order.id} id={`admin-track-order-${order.id}`} onClick={() => setSelectedOrderId(order.id)}
               className={`w-full text-left rounded-2xl border-2 p-5 transition-all ${selectedOrderId === order.id ? 'border-[var(--admin-accent)] bg-amber-50/30' : 'border-slate-100 bg-white hover:border-slate-200'}`}>
@@ -691,7 +824,11 @@ export default function AdminTrackingPage() {
               </div>
               <p className="font-black text-[var(--admin-sidebar)] text-sm mt-1">{order.user?.name || 'Customer'}</p>
               <div className="flex items-center justify-between mt-1.5">
-                <p className="text-xs text-slate-500 font-bold">₹{Number(order.totalAmount).toLocaleString()}</p>
+                <div className="flex items-center gap-2">
+                  <p className="text-xs text-slate-700 font-bold">₹{Number(order.totalAmount).toLocaleString()}</p>
+                  <span className="text-[9px] text-slate-300">|</span>
+                  <p className="text-[10px] text-blue-500 font-black">+₹{getOrderShipping(order)} ship</p>
+                </div>
                 <p className="text-[9px] font-bold text-slate-400 bg-slate-50 border border-slate-100 rounded px-1.5 py-0.5">
                   {new Date(order.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
                 </p>
@@ -760,7 +897,7 @@ export default function AdminTrackingPage() {
                 <div className="mb-6 bg-slate-50 border border-slate-100 rounded-2xl p-5 text-xs font-semibold text-slate-600 space-y-3 animate-in fade-in duration-300">
                   <div className="flex justify-between border-b border-slate-200/60 pb-2">
                     <span className="font-black uppercase tracking-wider text-slate-400 text-[10px]">Customer Contact</span>
-                    <span className="font-bold text-slate-800">{selectedOrder.user?.email || 'N/A'}</span>
+                    <span className="font-bold text-slate-800">{selectedOrder.user?.email && !selectedOrder.user.email.includes('@nammaoorufarms.local') ? selectedOrder.user.email : '—'}</span>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-1">
                     <div className="space-y-3">

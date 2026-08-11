@@ -204,10 +204,9 @@ export default function VendorHubDashboard() {
                 <thead>
                   <tr className="border-b border-slate-100 text-[9px] font-black uppercase tracking-widest text-slate-400">
                     <th className="pb-4">Order ID</th>
-                    <th className="pb-4">Customer</th>
                     <th className="pb-4">Received At</th>
                     <th className="pb-4">Status</th>
-                    <th className="pb-4">Items</th>
+                    <th className="pb-4">Products</th>
                     <th className="pb-4 text-right">Amount</th>
                   </tr>
                 </thead>
@@ -215,14 +214,22 @@ export default function VendorHubDashboard() {
                   {recentOrders.map((order: any) => (
                     <tr key={order.id} className="group hover:bg-slate-50/50 transition-colors">
                       <td className="py-4 font-black text-slate-900">{order.orderIdStr || `#${order.id}`}</td>
-                      <td className="py-4 font-semibold text-slate-600">{order.customerName}</td>
                       <td className="py-4 text-slate-500 font-medium whitespace-nowrap">{formatDate(order.createdAt)}</td>
                       <td className="py-4">
                         <span className={`px-2.5 py-1 text-[9px] font-black uppercase tracking-wider rounded-lg border ${STATUS_COLORS[order.status] || 'bg-slate-100 text-slate-600'}`}>
                           {order.status}
                         </span>
                       </td>
-                      <td className="py-4 text-slate-500 font-medium">{order.itemsCount} {order.itemsCount === 1 ? 'item' : 'items'}</td>
+                      <td className="py-4">
+                        <div className="flex flex-col gap-0.5 max-w-[200px]">
+                          {order.items?.map((item: any) => (
+                            <span key={item.id} className="text-[11px] font-bold text-slate-600 block leading-tight truncate" title={`${item.product?.name} × ${item.quantity}`}>
+                              {item.product?.name || 'Product'} × {item.quantity}
+                            </span>
+                          ))}
+                          {(!order.items || order.items.length === 0) && <span className="text-xs text-slate-450">—</span>}
+                        </div>
+                      </td>
                       <td className="py-4 text-right text-slate-900 font-black">{formatAmount(order.hubSubtotal)}</td>
                     </tr>
                   ))}

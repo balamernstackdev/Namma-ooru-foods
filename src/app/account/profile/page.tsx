@@ -202,8 +202,9 @@ export default function ProfilePage() {
                   {editing ? (
                     <input
                       type={type}
-                      value={form[key as keyof typeof form] ?? ''}
+                      value={key === 'email' && (form.email || '').includes('@nammaoorufarms.local') ? '' : (form[key as keyof typeof form] ?? '')}
                       onChange={e => setForm((f: any) => ({ ...f, [key]: e.target.value }))}
+                      placeholder={key === 'email' && (form.email || '').includes('@nammaoorufarms.local') ? 'Enter email address' : ''}
                       className="w-full h-11 px-4 rounded-xl border-2 border-slate-100 focus:border-emerald-500 outline-none text-[13px] font-bold text-emerald-950 bg-slate-50 transition-all"
                     />
                   ) : (
@@ -211,7 +212,7 @@ export default function ProfilePage() {
                       <Icon className="h-4 w-4 text-emerald-600 shrink-0" strokeWidth={2.5} />
                       <span className={`text-[13px] font-bold text-emerald-950 ${key === 'name' ? 'capitalize' : ''}`}>
                         {key === 'email' 
-                          ? (form.email ? form.email.toLowerCase() : 'Email not available') 
+                          ? (form.email && !form.email.includes('@nammaoorufarms.local') ? form.email.toLowerCase() : 'Email not available') 
                           : key === 'phone' 
                             ? (form.phone ? form.phone : 'Mobile number not added')
                             : (form.name || 'N/A')

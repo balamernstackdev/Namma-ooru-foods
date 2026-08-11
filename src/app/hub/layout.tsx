@@ -25,7 +25,6 @@ const navGroups = [
       { label: 'Hub Vendors', href: '/hub/sub-vendors', icon: Users },
       { label: 'Hub Products', href: '/hub/products', icon: Package },
       { label: 'Hub Orders', href: '/hub/orders', icon: ShoppingBag },
-      { label: 'Hub Customers', href: '/hub/customers', icon: Users },
     ]
   },
   {

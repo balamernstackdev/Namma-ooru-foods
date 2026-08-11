@@ -16,7 +16,7 @@ interface Subcategory {
   categoryId: number;
   imageUrl?: string;
   status: string;
-  category?: { name: string };
+  category?: { name: string; image?: string };
   _count?: { products: number };
 }
 
@@ -67,6 +67,26 @@ export default function AdminSubcategoriesPage() {
       }
     } catch (err) {
       addToast('Error', 'Failed to delete subcategory');
+    }
+  };
+
+  const handleToggleSubcategoryStatus = async (id: number, currentStatus: string) => {
+    try {
+      const newStatus = currentStatus === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
+      const res = await fetch(`${API_URL}/api/subcategories/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus })
+      });
+      if (res.ok) {
+        setSubcategories(prev => prev.map(s => s.id === id ? { ...s, status: newStatus } : s));
+        addToast('Success', `Subcategory marked as ${newStatus === 'ACTIVE' ? 'Active' : 'Inactive'}`);
+      } else {
+        addToast('Error', 'Failed to update subcategory status');
+      }
+    } catch (e) {
+      console.error(e);
+      addToast('Error', 'Failed to update subcategory status');
     }
   };
 
@@ -154,10 +174,16 @@ export default function AdminSubcategoriesPage() {
                               </div>
                               <div>
                                 <span className="text-sm font-black text-slate-900 block group-hover:text-emerald-700 transition-colors tracking-tight uppercase">{sub.name}</span>
-                                <div className="flex items-center gap-2 mt-1">
-                                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[9px] font-black tracking-widest uppercase ${sub.status === 'ACTIVE' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-slate-100 text-slate-400 border border-slate-200'
-                                    }`}>
-                                    {sub.status}
+                                 <div className="flex items-center gap-2.5 mt-1.5">
+                                  <button
+                                    type="button"
+                                    onClick={() => handleToggleSubcategoryStatus(sub.id, sub.status)}
+                                    className={`h-5 w-9 rounded-full transition-all relative ${sub.status === 'ACTIVE' ? 'bg-emerald-500' : 'bg-slate-200'}`}
+                                  >
+                                    <div className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-all ${sub.status === 'ACTIVE' ? 'left-4.5' : 'left-0.5'}`} style={{ left: sub.status === 'ACTIVE' ? '18px' : '2px' }} />
+                                  </button>
+                                  <span className={`text-[10px] font-black tracking-widest uppercase ${sub.status === 'ACTIVE' ? 'text-emerald-700' : 'text-slate-400'}`}>
+                                    {sub.status === 'ACTIVE' ? 'Active' : 'Inactive'}
                                   </span>
                                 </div>
                               </div>

@@ -71,6 +71,25 @@ export default function AdminCategoriesPage() {
     }
   };
 
+  const handleToggleCategoryStatus = async (id: number, currentStatus: boolean) => {
+    try {
+      const res = await fetch(`${API_URL}/api/admin-ops/categories/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isActive: !currentStatus })
+      });
+      if (res.ok) {
+        setCategories(prev => prev.map(c => c.id === id ? { ...c, isActive: !currentStatus } : c));
+        addToast('Success', `Category marked as ${!currentStatus ? 'Active' : 'Inactive'}`);
+      } else {
+        addToast('Error', 'Failed to update category status');
+      }
+    } catch (e) {
+      console.error(e);
+      addToast('Error', 'Failed to update category status');
+    }
+  };
+
   const handleExport = (format: 'CSV' | 'EXCEL' | 'PDF') => {
     if (filteredCategories.length === 0) {
       addToast('Error', 'No categories available to export');
@@ -179,6 +198,7 @@ export default function AdminCategoriesPage() {
                     <th className="px-6 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100">Category Identity</th>
                     <th className="px-6 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100">Description</th>
                     <th className="px-6 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100">Products Pulse</th>
+                    <th className="px-6 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100 text-center">Status</th>
                     <th className="px-6 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100 text-right">Actions</th>
                   </tr>
                 </thead>
@@ -218,6 +238,21 @@ export default function AdminCategoriesPage() {
                         <span className="inline-block text-[10px] font-black uppercase tracking-wider text-emerald-700 px-3 py-1.5 bg-emerald-50 border border-emerald-100/50 rounded-xl whitespace-nowrap">
                           {cat._count?.products || 0} Products
                         </span>
+                      </td>
+
+                      <td className="px-6 py-4 border-b border-slate-50 text-center">
+                        <div className="flex items-center justify-center gap-2.5">
+                          <button
+                            type="button"
+                            onClick={() => handleToggleCategoryStatus(cat.id, cat.isActive)}
+                            className={`h-5 w-9 rounded-full transition-all relative ${cat.isActive !== false ? 'bg-emerald-500' : 'bg-slate-200'}`}
+                          >
+                            <div className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-all ${cat.isActive !== false ? 'left-4.5' : 'left-0.5'}`} style={{ left: cat.isActive !== false ? '18px' : '2px' }} />
+                          </button>
+                          <span className={`text-[10px] font-black tracking-widest uppercase ${cat.isActive !== false ? 'text-emerald-700' : 'text-slate-400'}`}>
+                            {cat.isActive !== false ? 'Active' : 'Inactive'}
+                          </span>
+                        </div>
                       </td>
 
                       <td className="px-6 py-4 text-right border-b border-slate-50 relative">

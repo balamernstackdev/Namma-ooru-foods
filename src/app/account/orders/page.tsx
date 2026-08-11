@@ -19,7 +19,59 @@ interface InvoiceModalProps {
 
 function InvoiceModal({ order, onClose, gstTaxLabel }: InvoiceModalProps) {
    const items = order.orderItems || order.items || [];
-   const subtotal = Number(order.totalAmount) - Number(order.gstAmount || 0) - Number(order.deliveryFee || 0) + Number(order.discountAmount || 0);
+   const storedShippingFee = Number(order.shippingFees || order.deliveryFee || 0);
+
+   let totalWeightKg = 0;
+   items.forEach((item: any) => {
+      const qty = Number(item.quantity || 0);
+      let wVal = null;
+      let uVal = null;
+
+      // 1. Try parsing weight from variant (e.g. "250g", "1 kg")
+      const variantStr = item.variant || item.variantName || '';
+      if (variantStr) {
+         const match = variantStr.toLowerCase().match(/(\d+(?:\.\d+)?)\s*(g|gm|grams|kg|kgs|kilo|kilograms)/i);
+         if (match) {
+            wVal = parseFloat(match[1]);
+            uVal = match[2];
+         }
+      }
+
+      // 2. Fallback to product weight and unit fields
+      if ((wVal === null || wVal === undefined || wVal === 0) && item.product) {
+         wVal = item.product.weight ? Number(item.product.weight) : null;
+         uVal = item.product.unit || 'g';
+
+         // 3. Fallback to parsing weight from product name
+         if ((wVal === null || wVal === undefined || wVal === 0) && item.product.name) {
+            const match = item.product.name.toLowerCase().match(/(\d+(?:\.\d+)?)\s*(g|gm|grams|kg|kgs|kilo|kilograms)/i);
+            if (match) {
+               wVal = parseFloat(match[1]);
+               uVal = match[2];
+            }
+         }
+      }
+
+      if (wVal && uVal) {
+         const normUnit = uVal.toLowerCase().trim();
+         if (normUnit.startsWith('k') || normUnit.startsWith('kilo')) {
+            totalWeightKg += wVal * qty;
+         } else {
+            totalWeightKg += (wVal / 1000) * qty;
+         }
+      } else {
+         // Fallback: assume 0.5 kg (500g) per item if no weight can be parsed
+         totalWeightKg += 0.5 * qty;
+      }
+   });
+
+   // Derive display shipping fee from weight when stored fee is 0
+   // Formula matches backend: ceil(totalWeightKg) × ₹50 per kg
+   const calculatedShippingFee = Math.max(1, Math.ceil(totalWeightKg)) * 50;
+   const shippingFees = storedShippingFee > 0 ? storedShippingFee : calculatedShippingFee;
+   const subtotal = Number(order.totalAmount) - Number(order.gstAmount || 0) - storedShippingFee + Number(order.discountAmount || 0);
+   // Grand total adjusts for the shipping difference (computed vs. stored)
+   const displayGrandTotal = Number(order.totalAmount) + (shippingFees - storedShippingFee);
 
    const handlePrint = () => {
       const printContent = document.getElementById('print-invoice-area')?.innerHTML;
@@ -46,22 +98,22 @@ function InvoiceModal({ order, onClose, gstTaxLabel }: InvoiceModalProps) {
         padding: 28px 36px 20px;
         height: fit-content;
       }
-      @page { size: A4 portrait; margin: 0; }
+      @page { size: A4 portrait; margin: 8mm; }
       @media print {
         html, body {
           margin: 0;
           padding: 0;
-          width: 210mm;
-          height: 297mm;
           background: white;
+          height: auto;
         }
         .invoice-main-content {
           display: flex;
           flex-direction: column;
           justify-content: space-between;
-          min-height: 297mm;
-          padding: 1.5cm 1.8cm;
+          min-height: 260mm;
+          padding: 0.4cm 0.8cm;
           box-sizing: border-box;
+          page-break-inside: avoid;
         }
       }
       table { width: 100%; border-collapse: collapse; }
@@ -131,11 +183,7 @@ function InvoiceModal({ order, onClose, gstTaxLabel }: InvoiceModalProps) {
   <body>
     ${printContent}
     <script>
-      (function() {
-        setTimeout(function() {
-          window.print();
-        }, 300);
-      })();
+      window.onload = function() { window.print(); };
     </script>
   </body>
 </html>`);
@@ -238,24 +286,27 @@ function InvoiceModal({ order, onClose, gstTaxLabel }: InvoiceModalProps) {
                         <table className="w-full text-left border-collapse">
                            <thead>
                               <tr className="border-t border-b border-slate-200 text-[10px] font-black text-slate-400 uppercase tracking-wider">
-                                 <th className="py-2.5 w-10">No</th>
-                                 <th className="py-2.5 w-24">Item Code</th>
+                                 <th className="py-2.5 w-8">No</th>
+                                 <th className="py-2.5 w-20">Item Code</th>
                                  <th className="py-2.5">Item</th>
-                                 <th className="py-2.5 text-right w-16">Qty</th>
-                                 <th className="py-2.5 text-right w-16">MRP</th>
-                                 <th className="py-2.5 text-right w-16">Rate</th>
-                                 <th className="py-2.5 text-right w-20">Amt</th>
+                                 <th className="py-2.5 w-14">Weight</th>
+                                 <th className="py-2.5 text-right w-14">Qty</th>
+                                 <th className="py-2.5 text-right w-14">MRP</th>
+                                 <th className="py-2.5 text-right w-14">Rate</th>
+                                 <th className="py-2.5 text-right w-16">Amt</th>
                               </tr>
                            </thead>
                            <tbody>
                               {items.map((item: any, idx: number) => {
                                  const rate = Number(item.price || item.unitPrice || 0);
                                  const mrp = Number(item.product?.price || rate);
+                                 const variantDisplay = item.variant || item.variantName || item.product?.unit || '—';
                                  return (
                                     <tr key={idx} className="border-b border-slate-100 text-slate-700 font-medium">
                                        <td className="py-2.5">{idx + 1}</td>
-                                       <td className="py-2.5 font-mono">{item.product?.productIdStr || item.product?.sku || `ITEM${String(item.productId || idx + 1).padStart(4, '0')}`}</td>
+                                       <td className="py-2.5 font-mono text-[10px]">{item.product?.productIdStr || item.product?.sku || `ITEM${String(item.productId || idx + 1).padStart(4, '0')}`}</td>
                                        <td className="py-2.5 font-bold text-slate-900">{item.product?.name || item.name}</td>
+                                       <td className="py-2.5 text-[10px] text-slate-500 font-semibold">{variantDisplay}</td>
                                        <td className="py-2.5 text-right font-mono">{Number(item.quantity).toFixed(3)}</td>
                                        <td className="py-2.5 text-right font-mono">{mrp.toFixed(2)}</td>
                                        <td className="py-2.5 text-right font-mono">{rate.toFixed(2)}</td>
@@ -263,11 +314,41 @@ function InvoiceModal({ order, onClose, gstTaxLabel }: InvoiceModalProps) {
                                     </tr>
                                  );
                               })}
-                              {/* Table Total row */}
-                              <tr className="border-b border-slate-200 font-extrabold text-slate-900">
-                                 <td colSpan={3} className="py-3">Total Item(s): {items.length}</td>
-                                 <td colSpan={3} className="py-3 text-right">Total (Incl. Taxes)</td>
-                                 <td className="py-3 text-right font-mono">₹{Number(order.totalAmount).toFixed(2)}</td>
+                              {/* Items Subtotal row */}
+                              <tr className="border-b border-slate-100 font-semibold text-slate-600 text-[11px]">
+                                 <td colSpan={4} className="py-2">Total Item(s): {items.length}</td>
+                                 <td colSpan={3} className="py-2 text-right">Items Subtotal</td>
+                                 <td className="py-2 text-right font-mono">₹{subtotal.toFixed(2)}</td>
+                              </tr>
+                              {/* Shipping Charges row */}
+                              <tr className="border-b border-slate-100 font-semibold text-slate-600 text-[11px]">
+                                 <td colSpan={4} className="py-2">Total Weight: {totalWeightKg.toFixed(3)} kg</td>
+                                 <td colSpan={3} className="py-2 text-right">Shipping Charges</td>
+                                 <td className="py-2 text-right font-mono">₹{shippingFees.toFixed(2)}</td>
+                              </tr>
+                              {/* GST row if any */}
+                              {Number(order.gstAmount || 0) > 0 && (
+                                 <tr className="border-b border-slate-100 font-semibold text-slate-600 text-[11px]">
+                                    <td colSpan={4} className="py-2"></td>
+                                    <td colSpan={3} className="py-2 text-right">GST Amount</td>
+                                    <td className="py-2 text-right font-mono">₹{Number(order.gstAmount).toFixed(2)}</td>
+                                 </tr>
+                              )}
+                              {/* Discount row if any */}
+                              {Number(order.discountAmount || 0) > 0 && (
+                                 <tr className="border-b border-slate-100 font-semibold text-slate-600 text-[11px]">
+                                    <td colSpan={4} className="py-2"></td>
+                                    <td colSpan={3} className="py-2 text-right">Discount</td>
+                                    <td className="py-2 text-right font-mono">(-) ₹{Number(order.discountAmount).toFixed(2)}</td>
+                                 </tr>
+                              )}
+                              {/* Grand Total row */}
+                              <tr className="border-b border-slate-200 font-extrabold text-slate-900 text-sm">
+                                 <td colSpan={4} className="py-3">
+                                    <span className="text-[9px] font-semibold text-slate-400 italic">* All Tax Included</span>
+                                 </td>
+                                 <td colSpan={3} className="py-3 text-right">Grand Total (Incl. Taxes)</td>
+                                 <td className="py-3 text-right font-mono">₹{displayGrandTotal.toFixed(2)}</td>
                               </tr>
                            </tbody>
                         </table>
@@ -308,20 +389,21 @@ function InvoiceModal({ order, onClose, gstTaxLabel }: InvoiceModalProps) {
                      )}
 
                      {/* Payment Summary Box */}
-                     <div className="border border-dashed border-slate-300 rounded-2xl p-5 mb-4">
-                        <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Payment Summary :</h4>
-                        <div className="space-y-2">
-                           <div className="flex justify-between items-center font-bold text-slate-700">
-                              <span>{order.paymentMethod === 'Razorpay Online' ? 'Online Payment (Razorpay)' : order.paymentMethod || 'Online Payment'}</span>
-                              <span className="font-mono">(-) {Number(order.totalAmount).toFixed(2)}</span>
-                           </div>
-                        </div>
-                        {Number(order.discountAmount || 0) > 0 && (
-                           <div className="mt-4 pt-3 border-t border-slate-100 text-center text-emerald-700 font-extrabold text-xs">
-                              You saved ₹{Number(order.discountAmount).toFixed(2)} !
-                           </div>
-                        )}
-                     </div>
+                      <div className="border border-dashed border-slate-300 rounded-xl p-3 mb-3">
+                         <h4 className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Payment Summary :</h4>
+                         <div className="space-y-1">
+                            <div className="flex justify-between items-center font-bold text-slate-700 text-[11px]">
+                               <span>{order.paymentMethod === 'Razorpay Online' ? 'Online Payment (Razorpay)' : order.paymentMethod || 'Online Payment'}</span>
+                               <span className="font-mono">(-) ₹{displayGrandTotal.toFixed(2)}</span>
+                            </div>
+                         </div>
+                         {Number(order.discountAmount || 0) > 0 && (
+                            <div className="mt-2 pt-2 border-t border-slate-100 text-center text-emerald-700 font-extrabold text-[11px]">
+                               You saved ₹{Number(order.discountAmount).toFixed(2)} !
+                            </div>
+                         )}
+                      </div>
+
                   </div>
 
                   {/* Footer Thank You */}

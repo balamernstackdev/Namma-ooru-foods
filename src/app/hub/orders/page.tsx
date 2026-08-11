@@ -150,35 +150,32 @@ export default function HubOrdersPage() {
             <div className="overflow-x-auto w-full">
               <table className="w-full text-left border-collapse min-w-[1000px]">
                 <thead>
-                <tr className="bg-slate-50/80 border-b border-slate-100">
-                  {['Order ID', 'Date & Time', 'Customer', 'Vendor', 'Items', 'Hub Subtotal', 'Order Total', 'Status'].map(h => (
-                    <th key={h} className="px-5 py-4 text-[9px] font-black uppercase tracking-widest text-slate-400 whitespace-nowrap">
-                      {h}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-50">
-                {orders.map((order: any) => {
-                  const sc = statusConfig[order.status] || { label: order.status, cls: 'bg-slate-50 text-slate-600 border-slate-200' };
-                  return (
-                    <tr key={order.id} className="hover:bg-slate-50/60 transition-colors group">
-                      <td className="px-5 py-4">
-                        <span className="font-mono text-xs font-bold text-blue-700 bg-blue-50 px-2 py-1 rounded-lg border border-blue-100">
-                          {order.orderIdStr || `ORD-${order.id}`}
-                        </span>
-                      </td>
-                      <td className="px-5 py-4">
-                        <span className="text-xs font-semibold text-slate-600">
-                          {order.createdAt ? format(new Date(order.createdAt), 'dd MMM yyyy') : '—'}
-                        </span>
-                        <span className="block text-[10px] text-slate-400 font-medium mt-0.5">
-                          {order.createdAt ? format(new Date(order.createdAt), 'hh:mm a') : ''}
-                        </span>
-                      </td>
-                      <td className="px-5 py-4">
-                        <span className="text-sm font-bold text-slate-900">{order.customerName || '—'}</span>
-                      </td>
+                  <tr className="bg-slate-50/80 border-b border-slate-100">
+                    {['Order ID', 'Date & Time', 'Vendor', 'Products', 'Hub Subtotal', 'Order Total', 'Status'].map(h => (
+                      <th key={h} className="px-5 py-4 text-[9px] font-black uppercase tracking-widest text-slate-400 whitespace-nowrap">
+                        {h}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-50">
+                  {orders.map((order: any) => {
+                    const sc = statusConfig[order.status] || { label: order.status, cls: 'bg-slate-50 text-slate-600 border-slate-200' };
+                    return (
+                      <tr key={order.id} className="hover:bg-slate-50/60 transition-colors group">
+                        <td className="px-5 py-4">
+                          <span className="font-mono text-xs font-bold text-blue-700 bg-blue-50 px-2 py-1 rounded-lg border border-blue-100">
+                            {order.orderIdStr || `ORD-${order.id}`}
+                          </span>
+                        </td>
+                        <td className="px-5 py-4">
+                          <span className="text-xs font-semibold text-slate-600">
+                            {order.createdAt ? format(new Date(order.createdAt), 'dd MMM yyyy') : '—'}
+                          </span>
+                          <span className="block text-[10px] text-slate-400 font-medium mt-0.5">
+                            {order.createdAt ? format(new Date(order.createdAt), 'hh:mm a') : ''}
+                          </span>
+                        </td>
                       <td className="px-5 py-4">
                         {(() => {
                           const { resellers, hasOfficial } = getOrderVendors(order);
@@ -197,8 +194,15 @@ export default function HubOrdersPage() {
                           );
                         })()}
                       </td>
-                      <td className="px-5 py-4 text-center">
-                        <span className="text-sm font-bold text-slate-700">{order.itemsCount ?? '—'}</span>
+                      <td className="px-5 py-4">
+                        <div className="flex flex-col gap-1 max-w-[220px]">
+                          {order.items?.map((item: any) => (
+                            <span key={item.id} className="text-[11px] font-bold text-slate-700 block leading-tight truncate" title={`${item.product?.name} × ${item.quantity}`}>
+                              {item.product?.name || 'Product'} × {item.quantity}
+                            </span>
+                          ))}
+                          {(!order.items || order.items.length === 0) && <span className="text-xs text-slate-400">—</span>}
+                        </div>
                       </td>
                       <td className="px-5 py-4">
                         <span className="text-sm font-black text-[#059669]">{fmtRs(order.hubSubtotal)}</span>

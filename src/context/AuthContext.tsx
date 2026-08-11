@@ -56,6 +56,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       return;
     }
 
+    // Optimistic restore: show cached user immediately so admin layout renders without waiting
+    try {
+      const cached = localStorage.getItem('namma_orru_user');
+      if (cached) {
+        setUser(JSON.parse(cached));
+        setIsLoading(false); // render immediately with cached user
+      }
+    } catch { /* ignore invalid cache */ }
+
+    // Background verify: confirm token is still valid and refresh user data
     try {
       const res = await fetch(`${API_URL}/api/auth/me`, {
         headers: { 'Authorization': `Bearer ${token}` }
@@ -63,11 +73,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (res.ok) {
         const data = await res.json();
         setUser(data);
+        localStorage.setItem('namma_orru_user', JSON.stringify(data));
       } else {
+        // Token invalid — clear everything
         localStorage.removeItem('namma_orru_token');
+        localStorage.removeItem('namma_orru_user');
+        setUser(null);
       }
     } catch (err: any) {
-      // Use console.warn instead of console.error to avoid intercept by Next.js Global Error Overlay
       console.warn('Auth verification failed. Server might be unreachable or token invalid:', err.message || err);
     } finally {
       setIsLoading(false);
@@ -88,6 +101,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
       setUser(data.user);
       localStorage.setItem('namma_orru_token', data.token);
+      localStorage.setItem('namma_orru_user', JSON.stringify(data.user));
     } catch (err: any) {
       setIsLoading(false);
       throw err;
@@ -149,6 +163,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       // Provision logic
       setUser(data.user);
       localStorage.setItem('namma_orru_token', data.token);
+      localStorage.setItem('namma_orru_user', JSON.stringify(data.user));
     } catch (err: any) {
       throw err;
     } finally {
@@ -219,6 +234,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const logout = () => {
     setUser(null);
     localStorage.removeItem('namma_orru_token');
+    localStorage.removeItem('namma_orru_user');
   };
 
   return (

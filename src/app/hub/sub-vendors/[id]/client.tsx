@@ -297,7 +297,7 @@ export default function SubVendorDetailClient() {
                     <table className="w-full text-left">
                       <thead>
                         <tr className="border-b border-slate-100">
-                          {['Order ID', 'Customer', 'Date', 'Amount', 'Payment', 'Delivery Status'].map(h => (
+                          {['Order ID', 'Date', 'Amount', 'Payment', 'Delivery Status'].map(h => (
                             <th key={h} className="pb-3 px-2 text-[9px] font-black uppercase tracking-widest text-slate-400 whitespace-nowrap">{h}</th>
                           ))}
                         </tr>
@@ -310,7 +310,6 @@ export default function SubVendorDetailClient() {
                                 {o.orderIdStr || `ORD-${o.id.toString().padStart(3, '0')}`}
                               </span>
                             </td>
-                            <td className="py-3 px-2 text-sm font-semibold text-slate-800">{o.customerName}</td>
                             <td className="py-3 px-2 text-xs text-slate-500">
                               {new Date(o.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: '2-digit' })}
                             </td>

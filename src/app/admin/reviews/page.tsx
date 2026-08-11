@@ -95,7 +95,7 @@ export default function AdminReviewsPage() {
                   </td>
                   <td className="px-8 py-5">
                     <p className="text-xs font-black text-[var(--admin-sidebar)]">{review.user?.name || 'Anonymous'}</p>
-                    <p className="text-[10px] text-slate-400 font-medium">{review.user?.email}</p>
+                    <p className="text-[10px] text-slate-400 font-medium">{review.user?.email && !review.user.email.includes('@nammaoorufarms.local') ? review.user.email : ''}</p>
                     {review.isVerified && (
                       <span className="inline-flex items-center gap-1 text-[9px] font-black text-emerald-600 uppercase tracking-widest mt-1">
                         <CheckCircle className="h-3 w-3" /> Verified
@@ -156,7 +156,7 @@ export default function AdminReviewsPage() {
                   <span className="text-[11px] font-black text-[var(--admin-sidebar)]">{review.user?.name || 'Anonymous'}</span>
                   <StarDisplay rating={review.rating} />
                 </div>
-                <p className="text-[10px] text-slate-400 font-medium">{review.user?.email}</p>
+                <p className="text-[10px] text-slate-400 font-medium">{review.user?.email && !review.user.email.includes('@nammaoorufarms.local') ? review.user.email : ''}</p>
                 {review.isVerified && (
                   <span className="inline-flex items-center gap-1 text-[9px] font-black text-emerald-600 uppercase tracking-widest mt-1">
                     <CheckCircle className="h-3 w-3" /> Verified Purchase

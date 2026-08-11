@@ -118,6 +118,7 @@ export default function ProductDetailClient({ product: initialProduct, allProduc
    const [pincode, setPincode] = useState('');
    const [isPincodeChecking, setIsPincodeChecking] = useState(false);
    const [pincodeMessage, setPincodeMessage] = useState('');
+   const [isDescExpanded, setIsDescExpanded] = useState(false);
 
    const { addToCart } = useCartStore();
    const { addToast } = useToast();

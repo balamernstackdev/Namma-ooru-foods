@@ -173,7 +173,7 @@ export default function AdminOrders() {
           o.orderIdStr || `ORD-${o.id.toString().padStart(4, '0')}`,
           `"${new Date(o.createdAt).toLocaleDateString('en-IN')}"`,
           `"${(o.user?.name || '').replace(/"/g, '""')}"`,
-          `"${(o.user?.email || '').replace(/"/g, '""')}"`,
+          `"${(o.user?.email && !o.user.email.includes('@nammaoorufarms.local') ? o.user.email : '').replace(/"/g, '""')}"`,
           `"${vendorsStr.replace(/"/g, '""')}"`,
           o.items?.length || 0,
           o.totalAmount,
@@ -326,7 +326,7 @@ export default function AdminOrders() {
                       <td className="px-6 py-4 border-b border-slate-50">
                         <div className="flex flex-col">
                           <span className="text-sm font-bold text-slate-800">{order.user?.name}</span>
-                          <span className="text-[10px] text-slate-400 font-medium lowercase">{order.user?.email}</span>
+                          <span className="text-[10px] text-slate-400 font-medium lowercase">{order.user?.email && !order.user.email.includes('@nammaoorufarms.local') ? order.user.email : ''}</span>
                           {(order.shippingAddress?.phone || order.user?.phone) && (
                             <span className="text-[10px] text-slate-500 font-bold mt-0.5">📞 {order.shippingAddress?.phone || order.user?.phone}</span>
                           )}
@@ -579,7 +579,7 @@ export default function AdminOrders() {
                       {order.user?.name}
                     </span>
                     <span className="text-[10px] text-slate-400 font-medium block truncate lowercase">
-                      {order.user?.email}
+                      {order.user?.email && !order.user.email.includes('@nammaoorufarms.local') ? order.user.email : ''}
                     </span>
                   </div>
                   <div className="space-y-1">

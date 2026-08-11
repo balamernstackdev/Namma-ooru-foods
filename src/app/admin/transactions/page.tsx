@@ -156,7 +156,7 @@ export default function AdminTransactions() {
                     <td className="px-6 py-4">
                       <div className="flex flex-col">
                         <span className="text-xs font-bold text-slate-900">{tx.order?.user?.name || 'Guest User'}</span>
-                        <span className="text-[10px] text-slate-400 font-medium">{tx.order?.user?.email}</span>
+                        <span className="text-[10px] text-slate-400 font-medium">{tx.order?.user?.email && !tx.order.user.email.includes('@nammaoorufarms.local') ? tx.order.user.email : ''}</span>
                       </div>
                     </td>
                     <td className="px-6 py-4 text-xs font-black text-slate-900">
