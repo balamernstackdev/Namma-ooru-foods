@@ -178,6 +178,32 @@ export default function AdminUsersPage() {
     return new Date(user.lockoutUntil) > new Date();
   }
 
+  const toggleUserStatus = async (user: User) => {
+    const isBlocked = isUserBlocked(user);
+    const lockoutUntil = isBlocked ? null : new Date(Date.now() + 100 * 365 * 24 * 60 * 60 * 1000).toISOString();
+
+    try {
+      const res = await fetch(`${API_URL}/api/admin-ops/users/${user.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: user.email,
+          lockoutUntil
+        })
+      });
+      const roleName = user.role === 'USER' ? 'Customer' : user.role === 'VENDOR' ? 'Seller' : 'Administrator';
+      if (res.ok) {
+        addToast('Success', `${roleName} account ${isBlocked ? 'activated' : 'suspended'} successfully`);
+        fetchUsers();
+      } else {
+        const data = await res.json().catch(() => ({}));
+        addToast('Error', data.message || `Failed to update ${roleName.toLowerCase()} status`);
+      }
+    } catch (err) {
+      addToast('Error', 'Network error while updating status');
+    }
+  };
+
   return (
     <div className="space-y-8 animate-in fade-in duration-700">
       {/* Page Header */}
@@ -574,6 +600,7 @@ export default function AdminUsersPage() {
                       <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400">Products</th>
                       <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400">Orders</th>
                       <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400">Revenue</th>
+                      <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400">Status</th>
                     </>
                   )}
                   {activeTab === 'admin' && (
@@ -591,6 +618,12 @@ export default function AdminUsersPage() {
               <tbody className="divide-y divide-slate-50">
                 {users.map(user => {
                   const isBlocked = isUserBlocked(user);
+                  const displayCustomerId = `CUS-${String(user.customerId || user.id).padStart(2, '0')}`;
+                  let displaySellerId = 'PENDING';
+                  if (user.subVendor) {
+                    displaySellerId = `SEL-${String(user.subVendor.sellerId || user.subVendor.id).padStart(2, '0')}`;
+                  }
+                  const displayAdminId = `ADM-${String(user.adminId || user.id).padStart(2, '0')}`;
                   return (
                     <tr key={user.id} className="group hover:bg-slate-50/30 transition-all duration-300">
                       {/* Customer Columns */}
@@ -598,7 +631,7 @@ export default function AdminUsersPage() {
                         <>
                           <td className="px-8 py-5">
                             <span className="text-[11px] font-black text-slate-400 bg-slate-50 border border-slate-200/60 px-2 py-1 rounded-md uppercase tracking-wider">
-                              CUS-{String(user.customerId || 0).padStart(2, '0')}
+                              {displayCustomerId}
                             </span>
                           </td>
                           <td className="px-8 py-5">
@@ -629,12 +662,24 @@ export default function AdminUsersPage() {
                             </span>
                           </td>
                           <td className="px-8 py-5">
-                            <span className={`inline-flex px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider border ${isBlocked
-                              ? 'bg-red-50 text-red-700 border-red-100'
-                              : 'bg-blue-50 text-blue-700 border-blue-100'
-                              }`}>
-                              {isBlocked ? 'Blocked' : 'Active'}
-                            </span>
+                            <div className="flex items-center gap-2">
+                              <button
+                                type="button"
+                                onClick={() => toggleUserStatus(user)}
+                                className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                                  isBlocked ? 'bg-slate-200' : 'bg-blue-500'
+                                }`}
+                              >
+                                <span
+                                  className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                                    isBlocked ? 'translate-x-0' : 'translate-x-5'
+                                  }`}
+                                />
+                              </button>
+                              <span className={`text-[9px] font-black uppercase tracking-wider ${isBlocked ? 'text-red-500' : 'text-blue-600'}`}>
+                                {isBlocked ? 'Blocked' : 'Active'}
+                              </span>
+                            </div>
                           </td>
                           <td className="px-8 py-5">
                             <span className="text-[11px] text-slate-400 font-bold">
@@ -649,7 +694,7 @@ export default function AdminUsersPage() {
                         <>
                           <td className="px-8 py-5">
                             <span className="text-[11px] font-black text-slate-400 bg-slate-50 border border-slate-200/60 px-2 py-1 rounded-md uppercase tracking-wider">
-                              {user.subVendor ? `SEL-${String(user.subVendor.id).padStart(2, '0')}` : 'PENDING'}
+                              {displaySellerId}
                             </span>
                           </td>
                           <td className="px-8 py-5">
@@ -686,6 +731,26 @@ export default function AdminUsersPage() {
                               ₹{Number(user.sellerStats?.revenue || 0).toLocaleString()}
                             </span>
                           </td>
+                          <td className="px-8 py-5">
+                            <div className="flex items-center gap-2">
+                              <button
+                                type="button"
+                                onClick={() => toggleUserStatus(user)}
+                                className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                                  isBlocked ? 'bg-slate-200' : 'bg-emerald-500'
+                                }`}
+                              >
+                                <span
+                                  className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                                    isBlocked ? 'translate-x-0' : 'translate-x-5'
+                                  }`}
+                                />
+                              </button>
+                              <span className={`text-[10px] font-black uppercase tracking-wider ${isBlocked ? 'text-red-500' : 'text-emerald-600'}`}>
+                                {isBlocked ? 'Suspended' : 'Active'}
+                              </span>
+                            </div>
+                          </td>
                         </>
                       )}
 
@@ -694,7 +759,7 @@ export default function AdminUsersPage() {
                         <>
                           <td className="px-8 py-5">
                             <span className="text-[11px] font-black text-slate-400 bg-slate-50 border border-slate-200/60 px-2 py-1 rounded-md uppercase tracking-wider">
-                              Adm-{String(user.adminId || 0).padStart(2, '0')}
+                              {displayAdminId}
                             </span>
                           </td>
                           <td className="px-8 py-5">
@@ -721,12 +786,24 @@ export default function AdminUsersPage() {
                             </span>
                           </td>
                           <td className="px-8 py-5">
-                            <span className={`inline-flex px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider border ${isBlocked
-                              ? 'bg-red-50 text-red-700 border-red-100'
-                              : 'bg-purple-50 text-purple-700 border-purple-100'
-                              }`}>
-                              {isBlocked ? 'Locked Out' : 'Active'}
-                            </span>
+                            <div className="flex items-center gap-2">
+                              <button
+                                type="button"
+                                onClick={() => toggleUserStatus(user)}
+                                className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                                  isBlocked ? 'bg-slate-200' : 'bg-purple-500'
+                                }`}
+                              >
+                                <span
+                                  className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                                    isBlocked ? 'translate-x-0' : 'translate-x-5'
+                                  }`}
+                                />
+                              </button>
+                              <span className={`text-[9px] font-black uppercase tracking-wider ${isBlocked ? 'text-red-500' : 'text-purple-600'}`}>
+                                {isBlocked ? 'Locked Out' : 'Active'}
+                              </span>
+                            </div>
                           </td>
                         </>
                       )}
@@ -759,8 +836,8 @@ export default function AdminUsersPage() {
                         </div>
                       </td>
                     </tr>
-                  );
-                })}
+                    );
+                  })}
               </tbody>
             </table>
           )}

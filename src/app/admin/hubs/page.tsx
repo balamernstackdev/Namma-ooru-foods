@@ -162,13 +162,7 @@ export default function AdminHubsPage() {
                   </td>
                   <td className="px-8 py-5 text-right">
                     <div className="flex items-center justify-end gap-2">
-                      <button
-                        onClick={() => router.push(`/admin/hubs/${hub.id}`)}
-                        className="h-10 w-10 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-400 hover:bg-emerald-650 hover:text-white transition-all shadow-sm"
-                        title="View Hub Details & Commission Settings"
-                      >
-                        <Eye size={16} />
-                      </button>
+
                       <button
                         onClick={() => router.push(`/admin/hubs/${hub.id}/edit`)}
                         className="h-10 w-10 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-400 hover:bg-emerald-600 hover:text-white transition-all shadow-sm"
@@ -237,12 +231,7 @@ export default function AdminHubsPage() {
               </div>
 
               <div className="flex items-center gap-2 justify-end pt-1">
-                <button
-                  onClick={() => router.push(`/admin/hubs/${hub.id}`)}
-                  className="h-11 flex-1 flex items-center justify-center gap-1.5 rounded-xl bg-slate-900 text-white hover:bg-slate-800 transition-all text-xs font-bold shadow-sm"
-                >
-                  <Eye size={14} /> View Details
-                </button>
+
                 <button
                   onClick={() => router.push(`/admin/hubs/${hub.id}/edit`)}
                   className="h-11 px-4 flex items-center justify-center gap-1.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-600 hover:bg-emerald-600 hover:text-white transition-all text-xs font-bold shadow-sm"
