@@ -41,11 +41,10 @@ const SmartCheckbox = ({
     <label className="flex items-center gap-3 cursor-pointer group select-none">
       <div
         onClick={() => onChange(!checked)}
-        className={`h-5 w-5 rounded-lg border-2 flex items-center justify-center transition-all ${
-          checked
+        className={`h-5 w-5 rounded-lg border-2 flex items-center justify-center transition-all ${checked
             ? 'bg-emerald-600 border-emerald-600 text-white shadow-sm shadow-emerald-500/10'
             : 'border-slate-350 bg-white group-hover:border-slate-400'
-        }`}
+          }`}
       >
         {checked && <Check size={12} strokeWidth={3} className="animate-in zoom-in-50 duration-150" />}
       </div>
@@ -356,11 +355,10 @@ export default function CreatePopupCampaignPage() {
                       key={opt.id}
                       type="button"
                       onClick={() => handleStatusChange(opt.id as any)}
-                      className={`h-14 rounded-2xl border-2 flex items-center justify-center gap-2.5 transition-all ${
-                        isSelected
+                      className={`h-14 rounded-2xl border-2 flex items-center justify-center gap-2.5 transition-all ${isSelected
                           ? `${opt.activeBg} ${opt.border} ${opt.text} font-black scale-[1.02] shadow-sm`
                           : 'bg-slate-50 border-slate-100 text-slate-500 hover:bg-slate-100'
-                      }`}
+                        }`}
                     >
                       <span className={`h-2.5 w-2.5 rounded-full ${opt.color}`} />
                       <span className="text-xs uppercase tracking-wider">{opt.label}</span>
@@ -607,7 +605,7 @@ export default function CreatePopupCampaignPage() {
               />
             </div>
 
-            {/* Redirect To selection */}
+            {/* Redirect To selections */}
             <div className="space-y-1.5 text-left">
               <div className="flex items-center justify-between">
                 <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Redirect To Page</label>
@@ -776,11 +774,10 @@ export default function CreatePopupCampaignPage() {
             </div>
 
             {/* Datepickers (Conditional: highlight if scheduled) */}
-            <div className={`grid grid-cols-1 md:grid-cols-2 gap-6 p-4 rounded-2xl border transition-all ${
-              statusMode === 'scheduled'
+            <div className={`grid grid-cols-1 md:grid-cols-2 gap-6 p-4 rounded-2xl border transition-all ${statusMode === 'scheduled'
                 ? 'bg-amber-50/40 border-amber-200 shadow-sm shadow-amber-400/5'
                 : 'bg-slate-50/50 border-slate-100'
-            }`}>
+              }`}>
               <div className="space-y-1.5 text-left">
                 <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">
                   Campaign Start Date {statusMode === 'scheduled' && '*'}
@@ -883,18 +880,16 @@ export default function CreatePopupCampaignPage() {
               <button
                 type="button"
                 onClick={() => setPreviewMode('desktop')}
-                className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all ${
-                  previewMode === 'desktop' ? 'bg-amber-400 text-emerald-950 shadow-md font-bold' : 'text-slate-400 hover:text-white'
-                }`}
+                className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all ${previewMode === 'desktop' ? 'bg-amber-400 text-emerald-950 shadow-md font-bold' : 'text-slate-400 hover:text-white'
+                  }`}
               >
                 Desktop
               </button>
               <button
                 type="button"
                 onClick={() => setPreviewMode('mobile')}
-                className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all ${
-                  previewMode === 'mobile' ? 'bg-amber-400 text-emerald-950 shadow-md font-bold' : 'text-slate-400 hover:text-white'
-                }`}
+                className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all ${previewMode === 'mobile' ? 'bg-amber-400 text-emerald-950 shadow-md font-bold' : 'text-slate-400 hover:text-white'
+                  }`}
               >
                 Mobile
               </button>
