@@ -11,6 +11,9 @@ const nextConfig: NextConfig = {
     ignoreBuildErrors: true,
   },
   experimental: {
+    memoryBasedWorkersCount: true,
+    cpus: 1,
+    workerThreads: false,
   },
   async rewrites() {
     return {
