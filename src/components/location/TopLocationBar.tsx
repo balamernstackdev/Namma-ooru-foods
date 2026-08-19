@@ -60,12 +60,12 @@ export default function TopLocationBar({ variant = 'full' }: { variant?: 'compac
           className="flex flex-1 w-full items-center gap-1 sm:gap-2 cursor-pointer hover:bg-slate-50/50 p-1 sm:p-2 rounded-xl transition-colors border border-transparent hover:border-slate-100 group min-w-0" 
           onClick={() => setIsModalOpen(true)}
         >
-          <div className="hidden xs:flex h-7 w-7 sm:h-8 sm:w-8 rounded-full bg-emerald-50/50 items-center justify-center shrink-0 group-hover:bg-emerald-100 transition-colors">
+          <div className="flex h-7 w-7 sm:h-8 sm:w-8 rounded-full bg-emerald-50/50 items-center justify-center shrink-0 group-hover:bg-emerald-100 transition-colors">
             <MapPin size={14} className="text-emerald-600 sm:w-4 sm:h-4" />
           </div>
           <div className="flex flex-col min-w-0 flex-1">
-            <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 leading-none hidden sm:block">Delivering to</span>
-            <span className="text-[11px] md:text-[12px] font-bold text-slate-800 truncate leading-none sm:mt-1 w-full lg:max-w-[160px]">
+            <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 leading-none block">Delivering to</span>
+            <span className="text-[11px] md:text-[12px] font-bold text-slate-800 truncate leading-none mt-1 w-full lg:max-w-[160px]">
               {formatLocationDisplay()}
             </span>
           </div>

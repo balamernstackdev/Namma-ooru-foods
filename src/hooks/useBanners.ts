@@ -47,66 +47,79 @@ export interface NormalizedBanner {
   endDate: string | null;
 }
 
+import React from 'react';
+
 export function useBanners() {
   const { data: raw, error, isLoading } = useSWR<any[]>(
     `${API_URL}/api/banners`,
     fetcher
   );
 
-  const now = new Date();
+  const allBanners = React.useMemo(() => {
+    const now = new Date();
+    return (Array.isArray(raw) ? raw : [])
+      .filter((b: any) => {
+        // 1. Must be active and have an image
+        if (b.isActive === false) return false;
+        if (!b.banner_image?.trim()) return false;
 
-  const allBanners: NormalizedBanner[] = (Array.isArray(raw) ? raw : [])
-    .filter((b: any) => {
-      // 1. Must be active and have an image
-      if (b.isActive === false) return false;
-      if (!b.banner_image?.trim()) return false;
+        // 2. Date window check: start_date <= current date <= end_date
+        if (b.startDate) {
+          const start = new Date(b.startDate).getTime();
+          if (start > now.getTime()) return false;
+        }
+        if (b.endDate) {
+          const end = new Date(b.endDate).getTime();
+          if (end < now.getTime()) return false;
+        }
 
-      // 2. Date window check: start_date <= current date <= end_date
-      if (b.startDate) {
-        const start = new Date(b.startDate).getTime();
-        if (start > now.getTime()) return false;
-      }
-      if (b.endDate) {
-        const end = new Date(b.endDate).getTime();
-        if (end < now.getTime()) return false;
-      }
+        return true;
+      })
+      .map((b: any) => ({
+        id: b.id,
+        title: b.title || null,
+        subtitle: b.subtitle || null,
+        tagline: b.tagline || null,
+        banner_image: b.banner_image,
+        link: b.link || null,
+        linkData: b.linkData || null,
+        buttonText: b.buttonText || null,
+        isActive: b.isActive,
+        display_order: b.display_order ?? 999999,
+        type: normalizeType(b.type),
+        rawType: b.type || '',
+        startDate: b.startDate || null,
+        endDate: b.endDate || null,
+      }))
+      .sort((a, b) => {
+        if (a.display_order !== b.display_order) return a.display_order - b.display_order;
+        return b.id - a.id; // Newest first fallback
+      });
+  }, [raw]);
 
-      return true;
-    })
-    .map((b: any) => ({
-      id: b.id,
-      title: b.title || null,
-      subtitle: b.subtitle || null,
-      tagline: b.tagline || null,
-      banner_image: b.banner_image,
-      link: b.link || null,
-      linkData: b.linkData || null,
-      buttonText: b.buttonText || null,
-      isActive: b.isActive,
-      display_order: b.display_order ?? 999999,
-      type: normalizeType(b.type),
-      rawType: b.type || '',
-      startDate: b.startDate || null,
-      endDate: b.endDate || null,
-    }))
-    .sort((a, b) => {
-      if (a.display_order !== b.display_order) return a.display_order - b.display_order;
-      return b.id - a.id; // Newest first fallback
-    });
+  const byType = React.useCallback((type: string): NormalizedBanner[] =>
+    allBanners.filter(b => b.type === normalizeType(type)),
+  [allBanners]);
 
-  const byType = (type: string): NormalizedBanner[] =>
-    allBanners.filter(b => b.type === normalizeType(type));
+  const heroBanners = React.useMemo(() => byType('hero'), [byType]);
+  const bestSellersBanners = React.useMemo(() => byType('best_sellers'), [byType]);
+  const organicBanners = React.useMemo(() => byType('organic_collection'), [byType]);
+  const farmerBanners = React.useMemo(() => byType('farmer_collection'), [byType]);
+  const vendorBanners = React.useMemo(() => byType('vendor'), [byType]);
+  const brandBanners = React.useMemo(() => byType('brand'), [byType]);
+  const categoryBanners = React.useMemo(() => byType('category'), [byType]);
 
   return {
     allBanners,
-    heroBanners: byType('hero'),
-    bestSellersBanners: byType('best_sellers'),
-    organicBanners: byType('organic_collection'),
-    farmerBanners: byType('farmer_collection'),
-    vendorBanners: byType('vendor'),
-    brandBanners: byType('brand'),
-    categoryBanners: byType('category'),
+    heroBanners,
+    bestSellersBanners,
+    organicBanners,
+    farmerBanners,
+    vendorBanners,
+    brandBanners,
+    categoryBanners,
     isLoading,
     error,
   };
 }
+

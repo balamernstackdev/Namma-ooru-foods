@@ -92,12 +92,16 @@ export default function LocationMapModal({ onClose }: LocationMapModalProps) {
       
       const addr = data.address;
       const city = addr.city || addr.town || addr.village || addr.state_district || addr.state || 'Chennai';
-      const area = addr.suburb || addr.neighbourhood || addr.residential || addr.road || addr.county || city;
+      
+      let rawArea = addr.neighbourhood || addr.suburb || addr.residential || addr.city_district || addr.road || city;
+      let area = cleanAddressText(rawArea);
+      if (!area) area = city;
+
       const pincode = addr.postcode || '';
       const district = addr.state_district || addr.county || city;
       const state = addr.state || 'Tamil Nadu';
       const country = addr.country || 'India';
-      const street = addr.road || addr.street || addr.pedestrian || '';
+      const street = cleanAddressText(addr.road || addr.street || addr.pedestrian || '');
       
       setAddressDetails({
         city,
@@ -105,10 +109,10 @@ export default function LocationMapModal({ onClose }: LocationMapModalProps) {
         pincode,
         lat,
         lng,
-        formattedAddress: data.display_name,
-        district: addr.state_district || addr.county || city,
-        state: addr.state || 'Tamil Nadu',
-        country: addr.country || 'India',
+        formattedAddress: cleanAddressText(data.display_name),
+        district,
+        state,
+        country,
         street
       });
     } catch (err) {
@@ -118,17 +122,30 @@ export default function LocationMapModal({ onClose }: LocationMapModalProps) {
     }
   };
 
+  const cleanAddressText = (text: string) => {
+    if (!text) return '';
+    return text.replace(/(?:Zone|Ward|Division)\s*\d+[^,]*,?\s*/gi, '').replace(/CMWSSB[^,]*,?\s*/gi, '').trim().replace(/^,|,$/g, '').trim();
+  };
+
   const handleSelectSearchResult = (result: any) => {
     const lat = parseFloat(result.lat);
     const lng = parseFloat(result.lon);
     const addr = result.address;
     const city = addr.city || addr.town || addr.village || addr.state_district || addr.state || 'Chennai';
-    const area = addr.suburb || addr.neighbourhood || addr.residential || addr.road || addr.county || city;
+    
+    // Prioritize neighbourhood/suburb, clean out admin jargon
+    let rawArea = addr.neighbourhood || addr.suburb || addr.residential || addr.city_district || addr.road || city;
+    let area = cleanAddressText(rawArea);
+    if (!area) area = city; // Fallback
+
     const pincode = addr.postcode || '';
     const district = addr.state_district || addr.county || city;
     const state = addr.state || 'Tamil Nadu';
     const country = addr.country || 'India';
-    const street = addr.road || addr.street || addr.pedestrian || '';
+    const street = cleanAddressText(addr.road || addr.street || addr.pedestrian || '');
+
+    // Clean up display name
+    let formattedAddress = cleanAddressText(result.display_name);
 
     setCenter([lat, lng]);
     setAddressDetails({
@@ -137,7 +154,7 @@ export default function LocationMapModal({ onClose }: LocationMapModalProps) {
       pincode,
       lat,
       lng,
-      formattedAddress: result.display_name,
+      formattedAddress,
       district,
       state,
       country,

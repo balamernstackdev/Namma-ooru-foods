@@ -64,14 +64,24 @@ export const useUserLocation = () => {
       const data = await res.json();
       
       const addr = data.address;
+      
+      const cleanAddressText = (text: string) => {
+        if (!text) return '';
+        return text.replace(/(?:Zone|Ward|Division)\s*\d+[^,]*,?\s*/gi, '').replace(/CMWSSB[^,]*,?\s*/gi, '').trim().replace(/^,|,$/g, '').trim();
+      };
+
       // Robust address extraction
       const city = addr.city || addr.town || addr.village || addr.state_district || addr.state || 'Chennai';
-      const area = addr.suburb || addr.neighbourhood || addr.residential || addr.road || addr.county || city;
+      
+      let rawArea = addr.neighbourhood || addr.suburb || addr.residential || addr.city_district || addr.road || city;
+      let area = cleanAddressText(rawArea);
+      if (!area) area = city;
+      
       const pincode = addr.postcode || '';
       const district = addr.state_district || addr.county || city;
       const state = addr.state || 'Tamil Nadu';
       const country = addr.country || 'India';
-      const street = addr.road || addr.street || addr.pedestrian || '';
+      const street = cleanAddressText(addr.road || addr.street || addr.pedestrian || '');
 
       const locationData: LocationData = {
         city,
@@ -79,7 +89,7 @@ export const useUserLocation = () => {
         pincode,
         lat,
         lng,
-        formattedAddress: data.display_name,
+        formattedAddress: cleanAddressText(data.display_name),
         district,
         state,
         country,

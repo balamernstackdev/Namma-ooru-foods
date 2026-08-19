@@ -247,7 +247,7 @@ const Navbar = () => {
                 />
               </Link>
               
-              <div className="shrink-0 min-w-0 block flex-1">
+              <div className="hidden sm:block shrink-0 min-w-0 flex-1">
                 <TopLocationBar variant="compact" />
               </div>
             </div>
@@ -307,7 +307,9 @@ const Navbar = () => {
 
         {/* MOBILE LOCATION & SEARCH */}
         <div className="lg:hidden w-full px-4 pb-4 bg-white space-y-3">
-
+          <div className="sm:hidden w-full bg-slate-50/50 rounded-xl border border-slate-100 flex items-center p-1">
+            <TopLocationBar variant="compact" />
+          </div>
           <SearchBar isMobile={true} />
         </div>
 
@@ -421,10 +423,10 @@ const Navbar = () => {
               initial="hidden"
               animate="visible"
               exit="hidden"
-              className="lg:hidden fixed top-0 left-0 bottom-0 z-[99999] w-[85vw] max-w-[320px] bg-[#041a12] text-white flex flex-col shadow-2xl overflow-hidden border-r border-emerald-900/30"
+              className="lg:hidden fixed top-0 left-0 bottom-0 z-[99999] w-[85vw] max-w-[320px] bg-white text-emerald-950 flex flex-col shadow-2xl overflow-hidden border-r border-slate-100"
             >
               {/* Sticky Centered Top Header */}
-              <div className="sticky top-0 z-10 flex items-center justify-between px-4 py-4 bg-[#041a12]/95 backdrop-blur-md border-b border-emerald-900/20 shadow-sm relative min-h-[60px] shrink-0">
+              <div className="sticky top-0 z-10 flex items-center justify-between px-4 py-4 bg-white/95 backdrop-blur-md border-b border-slate-100 shadow-sm relative min-h-[60px] shrink-0">
                 {/* Spacer to align close button on the right */}
                 <div className="w-8 h-8" />
 
@@ -434,7 +436,7 @@ const Navbar = () => {
                     <img
                       src={settings.logo || "/logo.webp"}
                       alt={settings.name || "Logo"}
-                      className="brightness-0 invert h-5 w-auto object-contain opacity-95"
+                      className="h-5 w-auto object-contain"
                     />
                   </Link>
                 </div>
@@ -442,7 +444,7 @@ const Navbar = () => {
                 {/* Redesigned Close Button */}
                 <button
                   onClick={() => setIsMenuOpen(false)}
-                  className="h-8 w-8 rounded-full bg-emerald-950/40 border border-emerald-800/30 flex items-center justify-center text-emerald-300 hover:text-white hover:bg-emerald-900/60 backdrop-blur transition-all active:scale-95 z-20 shadow-sm"
+                  className="h-8 w-8 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-500 hover:text-slate-900 hover:bg-slate-100 backdrop-blur transition-all active:scale-95 z-20 shadow-sm"
                 >
                   <X size={14} />
                 </button>
@@ -451,14 +453,14 @@ const Navbar = () => {
               {/* Scrollable Navigation Groups */}
               <div className="flex-1 overflow-y-auto px-4 py-4 space-y-6 custom-scrollbar">
                 {/* Premium User Profile Banner */}
-                <motion.div variants={itemVariants} className="p-4 rounded-2xl bg-emerald-950/40 border border-emerald-900/25 flex flex-col gap-3">
+                <motion.div variants={itemVariants} className="p-4 rounded-2xl bg-slate-50 border border-slate-100 flex flex-col gap-3">
                   <div className="flex items-center gap-3">
-                    <div className="h-9 w-9 rounded-full bg-emerald-800 text-white flex items-center justify-center text-sm font-bold border border-emerald-700/30 shrink-0">
-                      {user?.name ? user.name[0].toUpperCase() : <User size={15} className="text-emerald-400" />}
+                    <div className="h-9 w-9 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-sm font-bold border border-emerald-200 shrink-0">
+                      {user?.name ? user.name[0].toUpperCase() : <User size={15} className="text-emerald-600" />}
                     </div>
                     <div className="flex flex-col text-left">
-                      <span className="text-[9px] text-emerald-400/60 font-black uppercase tracking-wider leading-none">Welcome</span>
-                      <span className="text-[13px] text-white font-black mt-1 leading-none truncate max-w-[180px]">{user ? user.name : 'Guest User'}</span>
+                      <span className="text-[9px] text-slate-400 font-black uppercase tracking-wider leading-none">Welcome</span>
+                      <span className="text-[13px] text-slate-900 font-black mt-1 leading-none truncate max-w-[180px]">{user ? user.name : 'Guest User'}</span>
                     </div>
                   </div>
 
@@ -474,7 +476,7 @@ const Navbar = () => {
                       <Link
                         href="/account?mode=signup"
                         onClick={() => setIsMenuOpen(false)}
-                        className="flex-1 h-9 rounded-xl bg-white/10 text-emerald-300 border border-emerald-800/30 hover:bg-white/15 hover:text-white font-black text-[10px] uppercase tracking-widest flex items-center justify-center transition-all active:scale-95"
+                        className="flex-1 h-9 rounded-xl bg-white text-emerald-700 border border-slate-200 hover:bg-slate-50 hover:text-emerald-800 font-black text-[10px] uppercase tracking-widest flex items-center justify-center transition-all active:scale-95"
                       >
                         Sign Up
                       </Link>
@@ -492,7 +494,7 @@ const Navbar = () => {
 
                   return (
                     <motion.div key={group.title} variants={itemVariants} className="space-y-1.5">
-                      <h3 className="text-[9px] font-black uppercase tracking-[0.25em] text-emerald-400/50 px-3">
+                      <h3 className="text-[9px] font-black uppercase tracking-[0.25em] text-slate-400 px-3">
                         {group.title}
                       </h3>
                       <div className="space-y-0.5">
@@ -502,10 +504,10 @@ const Navbar = () => {
                           const linkContent = (
                             <>
                               <div className="flex items-center gap-3">
-                                <item.icon size={15} className={`transition-colors duration-350 shrink-0 ${isActive ? 'text-emerald-400' : 'text-slate-400 group-hover:text-emerald-300'}`} />
+                                <item.icon size={15} className={`transition-colors duration-350 shrink-0 ${isActive ? 'text-emerald-600' : 'text-slate-400 group-hover:text-emerald-600'}`} />
                                 <span className="font-semibold text-[14px] leading-tight tracking-wide">{item.label}</span>
                               </div>
-                              <ChevronRight size={13} className={`transition-transform duration-350 shrink-0 ${isActive ? 'text-emerald-400 translate-x-0.5' : 'text-slate-500 group-hover:text-slate-300 group-hover:translate-x-0.5'}`} />
+                              <ChevronRight size={13} className={`transition-transform duration-350 shrink-0 ${isActive ? 'text-emerald-600 translate-x-0.5' : 'text-slate-400 group-hover:text-slate-600 group-hover:translate-x-0.5'}`} />
                             </>
                           );
 
@@ -517,13 +519,13 @@ const Navbar = () => {
                                   logout();
                                   setIsMenuOpen(false);
                                 }}
-                                className="w-full flex items-center justify-between py-2.5 px-3 rounded-lg text-left transition-all duration-300 group hover:bg-red-500/10 text-red-400 hover:text-red-300 border-l-[3px] border-transparent"
+                                className="w-full flex items-center justify-between py-2.5 px-3 rounded-lg text-left transition-all duration-300 group hover:bg-rose-50 text-rose-500 hover:text-rose-600 border-l-[3px] border-transparent"
                               >
                                 <div className="flex items-center gap-3">
-                                  <item.icon size={15} className="text-red-400 group-hover:text-red-300 transition-colors shrink-0" />
+                                  <item.icon size={15} className="text-rose-400 group-hover:text-rose-500 transition-colors shrink-0" />
                                   <span className="font-semibold text-[14px] leading-tight tracking-wide">{item.label}</span>
                                 </div>
-                                <ChevronRight size={13} className="text-red-400/50 group-hover:text-red-300 transition-transform group-hover:translate-x-0.5 shrink-0" />
+                                <ChevronRight size={13} className="text-rose-300 group-hover:text-rose-400 transition-transform group-hover:translate-x-0.5 shrink-0" />
                               </button>
                             );
                           }
@@ -540,7 +542,7 @@ const Navbar = () => {
                                     setTimeout(() => contactCard.classList.remove('ring-2', 'ring-emerald-500'), 2000);
                                   }
                                 }}
-                                className="w-full flex items-center justify-between py-2.5 px-3 rounded-lg text-left transition-all duration-300 group hover:bg-white/5 text-slate-300 hover:text-white border-l-[3px] border-transparent"
+                                className="w-full flex items-center justify-between py-2.5 px-3 rounded-lg text-left transition-all duration-300 group hover:bg-slate-50 text-slate-600 hover:text-emerald-950 border-l-[3px] border-transparent"
                               >
                                 {linkContent}
                               </button>
@@ -553,8 +555,8 @@ const Navbar = () => {
                               href={item.href}
                               onClick={() => setIsMenuOpen(false)}
                               className={`flex items-center justify-between py-2.5 px-3 rounded-lg transition-all duration-350 group border-l-[3px] ${isActive
-                                ? 'bg-gradient-to-r from-emerald-500/10 to-emerald-500/5 text-emerald-400 border-emerald-500/70 font-semibold shadow-[inset_1px_0_0_rgba(16,185,129,0.2)]'
-                                : 'text-slate-300 hover:text-white hover:bg-white/5 border-transparent'
+                                ? 'bg-emerald-50 text-emerald-800 border-emerald-500 font-semibold'
+                                : 'text-slate-600 hover:text-emerald-950 hover:bg-slate-50 border-transparent'
                                 }`}
                             >
                               {linkContent}
@@ -567,22 +569,22 @@ const Navbar = () => {
                 })}
 
                 {/* Compact Help/Support Card */}
-                <motion.div id="contact-card" variants={itemVariants} className="mt-6 p-4 rounded-xl bg-emerald-950/40 border border-emerald-900/30 relative overflow-hidden group transition-all duration-300">
-                  <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 rounded-full blur-xl group-hover:bg-emerald-500/10 transition-all duration-500" />
-                  <h4 className="text-[10px] font-black uppercase tracking-wider text-emerald-400 mb-2">Need Help?</h4>
+                <motion.div id="contact-card" variants={itemVariants} className="mt-6 p-4 rounded-xl bg-slate-50 border border-slate-100 relative overflow-hidden group transition-all duration-300">
+                  <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-50 rounded-full blur-xl group-hover:bg-emerald-100 transition-all duration-500" />
+                  <h4 className="text-[10px] font-black uppercase tracking-wider text-emerald-700 mb-2">Need Help?</h4>
                   <div className="space-y-2 text-xs font-semibold">
                     <a
                       href="tel:+919000896898"
-                      className="flex items-center gap-2 text-slate-300 hover:text-emerald-400 transition-colors"
+                      className="flex items-center gap-2 text-slate-600 hover:text-emerald-600 transition-colors"
                     >
-                      <span className="text-emerald-400 text-sm">📞</span>
+                      <span className="text-emerald-500 text-sm">📞</span>
                       <span>+91 9000 896 898</span>
                     </a>
                     <a
                       href="mailto:support@nammaoorufoods.com"
-                      className="flex items-center gap-2 text-slate-300 hover:text-emerald-400 transition-colors break-all"
+                      className="flex items-center gap-2 text-slate-600 hover:text-emerald-600 transition-colors break-all"
                     >
-                      <span className="text-emerald-400 text-sm">✉</span>
+                      <span className="text-emerald-500 text-sm">✉</span>
                       <span>support@nammaoorufoods.com</span>
                     </a>
                   </div>

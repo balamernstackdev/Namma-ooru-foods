@@ -7,7 +7,7 @@ import ProductCarousel from "@/components/ProductCarousel";
 import ArtisanMarketplace from '@/components/ArtisanMarketplace';
 import FarmersCollection from '@/components/FarmersCollection';
 import LazyHomeSections from '@/components/HomePageSections';
-import nextDynamic from 'next/dynamic';
+import dynamic from 'next/dynamic';
 import { CategoryCircleSkeleton } from '@/components/Skeleton';
 import VendorPromotion from "@/components/VendorPromotion";
 import PremiumLoader from '@/components/ui/PremiumLoader';
@@ -17,7 +17,7 @@ import { API_URL } from '@/lib/api';
 
 import QuickBrowseCategories from "@/components/QuickBrowseCategories";
 
-const CategoriesCircles = nextDynamic(() => import('@/components/CategoriesCircles'), {
+const CategoriesCircles = dynamic(() => import('@/components/CategoriesCircles'), {
   ssr: false, // Turn off SSR to ensure it hydrates and mounts on the client
   loading: () => (
     <div className="w-full pt-4 pb-8 flex justify-center bg-white">
@@ -45,29 +45,33 @@ export default function Home() {
   const { data: featuredData, error: featuredError } = useSWR(`${API_URL}/api/products?isFeatured=true&limit=20`, fetcher);
 
   const isLoading = !bestSellersData && !bestSellersError ||
-                    !organicData && !organicError ||
-                    !farmerData && !farmerError ||
-                    !allData && !allError ||
-                    !fastDeliveryData && !fastDeliveryError ||
-                    !newArrivalsData && !newArrivalsError ||
-                    !featuredData && !featuredError;
+    !organicData && !organicError ||
+    !farmerData && !farmerError ||
+    !allData && !allError ||
+    !fastDeliveryData && !fastDeliveryError ||
+    !newArrivalsData && !newArrivalsError ||
+    !featuredData && !featuredError;
+
+  const bestSellers = React.useMemo(() => getProductsList(bestSellersData), [bestSellersData]);
+  const organicProducts = React.useMemo(() => getProductsList(organicData), [organicData]);
+  const farmerProducts = React.useMemo(() => getProductsList(farmerData), [farmerData]);
+  const allProducts = React.useMemo(() => getProductsList(allData), [allData]);
+  const fastDeliveryProducts = React.useMemo(() => getProductsList(fastDeliveryData), [fastDeliveryData]);
+  const newArrivals = React.useMemo(() => getProductsList(newArrivalsData), [newArrivalsData]);
+  const featuredProducts = React.useMemo(() => getProductsList(featuredData), [featuredData]);
+
+  // Deduplicate: organic shouldn't repeat best sellers for carousel
+  const organicDisplay = React.useMemo(() => {
+    const bestSellerIds = new Set(bestSellers.map((p: any) => p.id));
+    const organicFiltered = organicProducts.filter((p: any) => !bestSellerIds.has(p.id)).slice(0, 12);
+    return organicFiltered.length > 0 ? organicFiltered : organicProducts.slice(0, 12);
+  }, [bestSellers, organicProducts]);
+
+  const recentProducts = React.useMemo(() => allProducts.slice(0, 12), [allProducts]);
 
   if (isLoading) {
     return <PremiumLoader fullScreen={true} />;
   }
-
-  const bestSellers = getProductsList(bestSellersData);
-  const organicProducts = getProductsList(organicData);
-  const farmerProducts = getProductsList(farmerData);
-  const allProducts = getProductsList(allData);
-  const fastDeliveryProducts = getProductsList(fastDeliveryData);
-  const newArrivals = getProductsList(newArrivalsData);
-  const featuredProducts = getProductsList(featuredData);
-
-  // Deduplicate: organic shouldn't repeat best sellers for carousel
-  const bestSellerIds = new Set(bestSellers.map((p: any) => p.id));
-  const organicFiltered = organicProducts.filter((p: any) => !bestSellerIds.has(p.id)).slice(0, 12);
-  const organicDisplay = organicFiltered.length > 0 ? organicFiltered : organicProducts.slice(0, 12);
 
   return (
     <div className="flex flex-col bg-white w-full overflow-x-hidden">
@@ -92,8 +96,7 @@ export default function Home() {
           viewAllHref="/products?delivery=fast"
           bgClass="bg-white"
           autoScrollInterval={3200}
-          bannerType="fast_delivery"
-        />
+          bannerType="fast_delivery" subtitle={''} />
 
         {/* 5. BEST SELLERS — Most Popular Products */}
         <ProductCarousel
@@ -145,7 +148,7 @@ export default function Home() {
 
         {/* 8. Recently Added Products */}
         <ProductCarousel
-          products={allProducts.slice(0, 12)}
+          products={recentProducts}
           title='Recently <span class="text-accent italic lowercase font-serif font-normal">Added</span>'
           subtitle="Newest Additions to our Marketplace"
           viewAllHref="/products"

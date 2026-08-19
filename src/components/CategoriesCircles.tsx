@@ -61,7 +61,9 @@ export default function CategoriesCircles() {
 
   const apiCategories = responseData?.categories || [];
   // Include all active parent categories, removing hardcoded slices
-  const displayCategories = apiCategories.filter((cat: any) => cat.isActive !== false && !cat.parentId);
+  const displayCategories = React.useMemo(() => {
+    return apiCategories.filter((cat: any) => cat.isActive !== false && !cat.parentId);
+  }, [apiCategories]);
 
   const [activeIndex, setActiveIndex] = useState(0);
 
