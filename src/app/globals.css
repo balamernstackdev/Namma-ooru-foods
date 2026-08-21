@@ -421,7 +421,7 @@ html, body {
 .admin-data-table th, .admin-data-table td { padding-left: 1.5rem; padding-right: 1.5rem; }
 .admin-data-table td p.truncate { max-width: 300px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 @media (min-width: 769px) {
-  .admin-data-table th:last-child, .admin-data-table td:last-child { position: sticky; right: 0; z-index: 10; background-clip: padding-box; border-left: 1px solid #f1f5f9; }
+  .admin-data-table th:last-child, .admin-data-table td:last-child { position: sticky; right: 0; z-index: 10; background-clip: padding-box; border-left: 1px solid #f1f5f9; box-shadow: -6px 0 15px -4px rgba(0,0,0,0.06); }
   .admin-data-table th:last-child { background-color: #f8fafc !important; }
   .admin-data-table tbody tr td:last-child { background-color: #ffffff !important; transition: background-color 0.2s; }
   .admin-data-table tbody tr:hover td:last-child { background-color: #f8fafc !important; }

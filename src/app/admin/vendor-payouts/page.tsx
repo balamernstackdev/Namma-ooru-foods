@@ -4,15 +4,15 @@ import React, { useState } from 'react';
 import useSWR from 'swr';
 import { API_URL } from '@/lib/api';
 import Link from 'next/link';
-import { 
-  Landmark, 
-  Search, 
-  Filter, 
-  Calendar, 
-  CheckCircle2, 
-  AlertCircle, 
-  Clock, 
-  DollarSign, 
+import {
+  Landmark,
+  Search,
+  Filter,
+  Calendar,
+  CheckCircle2,
+  AlertCircle,
+  Clock,
+  DollarSign,
   ArrowUpRight,
   TrendingUp,
   FileSpreadsheet,
@@ -37,7 +37,7 @@ export default function AdminVendorPayoutsList() {
   const [vendorId, setVendorId] = useState('');
   const [weekStart, setWeekStart] = useState('');
   const [weekEnd, setWeekEnd] = useState('');
-  
+
   // Settlement modal states
   const [isSettleModalOpen, setIsSettleModalOpen] = useState(false);
   const [selectedPayout, setSelectedPayout] = useState<any>(null);
@@ -70,7 +70,7 @@ export default function AdminVendorPayoutsList() {
   // Load datasets — /api/brands returns { subVendors: [...], total, ... }
   const { data: brandsData } = useSWR(`${API_URL}/api/brands?limit=1000&includeEmpty=true`, fetcher);
   const vendors: any[] = Array.isArray(brandsData?.subVendors) ? brandsData.subVendors : [];
-  
+
   const queryParams = new URLSearchParams();
   if (search) queryParams.append('search', search);
   if (status) queryParams.append('status', status);
@@ -78,10 +78,10 @@ export default function AdminVendorPayoutsList() {
   if (weekStart) queryParams.append('weekStart', weekStart);
   if (weekEnd) queryParams.append('weekEnd', weekEnd);
 
-  const { 
-    data: payoutsRaw, 
-    isLoading: loadingPayouts, 
-    mutate: mutatePayouts 
+  const {
+    data: payoutsRaw,
+    isLoading: loadingPayouts,
+    mutate: mutatePayouts
   } = useSWR(`${API_URL}/api/vendor/payouts?${queryParams.toString()}`, fetcher);
 
   // Safety guard — API returns raw array but could return error object on failure
@@ -123,7 +123,7 @@ export default function AdminVendorPayoutsList() {
     e.preventDefault();
     if (!manualData.vendorId) return toast.error('Please select a vendor');
     if (!manualData.payableAmount) return toast.error('Please enter the payable amount');
-    
+
     setIsCreatingManual(true);
     try {
       const token = localStorage.getItem('token');
@@ -137,7 +137,7 @@ export default function AdminVendorPayoutsList() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to create manual entry');
-      
+
       toast.success('Manual ledger entry created successfully!');
       setIsManualModalOpen(false);
       setManualData({
@@ -264,7 +264,7 @@ export default function AdminVendorPayoutsList() {
     }
 
     const headers = ['Payout ID', 'Vendor Store', 'Week Start', 'Week End', 'Orders', 'Gross Revenue', 'Commission', 'Refund Deductions', 'Net Payable', 'Status', 'Settled Date', 'UTR Number'];
-    
+
     const escapeCSV = (val: any) => {
       if (val === null || val === undefined) return '';
       const str = String(val);
@@ -342,7 +342,7 @@ export default function AdminVendorPayoutsList() {
             <RefreshCw className={`h-4 w-4 ${isCalculating ? 'animate-spin' : ''}`} />
             Run Payout Engine
           </button>
-          
+
           <button
             onClick={() => setIsManualModalOpen(true)}
             className="h-12 px-6 rounded-2xl bg-emerald-600 text-white text-[11px] font-black uppercase tracking-widest flex items-center gap-2 shadow-lg shadow-emerald-600/20 hover:bg-emerald-700 transition-all"
@@ -534,7 +534,9 @@ export default function AdminVendorPayoutsList() {
                         </div>
                         <div className="flex flex-col">
                           <span className="text-[13px] font-bold text-slate-800 leading-none">{p.subVendor?.name}</span>
-                          <span className="text-[9px] font-black uppercase text-slate-400 mt-1 tracking-widest">Comm Rate: {p.subVendor?.commissionRate}%</span>
+                          <span className="text-[9px] font-black uppercase text-slate-400 mt-1 tracking-widest">
+                            Comm Rate: {p.grossAmount > 0 ? Math.round((p.commission / p.grossAmount) * 100) : (p.subVendor?.commissionRate || 10)}%
+                          </span>
                         </div>
                       </div>
                     </td>
@@ -542,9 +544,9 @@ export default function AdminVendorPayoutsList() {
                       <div className="flex items-center gap-1.5 text-xs text-slate-500 font-semibold">
                         <Calendar size={13} className="text-slate-400" />
                         <span>
-                          {p.payoutWeekStart ? new Date(p.payoutWeekStart).toLocaleDateString(undefined, {month: 'short', day: 'numeric'}) : ''}
+                          {p.payoutWeekStart ? new Date(p.payoutWeekStart).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : ''}
                           {' - '}
-                          {p.payoutWeekEnd ? new Date(p.payoutWeekEnd).toLocaleDateString(undefined, {month: 'short', day: 'numeric'}) : ''}
+                          {p.payoutWeekEnd ? new Date(p.payoutWeekEnd).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : ''}
                         </span>
                       </div>
                     </td>
@@ -585,7 +587,7 @@ export default function AdminVendorPayoutsList() {
                         >
                           <Eye size={15} />
                         </Link>
-                        
+
                         {(p.status === 'PENDING' || p.status === 'PROCESSING') && (
                           <button
                             onClick={() => openSettleModal(p)}
@@ -627,9 +629,9 @@ export default function AdminVendorPayoutsList() {
                     <div className="flex items-center gap-1.5 text-[10px] text-slate-400 font-semibold mt-1">
                       <Calendar size={11} />
                       <span>
-                        {p.payoutWeekStart ? new Date(p.payoutWeekStart).toLocaleDateString(undefined, {month: 'short', day: 'numeric'}) : ''}
+                        {p.payoutWeekStart ? new Date(p.payoutWeekStart).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : ''}
                         {' - '}
-                        {p.payoutWeekEnd ? new Date(p.payoutWeekEnd).toLocaleDateString(undefined, {month: 'short', day: 'numeric'}) : ''}
+                        {p.payoutWeekEnd ? new Date(p.payoutWeekEnd).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : ''}
                       </span>
                     </div>
                   </div>
@@ -648,7 +650,9 @@ export default function AdminVendorPayoutsList() {
                   </div>
                   <div className="flex flex-col min-w-0 flex-1">
                     <span className="text-[13px] font-bold text-slate-800 leading-none truncate">{p.subVendor?.name}</span>
-                    <span className="text-[9px] font-black uppercase text-slate-400 mt-2 tracking-widest">Comm Rate: {p.subVendor?.commissionRate}%</span>
+                    <span className="text-[9px] font-black uppercase text-slate-400 mt-2 tracking-widest">
+                      Comm Rate: {p.grossAmount > 0 ? Math.round((p.commission / p.grossAmount) * 100) : (p.subVendor?.commissionRate || 10)}%
+                    </span>
                   </div>
                 </div>
 
@@ -702,14 +706,14 @@ export default function AdminVendorPayoutsList() {
       {isSettleModalOpen && selectedPayout && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm" onClick={() => setIsSettleModalOpen(false)}></div>
-          
+
           <div className="bg-white rounded-[1.5rem] shadow-2xl z-10 w-full max-w-xl overflow-hidden flex flex-col">
             <div className="flex items-center justify-between border-b border-slate-100 p-5 bg-slate-50/50">
               <div>
                 <h3 className="text-lg font-black text-slate-900 tracking-tight leading-none">Record Settlement</h3>
                 <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mt-1.5">Payout ID: #PAY-{selectedPayout.id} • {selectedPayout.subVendor?.name}</p>
               </div>
-              <button 
+              <button
                 onClick={() => setIsSettleModalOpen(false)}
                 className="h-8 w-8 rounded-full bg-white border border-slate-200 text-slate-400 hover:text-slate-600 flex items-center justify-center transition-all"
               >
@@ -748,9 +752,8 @@ export default function AdminVendorPayoutsList() {
                       type="date"
                       value={settlementDate}
                       onChange={(e) => { setSettlementDate(e.target.value); if (e.target.value) setFormErrors(p => ({ ...p, date: '' })); }}
-                      className={`h-10 px-3 rounded-lg border outline-none font-bold text-slate-700 text-xs transition-colors ${
-                        formErrors.date ? 'border-rose-400 bg-rose-50/30' : 'border-slate-200 bg-slate-50/50 focus:border-emerald-500'
-                      }`}
+                      className={`h-10 px-3 rounded-lg border outline-none font-bold text-slate-700 text-xs transition-colors ${formErrors.date ? 'border-rose-400 bg-rose-50/30' : 'border-slate-200 bg-slate-50/50 focus:border-emerald-500'
+                        }`}
                     />
                   </div>
 
@@ -762,9 +765,8 @@ export default function AdminVendorPayoutsList() {
                       placeholder="e.g. UTR1234567890"
                       value={utrNumber}
                       onChange={(e) => { setUtrNumber(e.target.value); if (e.target.value.trim()) setFormErrors(p => ({ ...p, utr: '' })); }}
-                      className={`h-10 px-3 rounded-lg border outline-none font-bold text-slate-700 text-xs transition-colors ${
-                        formErrors.utr ? 'border-rose-400 bg-rose-50/30' : 'border-slate-200 bg-slate-50/50 focus:border-emerald-500'
-                      }`}
+                      className={`h-10 px-3 rounded-lg border outline-none font-bold text-slate-700 text-xs transition-colors ${formErrors.utr ? 'border-rose-400 bg-rose-50/30' : 'border-slate-200 bg-slate-50/50 focus:border-emerald-500'
+                        }`}
                     />
                   </div>
 
@@ -846,12 +848,12 @@ export default function AdminVendorPayoutsList() {
 
             <div className="p-8 max-h-[70vh] overflow-y-auto">
               <form onSubmit={handleManualSubmit} className="space-y-6">
-                
+
                 <div className="space-y-2">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Select Vendor Store <span className="text-red-500">*</span></label>
                   <select
                     value={manualData.vendorId}
-                    onChange={(e) => setManualData({...manualData, vendorId: e.target.value})}
+                    onChange={(e) => setManualData({ ...manualData, vendorId: e.target.value })}
                     className="w-full h-12 bg-slate-50 rounded-xl px-4 text-sm font-bold text-slate-900 border border-slate-200 focus:border-emerald-500 outline-none"
                     required
                   >
@@ -868,7 +870,7 @@ export default function AdminVendorPayoutsList() {
                     <input
                       type="date"
                       value={manualData.weekStart}
-                      onChange={(e) => setManualData({...manualData, weekStart: e.target.value})}
+                      onChange={(e) => setManualData({ ...manualData, weekStart: e.target.value })}
                       className="w-full h-12 bg-slate-50 rounded-xl px-4 text-sm font-bold text-slate-900 border border-slate-200 focus:border-emerald-500 outline-none"
                     />
                   </div>
@@ -877,7 +879,7 @@ export default function AdminVendorPayoutsList() {
                     <input
                       type="date"
                       value={manualData.weekEnd}
-                      onChange={(e) => setManualData({...manualData, weekEnd: e.target.value})}
+                      onChange={(e) => setManualData({ ...manualData, weekEnd: e.target.value })}
                       className="w-full h-12 bg-slate-50 rounded-xl px-4 text-sm font-bold text-slate-900 border border-slate-200 focus:border-emerald-500 outline-none"
                     />
                   </div>
@@ -890,7 +892,7 @@ export default function AdminVendorPayoutsList() {
                       type="number"
                       step="0.01"
                       value={manualData.payableAmount}
-                      onChange={(e) => setManualData({...manualData, payableAmount: e.target.value})}
+                      onChange={(e) => setManualData({ ...manualData, payableAmount: e.target.value })}
                       className="w-full h-12 bg-white rounded-xl px-4 text-sm font-black text-emerald-600 border border-emerald-200 focus:border-emerald-500 outline-none shadow-sm shadow-emerald-600/5"
                       required
                     />
@@ -899,7 +901,7 @@ export default function AdminVendorPayoutsList() {
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Status</label>
                     <select
                       value={manualData.status}
-                      onChange={(e) => setManualData({...manualData, status: e.target.value})}
+                      onChange={(e) => setManualData({ ...manualData, status: e.target.value })}
                       className="w-full h-12 bg-slate-50 rounded-xl px-4 text-sm font-bold text-slate-900 border border-slate-200 focus:border-emerald-500 outline-none"
                     >
                       <option value="PENDING">PENDING</option>
@@ -912,19 +914,19 @@ export default function AdminVendorPayoutsList() {
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4 border-t border-slate-100">
                   <div className="space-y-2">
                     <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Total Orders</label>
-                    <input type="number" value={manualData.totalOrders} onChange={(e) => setManualData({...manualData, totalOrders: e.target.value})} className="w-full h-10 bg-slate-50 rounded-lg px-3 text-xs font-bold border border-slate-200 outline-none" />
+                    <input type="number" value={manualData.totalOrders} onChange={(e) => setManualData({ ...manualData, totalOrders: e.target.value })} className="w-full h-10 bg-slate-50 rounded-lg px-3 text-xs font-bold border border-slate-200 outline-none" />
                   </div>
                   <div className="space-y-2">
                     <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Gross Revenue</label>
-                    <input type="number" step="0.01" value={manualData.grossAmount} onChange={(e) => setManualData({...manualData, grossAmount: e.target.value})} className="w-full h-10 bg-slate-50 rounded-lg px-3 text-xs font-bold border border-slate-200 outline-none" />
+                    <input type="number" step="0.01" value={manualData.grossAmount} onChange={(e) => setManualData({ ...manualData, grossAmount: e.target.value })} className="w-full h-10 bg-slate-50 rounded-lg px-3 text-xs font-bold border border-slate-200 outline-none" />
                   </div>
                   <div className="space-y-2">
                     <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Commission</label>
-                    <input type="number" step="0.01" value={manualData.commission} onChange={(e) => setManualData({...manualData, commission: e.target.value})} className="w-full h-10 bg-slate-50 rounded-lg px-3 text-xs font-bold border border-slate-200 outline-none" />
+                    <input type="number" step="0.01" value={manualData.commission} onChange={(e) => setManualData({ ...manualData, commission: e.target.value })} className="w-full h-10 bg-slate-50 rounded-lg px-3 text-xs font-bold border border-slate-200 outline-none" />
                   </div>
                   <div className="space-y-2">
                     <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Refunds</label>
-                    <input type="number" step="0.01" value={manualData.refundAmount} onChange={(e) => setManualData({...manualData, refundAmount: e.target.value})} className="w-full h-10 bg-slate-50 rounded-lg px-3 text-xs font-bold border border-slate-200 outline-none" />
+                    <input type="number" step="0.01" value={manualData.refundAmount} onChange={(e) => setManualData({ ...manualData, refundAmount: e.target.value })} className="w-full h-10 bg-slate-50 rounded-lg px-3 text-xs font-bold border border-slate-200 outline-none" />
                   </div>
                 </div>
 

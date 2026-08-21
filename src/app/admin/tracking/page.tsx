@@ -205,16 +205,25 @@ export default function AdminTrackingPage() {
   <meta charset="utf-8"/>
   <title>Shipment Label - ${orderIdStr}</title>
   <style>
-    @page { size: 100mm 150mm; margin: 0; }
-    @media print { html, body { margin: 0; padding: 0; width: 100mm; } }
+    @page { size: A4 portrait; margin: 15mm; }
+    @media print { 
+      html, body { margin: 0; padding: 0; width: 100%; display: flex; justify-content: center; } 
+    }
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     body {
       font-family: Arial, Helvetica, sans-serif;
       font-size: 11px;
       color: #111;
       background: white;
+      margin: 0;
+    }
+    .label-wrapper {
       width: 100mm;
       border: 2px solid #222;
+      transform: scale(1.8);
+      transform-origin: top center;
+      margin: 0 auto;
+      background: white;
     }
 
     /* ── HEADER ── */
@@ -401,6 +410,7 @@ export default function AdminTrackingPage() {
   </style>
 </head>
 <body>
+<div class="label-wrapper">
 
   <!-- HEADER -->
   <div class="label-header">
@@ -498,7 +508,7 @@ export default function AdminTrackingPage() {
       </div>
     </div>
   </div>
-
+</div>
   <script>
     window.onload = function() { window.print(); };
   </script>
