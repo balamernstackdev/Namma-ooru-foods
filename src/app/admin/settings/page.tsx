@@ -31,6 +31,7 @@ export default function AdminSettings() {
    const [storeCategory, setStoreCategory] = React.useState('Organic Essentials');
    const [supportEmail, setSupportEmail] = React.useState('support@nammaoorufoods.com');
    const [supportWhatsapp, setSupportWhatsapp] = React.useState('+91 9000 896 898');
+   const [storeAddress, setStoreAddress] = React.useState('123 Green Street, Organic City, IN');
    const [autoGenerateCategoryContent, setAutoGenerateCategoryContent] = React.useState(true);
    const [quickBrowseEnabled, setQuickBrowseEnabled] = React.useState(true);
 
@@ -54,7 +55,7 @@ export default function AdminSettings() {
    const [hdfcMerchantId, setHdfcMerchantId] = React.useState('SG5067');
    const [hdfcClientId, setHdfcClientId] = React.useState('hdfcmaster');
    const [hdfcApiKey, setHdfcApiKey] = React.useState('EBBF2342D13404C9ACD436E5A437C4');
-   const [hdfcApiUrl, setHdfcApiUrl] = React.useState('https://smartgateway.hdfcuat.bank.in/session');
+   const [hdfcApiUrl, setHdfcApiUrl] = React.useState('https://smartgateway.hdfc.bank.in/session');
 
    // Notification States
    const [orderEmail, setOrderEmail] = React.useState('orders@nammaoorufoods.com');
@@ -88,7 +89,7 @@ export default function AdminSettings() {
    const hasUnsavedChanges = React.useMemo(() => {
       if (loading || !initialSettingsRef.current) return false;
       const current: Record<string, any> = {
-         storeName, storeCategory, supportEmail, supportWhatsapp, autoGenerateCategoryContent,
+         storeName, storeCategory, supportEmail, supportWhatsapp, storeAddress, autoGenerateCategoryContent,
          deliveryRadius, deliveryFee, freeShippingThreshold, shippingMinOrderAmount, freeShippingEnabled,
          enableCod, razorpayKey, razorpaySecret, activePaymentGateway: visibleGateway, gstNumber, hdfcMerchantId, hdfcClientId, hdfcApiKey, hdfcApiUrl,
          orderEmail, enableWhatsappAlerts, lowStockThreshold,
@@ -110,7 +111,7 @@ export default function AdminSettings() {
 
       return false;
    }, [
-      loading, storeName, storeCategory, supportEmail, supportWhatsapp, autoGenerateCategoryContent,
+      loading, storeName, storeCategory, supportEmail, supportWhatsapp, storeAddress, autoGenerateCategoryContent,
       deliveryRadius, deliveryFee, freeShippingThreshold, shippingMinOrderAmount, freeShippingEnabled,
       enableCod, razorpayKey, razorpaySecret, visibleGateway, gstNumber, hdfcMerchantId, hdfcClientId, hdfcApiKey, hdfcApiUrl,
       orderEmail, enableWhatsappAlerts, lowStockThreshold,
@@ -147,6 +148,7 @@ export default function AdminSettings() {
             const catSetting = data.find((s: any) => s.key === 'store_category');
             const emailSetting = data.find((s: any) => s.key === 'support_email');
             const whatsappSetting = data.find((s: any) => s.key === 'support_whatsapp');
+            const addressSetting = data.find((s: any) => s.key === 'store_address');
             const autoGenSetting = data.find((s: any) => s.key === 'auto_generate_category_content');
             const quickBrowseSetting = data.find((s: any) => s.key === 'quick_browse_enabled');
 
@@ -199,6 +201,7 @@ export default function AdminSettings() {
             const valStoreCategory = catSetting?.value || 'Organic Essentials';
             const valSupportEmail = emailSetting?.value || 'support@nammaoorufoods.com';
             const valSupportWhatsapp = whatsappSetting?.value || '+91 9000 896 898';
+            const valStoreAddress = addressSetting?.value || '123 Green Street, Organic City, IN';
             const valAutoGen = autoGenSetting ? autoGenSetting.value === 'true' : true;
             const valQuickBrowse = quickBrowseSetting ? quickBrowseSetting.value === 'true' : true;
 
@@ -216,7 +219,7 @@ export default function AdminSettings() {
             const valHdfcMerch = hdfcMerchantSetting?.value || 'SG5067';
             const valHdfcClient = hdfcClientSetting?.value || 'hdfcmaster';
             const valHdfcKey = hdfcApiSetting?.value || 'EBBF2342D13404C9ACD436E5A437C4';
-            const valHdfcUrl = hdfcUrlSetting?.value || 'https://smartgateway.hdfcuat.bank.in/session';
+            const valHdfcUrl = hdfcUrlSetting?.value || 'https://smartgateway.hdfc.bank.in/session';
 
             const valOrderEmail = orderEmailSetting?.value || 'orders@nammaoorufoods.com';
             const valWhatsappAlerts = whatsappAlertSetting ? whatsappAlertSetting.value === 'true' : true;
@@ -235,7 +238,7 @@ export default function AdminSettings() {
 
             // Save to reference for unsaved changes detection
             initialSettingsRef.current = {
-               storeName: valStoreName, storeCategory: valStoreCategory, supportEmail: valSupportEmail, supportWhatsapp: valSupportWhatsapp, autoGenerateCategoryContent: valAutoGen,
+               storeName: valStoreName, storeCategory: valStoreCategory, supportEmail: valSupportEmail, supportWhatsapp: valSupportWhatsapp, storeAddress: valStoreAddress, autoGenerateCategoryContent: valAutoGen,
                quickBrowseEnabled: valQuickBrowse,
                deliveryRadius: valRadius, deliveryFee: valFee, freeShippingThreshold: valThreshold, shippingMinOrderAmount: valMinOrderAmount,
                freeShippingEnabled: valFreeEnabled,
@@ -253,6 +256,7 @@ export default function AdminSettings() {
             setStoreCategory(valStoreCategory);
             setSupportEmail(valSupportEmail);
             setSupportWhatsapp(valSupportWhatsapp);
+            setStoreAddress(valStoreAddress);
             setAutoGenerateCategoryContent(valAutoGen);
             setQuickBrowseEnabled(valQuickBrowse);
             setDeliveryRadius(valRadius);
@@ -301,6 +305,7 @@ export default function AdminSettings() {
       setStoreCategory(init.storeCategory);
       setSupportEmail(init.supportEmail);
       setSupportWhatsapp(init.supportWhatsapp);
+      setStoreAddress(init.storeAddress);
       setAutoGenerateCategoryContent(init.autoGenerateCategoryContent);
       setQuickBrowseEnabled(init.quickBrowseEnabled !== undefined ? init.quickBrowseEnabled : true);
 
@@ -364,6 +369,7 @@ export default function AdminSettings() {
             { key: 'store_category', value: storeCategory, type: 'STRING', group: 'STORE' },
             { key: 'support_email', value: supportEmail, type: 'STRING', group: 'STORE' },
             { key: 'support_whatsapp', value: supportWhatsapp, type: 'STRING', group: 'STORE' },
+            { key: 'store_address', value: storeAddress, type: 'STRING', group: 'STORE' },
             { key: 'auto_generate_category_content', value: autoGenerateCategoryContent.toString(), type: 'BOOLEAN', group: 'STORE' },
             { key: 'quick_browse_enabled', value: quickBrowseEnabled.toString(), type: 'BOOLEAN', group: 'CATEGORY' },
 
@@ -451,7 +457,7 @@ export default function AdminSettings() {
          title: 'Brand and Contact Details',
          desc: 'Brand and Contact Details',
          icon: Store,
-         fields: ['Legal Name', 'Business Category', 'Support Email', 'Support WhatsApp']
+         fields: ['Legal Name', 'Business Category', 'Support Email', 'Support WhatsApp', 'Store Address']
       },
       {
          title: 'Logistics & Shipping',
@@ -615,6 +621,16 @@ export default function AdminSettings() {
                                  value={supportWhatsapp}
                                  onChange={(e) => setSupportWhatsapp(e.target.value)}
                                  className="h-14 px-6 rounded-2xl bg-slate-50 border-none outline-none font-bold text-[#022c22] focus:ring-2 ring-emerald-400/20"
+                              />
+                           </div>
+
+                           <div className="flex flex-col gap-3">
+                              <label className="text-[10px] font-black uppercase tracking-[.3em] text-slate-400">Store Address</label>
+                              <textarea
+                                 value={storeAddress}
+                                 onChange={(e) => setStoreAddress(e.target.value)}
+                                 className="min-h-[100px] p-6 rounded-2xl bg-slate-50 border-none outline-none font-bold text-[#022c22] focus:ring-2 ring-emerald-400/20 resize-y"
+                                 placeholder="Enter full store address"
                               />
                            </div>
 

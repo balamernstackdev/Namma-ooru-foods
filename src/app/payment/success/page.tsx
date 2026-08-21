@@ -216,7 +216,7 @@ function PaymentSuccessContent() {
                         </div>
                         <div className="flex justify-between items-center text-slate-600 font-medium text-sm">
                            <span>Subtotal</span>
-                           <span className="font-bold text-slate-900">₹{order ? (order.totalAmount - (order.gstAmount || 0) - (order.deliveryFee || 0) + (order.discountAmount || 0)) : '---'}</span>
+                           <span className="font-bold text-slate-900">₹{order ? (Number(order.totalAmount) - Number(order.gstAmount || 0) - Number(order.deliveryFee || 0) + Number(order.discountAmount || 0)) : '---'}</span>
                         </div>
 
                         {Number(order?.gstAmount || 0) > 0 && (
@@ -267,8 +267,10 @@ function PaymentSuccessContent() {
                               <p className="font-bold text-slate-900 mb-1">{order.shippingAddress.recipientName || order.shippingAddress.name || 'Customer'}</p>
                               <p className="text-sm text-slate-500 leading-relaxed font-medium">
                                  {order.shippingAddress.line1}
-                                 {order.shippingAddress.line2 ? `, ${order.shippingAddress.line2}` : ''}, <br />
-                                 {order.shippingAddress.city}, {order.shippingAddress.state} - {order.shippingAddress.pincode}
+                                 {order.shippingAddress.line2 && !order.shippingAddress.line1?.includes(order.shippingAddress.line2) ? `, ${order.shippingAddress.line2}` : ''}
+                                 {order.shippingAddress.city && !order.shippingAddress.line1?.includes(order.shippingAddress.city) ? `, ${order.shippingAddress.city}` : ''}
+                                 {order.shippingAddress.state && !order.shippingAddress.line1?.includes(order.shippingAddress.state) ? `, ${order.shippingAddress.state}` : ''}
+                                 {order.shippingAddress.pincode && !order.shippingAddress.line1?.includes(order.shippingAddress.pincode) ? ` - ${order.shippingAddress.pincode}` : ''}
                               </p>
                            </div>
                         </div>

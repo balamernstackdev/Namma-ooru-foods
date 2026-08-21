@@ -99,48 +99,48 @@ export default function CheckoutPage() {
 
    const subtotal = getTotal();
 
-    // Fetch dynamic shipping values
-    const freeDeliveryAbove = parseFloat(getSettingVal('free_shipping_threshold', '499'));
-    const freeShippingEnabled = getSettingVal('free_shipping_enabled', 'false') === 'true';
-    const minOrderForDelivery = parseFloat(getSettingVal('shipping_min_order_amount', '0'));
+   // Fetch dynamic shipping values
+   const freeDeliveryAbove = parseFloat(getSettingVal('free_shipping_threshold', '499'));
+   const freeShippingEnabled = getSettingVal('free_shipping_enabled', 'false') === 'true';
+   const minOrderForDelivery = parseFloat(getSettingVal('shipping_min_order_amount', '0'));
 
-    // Automatically calculate package weight and dynamic courier charges:
-    // ₹50 for the first 1kg, and ₹50 for each additional kg or fraction thereof.
-    let totalWeightKg = 0;
-    cart.forEach((item) => {
-       const qty = Number(item.quantity) || 1;
-       let wVal = null;
-       let uVal = null;
+   // Automatically calculate package weight and dynamic courier charges:
+   // ₹50 for the first 1kg, and ₹50 for each additional kg or fraction thereof.
+   let totalWeightKg = 0;
+   cart.forEach((item) => {
+      const qty = Number(item.quantity) || 1;
+      let wVal = null;
+      let uVal = null;
 
-       if (item.variant) {
-          const match = item.variant.toLowerCase().match(/(\d+(?:\.\d+)?)\s*(g|gm|grams|kg|kgs|kilo|kilograms)/i);
-          if (match) {
-             wVal = parseFloat(match[1]);
-             uVal = match[2];
-          }
-       }
-       if ((wVal === null || wVal === undefined || wVal === 0) && item.name) {
-          const match = item.name.toLowerCase().match(/(\d+(?:\.\d+)?)\s*(g|gm|grams|kg|kgs|kilo|kilograms)/i);
-          if (match) {
-             wVal = parseFloat(match[1]);
-             uVal = match[2];
-          }
-       }
+      if (item.variant) {
+         const match = item.variant.toLowerCase().match(/(\d+(?:\.\d+)?)\s*(g|gm|grams|kg|kgs|kilo|kilograms)/i);
+         if (match) {
+            wVal = parseFloat(match[1]);
+            uVal = match[2];
+         }
+      }
+      if ((wVal === null || wVal === undefined || wVal === 0) && item.name) {
+         const match = item.name.toLowerCase().match(/(\d+(?:\.\d+)?)\s*(g|gm|grams|kg|kgs|kilo|kilograms)/i);
+         if (match) {
+            wVal = parseFloat(match[1]);
+            uVal = match[2];
+         }
+      }
 
-       if (wVal && uVal) {
-          const normUnit = uVal.toLowerCase().trim();
-          if (normUnit.startsWith('k') || normUnit.startsWith('kilo')) {
-             totalWeightKg += wVal * qty;
-          } else {
-             totalWeightKg += (wVal / 1000) * qty;
-          }
-       } else {
-          totalWeightKg += 0.5 * qty;
-       }
-    });
+      if (wVal && uVal) {
+         const normUnit = uVal.toLowerCase().trim();
+         if (normUnit.startsWith('k') || normUnit.startsWith('kilo')) {
+            totalWeightKg += wVal * qty;
+         } else {
+            totalWeightKg += (wVal / 1000) * qty;
+         }
+      } else {
+         totalWeightKg += 0.5 * qty;
+      }
+   });
 
-    const weightShippingFee = Math.max(1, Math.ceil(totalWeightKg)) * 50;
-    const delivery = (discountType === 'FREE_SHIPPING' || (freeShippingEnabled && subtotal >= freeDeliveryAbove)) ? 0 : weightShippingFee;
+   const weightShippingFee = Math.max(1, Math.ceil(totalWeightKg)) * 50;
+   const delivery = (discountType === 'FREE_SHIPPING' || (freeShippingEnabled && subtotal >= freeDeliveryAbove)) ? 0 : weightShippingFee;
 
    let total = 0;
    if (gstTaxType === 'exclusive') {
@@ -155,31 +155,36 @@ export default function CheckoutPage() {
       total = parseFloat(total.toFixed(2));
    }
 
-   const activeGateway = 'Razorpay'; // getSettingVal('active_payment_gateway', 'Razorpay');
-   const paymentMethods = ['Razorpay'];
+   const activeGateway = getSettingVal('active_payment_gateway', 'HDFC');
+   const enableCod = getSettingVal('enable_cod', 'true') === 'true';
+
+   const paymentMethods: string[] = [];
+   if (activeGateway === 'HDFC') paymentMethods.push('Online');
+   if (activeGateway === 'Razorpay') paymentMethods.push('Razorpay');
+   // if (enableCod) paymentMethods.push('COD');
 
    useEffect(() => {
-      if (paymentMethod === 'Online') {
-         setPaymentMethod('Razorpay');
+      if (paymentMethods.length > 0 && !paymentMethods.includes(paymentMethod)) {
+         setPaymentMethod(paymentMethods[0]);
       }
-   }, [paymentMethod]);
+   }, [paymentMethods, paymentMethod]);
 
-    useEffect(() => {
-       setMounted(true);
-       if (user?.id) {
-          setEmail(user.email && !user.email.includes('@nammaoorufarms.local') ? user.email : '');
-          loadAddresses();
-       }
-    }, [user]);
+   useEffect(() => {
+      setMounted(true);
+      if (user?.id) {
+         setEmail(user.email && !user.email.includes('@nammaoorufarms.local') ? user.email : '');
+         loadAddresses();
+      }
+   }, [user]);
 
-    useEffect(() => {
-       if (appliedCoupon) {
-          setPromoCode(appliedCoupon.code);
-          setDiscount(appliedCoupon.discount);
-          setDiscountType(appliedCoupon.type);
-          setPromoSuccess(appliedCoupon.message);
-       }
-    }, [appliedCoupon]);
+   useEffect(() => {
+      if (appliedCoupon) {
+         setPromoCode(appliedCoupon.code);
+         setDiscount(appliedCoupon.discount);
+         setDiscountType(appliedCoupon.type);
+         setPromoSuccess(appliedCoupon.message);
+      }
+   }, [appliedCoupon]);
 
    useEffect(() => {
       if (mounted && cart.length === 0 && step < 4) {
@@ -247,18 +252,18 @@ export default function CheckoutPage() {
             body: JSON.stringify({ code: promoCode, userId: user?.id, orderTotal: subtotal, items: cart })
          });
          const data = await res.json();
-         if (!res.ok) { 
-            setPromoError(data.error); 
-            setDiscount(0); 
+         if (!res.ok) {
+            setPromoError(data.error);
+            setDiscount(0);
             setAppliedCoupon(null);
-            return; 
+            return;
          }
          setDiscount(data.discount);
          setDiscountType(data.type);
          setPromoSuccess(data.message);
          setAppliedCoupon({ code: promoCode, discount: data.discount, type: data.type, message: data.message });
-      } catch { 
-         setPromoError('Failed to validate coupon'); 
+      } catch {
+         setPromoError('Failed to validate coupon');
          setAppliedCoupon(null);
       }
    };
@@ -280,7 +285,7 @@ export default function CheckoutPage() {
                discountAmount: discount,
                gstAmount: gst,
                items: cart,
-               paymentMethod: paymentMethod === 'Razorpay' ? 'Razorpay Online' : paymentMethod === 'Cash on Delivery' ? 'Cash on Delivery' : 'Online',
+               paymentMethod: paymentMethod === 'Razorpay' ? 'Razorpay Online' : paymentMethod === 'COD' || paymentMethod === 'Cash on Delivery' ? 'Cash on Delivery' : 'Online',
                couponCode: appliedCoupon?.code || promoCode || null
             })
          });
@@ -297,7 +302,12 @@ export default function CheckoutPage() {
             });
          };
 
-         if (paymentMethod === 'Razorpay') {
+         if (paymentMethod === 'COD' || paymentMethod === 'Cash on Delivery') {
+            commitOrderCache();
+            clearCart();
+            setStep(4);
+            window.scrollTo(0, 0);
+         } else if (paymentMethod === 'Razorpay') {
             const res = await fetch(`${API_URL}/api/payments/razorpay/session`, {
                method: 'POST',
                headers: { 'Content-Type': 'application/json' },
@@ -755,9 +765,10 @@ export default function CheckoutPage() {
                                           <p className="font-bold text-[#111827] text-sm mb-1">{addr.recipientName || addr.name} • {addr.phone}</p>
                                           <p className="text-[#6b7280] text-[13px] leading-relaxed mt-1">
                                              {addr.line1}
-                                             {addr.line2 ? `, ${addr.line2}` : ''}
-                                             <br />
-                                             {addr.city}, {addr.state} - {addr.pincode}
+                                             {addr.line2 && !addr.line1?.includes(addr.line2) ? `, ${addr.line2}` : ''}
+                                             {addr.city && !addr.line1?.includes(addr.city) ? `, ${addr.city}` : ''}
+                                             {addr.state && !addr.line1?.includes(addr.state) ? `, ${addr.state}` : ''}
+                                             {addr.pincode && !addr.line1?.includes(addr.pincode) ? ` - ${addr.pincode}` : ''}
                                           </p>
                                        </div>
                                     ))}
@@ -1001,8 +1012,8 @@ export default function CheckoutPage() {
                               </div>
                               <div className="flex-1">
                                  <button className="h-[34px] px-4 bg-slate-100 text-slate-600 font-bold text-[12px] uppercase tracking-wider rounded-lg hover:bg-emerald-50 hover:text-emerald-600 transition-colors"
-                                          onClick={applyPromo}
-                                       >Apply</button>
+                                    onClick={applyPromo}
+                                 >Apply</button>
                                  {promoError && (<p className="text-red-600 text-[12px] mt-1">{promoError}</p>)}
                                  {promoSuccess && (<p className="text-green-600 text-[12px] mt-1">{promoSuccess}</p>)}
                                  <p className="text-[11px] text-[#64748b]">100% secure encrypted payment</p>

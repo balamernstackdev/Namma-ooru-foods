@@ -33,108 +33,46 @@ function PaymentFailureContent() {
          <div className="max-w-[600px] mx-auto px-4 sm:px-6">
 
             <motion.div
-               initial={{ x: [-10, 10, -10, 10, 0] }}
-               transition={{ duration: 0.5, ease: "easeInOut" }}
-               className="bg-white rounded-[32px] p-8 md:p-12 shadow-[0_8px_40px_rgba(0,0,0,0.04)] border border-slate-100 text-center relative overflow-hidden"
+               initial={{ y: 20, opacity: 0 }}
+               animate={{ y: 0, opacity: 1 }}
+               transition={{ duration: 0.5, ease: "easeOut" }}
+               className="bg-white rounded-3xl p-8 md:p-12 shadow-xl border border-red-100 text-center relative overflow-hidden max-w-2xl mx-auto"
             >
-               <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-red-500 to-red-400" />
+               <div className="absolute top-0 left-0 right-0 h-4 bg-red-500" />
                
-               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-gradient-to-tr from-red-500/10 to-red-100/10 rounded-full blur-3xl -z-10 animate-pulse" />
-
-               <div className="w-24 h-24 rounded-[2rem] bg-gradient-to-br from-red-100 to-red-50 flex items-center justify-center mx-auto mb-6 shadow-sm border border-red-100 relative">
-                  <div className="absolute inset-0 rounded-[2rem] border-2 border-white opacity-50 animate-[ping_2s_ease-in-out_infinite]" />
-                  <XCircle className="h-10 w-10 text-red-500" />
+               <div className="w-28 h-28 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-8 shadow-inner border-[6px] border-white z-10 relative">
+                  <XCircle className="h-14 w-14 text-red-600" />
                </div>
 
-               <h1 className="text-[32px] md:text-[40px] font-black text-[#111827] tracking-tighter leading-none mb-4">Payment Failed</h1>
-               <p className="text-[15px] text-[#6b7280] font-medium max-w-sm mx-auto mb-8 leading-relaxed">
-                  Unfortunately, the payment for order <strong className="text-[#111827]">#{orderId || 'N/A'}</strong> could not be completed. No amount has been deducted from your account. If the amount was deducted, it will be automatically refunded within 5-7 business days.
+               <h1 className="text-4xl md:text-5xl font-black text-slate-900 tracking-tight mb-4">Payment Failed</h1>
+               <div className="bg-red-50 text-red-800 text-lg font-semibold py-3 px-6 rounded-xl inline-block mb-8">
+                  Your order #{orderId || 'N/A'} was not placed.
+               </div>
+               
+               <p className="text-lg text-slate-600 font-medium mb-10 leading-relaxed max-w-md mx-auto">
+                  No money has been charged. If your bank account shows a deduction, it will be automatically refunded within <strong className="text-slate-800">5-7 business days</strong>.
                </p>
 
-               {/* ORDER DETAILS SECTION */}
-               {order && !order.error && (
-                  <div className="bg-[#f9fafb] rounded-2xl p-6 text-left mb-8 border border-slate-200">
-                     <h3 className="text-[13px] font-black text-slate-500 uppercase tracking-widest mb-4">
-                        Order Details
-                     </h3>
-                     <div className="space-y-3">
-                        <div className="flex justify-between border-b border-slate-100 pb-2">
-                           <span className="text-[#6b7280] text-[14px] font-medium">Order ID</span>
-                           <span className="text-[#111827] text-[14px] font-bold">#{orderId}</span>
-                        </div>
-                        <div className="flex justify-between border-b border-slate-100 pb-2">
-                           <span className="text-[#6b7280] text-[14px] font-medium">Payment Method</span>
-                           <span className="text-[#111827] text-[14px] font-bold">{order.paymentMethod || 'HDFC SmartGateway'}</span>
-                        </div>
-                        <div className="flex justify-between border-b border-slate-100 pb-2">
-                           <span className="text-[#6b7280] text-[14px] font-medium">Amount</span>
-                           <span className="text-[#111827] text-[14px] font-bold">₹{order.totalAmount}</span>
-                        </div>
-                        <div className="flex justify-between border-b border-slate-100 pb-2">
-                           <span className="text-[#6b7280] text-[14px] font-medium">Status</span>
-                           <span className="text-red-600 text-[14px] font-bold">Failed</span>
-                        </div>
-                        <div className="flex justify-between">
-                           <span className="text-[#6b7280] text-[14px] font-medium">Date & Time</span>
-                           <span className="text-[#111827] text-[14px] font-bold">
-                              {new Date(order.createdAt).toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                           </span>
-                        </div>
-                     </div>
-                  </div>
-               )}
-
-               <div className="bg-[#fff1f2] rounded-2xl p-6 text-left mb-8 border border-red-100">
-                  <h3 className="text-[13px] font-black text-red-800 uppercase tracking-widest mb-4 flex items-center gap-2">
-                     <AlertTriangle size={16} /> Possible Reasons
-                  </h3>
-                  <ul className="space-y-3">
-                     <li className="flex items-start gap-3 text-[14px] text-red-900/80 font-medium">
-                        <div className="w-1.5 h-1.5 rounded-full bg-red-400 mt-1.5 shrink-0" />
-                        Insufficient balance or bank authentication failed.
-                     </li>
-                     <li className="flex items-start gap-3 text-[14px] text-red-900/80 font-medium">
-                        <div className="w-1.5 h-1.5 rounded-full bg-red-400 mt-1.5 shrink-0" />
-                        Network connection was interrupted during processing.
-                     </li>
-                     <li className="flex items-start gap-3 text-[14px] text-red-900/80 font-medium">
-                        <div className="w-1.5 h-1.5 rounded-full bg-red-400 mt-1.5 shrink-0" />
-                        Payment gateway session timed out or cancelled by user.
-                     </li>
-                  </ul>
+               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                  <Link href={`/checkout?retry=${orderId}`} className="w-full sm:w-auto px-8 h-16 rounded-2xl bg-red-600 hover:bg-red-700 text-white font-bold text-lg flex items-center justify-center gap-2 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all">
+                     <RefreshCw size={22} /> Try Payment Again
+                  </Link>
+                  <Link href="/account/orders" className="w-full sm:w-auto px-8 h-16 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-lg flex items-center justify-center gap-2 transition-all">
+                     View My Orders
+                  </Link>
                </div>
 
                {/* NEED HELP SECTION */}
-               <div className="bg-white rounded-2xl p-6 text-left mb-10 border border-slate-200">
-                  <h3 className="text-[13px] font-black text-slate-800 uppercase tracking-widest mb-2">
-                     Need Help?
-                  </h3>
-                  <p className="text-[13px] text-[#6b7280] font-medium mb-4">
-                     If money was deducted but the order was not placed, contact our support team immediately.
-                  </p>
-                  <div className="flex flex-col gap-2">
-                     <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center shrink-0 border border-slate-100">
-                           <Phone size={14} className="text-slate-600" />
-                        </div>
-                        <span className="text-[14px] font-bold text-[#111827]">{supportPhone}</span>
+               <div className="mt-12 pt-8 border-t border-slate-100">
+                  <p className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4">Need Help?</p>
+                  <div className="flex flex-col sm:flex-row justify-center gap-6">
+                     <div className="flex items-center justify-center gap-2 text-slate-700 font-semibold">
+                        <Phone size={18} className="text-slate-400" /> {supportPhone}
                      </div>
-                     <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center shrink-0 border border-slate-100">
-                           <Mail size={14} className="text-slate-600" />
-                        </div>
-                        <span className="text-[14px] font-bold text-[#111827]">{supportEmail}</span>
+                     <div className="flex items-center justify-center gap-2 text-slate-700 font-semibold">
+                        <Mail size={18} className="text-slate-400" /> {supportEmail}
                      </div>
                   </div>
-               </div>
-
-               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <Link href={`/checkout?retry=${orderId}`} className="h-[56px] w-full rounded-2xl bg-gradient-to-r from-red-600 to-red-500 text-white font-bold text-[15px] flex items-center justify-center gap-2 shadow-[0_8px_24px_rgba(220,38,38,0.3)] hover:-translate-y-0.5 transition-all">
-                     <RefreshCw size={18} /> Try Payment Again
-                  </Link>
-                  <Link href="/account/orders" className="h-[56px] w-full rounded-2xl bg-white text-[#111827] font-bold text-[15px] flex items-center justify-center gap-2 border border-[#e5e7eb] hover:bg-[#f9fafb] transition-all">
-                     <ArrowRight size={18} /> Go to My Orders
-                  </Link>
                </div>
             </motion.div>
 

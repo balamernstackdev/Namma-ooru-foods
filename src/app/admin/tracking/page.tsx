@@ -285,10 +285,10 @@ export default function AdminTrackingPage() {
       line-height: 1.2;
     }
     .ship-to-addr {
-      font-size: 10px;
-      color: #333;
-      line-height: 1.6;
-      font-weight: 500;
+      font-size: 12px;
+      color: #111;
+      line-height: 1.5;
+      font-weight: 800;
     }
     .ship-to-divider {
       border-top: 1.5px dashed #bbb;
@@ -316,7 +316,7 @@ export default function AdminTrackingPage() {
     .order-info-icon { font-size: 14px; flex-shrink: 0; }
     .order-info-label { font-size: 8px; color: #777; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
     .order-info-value { font-size: 11px; font-weight: 900; color: #111; line-height: 1.1; }
-    .order-info-value.red { color: #000; font-size: 10px; }
+    .order-info-value.red { color: #000; font-size: 14px; font-weight: 900; }
     .order-info-value.prepaid { color: #000; }
 
     /* TWO-CELL ROW */
