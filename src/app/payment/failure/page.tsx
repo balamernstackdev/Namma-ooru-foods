@@ -66,11 +66,11 @@ function PaymentFailureContent() {
                <div className="mt-12 pt-8 border-t border-slate-100">
                   <p className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4">Need Help?</p>
                   <div className="flex flex-col sm:flex-row justify-center gap-6">
-                     <div className="flex items-center justify-center gap-2 text-slate-700 font-semibold">
-                        <Phone size={18} className="text-slate-400" /> {supportPhone}
+                     <div className="flex items-center justify-center gap-2 text-slate-700 font-semibold whitespace-nowrap">
+                        <Phone size={18} className="text-slate-400 shrink-0" /> {supportPhone}
                      </div>
-                     <div className="flex items-center justify-center gap-2 text-slate-700 font-semibold">
-                        <Mail size={18} className="text-slate-400" /> {supportEmail}
+                     <div className="flex items-center justify-center gap-2 text-slate-700 font-semibold whitespace-nowrap">
+                        <Mail size={18} className="text-slate-400 shrink-0" /> {supportEmail}
                      </div>
                   </div>
                </div>

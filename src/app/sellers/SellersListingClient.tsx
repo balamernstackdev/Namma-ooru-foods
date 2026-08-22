@@ -27,7 +27,7 @@ export default function SellersListingClient() {
 
   // Fetch sub-vendors (brands/sellers) with 15 items per page
   const { data: responseData, isLoading } = useSWR(
-    `${API_URL}/api/sub-vendors?page=${page}&limit=15&search=${encodeURIComponent(searchQuery)}`,
+    `${API_URL}/api/sub-vendors?page=${page}&limit=50&search=${encodeURIComponent(searchQuery)}`,
     fetcher
   );
   
@@ -154,7 +154,7 @@ export default function SellersListingClient() {
             {totalPages > 1 && (
               <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-12 md:mt-16 pt-6 border-t border-slate-100">
                 <p className="text-xs font-bold text-slate-400">
-                  Showing <span className="text-emerald-950 font-black">{sellers.length}</span> sellers (15 per page)
+                  Showing <span className="text-emerald-950 font-black">{sellers.length}</span> sellers (50 per page)
                 </p>
 
                 <div className="flex items-center gap-2">

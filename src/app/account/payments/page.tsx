@@ -9,7 +9,7 @@ import { API_URL } from '@/lib/api';
 const statusStyle: Record<string, string> = {
   Success: 'bg-emerald-100 text-emerald-700',
   Refunded: 'bg-blue-100 text-blue-700',
-  Cancelled: 'bg-red-100 text-red-600',
+  Failed: 'bg-red-100 text-red-600',
   Pending: 'bg-amber-100 text-amber-700',
 };
 
@@ -34,7 +34,7 @@ export default function PaymentsPage() {
             
             let status = 'Pending';
             if (isSuccess) status = 'Success';
-            else if (isFailed) status = 'Cancelled';
+            else if (isFailed) status = 'Failed';
             else if (isRefund) status = 'Refunded';
 
             return {
@@ -110,7 +110,7 @@ export default function PaymentsPage() {
         <div className="bg-white rounded-[1.5rem] border border-slate-100 shadow-sm overflow-hidden">
           <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
             <div className="flex gap-2">
-              {['All', 'debit', 'credit', 'Cancelled'].map(f => (
+              {['All', 'debit', 'credit', 'Failed'].map(f => (
                 <button
                   key={f}
                   onClick={() => setFilter(f)}
