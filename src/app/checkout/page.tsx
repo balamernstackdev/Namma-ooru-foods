@@ -104,6 +104,31 @@ export default function CheckoutPage() {
    const freeShippingEnabled = getSettingVal('free_shipping_enabled', 'false') === 'true';
    const minOrderForDelivery = parseFloat(getSettingVal('shipping_min_order_amount', '0'));
 
+   const maduraiFreeDeliveryEnabled = getSettingVal('madurai_free_delivery_enabled', 'false') === 'true';
+   const maduraiFreeDeliveryStartDate = getSettingVal('madurai_free_delivery_start_date', '');
+   const maduraiFreeDeliveryEndDate = getSettingVal('madurai_free_delivery_end_date', '');
+
+   let isMaduraiAddress = false;
+   if (maduraiFreeDeliveryEnabled && selectedAddressId) {
+      const selectedAddress = addresses.find(a => a.id === selectedAddressId);
+      if (selectedAddress) {
+         const city = selectedAddress.city?.toLowerCase() || '';
+         const district = selectedAddress.state?.toLowerCase() || ''; // District is sometimes stored in state or city depending on the form, but let's check both just in case
+         const isMadurai = city.includes('madurai') || district.includes('madurai');
+         
+         if (isMadurai && maduraiFreeDeliveryStartDate && maduraiFreeDeliveryEndDate) {
+            const now = new Date();
+            const startDate = new Date(maduraiFreeDeliveryStartDate);
+            const endDate = new Date(maduraiFreeDeliveryEndDate);
+            endDate.setHours(23, 59, 59, 999);
+            
+            if (now >= startDate && now <= endDate) {
+               isMaduraiAddress = true;
+            }
+         }
+      }
+   }
+
    // Automatically calculate package weight and dynamic courier charges:
    // ₹50 for the first 1kg, and ₹50 for each additional kg or fraction thereof.
    let totalWeightKg = 0;
@@ -140,7 +165,13 @@ export default function CheckoutPage() {
    });
 
    const weightShippingFee = Math.max(1, Math.ceil(totalWeightKg)) * 50;
-   const delivery = (discountType === 'FREE_SHIPPING' || (freeShippingEnabled && subtotal >= freeDeliveryAbove)) ? 0 : weightShippingFee;
+   
+   let delivery = 0;
+   if (isMaduraiAddress) {
+      delivery = 0;
+   } else {
+      delivery = (discountType === 'FREE_SHIPPING' || (freeShippingEnabled && subtotal >= freeDeliveryAbove)) ? 0 : weightShippingFee;
+   }
 
    let total = 0;
    if (gstTaxType === 'exclusive') {
@@ -158,10 +189,10 @@ export default function CheckoutPage() {
    const activeGateway = getSettingVal('active_payment_gateway', 'HDFC');
    const enableCod = getSettingVal('enable_cod', 'true') === 'true';
 
-   const paymentMethods: string[] = [];
+   const paymentMethods: unknown = [];
    if (activeGateway === 'HDFC') paymentMethods.push('Online');
    if (activeGateway === 'Razorpay') paymentMethods.push('Razorpay');
-   // if (enableCod) paymentMethods.push('COD');
+   if (enableCod) paymentMethods.push('COD');
 
    useEffect(() => {
       if (paymentMethods.length > 0 && !paymentMethods.includes(paymentMethod)) {
@@ -765,10 +796,9 @@ export default function CheckoutPage() {
                                           <p className="font-bold text-[#111827] text-sm mb-1">{addr.recipientName || addr.name} • {addr.phone}</p>
                                           <p className="text-[#6b7280] text-[13px] leading-relaxed mt-1">
                                              {addr.line1}
-                                             {addr.line2 && !addr.line1?.includes(addr.line2) ? `, ${addr.line2}` : ''}
-                                             {addr.city && !addr.line1?.includes(addr.city) ? `, ${addr.city}` : ''}
-                                             {addr.state && !addr.line1?.includes(addr.state) ? `, ${addr.state}` : ''}
-                                             {addr.pincode && !addr.line1?.includes(addr.pincode) ? ` - ${addr.pincode}` : ''}
+                                             {addr.line2 ? `, ${addr.line2}` : ''}
+                                             <br />
+                                             {addr.city}, {addr.state} - {addr.pincode}
                                           </p>
                                        </div>
                                     ))}

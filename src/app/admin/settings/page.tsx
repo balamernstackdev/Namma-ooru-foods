@@ -42,6 +42,12 @@ export default function AdminSettings() {
    const [shippingMinOrderAmount, setShippingMinOrderAmount] = React.useState(0);
    const [freeShippingEnabled, setFreeShippingEnabled] = React.useState(false);
 
+   // Madurai Offer States
+   const [maduraiFreeDeliveryEnabled, setMaduraiFreeDeliveryEnabled] = React.useState(false);
+   const [maduraiFreeDeliveryStartDate, setMaduraiFreeDeliveryStartDate] = React.useState('');
+   const [maduraiFreeDeliveryEndDate, setMaduraiFreeDeliveryEndDate] = React.useState('');
+   const [maduraiFreeDeliveryMessage, setMaduraiFreeDeliveryMessage] = React.useState('Special Offer: Enjoy FREE DELIVERY on all orders within Madurai! 🎉');
+
    // UI, Toast, and Ref States
    const [saving, setSaving] = React.useState(false);
    const initialSettingsRef = React.useRef<Record<string, any>>({});
@@ -91,6 +97,7 @@ export default function AdminSettings() {
       const current: Record<string, any> = {
          storeName, storeCategory, supportEmail, supportWhatsapp, storeAddress, autoGenerateCategoryContent,
          deliveryRadius, deliveryFee, freeShippingThreshold, shippingMinOrderAmount, freeShippingEnabled,
+         maduraiFreeDeliveryEnabled, maduraiFreeDeliveryStartDate, maduraiFreeDeliveryEndDate, maduraiFreeDeliveryMessage,
          enableCod, razorpayKey, razorpaySecret, activePaymentGateway: visibleGateway, gstNumber, hdfcMerchantId, hdfcClientId, hdfcApiKey, hdfcApiUrl,
          orderEmail, enableWhatsappAlerts, lowStockThreshold,
          platformLogo, platformFavicon, primaryColor, secondaryColor,
@@ -113,6 +120,7 @@ export default function AdminSettings() {
    }, [
       loading, storeName, storeCategory, supportEmail, supportWhatsapp, storeAddress, autoGenerateCategoryContent,
       deliveryRadius, deliveryFee, freeShippingThreshold, shippingMinOrderAmount, freeShippingEnabled,
+      maduraiFreeDeliveryEnabled, maduraiFreeDeliveryStartDate, maduraiFreeDeliveryEndDate, maduraiFreeDeliveryMessage,
       enableCod, razorpayKey, razorpaySecret, visibleGateway, gstNumber, hdfcMerchantId, hdfcClientId, hdfcApiKey, hdfcApiUrl,
       orderEmail, enableWhatsappAlerts, lowStockThreshold,
       platformLogo, platformFavicon, primaryColor, secondaryColor,
@@ -158,6 +166,10 @@ export default function AdminSettings() {
             const thresholdSetting = data.find((s: any) => s.key === 'free_shipping_threshold');
             const minOrderAmountSetting = data.find((s: any) => s.key === 'shipping_min_order_amount');
             const enabledSetting = data.find((s: any) => s.key === 'free_shipping_enabled');
+            const maduraiEnabledSetting = data.find((s: any) => s.key === 'madurai_free_delivery_enabled');
+            const maduraiStartDateSetting = data.find((s: any) => s.key === 'madurai_free_delivery_start_date');
+            const maduraiEndDateSetting = data.find((s: any) => s.key === 'madurai_free_delivery_end_date');
+            const maduraiMessageSetting = data.find((s: any) => s.key === 'madurai_free_delivery_message');
 
             // Payments
             const codSetting = data.find((s: any) => s.key === 'enable_cod');
@@ -210,6 +222,10 @@ export default function AdminSettings() {
             const valThreshold = thresholdSetting ? Number(thresholdSetting.value) : 1000;
             const valMinOrderAmount = minOrderAmountSetting ? Number(minOrderAmountSetting.value) : 0;
             const valFreeEnabled = enabledSetting ? enabledSetting.value === 'true' : false;
+            const valMaduraiEnabled = maduraiEnabledSetting ? maduraiEnabledSetting.value === 'true' : false;
+            const valMaduraiStartDate = maduraiStartDateSetting?.value || '';
+            const valMaduraiEndDate = maduraiEndDateSetting?.value || '';
+            const valMaduraiMessage = maduraiMessageSetting?.value || 'Special Offer: Enjoy FREE DELIVERY on all orders within Madurai! 🎉';
 
             const valCod = codSetting ? codSetting.value === 'true' : true;
             const valRazorpay = razorpaySetting?.value || '';
@@ -242,6 +258,7 @@ export default function AdminSettings() {
                quickBrowseEnabled: valQuickBrowse,
                deliveryRadius: valRadius, deliveryFee: valFee, freeShippingThreshold: valThreshold, shippingMinOrderAmount: valMinOrderAmount,
                freeShippingEnabled: valFreeEnabled,
+               maduraiFreeDeliveryEnabled: valMaduraiEnabled, maduraiFreeDeliveryStartDate: valMaduraiStartDate, maduraiFreeDeliveryEndDate: valMaduraiEndDate,
                enableCod: valCod, razorpayKey: valRazorpay, razorpaySecret: valRazorpaySecret, activePaymentGateway: valActiveGateway, gstNumber: valGstNum, hdfcMerchantId: valHdfcMerch, hdfcClientId: valHdfcClient, hdfcApiKey: valHdfcKey, hdfcApiUrl: valHdfcUrl,
                orderEmail: valOrderEmail, enableWhatsappAlerts: valWhatsappAlerts, lowStockThreshold: valStockThresh,
                platformLogo: valLogo, platformFavicon: valFavicon, primaryColor: valPrimaryColor, secondaryColor: valSecondaryColor,
@@ -264,6 +281,10 @@ export default function AdminSettings() {
             setFreeShippingThreshold(valThreshold);
             setShippingMinOrderAmount(valMinOrderAmount);
             setFreeShippingEnabled(valFreeEnabled);
+            setMaduraiFreeDeliveryEnabled(valMaduraiEnabled);
+            setMaduraiFreeDeliveryStartDate(valMaduraiStartDate);
+            setMaduraiFreeDeliveryEndDate(valMaduraiEndDate);
+            setMaduraiFreeDeliveryMessage(valMaduraiMessage);
             setEnableCod(valCod);
             setRazorpayKey(valRazorpay);
             setRazorpaySecret(valRazorpaySecret);
@@ -314,6 +335,9 @@ export default function AdminSettings() {
       setFreeShippingThreshold(init.freeShippingThreshold);
       setShippingMinOrderAmount(init.shippingMinOrderAmount);
       setFreeShippingEnabled(init.freeShippingEnabled);
+      setMaduraiFreeDeliveryEnabled(init.maduraiFreeDeliveryEnabled);
+      setMaduraiFreeDeliveryStartDate(init.maduraiFreeDeliveryStartDate);
+      setMaduraiFreeDeliveryEndDate(init.maduraiFreeDeliveryEndDate);
 
       setEnableCod(init.enableCod);
       setRazorpayKey(init.razorpayKey);
@@ -378,6 +402,10 @@ export default function AdminSettings() {
             { key: 'free_shipping_threshold', value: freeShippingThreshold.toString(), type: 'NUMBER', group: 'LOGISTICS' },
             { key: 'shipping_min_order_amount', value: shippingMinOrderAmount.toString(), type: 'NUMBER', group: 'LOGISTICS' },
             { key: 'free_shipping_enabled', value: freeShippingEnabled.toString(), type: 'BOOLEAN', group: 'LOGISTICS' },
+            { key: 'madurai_free_delivery_enabled', value: maduraiFreeDeliveryEnabled.toString(), type: 'BOOLEAN', group: 'LOGISTICS' },
+            { key: 'madurai_free_delivery_start_date', value: maduraiFreeDeliveryStartDate, type: 'STRING', group: 'LOGISTICS' },
+            { key: 'madurai_free_delivery_end_date', value: maduraiFreeDeliveryEndDate, type: 'STRING', group: 'LOGISTICS' },
+            { key: 'madurai_free_delivery_message', value: maduraiFreeDeliveryMessage, type: 'STRING', group: 'LOGISTICS' },
 
             { key: 'enable_cod', value: enableCod.toString(), type: 'BOOLEAN', group: 'PAYMENT' },
             { key: 'razorpay_key', value: razorpayKey, type: 'STRING', group: 'PAYMENT' },
@@ -698,6 +726,58 @@ export default function AdminSettings() {
                                     className="h-14 px-6 rounded-2xl bg-slate-50 border-none outline-none font-bold text-[#022c22] focus:ring-2 ring-emerald-400/20"
                                  />
                               </div>
+                           </div>
+
+                           {/* Madurai Free Delivery Offer UI */}
+                           <div className="pt-8 mt-8 border-t border-slate-100">
+                              <div className="flex items-center justify-between mb-6">
+                                 <div>
+                                    <p className="text-[12px] font-black text-[#022c22] uppercase">Madurai Free Delivery Offer</p>
+                                    <p className="text-[10px] font-bold text-slate-400 mt-1">Enable a special free delivery offer specifically for customers from Madurai between specific dates.</p>
+                                 </div>
+                                 <button
+                                    type="button"
+                                    onClick={() => setMaduraiFreeDeliveryEnabled(!maduraiFreeDeliveryEnabled)}
+                                    className={`h-7 w-12 rounded-full transition-all relative shrink-0 ${maduraiFreeDeliveryEnabled ? 'bg-emerald-600' : 'bg-slate-200'}`}
+                                 >
+                                    <div className={`absolute top-1 h-5 w-5 rounded-full bg-white transition-all ${maduraiFreeDeliveryEnabled ? 'left-6' : 'left-1'}`} />
+                                 </button>
+                              </div>
+
+                              {maduraiFreeDeliveryEnabled && (
+                                 <div className="flex flex-col gap-8">
+                                    <div className="flex flex-col gap-3">
+                                       <label className="text-[10px] font-black uppercase tracking-[.3em] text-slate-400">Offer Message</label>
+                                       <input
+                                          type="text"
+                                          value={maduraiFreeDeliveryMessage}
+                                          onChange={(e) => setMaduraiFreeDeliveryMessage(e.target.value)}
+                                          placeholder="e.g. Special Offer: Enjoy FREE DELIVERY on all orders within Madurai! 🎉"
+                                          className="h-14 px-6 rounded-2xl bg-slate-50 border-none outline-none font-bold text-[#022c22] focus:ring-2 ring-emerald-400/20 w-full"
+                                       />
+                                    </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                       <div className="flex flex-col gap-3">
+                                          <label className="text-[10px] font-black uppercase tracking-[.3em] text-slate-400">Offer Start Date</label>
+                                          <input
+                                             type="date"
+                                             value={maduraiFreeDeliveryStartDate}
+                                             onChange={(e) => setMaduraiFreeDeliveryStartDate(e.target.value)}
+                                             className="h-14 px-6 rounded-2xl bg-slate-50 border-none outline-none font-bold text-[#022c22] focus:ring-2 ring-emerald-400/20"
+                                          />
+                                       </div>
+                                       <div className="flex flex-col gap-3">
+                                          <label className="text-[10px] font-black uppercase tracking-[.3em] text-slate-400">Offer End Date</label>
+                                          <input
+                                             type="date"
+                                             value={maduraiFreeDeliveryEndDate}
+                                             onChange={(e) => setMaduraiFreeDeliveryEndDate(e.target.value)}
+                                             className="h-14 px-6 rounded-2xl bg-slate-50 border-none outline-none font-bold text-[#022c22] focus:ring-2 ring-emerald-400/20"
+                                          />
+                                       </div>
+                                    </div>
+                                 </div>
+                              )}
                            </div>
                         </div>
                      )}

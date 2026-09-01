@@ -12,6 +12,7 @@ import { API_URL } from '@/lib/api';
 import OptimizedImage from '@/components/ui/OptimizedImage';
 import { toast } from 'sonner';
 import { useAuth } from '@/context/AuthContext';
+import { useUserLocation } from '@/hooks/useUserLocation';
 
 const CartItemVariantDropdown = ({ item, updateVariant }: { item: any, updateVariant: (oldItemId: number, newVariantName: string, newPrice: number) => void }) => {
    const { data: product } = useSWR(`${API_URL}/api/products/${item.productId}`, (url: string) => fetch(url).then(res => res.json()));
@@ -158,6 +159,7 @@ const CartPage = () => {
    const { cart, removeFromCart, updateQuantity, updateVariant, getTotal, appliedCoupon, setAppliedCoupon } = useCartStore();
    const { user } = useAuth();
    const total = getTotal();
+   const { location: userLocation } = useUserLocation();
 
    // Dynamic settings fetch
    const { data: settingsData } = useSWR(`${API_URL}/api/settings`, fetcher);
@@ -171,6 +173,28 @@ const CartPage = () => {
     const freeShippingThreshold = parseFloat(getSettingVal('free_shipping_threshold', '499'));
     const freeShippingEnabled = getSettingVal('free_shipping_enabled', 'false') === 'true';
     const progress = Math.min(100, (total / freeShippingThreshold) * 100);
+
+    const maduraiFreeDeliveryEnabled = getSettingVal('madurai_free_delivery_enabled', 'false') === 'true';
+    const maduraiFreeDeliveryStartDate = getSettingVal('madurai_free_delivery_start_date', '');
+    const maduraiFreeDeliveryEndDate = getSettingVal('madurai_free_delivery_end_date', '');
+
+    let isMaduraiOfferActive = false;
+    if (maduraiFreeDeliveryEnabled && userLocation) {
+       const city = userLocation.city?.toLowerCase() || '';
+       const district = userLocation.district?.toLowerCase() || '';
+       const isMadurai = city.includes('madurai') || district.includes('madurai');
+       
+       if (isMadurai && maduraiFreeDeliveryStartDate && maduraiFreeDeliveryEndDate) {
+          const now = new Date();
+          const startDate = new Date(maduraiFreeDeliveryStartDate);
+          const endDate = new Date(maduraiFreeDeliveryEndDate);
+          endDate.setHours(23, 59, 59, 999);
+          
+          if (now >= startDate && now <= endDate) {
+             isMaduraiOfferActive = true;
+          }
+       }
+    }
 
     // Automatically calculate package weight and dynamic courier charges:
     // ₹50 for the first 1kg, and ₹50 for each additional kg or fraction thereof.
@@ -365,7 +389,11 @@ const CartPage = () => {
       computedGst = parseFloat(computedGst.toFixed(2));
    }
 
-    const shipping = (freeShippingEnabled && total >= freeShippingThreshold) || total === 0 ? 0 : weightShippingFee;
+    let shipping = (freeShippingEnabled && total >= freeShippingThreshold) || total === 0 ? 0 : weightShippingFee;
+    if (isMaduraiOfferActive) {
+       shipping = 0;
+    }
+
    let finalTotal = 0;
    if (gstTaxType === 'exclusive') {
       finalTotal = total + computedGst - couponDiscount + shipping;
@@ -456,7 +484,30 @@ const CartPage = () => {
                                   </div>
                                 </div>
                              </div>
-                          </div>
+                           </div>
+                      )}
+
+                      {isMaduraiOfferActive && total > 0 && (
+                         <div className="bg-gradient-to-r from-orange-50 to-amber-50/30 rounded-[20px] p-5 md:p-6 border border-amber-200 shadow-[0_8px_30px_rgba(217,119,6,0.04)] relative overflow-hidden mb-6">
+                            <div className="absolute top-0 right-0 p-4 opacity-10 pointer-events-none">
+                               <Sparkles size={80} className="text-amber-600" />
+                            </div>
+                            <div className="flex flex-col gap-4 relative z-10">
+                               <div className="flex items-center gap-3">
+                                  <div className="h-10 w-10 md:h-12 md:w-12 rounded-full bg-white shadow-sm flex items-center justify-center shrink-0">
+                                     <Sparkles className="h-5 w-5 md:h-6 md:w-6 text-amber-500" />
+                                  </div>
+                                  <div>
+                                     <h4 className="text-[14px] md:text-[16px] font-bold text-slate-800">
+                                        Congratulations! You got Free Delivery in Madurai 🎉
+                                     </h4>
+                                     <p className="text-[12px] md:text-[13px] font-medium text-slate-500">
+                                        Your order qualifies for free delivery to your location in Madurai.
+                                     </p>
+                                  </div>
+                               </div>
+                            </div>
+                         </div>
                       )}
 
                      {/* PRODUCTS LIST */}

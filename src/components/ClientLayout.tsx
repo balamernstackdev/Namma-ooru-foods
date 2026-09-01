@@ -6,6 +6,7 @@ import Footer from "@/components/Footer";
 import StickyAssistant from "@/components/StickyAssistant";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import AnnouncementBar from "@/components/AnnouncementBar";
+import MaduraiOfferBanner from "@/components/MaduraiOfferBanner";
 import { usePathname } from 'next/navigation';
 import GlobalApiLoader from "@/components/GlobalApiLoader";
 
@@ -36,6 +37,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
         <>
           <Suspense fallback={null}>
             <AnnouncementBar />
+            <MaduraiOfferBanner />
           </Suspense>
           <Navbar />
         </>
