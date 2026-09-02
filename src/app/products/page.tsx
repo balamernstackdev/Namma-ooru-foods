@@ -380,27 +380,32 @@ function ProductsContent() {
                            </AnimatePresence>
                         </div>
 
-                        {/* GRID PAGINATION */}
-                        {totalPages > 1 && (
-                           <div className="flex items-center justify-center gap-2 mt-10 md:mt-14 border-t border-slate-200 pt-8">
-                              <button
-                                 disabled={currentPage === 1}
-                                 onClick={() => { setCurrentPage(p => Math.max(1, p - 1)); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-                                 className="h-10 px-4 rounded-lg bg-white border border-slate-200 flex items-center gap-1 text-[11px] font-black text-slate-600 disabled:opacity-40 hover:bg-slate-50"
-                              >
-                                 Prev
-                              </button>
-                              {[...Array(totalPages)].map((_, i) => (
+                           {/* GRID PAGINATION */}
+                           {totalPages > 1 && (
+                              <div className="flex items-center justify-center gap-2 mt-10 md:mt-14 border-t border-slate-200 pt-8">
                                  <button
-                                    key={i}
-                                    onClick={() => { setCurrentPage(i + 1); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-                                    className={`h-10 w-10 rounded-lg text-[11px] font-black ${currentPage === i + 1 ? 'bg-emerald-900 text-white shadow-md' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'}`}
+                                    disabled={currentPage === 1}
+                                    onClick={() => { setCurrentPage(p => Math.max(1, p - 1)); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                                    className="h-10 px-4 rounded-lg bg-white border border-slate-200 flex items-center gap-1 text-[11px] font-black text-slate-600 disabled:opacity-40 hover:bg-slate-50"
                                  >
-                                    {i + 1}
+                                    Prev
                                  </button>
-                              ))}
-                              <button
-                                 disabled={currentPage === totalPages}
+                                 {(() => {
+                                    if (totalPages <= 4) return Array.from({ length: totalPages }, (_, i) => i + 1);
+                                    if (currentPage <= 2) return [1, 2, 3, 4];
+                                    if (currentPage >= totalPages - 1) return [totalPages - 3, totalPages - 2, totalPages - 1, totalPages];
+                                    return [currentPage - 1, currentPage, currentPage + 1, currentPage + 2];
+                                 })().map((page) => (
+                                    <button
+                                       key={page}
+                                       onClick={() => { setCurrentPage(page); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                                       className={`h-10 w-10 rounded-lg text-[11px] font-black ${currentPage === page ? 'bg-emerald-900 text-white shadow-md' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'}`}
+                                    >
+                                       {page}
+                                    </button>
+                                 ))}
+                                 <button
+                                    disabled={currentPage === totalPages}
                                  onClick={() => { setCurrentPage(p => Math.min(totalPages, p + 1)); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
                                  className="h-10 px-4 rounded-lg bg-white border border-slate-200 flex items-center gap-1 text-[11px] font-black text-slate-600 disabled:opacity-40 hover:bg-slate-50"
                               >

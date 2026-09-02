@@ -137,13 +137,18 @@ export default function CategoriesPage() {
                 >
                   Previous
                 </button>
-                {[...Array(totalPages)].map((_, i) => (
+                {(() => {
+                  if (totalPages <= 4) return Array.from({ length: totalPages }, (_, i) => i + 1);
+                  if (currentPage <= 2) return [1, 2, 3, 4];
+                  if (currentPage >= totalPages - 1) return [totalPages - 3, totalPages - 2, totalPages - 1, totalPages];
+                  return [currentPage - 1, currentPage, currentPage + 1, currentPage + 2];
+                })().map((page) => (
                   <button
-                    key={i}
-                    onClick={() => { setCurrentPage(i + 1); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-                    className={`h-10 w-10 rounded-lg text-[11px] font-black cursor-pointer ${currentPage === i + 1 ? 'bg-[#065f46] text-white shadow-md' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'}`}
+                    key={page}
+                    onClick={() => { setCurrentPage(page); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                    className={`h-10 w-10 rounded-lg text-[11px] font-black cursor-pointer ${currentPage === page ? 'bg-[#065f46] text-white shadow-md' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'}`}
                   >
-                    {i + 1}
+                    {page}
                   </button>
                 ))}
                 <button
