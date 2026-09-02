@@ -80,6 +80,7 @@ const navGroups = [
       { label: 'Coupons', href: '/admin/coupons', icon: Ticket },
       // { label: 'Promotions', href: '/admin/promotions', icon: ClipboardList },
       { label: 'Banners', href: '/admin/banners', icon: ImageIcon },
+      { label: 'Quick Picks', href: '/admin/quick-picks', icon: Tag },
       { label: 'Announcement Bars', href: '/admin/marketing/announcement-bar', icon: Megaphone },
       { label: 'Popup Campaigns', href: '/admin/marketing/popup-campaigns', icon: Layers },
       { label: 'Email Subscribers', href: '/admin/marketing/subscribers', icon: Mail },

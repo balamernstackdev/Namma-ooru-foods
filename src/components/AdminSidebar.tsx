@@ -43,8 +43,8 @@ const navGroups = [
     label: 'Commerce',
     items: [
       { name: 'Coupons', href: '/admin/coupons', icon: Ticket },
-      // { name: 'Promotions', href: '/admin/promotions', icon: ImageIcon },
       { name: 'Banners', href: '/admin/banners', icon: ImageIcon },
+      { name: 'Quick Picks', href: '/admin/quick-picks', icon: Tag },
     ]
   },
   {

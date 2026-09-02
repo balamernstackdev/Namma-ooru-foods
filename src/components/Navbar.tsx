@@ -19,6 +19,7 @@ import OptimizedImage from './ui/OptimizedImage';
 import { usePlatformSettings } from '@/context/PlatformSettingsContext';
 import SearchBar from './search/SearchBar';
 import TopLocationBar from './location/TopLocationBar';
+import QuickPicksStrip from './QuickPicksStrip';
 
 
 const Navbar = () => {
@@ -247,14 +248,14 @@ const Navbar = () => {
                 />
               </Link>
               
-              <div className="hidden sm:block shrink-0 min-w-0 flex-1">
+              <div className="block shrink-0 min-w-0 flex-1 px-0 sm:px-1">
                 <TopLocationBar variant="compact" />
               </div>
             </div>
 
             {/* DYNAMIC SEARCH (DESKTOP) */}
             <div className="hidden lg:flex flex-1 shrink-0 px-2 xl:px-6">
-              <SearchBar />
+              <SearchBar isMobile={false} />
             </div>
 
             {/* UTILITIES */}
@@ -263,8 +264,7 @@ const Navbar = () => {
                 <Link
                   href={user.role?.toLowerCase() === 'hub'
                     ? '/hub/dashboard'
-                    : user.role?.toLowerCase() === 'vendor'
-                      ? '/seller'
+                    : user.role?.toLowerCase() === 'vendor'                      ? '/seller'
                       : user.role?.toLowerCase() === 'admin'
                         ? '/admin'
                         : '/account/profile'}
@@ -307,12 +307,8 @@ const Navbar = () => {
 
         {/* MOBILE LOCATION & SEARCH */}
         <div className="lg:hidden w-full px-4 pb-4 bg-white space-y-3">
-          <div className="sm:hidden w-full bg-slate-50/50 rounded-xl border border-slate-100 flex items-center p-1">
-            <TopLocationBar variant="compact" />
-          </div>
           <SearchBar isMobile={true} />
         </div>
-
 
         {/* SECONDARY TIER (DESKTOP) */}
         <div className="hidden md:flex h-12 bg-slate-50/50 border-t border-slate-100 items-center">
@@ -402,6 +398,7 @@ const Navbar = () => {
 
         {/* Removed redundant mobile location bar */}
 
+        <div className="w-full bg-white"><QuickPicksStrip /></div>
       </nav>
 
       {/* REDESIGNED PREMIUM MOBILE SIDEBAR DRAWER */}
@@ -590,8 +587,6 @@ const Navbar = () => {
                   </div>
                 </motion.div>
               </div>
-
-
             </motion.div>
           </>
         )}

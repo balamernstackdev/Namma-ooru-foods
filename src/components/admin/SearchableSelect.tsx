@@ -9,15 +9,16 @@ interface SearchableSelectProps {
   value: string;
   onChange: (value: string, name: string) => void;
   placeholder?: string;
+  initialName?: string;
 }
 
-export default function SearchableSelect({ type, value, onChange, placeholder }: SearchableSelectProps) {
+export default function SearchableSelect({ type, value, onChange, placeholder, initialName }: SearchableSelectProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [results, setResults] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
-  const [selectedName, setSelectedName] = useState<string>('');
+  const [selectedName, setSelectedName] = useState<string>(initialName || '');
   
   const wrapperRef = useRef<HTMLDivElement>(null);
   
@@ -31,11 +32,11 @@ export default function SearchableSelect({ type, value, onChange, placeholder }:
 
   // Fetch initial selected name if value exists but we don't have the name
   useEffect(() => {
-    if (value && !selectedName) {
+    if (value && !selectedName && !initialName) {
       // Small delay to let initial hydration settle
       setTimeout(() => fetchData(value, true), 100);
     }
-  }, [value, type]);
+  }, [value, type, initialName]);
 
   // Fetch results based on debounced search
   useEffect(() => {

@@ -53,7 +53,7 @@ export default function MaduraiOfferBanner() {
             <div className="animate-scroll">
                <div className="flex items-center gap-3">
                   <Sparkles size={16} className="text-amber-300 animate-pulse" />
-                  <p className="text-xs md:text-sm font-medium tracking-wide" dangerouslySetInnerHTML={{ __html: maduraiFreeDeliveryMessage }}></p>
+                  <p className="text-xs md:text-sm font-bold tracking-wide" dangerouslySetInnerHTML={{ __html: maduraiFreeDeliveryMessage }}></p>
                   <Sparkles size={16} className="text-amber-300 animate-pulse" />
                   <span className="inline-block w-8"></span>
                </div>

@@ -7,6 +7,7 @@ import StickyAssistant from "@/components/StickyAssistant";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import AnnouncementBar from "@/components/AnnouncementBar";
 import MaduraiOfferBanner from "@/components/MaduraiOfferBanner";
+import QuickPicksStrip from "@/components/QuickPicksStrip";
 import { usePathname } from 'next/navigation';
 import GlobalApiLoader from "@/components/GlobalApiLoader";
 
