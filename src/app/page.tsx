@@ -4,7 +4,7 @@ import React from 'react';
 import useSWR from 'swr';
 import Hero from "@/components/Hero";
 import ProductCarousel from "@/components/ProductCarousel";
-import ArtisanMarketplace from '@/components/ArtisanMarketplace';
+
 import FarmersCollection from '@/components/FarmersCollection';
 import LazyHomeSections from '@/components/HomePageSections';
 import dynamic from 'next/dynamic';
@@ -86,8 +86,6 @@ export default function Home() {
         {/* 2. Shop By Category */}
         <CategoriesCircles />
 
-        {/* 4. Featured Brands */}
-        <ArtisanMarketplace />
 
         {/* 5.5 FASTEST DELIVERY PRODUCTS */}
         <ProductCarousel
