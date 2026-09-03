@@ -116,14 +116,14 @@ export default function QuickPicksStrip() {
               <Link 
                 key={pick.id} 
                 href={href}
-                className="flex flex-col items-center shrink-0 group w-[64px] sm:w-[84px]"
+                className="flex flex-col items-center shrink-0 group w-[56px] sm:w-[72px]"
               >
-                <div className="relative w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center group-hover:shadow-md transition-shadow duration-300">
+                <div className="relative w-10 h-10 sm:w-14 sm:h-14 flex items-center justify-center">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img 
                     src={imageUrl} 
                     alt={title} 
-                    className="w-8 h-8 sm:w-12 sm:h-12 object-contain group-hover:scale-110 transition-transform duration-300"
+                    className="w-7 h-7 sm:w-9 sm:h-9 object-contain group-hover:scale-110 transition-transform duration-300"
                     loading="lazy"
                   />
                   

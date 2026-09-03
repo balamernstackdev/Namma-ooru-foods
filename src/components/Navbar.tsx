@@ -398,7 +398,9 @@ const Navbar = () => {
 
         {/* Removed redundant mobile location bar */}
 
-        <div className="w-full bg-white"><QuickPicksStrip /></div>
+        {pathname === '/' && (
+          <div className="w-full bg-white"><QuickPicksStrip /></div>
+        )}
       </nav>
 
       {/* REDESIGNED PREMIUM MOBILE SIDEBAR DRAWER */}
