@@ -356,6 +356,11 @@ function QuickPickFormModal({ initialData, onClose, onSaved }: { initialData: Qu
     const file = e.target.files?.[0];
     if (!file) return;
 
+    if (file.size > 10 * 1024 * 1024) {
+      addToast('Error', 'File size must be less than 10MB', 'error');
+      return;
+    }
+
     try {
       setIsUploading(true);
       const uploadData = new FormData();
@@ -502,6 +507,9 @@ function QuickPickFormModal({ initialData, onClose, onSaved }: { initialData: Qu
                 <div>
                   <p className="text-xs text-slate-500 mb-2">
                     Upload a custom image to override the default product/category image.
+                  </p>
+                  <p className="text-[11px] font-medium text-slate-600 mb-2 bg-slate-100 p-2 rounded inline-block">
+                    Recommended: 100x100px (1:1 ratio) • Max size: 10MB
                   </p>
                   
                   {formData.customImageUrl && (
