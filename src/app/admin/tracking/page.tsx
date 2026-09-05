@@ -638,8 +638,9 @@ export default function AdminTrackingPage() {
   <style>
     @page { size: A4 portrait; margin: 8mm; }
     @media print {
-      html, body { margin: 0; padding: 0; background: white; height: auto; }
-      .invoice-wrap { min-height: 255mm; padding: 0.4cm 0.8cm; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between; page-break-inside: avoid; }
+      html, body { margin: 0; padding: 0 !important; background: white; height: auto; }
+      .invoice-wrap { padding: 0.3cm 0.6cm; box-sizing: border-box; display: flex; flex-direction: column; page-break-inside: avoid; break-inside: avoid; }
+      .invoice-footer { page-break-inside: avoid; break-inside: avoid; break-before: avoid; }
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; font-size: 12px; color: #1e293b; background: white; padding: 18px 24px; }
@@ -746,7 +747,7 @@ export default function AdminTrackingPage() {
   </div>
 
   <!-- Footer always at bottom inside invoice-wrap -->
-  <div style="text-align:center;padding-top:12px;border-top:1px solid #f1f5f9;font-size:10px;color:#94a3b8;font-weight:700;line-height:1.5;margin-top:8px;">
+  <div class="invoice-footer" style="text-align:center;padding-top:10px;border-top:1px solid #f1f5f9;font-size:10px;color:#94a3b8;font-weight:700;line-height:1.5;margin-top:6px;">
     Thank You! Shop Again<br/>9000896898
   </div>
 </div>
