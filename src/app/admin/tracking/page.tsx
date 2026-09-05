@@ -636,10 +636,10 @@ export default function AdminTrackingPage() {
   <meta charset="utf-8"/>
   <title>Invoice - ${orderIdStr}</title>
   <style>
-    @page { size: A4 portrait; margin: 8mm; }
+    @page { size: A4 portrait; margin: 0; }
     @media print {
       html, body { margin: 0; padding: 0 !important; background: white; height: auto; }
-      .invoice-wrap { padding: 0.3cm 0.6cm; box-sizing: border-box; display: flex; flex-direction: column; page-break-inside: avoid; break-inside: avoid; }
+      .invoice-wrap { padding: 8mm 10mm; box-sizing: border-box; display: flex; flex-direction: column; page-break-inside: avoid; break-inside: avoid; }
       .invoice-footer { page-break-inside: avoid; break-inside: avoid; break-before: avoid; }
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -653,8 +653,8 @@ export default function AdminTrackingPage() {
   <div>
     <!-- Header -->
     <div style="display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #f1f5f9;padding-bottom:16px;margin-bottom:24px;">
-      <img src="/logo.webp" alt="Namma Ooru Foods" onerror="this.style.display='none'" />
-      <span style="font-size:14px;font-weight:900;color:#1e293b;">Namma Ooru Foods</span>
+      <img src="/logo.webp" alt="Namma Ooru Foods Pvt Ltd" onerror="this.style.display='none'" />
+      <span style="font-size:14px;font-weight:900;color:#1e293b;">Namma Ooru Foods Pvt Ltd</span>
     </div>
     <p style="font-size:10px;color:#64748b;font-weight:700;text-align:center;margin-bottom:24px;">
       9, First Floor, Opp. Jayam Hospital Chokkikulam Madurai Tamil Nadu 625002<br/>Phone : 9000896898
