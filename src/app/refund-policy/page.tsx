@@ -306,7 +306,7 @@ function ContactBox() {
       <p className="font-black text-[#022c22]">Namma Ooru Foods Pvt Ltd</p>
       <p>9, First Floor, Opp. Jayam Hospital,</p>
       <p>Chokkikulam, Madurai, Tamil Nadu – 625002</p>
-      <p className="pt-2">✉️ <a href="mailto:support@nammaoorufoods.com" className="text-emerald-700 hover:underline">support@nammaoorufoods.com</a></p>
+      <p className="pt-2">✉️ <a href="mailto:balamuruganwebdeveloper@gmail.com" className="text-emerald-700 hover:underline">balamuruganwebdeveloper@gmail.com</a></p>
     </div>
   );
 }

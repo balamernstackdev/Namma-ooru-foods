@@ -26,7 +26,7 @@ function PaymentFailureContent() {
    };
 
    const supportPhone = getSettingVal('support_whatsapp', '+91 99999 99999');
-   const supportEmail = getSettingVal('support_email', 'support@nammaoorufoods.com');
+   const supportEmail = getSettingVal('support_email', 'balamuruganwebdeveloper@gmail.com');
 
    return (
       <div className="min-h-screen bg-[#f8f8f5] pt-[80px] pb-24">

@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Search, ShoppingCart, User, Menu, X, Home, LayoutGrid, TrendingUp, Star, Tag, ChevronRight, Heart, Package, MapPin, CreditCard, LogOut, Settings, Bell, ArrowRight, Sun, Moon, Globe } from 'lucide-react';
+import { Search, ShoppingCart, User, Menu, X, Home, LayoutGrid, TrendingUp, Star, Tag, ChevronRight, Heart, Package, MapPin, CreditCard, LogOut, Settings, Bell, ArrowRight, Sun, Moon, Globe, Mail } from 'lucide-react';
 import { useCartStore } from '@/store/useCartStore';
 import { useAuth } from '@/context/AuthContext';
 import useSWR from 'swr';
@@ -247,7 +247,7 @@ const Navbar = () => {
                   className="w-20 md:w-36 h-auto object-contain"
                 />
               </Link>
-              
+
               <div className="block shrink-0 min-w-0 flex-1 px-0 sm:px-1">
                 <TopLocationBar variant="compact" />
               </div>
@@ -264,7 +264,7 @@ const Navbar = () => {
                 <Link
                   href={user.role?.toLowerCase() === 'hub'
                     ? '/hub/dashboard'
-                    : user.role?.toLowerCase() === 'vendor'                      ? '/seller'
+                    : user.role?.toLowerCase() === 'vendor' ? '/seller'
                       : user.role?.toLowerCase() === 'admin'
                         ? '/admin'
                         : '/account/profile'}
@@ -580,11 +580,11 @@ const Navbar = () => {
                       <span>+91 9000 896 898</span>
                     </a>
                     <a
-                      href="mailto:support@nammaoorufoods.com"
-                      className="flex items-center gap-2 text-slate-600 hover:text-emerald-600 transition-colors break-all"
+                      href="mailto:balamuruganwebdeveloper@gmail.com"
+                      className="-mx-3 flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-semibold leading-7 text-gray-900 hover:bg-emerald-50 transition-colors"
                     >
-                      <span className="text-emerald-500 text-sm">✉</span>
-                      <span>support@nammaoorufoods.com</span>
+                      <Mail className="h-5 w-5 text-emerald-600" />
+                      <span>balamuruganwebdeveloper@gmail.com</span>
                     </a>
                   </div>
                 </motion.div>

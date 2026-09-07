@@ -29,7 +29,7 @@ export default function AdminSettings() {
    // Store Profile States
    const [storeName, setStoreName] = React.useState('namma ooru Foods Ltd');
    const [storeCategory, setStoreCategory] = React.useState('Organic Essentials');
-   const [supportEmail, setSupportEmail] = React.useState('support@nammaoorufoods.com');
+   const [supportEmail, setSupportEmail] = React.useState('balamuruganwebdeveloper@gmail.com');
    const [supportWhatsapp, setSupportWhatsapp] = React.useState('+91 9000 896 898');
    const [storeAddress, setStoreAddress] = React.useState('123 Green Street, Organic City, IN');
    const [autoGenerateCategoryContent, setAutoGenerateCategoryContent] = React.useState(true);
@@ -211,7 +211,7 @@ export default function AdminSettings() {
 
             const valStoreName = nameSetting?.value || 'namma ooru Foods Ltd';
             const valStoreCategory = catSetting?.value || 'Organic Essentials';
-            const valSupportEmail = emailSetting?.value || 'support@nammaoorufoods.com';
+            const valSupportEmail = emailSetting?.value || 'balamuruganwebdeveloper@gmail.com';
             const valSupportWhatsapp = whatsappSetting?.value || '+91 9000 896 898';
             const valStoreAddress = addressSetting?.value || '123 Green Street, Organic City, IN';
             const valAutoGen = autoGenSetting ? autoGenSetting.value === 'true' : true;
