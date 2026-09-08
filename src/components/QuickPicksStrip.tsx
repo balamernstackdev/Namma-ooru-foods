@@ -116,14 +116,14 @@ export default function QuickPicksStrip() {
               <Link 
                 key={pick.id} 
                 href={href}
-                className="flex flex-col items-center shrink-0 group w-[64px] sm:w-[80px]"
+                className="flex flex-col items-center justify-start shrink-0 group w-[64px] sm:w-[80px]"
               >
                 <div className="relative w-12 h-12 sm:w-16 sm:h-16 flex items-center justify-center">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img 
                     src={imageUrl} 
                     alt={title} 
-                    className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-300"
+                    className="w-8 h-8 sm:w-10 sm:h-10 object-contain group-hover:scale-110 transition-transform duration-300 drop-shadow-sm"
                     loading="lazy"
                   />
                   {pick.isFreeDelivery && (
@@ -139,8 +139,8 @@ export default function QuickPicksStrip() {
                   )}
                 </div>
                 
-                <div className="mt-2 text-center w-full px-0.5">
-                  <span className="text-[10px] sm:text-xs font-bold text-slate-800 leading-tight block group-hover:text-emerald-700 transition-colors line-clamp-2">
+                <div className="mt-1 sm:mt-1.5 text-center w-full px-0.5">
+                  <span className="text-[10px] sm:text-[11px] font-bold text-slate-800 leading-[1.2] block group-hover:text-emerald-700 transition-colors line-clamp-2">
                     {title}
                   </span>
                 </div>

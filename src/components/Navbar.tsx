@@ -580,11 +580,11 @@ const Navbar = () => {
                       <span>+91 9000 896 898</span>
                     </a>
                     <a
-                      href="mailto:balamuruganwebdeveloper@gmail.com"
+                      href="mailto:support@nammaoorufoods.com"
                       className="-mx-3 flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-semibold leading-7 text-gray-900 hover:bg-emerald-50 transition-colors"
                     >
                       <Mail className="h-5 w-5 text-emerald-600" />
-                      <span>balamuruganwebdeveloper@gmail.com</span>
+                      <span>support@nammaoorufoods.com</span>
                     </a>
                   </div>
                 </motion.div>
