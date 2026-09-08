@@ -205,9 +205,9 @@ export default function AdminTrackingPage() {
   <meta charset="utf-8"/>
   <title>Shipment Label - ${orderIdStr}</title>
   <style>
-    @page { size: A4 portrait; margin: 15mm; }
+    @page { size: A4 portrait; margin: 0; }
     @media print { 
-      html, body { margin: 0; padding: 0; width: 100%; display: flex; justify-content: center; } 
+      html, body { margin: 0; padding: 15mm 0 0 0; width: 100%; display: flex; justify-content: center; } 
     }
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     body {

@@ -345,13 +345,19 @@ export default function EditProductClient({ id }: { id?: string }) {
          return;
       }
 
+      const token = typeof window !== 'undefined' ? localStorage.getItem('namma_orru_token') : null;
+      if (!token) {
+         addToast('Session Expired', 'Please log in again to save changes.');
+         router.push('/seller');
+         return;
+      }
+
       setIsLoading(true);
       try {
-         const token = typeof window !== 'undefined' ? localStorage.getItem('namma_orru_token') : null;
-         const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-         if (token) {
-            headers['Authorization'] = `Bearer ${token}`;
-         }
+         const headers: Record<string, string> = {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+         };
 
          const payload = {
             ...formData,
@@ -401,7 +407,7 @@ export default function EditProductClient({ id }: { id?: string }) {
             const data = await res.json();
             if (data && (data.success || data.id)) {
                addToast('Success', 'Product updated successfully');
-               router.push('/vendor/products');
+               router.push('/seller/products');
             } else {
                addToast('Error', data.message || 'Failed to update product');
             }
