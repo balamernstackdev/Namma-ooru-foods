@@ -192,7 +192,7 @@ export default function AdminTrackingPage() {
     }
     bars.push({ x: cx, w: 2, black: true }); cx += 2;
     const totalW = cx;
-    const barcodeSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="${totalW}" height="${barcodeHeight}" style="display:block;margin:0 auto;">${
+    const barcodeSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="${barcodeHeight}" viewBox="0 0 ${totalW} ${barcodeHeight}" preserveAspectRatio="none" style="display:block;margin:0 auto; max-width: 100%;">${
       bars.filter(b => b.black).map(b => `<rect x="${b.x}" y="0" width="${b.w}" height="${barcodeHeight}" fill="#000"/>`).join('')
     }</svg>`;
 
@@ -207,23 +207,35 @@ export default function AdminTrackingPage() {
   <style>
     @page { size: A4 portrait; margin: 0; }
     @media print { 
-      html, body { margin: 0; padding: 15mm 0 0 0; width: 100%; display: flex; justify-content: center; } 
+      html, body { width: 210mm; height: 297mm; margin: 0; padding: 0; background: white; } 
     }
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     body {
       font-family: Arial, Helvetica, sans-serif;
-      font-size: 11px;
       color: #111;
       background: white;
       margin: 0;
     }
-    .label-wrapper {
-      width: 100mm;
-      border: 2px solid #222;
-      transform: scale(1.8);
-      transform-origin: top center;
-      margin: 0 auto;
+    
+    /* ── A4 CONTAINER ── */
+    .print-page {
+      width: 210mm;
+      height: 297mm;
+      margin: 0;
+      padding: 15mm 0 0 0;
+      position: relative;
+      overflow: hidden;
       background: white;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
+
+    .label-wrapper {
+      width: 180mm;
+      border: 4px solid #222;
+      background: white;
+      position: relative;
     }
 
     /* ── HEADER ── */
@@ -232,279 +244,279 @@ export default function AdminTrackingPage() {
       justify-content: center;
       align-items: center;
       background: white;
-      border-bottom: 2.5px solid #222;
-      padding: 8px 10px;
+      border-bottom: 4px solid #222;
+      padding: 14px 18px;
     }
     .label-header-img {
-      height: 60px;
+      height: 108px;
       width: auto;
       max-width: 100%;
       object-fit: contain;
     }
     .label-tagline {
-      font-size: 9px;
+      font-size: 16px;
       color: #000;
       font-weight: 700;
-      margin-top: 2px;
+      margin-top: 4px;
       text-align: center;
-      border-top: 1.5px solid #000;
-      padding-top: 3px;
+      border-top: 3px solid #000;
+      padding-top: 5px;
     }
 
     /* ── BODY TWO-COL ── */
     .label-body {
       display: grid;
-      grid-template-columns: 55mm 1fr;
-      border-bottom: 2px solid #222;
+      grid-template-columns: 99mm 1fr;
+      border-bottom: 4px solid #222;
     }
 
     /* LEFT: SHIP TO */
     .ship-to-block {
-      border-right: 2px solid #222;
-      padding: 8px 8px 6px;
+      border-right: 4px solid #222;
+      padding: 14px 14px 11px;
     }
     .ship-to-badge {
       display: inline-flex;
       align-items: center;
-      gap: 4px;
+      gap: 7px;
       background: #000;
       color: white;
-      font-size: 9px;
+      font-size: 16px;
       font-weight: 900;
-      padding: 3px 8px;
-      border-radius: 4px;
-      margin-bottom: 6px;
+      padding: 5px 14px;
+      border-radius: 7px;
+      margin-bottom: 11px;
       text-transform: uppercase;
       letter-spacing: 0.05em;
     }
     .ship-to-name {
-      font-size: 14px;
+      font-size: 25px;
       font-weight: 900;
       color: #111;
-      margin-bottom: 4px;
+      margin-bottom: 7px;
       line-height: 1.2;
     }
     .ship-to-addr {
-      font-size: 12px;
+      font-size: 22px;
       color: #111;
       line-height: 1.5;
       font-weight: 800;
     }
     .ship-to-divider {
-      border-top: 1.5px dashed #bbb;
-      margin: 6px 0;
+      border-top: 3px dashed #bbb;
+      margin: 11px 0;
     }
     .ship-to-meta {
-      font-size: 9.5px;
+      font-size: 17px;
       color: #333;
       font-weight: 600;
       line-height: 1.8;
     }
     .ship-to-meta span { color: #555; font-weight: 500; }
-    .ship-to-meta span.bold-phone { color: #000; font-weight: 900; font-size: 11px; }
+    .ship-to-meta span.bold-phone { color: #000; font-weight: 900; font-size: 20px; }
 
     /* RIGHT: ORDER INFO */
-    .order-info-block { padding: 6px 7px; display: flex; flex-direction: column; gap: 0; }
+    .order-info-block { padding: 11px 13px; display: flex; flex-direction: column; gap: 0; }
     .order-info-row {
       display: flex;
       align-items: center;
-      gap: 6px;
-      padding: 5px 0;
-      border-bottom: 1.5px solid #e5e5e5;
+      gap: 11px;
+      padding: 9px 0;
+      border-bottom: 3px solid #e5e5e5;
     }
     .order-info-row:last-child { border-bottom: none; }
-    .order-info-icon { font-size: 14px; flex-shrink: 0; }
-    .order-info-label { font-size: 8px; color: #777; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
-    .order-info-value { font-size: 11px; font-weight: 900; color: #111; line-height: 1.1; }
-    .order-info-value.red { color: #000; font-size: 14px; font-weight: 900; }
+    .order-info-label { font-size: 14px; color: #777; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
+    .order-info-value { font-size: 20px; font-weight: 900; color: #111; line-height: 1.1; }
+    .order-info-value.red { color: #000; font-size: 25px; font-weight: 900; }
     .order-info-value.prepaid { color: #000; }
 
     /* TWO-CELL ROW */
     .order-two-cell {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      border-bottom: 1.5px solid #e5e5e5;
+      border-bottom: 3px solid #e5e5e5;
     }
     .order-cell {
-      padding: 5px 0;
+      padding: 9px 0;
     }
-    .order-cell:first-child { border-right: 1.5px solid #e5e5e5; }
+    .order-cell:first-child { border-right: 3px solid #e5e5e5; }
 
     /* PINCODE + BARCODE ROW */
     .pin-bar-row {
       display: grid;
-      grid-template-columns: 55mm 1fr;
-      border-bottom: 2px solid #222;
+      grid-template-columns: 99mm 1fr;
+      border-bottom: 4px solid #222;
     }
     .pincode-block {
-      border-right: 2px solid #222;
-      padding: 6px 8px;
+      border-right: 4px solid #222;
+      padding: 11px 14px;
     }
     .pincode-label {
-      font-size: 8px;
+      font-size: 14px;
       font-weight: 900;
       background: #000;
       color: white;
       display: inline-block;
-      padding: 1px 6px;
-      border-radius: 3px;
-      margin-bottom: 4px;
+      padding: 2px 11px;
+      border-radius: 5px;
+      margin-bottom: 7px;
       text-transform: uppercase;
     }
     .pincode-value {
-      font-size: 24px;
+      font-size: 43px;
       font-weight: 900;
-      letter-spacing: 2px;
+      letter-spacing: 4px;
       color: #111;
       font-family: 'Courier New', monospace;
     }
     .barcode-block {
-      padding: 6px 8px;
+      padding: 11px 14px;
       text-align: center;
     }
     .barcode-label {
-      font-size: 8px;
+      font-size: 14px;
       font-weight: 900;
       background: #000;
       color: white;
       display: inline-block;
-      padding: 1px 6px;
-      border-radius: 3px;
-      margin-bottom: 4px;
+      padding: 2px 11px;
+      border-radius: 5px;
+      margin-bottom: 7px;
       text-transform: uppercase;
     }
     .barcode-graphic {
-      height: 32px;
+      height: 58px;
       width: 100%;
       display: flex;
       align-items: stretch;
       justify-content: center;
       background: white;
-      margin-bottom: 2px;
+      margin-bottom: 4px;
       overflow: hidden;
     }
-    .barcode-graphic div { flex-shrink: 0; }
-    .barcode-id { font-size: 8px; font-weight: 700; color: #333; font-family: 'Courier New', monospace; }
+    .barcode-id { font-size: 14px; font-weight: 700; color: #333; font-family: 'Courier New', monospace; }
 
     /* FOOTER */
     .label-footer {
       display: grid;
-      grid-template-columns: 60mm 1fr;
+      grid-template-columns: 108mm 1fr;
     }
     .handling-icons {
       display: flex;
       align-items: center;
       justify-content: space-around;
-      padding: 6px 6px;
-      border-right: 1.5px dashed #bbb;
+      padding: 11px 11px;
+      border-right: 3px dashed #bbb;
     }
     .handling-item { text-align: center; }
-    .handling-icon { font-size: 18px; filter: grayscale(100%); }
-    .handling-text { font-size: 7px; font-weight: 900; text-transform: uppercase; color: #000; margin-top: 1px; line-height: 1.1; }
+    .handling-icon { font-size: 32px; filter: grayscale(100%); }
+    .handling-text { font-size: 13px; font-weight: 900; text-transform: uppercase; color: #000; margin-top: 2px; line-height: 1.1; }
     .return-block {
-      padding: 6px 8px;
+      padding: 11px 14px;
     }
-    .return-title { font-size: 8px; font-weight: 700; color: #555; margin-bottom: 2px; }
-    .return-name { font-size: 9px; font-weight: 900; color: #111; }
-    .return-addr { font-size: 8px; color: #444; line-height: 1.5; font-weight: 500; }
+    .return-title { font-size: 14px; font-weight: 700; color: #555; margin-bottom: 4px; }
+    .return-name { font-size: 16px; font-weight: 900; color: #111; }
+    .return-addr { font-size: 14px; color: #444; line-height: 1.5; font-weight: 500; }
   </style>
 </head>
 <body>
-<div class="label-wrapper">
+<div class="print-page">
+  <div class="label-wrapper">
 
-  <!-- HEADER -->
-  <div class="label-header">
-    <img class="label-header-img" src="/IMG_1890.PNG" alt="Namma Ooru Foods" onerror="this.style.display='none'" />
-  </div>
-  <div class="label-tagline">நம்ம ஊரு சுவை - உங்கள் இல்லம் தேடி!</div>
+    <!-- HEADER -->
+    <div class="label-header">
+      <img class="label-header-img" src="/IMG_1890.PNG" alt="Namma Ooru Foods" onerror="this.style.display='none'" />
+    </div>
+    <div class="label-tagline">நம்ம ஊரு சுவை - உங்கள் இல்லம் தேடி!</div>
 
-  <!-- BODY: SHIP TO + ORDER INFO -->
-  <div class="label-body">
-    <div class="ship-to-block">
-      <div class="ship-to-badge"><b>SHIP TO</b></div>
-      <div class="ship-to-name">${recipientName}</div>
-      <div class="ship-to-addr">
-        ${street ? street + ',<br/>' : ''}
-        ${landmark ? landmark + ',<br/>' : ''}
-        ${city ? city + ' - ' + pincode + ',<br/>' : ''}
-        ${state}, India.
+    <!-- BODY: SHIP TO + ORDER INFO -->
+    <div class="label-body">
+      <div class="ship-to-block">
+        <div class="ship-to-badge"><b>SHIP TO</b></div>
+        <div class="ship-to-name">${recipientName}</div>
+        <div class="ship-to-addr">
+          ${street ? street + ',<br/>' : ''}
+          ${landmark ? landmark + ',<br/>' : ''}
+          ${city ? city + ' - ' + pincode + ',<br/>' : ''}
+          ${state}, India.
+        </div>
+        <div class="ship-to-divider"></div>
+        <div class="ship-to-meta">
+          Mobile &nbsp; : <span class="bold-phone">${phone ? '+91 ' + phone : 'N/A'}</span><br/>
+          ${landmark ? 'Landmark : <span>' + landmark + '</span>' : ''}
+        </div>
       </div>
-      <div class="ship-to-divider"></div>
-      <div class="ship-to-meta">
-        Mobile &nbsp; : <span class="bold-phone">${phone ? '+91 ' + phone : 'N/A'}</span><br/>
-        ${landmark ? 'Landmark : <span>' + landmark + '</span>' : ''}
+      <div class="order-info-block">
+        <div class="order-info-row">
+          <div>
+            <div class="order-info-label">Order ID</div>
+            <div class="order-info-value red">${orderIdStr}</div>
+          </div>
+          <div style="margin-left:auto; text-align:right;">
+            <div class="order-info-label">Order Date</div>
+            <div class="order-info-value" style="font-size:16px;">${orderDate}</div>
+          </div>
+        </div>
+        <div class="order-info-row">
+          <div>
+            <div class="order-info-label">Delivery Type</div>
+            <div class="order-info-value prepaid">${paymentMethod}</div>
+          </div>
+        </div>
+        <div class="order-two-cell">
+          <div class="order-cell">
+            <div class="order-info-label">Package Weight</div>
+            <div class="order-info-value">${packageWeightStr}</div>
+          </div>
+          <div class="order-cell" style="padding-left:11px;">
+            <div class="order-info-label">No. of Items</div>
+            <div class="order-info-value">${itemCount}</div>
+          </div>
+        </div>
       </div>
     </div>
-    <div class="order-info-block">
-      <div class="order-info-row">
-        <div>
-          <div class="order-info-label">Order ID</div>
-          <div class="order-info-value red">${orderIdStr}</div>
-        </div>
-        <div style="margin-left:auto; text-align:right;">
-          <div class="order-info-label">Order Date</div>
-          <div class="order-info-value" style="font-size:9px;">${orderDate}</div>
-        </div>
-      </div>
-      <div class="order-info-row">
-        <div>
-          <div class="order-info-label">Delivery Type</div>
-          <div class="order-info-value prepaid">${paymentMethod}</div>
-        </div>
-      </div>
-      <div class="order-two-cell">
-        <div class="order-cell">
-          <div class="order-info-label">Package Weight</div>
-          <div class="order-info-value">${packageWeightStr}</div>
-        </div>
-        <div class="order-cell" style="padding-left:6px;">
-          <div class="order-info-label">No. of Items</div>
-          <div class="order-info-value">${itemCount}</div>
-        </div>
-      </div>
-    </div>
-  </div>
 
-  <!-- PINCODE + BARCODE ROW -->
-  <div class="pin-bar-row">
-    <div class="pincode-block">
-      <div class="pincode-label">PINCODE</div>
-      <div class="pincode-value">${pincode || '——————'}</div>
+    <!-- PINCODE + BARCODE ROW -->
+    <div class="pin-bar-row">
+      <div class="pincode-block">
+        <div class="pincode-label">PINCODE</div>
+        <div class="pincode-value">${pincode || '——————'}</div>
+      </div>
+      <div class="barcode-block">
+        <div class="barcode-label">BARCODE</div>
+        <div class="barcode-graphic">${barcodeSvg}</div>
+        <div class="barcode-id">${orderIdStr}</div>
+      </div>
     </div>
-    <div class="barcode-block">
-      <div class="barcode-label">BARCODE</div>
-      <div class="barcode-graphic">${barcodeSvg}</div>
-      <div class="barcode-id">${orderIdStr}</div>
-    </div>
-  </div>
 
-  <!-- FOOTER -->
-  <div class="label-footer">
-    <div class="handling-icons">
-      <div class="handling-item">
-        <div class="handling-icon">🤲</div>
-        <div class="handling-text">HANDLE<br/>WITH CARE</div>
+    <!-- FOOTER -->
+    <div class="label-footer">
+      <div class="handling-icons">
+        <div class="handling-item">
+          <div class="handling-icon">🤲</div>
+          <div class="handling-text">HANDLE<br/>WITH CARE</div>
+        </div>
+        <div class="handling-item">
+          <div class="handling-icon">🍷</div>
+          <div class="handling-text">FRAGILE</div>
+        </div>
+        <div class="handling-item">
+          <div class="handling-icon">&#9730;</div>
+          <div class="handling-text">KEEP DRY</div>
+        </div>
+        <div class="handling-item">
+          <div class="handling-icon">&#9650;</div>
+          <div class="handling-text">THIS SIDE<br/>UP</div>
+        </div>
       </div>
-      <div class="handling-item">
-        <div class="handling-icon">🍷</div>
-        <div class="handling-text">FRAGILE</div>
-      </div>
-      <div class="handling-item">
-        <div class="handling-icon">&#9730;</div>
-        <div class="handling-text">KEEP DRY</div>
-      </div>
-      <div class="handling-item">
-        <div class="handling-icon">&#9650;</div>
-        <div class="handling-text">THIS SIDE<br/>UP</div>
-      </div>
-    </div>
-    <div class="return-block">
-      <div class="return-title">If Undelivered, Please Return To:</div>
-      <div class="return-name">NAMMA OORU FOODS PVT. LTD.,</div>
-      <div class="return-addr">
-        No.9, Abdul Kabharkhan Road,<br/>
-        Chinna Chokkikulam, Madurai,<br/>
-        Pin - 625 002 , Tamilnadu.
+      <div class="return-block">
+        <div class="return-title">If Undelivered, Please Return To:</div>
+        <div class="return-name">NAMMA OORU FOODS PVT. LTD.,</div>
+        <div class="return-addr">
+          No.9, Abdul Kabharkhan Road,<br/>
+          Chinna Chokkikulam, Madurai,<br/>
+          Pin - 625 002 , Tamilnadu.
+        </div>
       </div>
     </div>
   </div>
