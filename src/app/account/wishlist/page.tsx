@@ -306,7 +306,7 @@ export default function WishlistPage() {
                         )}
                       </div>
 
-                      {/* Interactive Dual Buttons */}
+                      {/* Interactive Dual Buttons (Hidden)
                       <div className="grid grid-cols-2 gap-2">
                         <button 
                           id={`wishlist-add-cart-${p.id}`} 
@@ -332,6 +332,13 @@ export default function WishlistPage() {
                           Buy Now
                         </button>
                       </div>
+                      */}
+                      <Link 
+                        href={`/products/${p.slug || p.id}`}
+                        className="w-full h-10 px-3 rounded-xl bg-emerald-950 text-white hover:bg-emerald-800 text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center"
+                      >
+                        View Product
+                      </Link>
 
                     </div>
                   </div>

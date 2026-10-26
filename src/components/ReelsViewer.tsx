@@ -745,12 +745,14 @@ export default function ReelsViewer({ videos, initialIndex, isOpen, onClose }: R
                       </div>
 
                       <div className="flex flex-col gap-1.5 shrink-0">
+                        {/* Add to cart hidden:
                         <button
                           onClick={(e) => handleAddToCart(product, e)}
                           className="h-10 px-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-[9px] font-black uppercase tracking-wider flex items-center gap-1.5 shadow-md shadow-emerald-600/10 transition-all active:scale-95"
                         >
                           <ShoppingCart size={11} /> Add
                         </button>
+                        */}
                         <Link 
                           href={`/products/${product.slug || product.id}`}
                           onClick={() => {

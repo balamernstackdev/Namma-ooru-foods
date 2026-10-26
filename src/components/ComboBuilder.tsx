@@ -437,6 +437,7 @@ export default function ComboBuilder({
 
                      {/* CTA Buttons */}
                      <div className="space-y-2.5 mt-5 relative z-10">
+                        {/* Add Bundle to Cart hidden:
                         <button
                            disabled={selectedItems.length === 0}
                            onClick={handleAddBundle}
@@ -445,6 +446,7 @@ export default function ComboBuilder({
                            <ShoppingBag size={13} strokeWidth={2.5} />
                            Add Bundle to Cart
                         </button>
+                        */}
                         <Link
                            href="/products"
                            className="w-full py-2.5 bg-emerald-800/40 hover:bg-emerald-800/60 transition-all rounded-xl text-[9px] font-black uppercase tracking-widest text-emerald-200 flex items-center justify-center gap-1"

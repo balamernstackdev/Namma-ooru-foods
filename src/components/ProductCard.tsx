@@ -241,7 +241,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, index }) => {
             )}
           </div>
 
-          {/* Add To Cart CTA Button (Min Height 36px, Mobile Font 12px) */}
+          {/* Add To Cart CTA Button hidden:
           <div className="mt-1.5 md:mt-2 w-full relative min-h-[36px] md:min-h-[44px]" ref={containerBtnRef}>
             <AnimatePresence>
               {showSuccessAnimation && (
@@ -287,6 +287,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, index }) => {
               )}
             </AnimatePresence>
           </div>
+          */}
         </div>
 
       </div>

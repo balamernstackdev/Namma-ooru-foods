@@ -474,10 +474,10 @@ export default function ProductDetailClient({ product: initialProduct, allProduc
                      </div>
                   </div>
 
-                  {/* 5. TACTILE QUANTITY SELECTOR & CTA BUTTONS */}
+                  {/* 5. TACTILE QUANTITY SELECTOR & CTA BUTTONS (Hidden)
                   <div className="flex flex-wrap items-center gap-3 w-full pt-2">
 
-                     {/* Modern Rounded Glass Quantity Controller */}
+                     // Modern Rounded Glass Quantity Controller
                      <div className="flex items-center justify-between bg-white border border-slate-200 rounded-full p-1 w-[110px] md:w-[120px] shrink-0 h-[42px] md:h-[48px] shadow-sm hover:shadow-md transition-all">
                         <button
                            onClick={() => setQuantity(Math.max(1, quantity - 1))}
@@ -519,6 +519,7 @@ export default function ProductDetailClient({ product: initialProduct, allProduc
                         </div>
                      )}
                   </div>
+                  */}
                </div>
             </div>
          </section>
@@ -719,7 +720,7 @@ export default function ProductDetailClient({ product: initialProduct, allProduc
             fallbackImage={fallbackImage}
          />
 
-         {/* MOBILE FLOATING STICKY BUY BAR - ALWAYS PERSISTENT */}
+         {/* MOBILE FLOATING STICKY BUY BAR - ALWAYS PERSISTENT (Hidden)
          <div className="md:hidden fixed bottom-[60px] left-0 right-0 z-50 bg-white/95 backdrop-blur-2xl border-t border-slate-200 px-4 py-3 shadow-[0_-10px_30px_rgba(0,0,0,0.08)] flex items-center gap-3 transition-transform duration-300">
             <div className="flex flex-col shrink-0 min-w-[80px]">
                <div className="flex items-center gap-1">
@@ -734,6 +735,7 @@ export default function ProductDetailClient({ product: initialProduct, allProduc
                <ShoppingCart size={18} strokeWidth={2.5} /> ADD TO CART
             </button>
          </div>
+         */}
       </div>
    );
 }
