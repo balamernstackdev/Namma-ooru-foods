@@ -179,8 +179,17 @@ const server = http.createServer(async (req, res) => {
 
   // ─── 5. Direct Static Asset Serving ──────────────────────────────────────────
   if (req.url && req.url.startsWith('/_next/static/')) {
-    const relativeStaticPath = req.url.replace('/_next/static/', '').split('?')[0];
-    const filePath = path.join(__dirname, '.next/static', relativeStaticPath);
+    const rawStaticPath = req.url.replace('/_next/static/', '').split('?')[0];
+    let decodedStaticPath = rawStaticPath;
+    try {
+      decodedStaticPath = decodeURIComponent(rawStaticPath);
+    } catch (e) {}
+
+    let filePath = path.join(__dirname, '.next/static', decodedStaticPath);
+    if (!fs.existsSync(filePath)) {
+      filePath = path.join(__dirname, '.next/static', rawStaticPath);
+    }
+
     if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
       const ext = path.extname(filePath).toLowerCase();
       const mimeTypes = {
@@ -201,6 +210,45 @@ const server = http.createServer(async (req, res) => {
         'Cache-Control': 'public, max-age=31536000, immutable'
       });
       return fs.createReadStream(filePath).pipe(res);
+    }
+  }
+
+  // Direct Public Asset Serving
+  if (req.url && !req.url.startsWith('/_next/') && !req.url.startsWith('/api/')) {
+    const rawPublicPath = req.url.split('?')[0];
+    let decodedPublicPath = rawPublicPath;
+    try {
+      decodedPublicPath = decodeURIComponent(rawPublicPath);
+    } catch (e) {}
+
+    let publicFilePath = path.join(__dirname, 'public', decodedPublicPath);
+    if (!fs.existsSync(publicFilePath)) {
+      publicFilePath = path.join(__dirname, 'public', rawPublicPath);
+    }
+
+    if (fs.existsSync(publicFilePath) && fs.statSync(publicFilePath).isFile()) {
+      const ext = path.extname(publicFilePath).toLowerCase();
+      const mimeTypes = {
+        '.css': 'text/css; charset=utf-8',
+        '.js': 'application/javascript; charset=utf-8',
+        '.png': 'image/png',
+        '.jpg': 'image/jpeg',
+        '.jpeg': 'image/jpeg',
+        '.webp': 'image/webp',
+        '.svg': 'image/svg+xml',
+        '.ico': 'image/x-icon',
+        '.woff2': 'font/woff2',
+        '.woff': 'font/woff',
+        '.ttf': 'font/ttf',
+        '.json': 'application/json',
+        '.txt': 'text/plain; charset=utf-8',
+        '.xml': 'application/xml; charset=utf-8'
+      };
+      res.writeHead(200, {
+        'Content-Type': mimeTypes[ext] || 'application/octet-stream',
+        'Cache-Control': 'public, max-age=86400'
+      });
+      return fs.createReadStream(publicFilePath).pipe(res);
     }
   }
 

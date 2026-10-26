@@ -85,16 +85,16 @@ export default function ProductDetailClient({ product: initialProduct, allProduc
    );
 
    const getSectionTitles = () => {
-      if (!relatedProducts || relatedProducts.length === 0) {
+      if (!Array.isArray(relatedProducts) || relatedProducts.length === 0) {
          return { subtitle: "Frequently Bought With", title: "Recommended Essentials" };
       }
 
-      const sameVendor = relatedProducts.every((p: any) => p.subVendorId === product.subVendorId);
-      if (sameVendor && product.subVendor) {
+      const sameVendor = relatedProducts.every((p: any) => p?.subVendorId === product?.subVendorId);
+      if (sameVendor && product?.subVendor) {
          return { subtitle: `Products  by ${product.subVendor.name}`, title: "More From This Vendor" };
       }
 
-      const sameCategory = relatedProducts.every((p: any) => p.categoryId === product.categoryId);
+      const sameCategory = relatedProducts.every((p: any) => p?.categoryId === product?.categoryId);
       if (sameCategory) {
          return { subtitle: "Related  products", title: "Similar  Products" };
       }
